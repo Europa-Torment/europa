@@ -1,0 +1,65 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Elixir CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+
+jobs:
+  build:
+
+    name: Build and test
+    runs-on: ubuntu-24.04
+    env:
+      otp: 28.3.1
+      elixir: 1.19.5
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install OTP and Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        otp-version: ${{ env.otp }}
+        elixir-version: ${{ env.elixir }}
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          deps
+          _build
+        key: ${{ runner.os }}-elixir-${{ env.elixir }}-otp-${{ env.otp }}-${{ hashFiles('**/mix.lock') }}
+
+    - name: Install dependencies
+      run: mix do deps.get, deps.compile
+
+    - name: Check compilation warnings
+      run: mix compile --warnings-as-errors
+
+    - name: Run tests
+      run: make coverage
+
+    - name: Analyze code
+      run: make analyze-code
