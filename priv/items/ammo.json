@@ -1,0 +1,5 @@
+[
+    {"caliber": "9mm", "count": {"from": 10, "to": 20}, "random_weight": 2.0},
+    {"caliber": "shotgun", "count": {"from": 5, "to": 10}, "random_weight": 0.5},
+    {"caliber": "5.56mm", "count": {"from": 1, "to": 10}, "random_weight": 0.1}
+]

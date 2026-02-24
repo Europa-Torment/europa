@@ -1,0 +1,44 @@
+[
+    {
+        "name": "Security guard's pistol",
+        "shot_cost": {"from": 1, "to": 2},
+        "reload_cost": {"from": 1, "to": 2},
+        "magazine_size": {"from": 5, "to": 8},
+        "accuracy": {"from": 10, "to": 15},
+        "caliber": "9mm",
+        "rounds_loaded": {"from": 1, "to": {"attr": "magazine_size"}},
+        "shooting_type": "bullet",
+        "damage": {"from": 8, "to": 11},
+        "shooting_distance": {"from": 5, "to": 7},
+        "image_name": "default_pistol",
+        "random_weight": 2.0
+    },
+    {
+        "name": "Police shotgun",
+        "shot_cost": {"from": 2, "to": 3},
+        "reload_cost": {"from": 3, "to": 4},
+        "magazine_size": {"from": 6, "to": 10},
+        "accuracy": {"from": 6, "to": 10},
+        "caliber": "shotgun",
+        "rounds_loaded": {"from": 5, "to": {"attr": "magazine_size"}},
+        "shooting_type": "shot",
+        "damage": {"from": 20, "to": 30},
+        "shooting_distance": {"from": 3, "to": 5},
+        "image_name": "default_pistol",
+        "random_weight": 1.0
+    },
+    {
+        "name": "Military automatic rifle",
+        "shot_cost": {"from": 1, "to": 4},
+        "reload_cost": {"from": 2, "to": 3},
+        "magazine_size": {"from": 20, "to": 40},
+        "accuracy": {"from": 10, "to": 20},
+        "caliber": "5.56mm",
+        "rounds_loaded": {"from": 20, "to": {"attr": "magazine_size"}},
+        "shooting_type": "burst",
+        "damage": {"from": 5, "to": 10},
+        "shooting_distance": {"from": 5, "to": 10},
+        "image_name": "default_pistol",
+        "random_weight": 0.4
+    }
+]

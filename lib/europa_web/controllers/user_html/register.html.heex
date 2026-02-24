@@ -1,0 +1,9 @@
+<.header>Register</.header>
+
+<.form :let={f} for={@changeset} id="register-form" action={~p"/users/register"}>
+  <.input type="text" field={f[:username]} label="Username" />
+  <.input type="password" field={f[:password]} label="Password" />
+  <.input type="password" field={f[:password_confirmation]} label="Password confirmation" />
+
+  <.button>Register</.button>
+</.form>

@@ -1,0 +1,217 @@
+<div class="flex w-full" id="game_field" phx-window-keyup="key_pressed" phx-throttle="50">
+  <div class="w-1/6 flex flex-col gap-4 m-5">
+    <div class="h-80 bg-base-200 p-5 rounded-box shadow-md text-xs">
+      <div class="grid grid-cols-2 gap-x-4">
+        <div class="flex flex-col gap-y-0.5">
+          <%= if @helmet do %>
+            <img
+              id={"helmet-#{@helmet.uuid}"}
+              phx-hook="Tooltip"
+              data-tooltip={EuropaWeb.GameHTML.item_tooltip(@helmet, @player)}
+              src={~p"/images/#{@helmet.image_name <> ".png"}"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% else %>
+            <img
+              id="no-helmet"
+              phx-hook="Tooltip"
+              data-tooltip="No helmet"
+              src={~p"/images/no_helmet.png"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% end %>
+
+          <%= if @suit do %>
+            <img
+              id={"suit-#{@suit.uuid}"}
+              phx-hook="Tooltip"
+              data-tooltip={EuropaWeb.GameHTML.item_tooltip(@suit, @player)}
+              src={~p"/images/#{@suit.image_name <> ".png"}"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% else %>
+            <img
+              id="no-suit"
+              phx-hook="Tooltip"
+              data-tooltip="No suit"
+              src={~p"/images/no_suit.png"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% end %>
+
+          <%= if @boots do %>
+            <img
+              id={"boots-#{@boots.uuid}"}
+              phx-hook="Tooltip"
+              data-tooltip={EuropaWeb.GameHTML.item_tooltip(@boots, @player)}
+              src={~p"/images/#{@boots.image_name <> ".png"}"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% else %>
+            <img
+              id="no-boots"
+              phx-hook="Tooltip"
+              data-tooltip="No boots"
+              src={~p"/images/no_boots.png"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% end %>
+        </div>
+
+        <div class="flex items-center">
+          <%= if @weapon do %>
+            <img
+              id={"weapon-#{@weapon.uuid}"}
+              phx-hook="Tooltip"
+              data-tooltip={EuropaWeb.GameHTML.item_tooltip(@weapon, @player)}
+              src={~p"/images/#{@weapon.image_name <> ".png"}"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% else %>
+            <img
+              id="no-weapon"
+              phx-hook="Tooltip"
+              data-tooltip="No weapon"
+              src={~p"/images/no_weapon.png"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%= if @weapon do %>
+      <div class="bg-base-200 p-5 rounded-box shadow-md text-xs">
+        <p class="tooltip" data-tip="Loaded/Magazine size/In inventory">
+          {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
+        </p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="w-3/6 h-fit bg-base-200 p-5 m-5 rounded-box shadow-md">
+    <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
+      <div class="flex gap-0">
+        <%= for {tile, y} <- Enum.with_index(row) do %>
+          <img
+            id={"tile_#{x}_#{y}"}
+            phx-hook="Tooltip"
+            data-tooltip={EuropaWeb.GameHTML.tile_tooltip(tile, @player)}
+            src={~p"/images/#{EuropaWeb.GameHTML.render_tile(tile, @player)}"}
+            height="30"
+            width="30"
+          />
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="w-2/6 flex flex-col gap-4 m-5">
+    <div class="h-80 overflow-y-auto bg-base-200 p-5 rounded-box shadow-md text-xs">
+      <%= for message <- Enum.reverse(@chat.messages) do %>
+        <p class={"break-words p-1.5 #{EuropaWeb.GameHTML.chat_color(message)}"}>{message.text}</p>
+      <% end %>
+    </div>
+    <div class="bg-base-200 p-5 rounded-box shadow-md text-lg">
+      <ul class="flex space-x-4">
+        <li>
+          <div class="tooltip" data-tip="Health">
+            💙 {@player_stats.health}
+          </div>
+        </li>
+        <li phx-click="open_inventory">
+          <div class="tooltip" data-tip="Inventory">
+            💼 {@player_stats.inventory}
+          </div>
+        </li>
+        <li>
+          <div class="tooltip" data-tip="Accuracy">
+            🎯 {@player_stats.accuracy}
+          </div>
+        </li>
+        <li>
+          <div class="tooltip" data-tip="Efficiency">
+            🦌 {@player_stats.efficiency}
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<%= if @item_box do %>
+  <input type="checkbox" id="item_box" class="modal-toggle" checked={true} phx-change="close_item_box" />
+  <div class="modal overflow-visible" role="dialog">
+    <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+      <h3 class="text-lg font-bold">{EuropaWeb.GameHTML.render_item_box_name(@item_box)}</h3>
+      <%= if Enum.count(@item_box.items) > 0 do %>
+        <ul class="list-disc list-inside space-y-2 text-sm">
+          <%= for item <- @item_box.items do %>
+            <div class="group relative">
+              <li
+                id={"loot_item_#{item.uuid}"}
+                phx-hook="Tooltip"
+                data-tooltip={EuropaWeb.GameHTML.item_tooltip(item, @player)}
+              >
+                <.link phx-click={"take_item_#{item.uuid}"}>{EuropaWeb.GameHTML.render_item_name(item)}</.link>
+              </li>
+            </div>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="py-4">Empty</p>
+      <% end %>
+      <div class="modal-action">
+        <label phx-click="close_item_box" for="item_box" class="btn">Close</label>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%= if @inventory do %>
+  <input type="checkbox" id="inventory" class="modal-toggle h-screen" checked={true} phx-change="close_inventory" />
+  <div class="modal overflow-visible" role="dialog">
+    <div class="modal-box overflow-visible overflow-y-auto">
+      <h3 class="text-lg font-bold">Inventory ({@player_stats.inventory})</h3>
+      <%= if Enum.count(@inventory) > 0 do %>
+        <ul class="list-disc list-inside space-y-2 text-sm">
+          <%= for item <- @inventory do %>
+            <div class="group relative">
+              <li
+                id={"loot_item_#{item.uuid}"}
+                phx-hook="Tooltip"
+                data-tooltip={EuropaWeb.GameHTML.item_tooltip(item, @player)}
+              >
+                {EuropaWeb.GameHTML.render_item_name(item)}
+                <%= if EuropaWeb.GameHTML.item_equipable?(item) do %>
+                  <%= if item.equiped do %>
+                    <div class="tooltip" data-tip="Unequip">
+                      <.link phx-click={"unequip_item_#{item.uuid}"}>🫳🏻</.link>
+                    </div>
+                  <% else %>
+                    <div class="tooltip" data-tip="Equip">
+                      <.link phx-click={"equip_item_#{item.uuid}"}>🛠️</.link>
+                    </div>
+                  <% end %>
+                <% end %>
+              </li>
+            </div>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="py-4">Empty</p>
+      <% end %>
+      <div class="modal-action">
+        <label phx-click="close_inventory" for="inventory" class="btn">Close</label>
+      </div>
+    </div>
+  </div>
+<% end %>

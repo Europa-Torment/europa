@@ -1,0 +1,27 @@
+{
+    "intro": {
+        "type": "random",
+        "vars": ["year"],
+        "texts": [
+            "It was the <%= year %> year since the beginning of the colonization of Europa...",
+            "Somewhere on Jupiter's moon Europa, <%= year %> years after colonization...",
+            "<%= year %> years ago, humankind first set foot on Europa.\nWho could have imagined what a huge mistake it would be?\nThere's no turning back now, and there never will be.\nLike all those abandoned here, a cold death and eternal incorruptibility await you.\nTry to delay that moment.",
+            "<%= year %> years ago, Europa was conquered by humanity."
+        ]
+    },
+    "who_are_you": {
+        "type": "random",
+        "texts": [
+            "You woke up after a powerful explosion, thrown 400 meters, and are only alive thanks to the low gravity.\nEverything around you is buried in snow.\nAre there any other survivors?",
+            "Several years ago, you hijacked a space shuttle and fled to Europa, far from Earthly justice.\nRumors swirled that you were wanted on Earth for a similar crime.\nYou didn't reveal much about yourself.\nWhen you were found, all you had on you was a fragment of a fake passport\nwith part of the name 'Dan C...' visible on it, along with several bundles of marked bills.\nWhy do you need them on Europa?\nIt doesn't matter now - \nEarthly affairs remain on Earth.",
+            "You're a Colonial Police officer.\nSeveral Great Red Spots ago, you became separated from your fellow soldiers and lost in the icy wasteland.\nHow can you navigate this frozen valley of death?",
+            "Several years ago, you were finally accepted into the Western Colonization Community (WCC)\nto conduct thermonuclear experiments.\nThis was the first step toward the terraforming of Europa.\nAnd one of the last steps in the colony's life."
+        ]
+    },
+    "great_red_spot": {
+        "type": "random",
+        "texts": [
+            "Jupiter shows the Great Red Spots,\na monstrous storm swept everything around,\nbut you miraculously survived"
+        ]
+    }
+}

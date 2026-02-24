@@ -1,0 +1,77 @@
+defmodule Europa.Server.Loot.Helmet do
+  use TypedStruct
+
+  alias Europa.Server.Loot
+
+  typedstruct enforce: true do
+    field :uuid, Loot.uuid()
+    field :equiped, boolean(), default: false
+    field :name, String.t()
+    field :accuracy, pos_integer()
+    field :max_health, pos_integer()
+    field :image_name, String.t()
+  end
+
+  @spec new(map()) :: t()
+  def new(attrs) when is_map(attrs) do
+    %__MODULE__{
+      uuid: Ecto.UUID.generate(),
+      equiped: false,
+      name: Map.fetch!(attrs, :name),
+      accuracy: Map.fetch!(attrs, :accuracy),
+      max_health: Map.fetch!(attrs, :max_health),
+      image_name: Map.fetch!(attrs, :image_name)
+    }
+  end
+end
+
+defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
+  use Gettext, backend: Europa.Gettext
+
+  alias Europa.Server.Loot.Helmet
+
+  @spec item_type(Helmet.t()) :: :helmet
+  def item_type(%Helmet{}), do: :helmet
+
+  @spec composed_name(Helmet.t()) :: String.t()
+  def composed_name(%Helmet{} = helmet) do
+    [
+      helmet.name,
+      " (",
+      "A:#{helmet.accuracy}",
+      " H:#{helmet.max_health}",
+      ")"
+    ]
+    |> to_string()
+  end
+
+  @spec readable_attrs(Helmet.t()) :: list()
+  def readable_attrs(%Helmet{} = helmet) do
+    [
+      {gettext("Name"), helmet.name},
+      {gettext("Accuracy"), helmet.accuracy},
+      {gettext("Health"), helmet.max_health}
+    ]
+  end
+
+  @spec equip(Helmet.t()) :: {:ok, Helmet.t()}
+  def equip(%Helmet{} = helmet) do
+    {:ok, struct(helmet, equiped: true)}
+  end
+
+  @spec unequip(Helmet.t()) :: {:ok, Helmet.t()}
+  def unequip(%Helmet{} = helmet) do
+    {:ok, struct(helmet, equiped: false)}
+  end
+
+  @spec equipable?(Helmet.t()) :: true
+  def equipable?(%Helmet{}), do: true
+
+  @spec player_stats_changes(Helmet.t()) :: map()
+  def player_stats_changes(%Helmet{} = helmet) do
+    %{
+      accuracy: helmet.accuracy,
+      max_health: helmet.max_health
+    }
+  end
+end

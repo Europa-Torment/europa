@@ -1,0 +1,22 @@
+[
+    {
+        "type": "monster",
+        "name": "Fishlike ghoul",
+        "health": {"from": 30, "to": 45},
+        "damage": {"from": 2, "to": 5},
+        "accuracy": {"from": 10, "to": 20},
+        "move_distance": 1,
+        "image_name": "monster_fish_ghoul",
+        "random_weight": 2.0
+    },
+    {
+        "type": "monster",
+        "name": "Deep-sea semi-worm",
+        "health": {"from": 60, "to": 100},
+        "damage": {"from": 3, "to": 10},
+        "accuracy": {"from": 15, "to": 25},
+        "move_distance": 1,
+        "image_name": "monster_semiworm",
+        "random_weight": 0.5
+    }
+]

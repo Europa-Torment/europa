@@ -1,0 +1,10 @@
+<.header>Login</.header>
+
+<Layouts.flash_group flash={@flash} />
+
+<.form :let={f} for={@changeset} id="register-form" action={~p"/users/login"}>
+  <.input type="text" field={f[:username]} label="Username" />
+  <.input type="password" field={f[:password]} label="Password" />
+
+  <.button>Login</.button>
+</.form>
