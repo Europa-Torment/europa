@@ -199,6 +199,44 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
+  def handle_event("unload_weapon_" <> item_uuid, _, socket) do
+    case Server.unload_weapon(socket.assigns.server, item_uuid) do
+      {:ok, updated_player} ->
+        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
+
+        {:noreply,
+         assign(socket,
+           visible_planet: Server.get_visible_planet(socket.assigns.server),
+           player: updated_player,
+           weapon: weapon,
+           ammo_count: ammo_count,
+           inventory: updated_player.inventory,
+           player_stats: get_player_stats(updated_player),
+           chat: Server.get_chat(socket.assigns.server)
+         )}
+
+      _ ->
+        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
+    end
+  end
+
+  def handle_event("unload_item_box_weapon_" <> item_uuid, _, socket) do
+    case Server.unload_item_box_weapon(socket.assigns.server, item_uuid) do
+      {:ok, updated_item_box, updated_player} ->
+        {:noreply,
+         assign(socket,
+           visible_planet: Server.get_visible_planet(socket.assigns.server),
+           item_box: updated_item_box,
+           player: updated_player,
+           player_stats: get_player_stats(updated_player),
+           chat: Server.get_chat(socket.assigns.server)
+         )}
+
+      _ ->
+        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
+    end
+  end
+
   def handle_event("close_item_box", _, socket) do
     {:noreply, assign(socket, item_box: nil)}
   end

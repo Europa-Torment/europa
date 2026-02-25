@@ -4,6 +4,7 @@ defmodule EuropaWeb.GameHTML do
   alias Europa.Server.Planet
   alias Europa.Server.Player
   alias Europa.Server.Enemy
+  alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Chat
@@ -80,6 +81,10 @@ defmodule EuropaWeb.GameHTML do
   def item_equipable?(item) do
     Item.equipable?(item)
   end
+
+  @spec weapon?(Item.item()) :: boolean()
+  def weapon?(%Loot.Weapon{}), do: true
+  def weapon?(_), do: false
 
   @spec item_tooltip(Item.item(), Player.t()) :: String.t()
   def item_tooltip(item, player) do

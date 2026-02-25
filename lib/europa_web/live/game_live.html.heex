@@ -162,6 +162,14 @@
                 data-tooltip={EuropaWeb.GameHTML.item_tooltip(item, @player)}
               >
                 <.link phx-click={"take_item_#{item.uuid}"}>{EuropaWeb.GameHTML.render_item_name(item)}</.link>
+                <%= if EuropaWeb.GameHTML.weapon?(item) do %>
+                  <div class="dropdown">
+                    <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
+                    <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                      <li phx-click={"unload_item_box_weapon_#{item.uuid}"}><a>Unload</a></li>
+                    </ul>
+                  </div>
+                <% end %>
               </li>
             </div>
           <% end %>
@@ -201,6 +209,14 @@
                       <.link phx-click={"equip_item_#{item.uuid}"}>🛠️</.link>
                     </div>
                   <% end %>
+                <% end %>
+                <%= if EuropaWeb.GameHTML.weapon?(item) do %>
+                  <div class="dropdown">
+                    <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
+                    <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                      <li phx-click={"unload_weapon_#{item.uuid}"}><a>Unload</a></li>
+                    </ul>
+                  </div>
                 <% end %>
               </li>
             </div>

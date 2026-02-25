@@ -127,6 +127,9 @@ defmodule Europa.Server.Loot.ItemBoxTest do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
+  alias Europa.Server.Loot.Weapon
+  alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Errors
 
   describe "readable_name/1" do
     test "returns string with item box name" do
@@ -152,6 +155,41 @@ defmodule Europa.Server.Loot.ItemBoxTest do
 
     test "returns error when there is no item with given uuid", %{item_box: item_box} do
       assert {:error, :no_item} = ItemBox.take_item(item_box, "fake")
+    end
+  end
+
+  describe "unload_weapon/2" do
+    test "unloads weapon" do
+      ammo_count = 52
+      caliber = "9mm"
+
+      weapon = build(:weapon, rounds_loaded: ammo_count, caliber: caliber)
+      item_box = build(:loot_item_box, items: [weapon])
+
+      assert {:ok, %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0} = weapon]},
+              weapon} =
+               ItemBox.unload_weapon(item_box, weapon.uuid)
+    end
+
+    test "returns not applicable error" do
+      ammo = build(:ammo)
+      item_box = build(:loot_item_box, items: [ammo])
+
+      assert ItemBox.unload_weapon(item_box, ammo.uuid) == {:error, %Errors.NotApplicableError{}}
+    end
+
+    test "returns no_item error" do
+      uuid = Ecto.UUID.generate()
+      item_box = build(:loot_item_box)
+
+      assert ItemBox.unload_weapon(item_box, uuid) == {:error, :no_item}
+    end
+
+    test "returns empty_magazine error" do
+      weapon = build(:weapon, rounds_loaded: 0)
+      item_box = build(:loot_item_box, items: [weapon])
+
+      assert ItemBox.unload_weapon(item_box, weapon.uuid) == {:error, :empty_magazine}
     end
   end
 end

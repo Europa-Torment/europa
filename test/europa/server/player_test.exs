@@ -373,6 +373,44 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "unload_weapon/2" do
+    test "returns updated player and weapon" do
+      caliber = "9mm"
+      rounds_loaded = 15
+
+      weapon = build(:weapon, caliber: caliber, rounds_loaded: rounds_loaded, magazine_size: rounds_loaded * 2)
+      ammo = build(:ammo, caliber: caliber, count: 5)
+      player = build(:player, inventory_size: 2, inventory: [weapon, ammo])
+
+      assert {:ok, %Player{inventory: [updated_weapon, updated_ammo]}, updated_weapon} =
+               Player.unload_weapon(player, weapon.uuid)
+
+      assert updated_weapon.rounds_loaded == 0
+      assert updated_ammo.count == ammo.count + rounds_loaded
+    end
+
+    test "returns error when weapon not loaded" do
+      weapon = build(:weapon, rounds_loaded: 0)
+      player = build(:player, inventory_size: 2, inventory: [weapon])
+
+      assert Player.unload_weapon(player, weapon.uuid) == {:error, :empty_magazine}
+    end
+
+    test "returns error when inventory is full" do
+      weapon = build(:weapon, rounds_loaded: 10)
+      player = build(:player, inventory_size: 1, inventory: [weapon])
+
+      assert Player.unload_weapon(player, weapon.uuid) == {:error, :full_inventory}
+    end
+
+    test "returns error when weapon not found" do
+      weapon_uuid = Ecto.UUID.generate()
+      player = build(:player, inventory_size: 1, inventory: [])
+
+      assert Player.unload_weapon(player, weapon_uuid) == {:error, :not_found}
+    end
+  end
+
   defp inventory_size_range do
     from = fetch_config!([:random_params, :player, :inventory_size, :from])
     to = fetch_config!([:random_params, :player, :inventory_size, :to])

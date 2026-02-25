@@ -224,6 +224,15 @@ defmodule Europa.Server.Player do
     end
   end
 
+  @impl true
+  def unload_weapon(%__MODULE__{} = player, weapon_uuid) do
+    with {:ok, %Weapon{} = weapon} <- find_item(player.inventory, weapon_uuid),
+         {:ok, {updated_weapon, ammo}} <- Weapon.unload(weapon),
+         {:ok, updated_player} <- player |> update_item(updated_weapon) |> add_item(ammo) do
+      {:ok, updated_player, updated_weapon}
+    end
+  end
+
   defp do_add_item(player, item) do
     if Enum.count(player.inventory) < player.inventory_size do
       {:ok, struct(player, inventory: [item | player.inventory])}

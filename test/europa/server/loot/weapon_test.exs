@@ -74,4 +74,21 @@ defmodule Europa.Server.Loot.WeaponTest do
       assert Weapon.rounds_to_full_magazine(weapon) == {:error, :full_magazine}
     end
   end
+
+  describe "unload/1" do
+    test "returns unloaded weapon and ammo" do
+      ammo_count = 25
+      caliber = "9mm"
+
+      weapon = build(:weapon, rounds_loaded: ammo_count, magazine_size: 30, caliber: caliber)
+
+      assert {:ok, {%Weapon{rounds_loaded: 0}, %Weapon.Ammo{count: ^ammo_count, caliber: ^caliber}}} =
+               Weapon.unload(weapon)
+    end
+
+    test "returns error when weapon not loaded" do
+      weapon = build(:weapon, rounds_loaded: 0)
+      assert Weapon.unload(weapon) == {:error, :empty_magazine}
+    end
+  end
 end

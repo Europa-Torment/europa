@@ -8,6 +8,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Tools.PerlinNoise
 
   alias Europa.Server.Player
+  alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
 
@@ -247,15 +248,23 @@ defmodule Europa.Server.Planet do
   def take_loot(%__MODULE__{} = planet, %Player{} = player, item_uuid) do
     with {:open_item_box, item_box} <- loot(planet, player),
          {:ok, item, updated_item_box} <- Loot.ItemBox.take_item(item_box, item_uuid),
-         {:ok, updated_player} <- Player.add_item(player, item) do
+         {:ok, updated_player} <- PlayerManager.add_item(player, item) do
       do_take_loot(planet, updated_item_box, updated_player)
     end
   end
 
   @impl true
   def shoot(%__MODULE__{} = planet, %Player{} = player) do
-    with {:ok, weapon} <- Player.get_equiped_weapon(player) do
+    with {:ok, weapon} <- PlayerManager.get_equiped_weapon(player) do
       do_shoot(planet, player, weapon)
+    end
+  end
+
+  @impl true
+  def unload_item_box_weapon(%__MODULE__{} = planet, %Player{} = player, item_uuid) do
+    with {:open_item_box, item_box} <- loot(planet, player),
+         {:ok, updated_item_box, updated_weapon} <- Loot.ItemBox.unload_weapon(item_box, item_uuid) do
+      do_unload_item_box_weapon(planet, player, updated_item_box, updated_weapon)
     end
   end
 
@@ -283,12 +292,33 @@ defmodule Europa.Server.Planet do
       [] ->
         rounds_per_shot = Loot.Weapon.rounds_per_shot(weapon)
         updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon, rounds_per_shot)
-        updated_player = Player.update_item(player, updated_weapon)
+        updated_player = PlayerManager.update_item(player, updated_weapon)
         {:error, :miss, updated_player, weapon.shot_cost}
 
       enemies_coords ->
         shoot_enemies(planet, player, weapon, enemies_coords)
     end
+  end
+
+  defp do_unload_item_box_weapon(
+         %__MODULE__{} = planet,
+         %Player{stand_on: %Loot.ItemBox{}} = player,
+         updated_item_box,
+         updated_weapon
+       ) do
+    updated_player = PlayerManager.stand_on(player, updated_item_box)
+    {:ok, planet, updated_player, updated_item_box, updated_weapon}
+  end
+
+  defp do_unload_item_box_weapon(%__MODULE__{} = planet, %Player{} = player, updated_item_box, updated_weapon) do
+    target_coord =
+      target_coord(planet, player.view_direction)
+
+    updated_land =
+      planet.land
+      |> change_tile(target_coord, updated_item_box)
+
+    {:ok, struct(planet, land: updated_land), player, updated_item_box, updated_weapon}
   end
 
   defp find_targets(planet, player, %Loot.Weapon{shooting_type: st} = weapon) when st in [:bullet, :burst] do
@@ -396,7 +426,7 @@ defmodule Europa.Server.Planet do
       end)
 
     updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon, rounds_per_shot)
-    updated_player = Player.update_item(player, updated_weapon)
+    updated_player = PlayerManager.update_item(player, updated_weapon)
 
     shot_cost = weapon.shot_cost
 

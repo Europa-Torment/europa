@@ -9,6 +9,7 @@ defmodule Europa.Server.PlanetManager do
   alias Europa.Server.Loot
   alias Europa.Server.Player
   alias Europa.Server.Enemy
+  alias Europa.Server.Errors
 
   import Europa.Tools.Conf
 
@@ -150,6 +151,13 @@ defmodule Europa.Server.PlanetManager do
               | {:error, :no_weapon}
               | {:error, :miss, Player.t(), Planet.move_cost()}
 
+  @callback unload_item_box_weapon(Planet.t(), Player.t(), Loot.uuid()) ::
+              {:ok, Planet.t(), Player.t(), Loot.ItemBox.t(), Loot.Item.item()}
+              | {:error, :empty_magazine}
+              | {:error, :no_item}
+              | {:error, :nothing}
+              | {:error, Errors.NotApplicableError.t()}
+
   @doc """
   Runs planet activities such as enemies moving and attacking. Takes current `planet` and `moves_count`.
   Returns updated planet and list of performed actions.
@@ -192,11 +200,14 @@ defmodule Europa.Server.PlanetManager do
 
   def loot(planet, direction), do: manager_impl().loot(planet, direction)
 
-  def take_loot(planet, player, item_index), do: manager_impl().take_loot(planet, player, item_index)
+  def take_loot(planet, player, item_uuid), do: manager_impl().take_loot(planet, player, item_uuid)
 
   def tick(planet, moves_count), do: manager_impl().tick(planet, moves_count)
 
   def shoot(planet, player), do: manager_impl().shoot(planet, player)
+
+  def unload_item_box_weapon(planet, player, item_uuid),
+    do: manager_impl().unload_item_box_weapon(planet, player, item_uuid)
 
   def crop_land(planet), do: manager_impl().crop_land(planet)
 

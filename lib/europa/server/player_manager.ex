@@ -43,13 +43,13 @@ defmodule Europa.Server.PlayerManager do
   Equips given item or returns error if item is not exists or not equipable.
   """
   @callback equip_item(Player.t(), Loot.uuid()) ::
-              {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicable.t()}
+              {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
   Unequips given item or returns error if item is not exists or not equipable.
   """
   @callback unequip_item(Player.t(), Loot.uuid()) ::
-              {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicable.t()}
+              {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
   Replaces item with given updated item.
@@ -102,6 +102,12 @@ defmodule Europa.Server.PlayerManager do
               | {:error, :full_magazine}
               | {:error, Errors.NotApplicableError.t()}
 
+  @callback unload_weapon(Player.t(), Loot.uuid()) ::
+              {:ok, Player.t(), weapon :: Loot.Item.item()}
+              | {:error, :not_found}
+              | {:error, :empty_magazine}
+              | {:error, :full_inventory}
+
   @doc """
   Decreases player's health on given `damage`.
   """
@@ -138,6 +144,8 @@ defmodule Europa.Server.PlayerManager do
   def take_damage(player, damage), do: manager_impl().take_damage(player, damage)
 
   def reload_weapon(player), do: manager_impl().reload_weapon(player)
+
+  def unload_weapon(player, weapon_uuid), do: manager_impl().unload_weapon(player, weapon_uuid)
 
   ### PRIVATE ###
 

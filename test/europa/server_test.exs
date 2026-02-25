@@ -8,6 +8,7 @@ defmodule Europa.ServerTest do
   alias Europa.Server.Chat
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
+  alias Europa.Server.Errors
   alias Europa.Support.PlanetLandConverter
 
   import Europa.Tools.Conf
@@ -294,6 +295,103 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.reload(server) == :ok
+    end
+  end
+
+  describe "unload_weapon/1" do
+    test "handles success response", %{server: server} do
+      weapon = build(:weapon)
+      moves_count = weapon.reload_cost
+
+      PlayerManagerMock
+      |> expect(:unload_weapon, fn %Player{} = player, weapon_uuid ->
+        assert weapon_uuid == weapon.uuid
+        {:ok, player, weapon}
+      end)
+
+      PlanetManagerMock
+      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+
+      assert {:ok, %Player{}} = Server.unload_weapon(server, weapon.uuid)
+      :timer.sleep(100)
+    end
+
+    test "handles not_found response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, :not_found}
+
+      PlayerManagerMock
+      |> expect(:unload_weapon, fn _, _ ->
+        error
+      end)
+
+      assert Server.unload_weapon(server, weapon.uuid) == error
+    end
+
+    test "handles empty_magazine response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, :empty_magazine}
+
+      PlayerManagerMock
+      |> expect(:unload_weapon, fn _, _ ->
+        error
+      end)
+
+      assert Server.unload_weapon(server, weapon.uuid) == error
+    end
+  end
+
+  describe "unload_item_box_weapon/2" do
+    test "handles success response", %{server: server} do
+      weapon = build(:weapon)
+      item_box = build(:loot_item_box, items: [weapon])
+      moves_count = weapon.reload_cost
+
+      PlanetManagerMock
+      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:unload_item_box_weapon, fn %Planet{} = planet, %Player{} = player, weapon_uuid ->
+        assert weapon_uuid == weapon.uuid
+        {:ok, planet, player, item_box, weapon}
+      end)
+
+      assert {:ok, ^item_box, %Player{}} = Server.unload_item_box_weapon(server, weapon.uuid)
+      :timer.sleep(100)
+    end
+
+    test "handles nothing response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, :nothing}
+
+      PlanetManagerMock
+      |> expect(:unload_item_box_weapon, fn _, _, _ ->
+        error
+      end)
+
+      assert Server.unload_item_box_weapon(server, weapon.uuid) == error
+    end
+
+    test "handles not applicable response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, %Errors.NotApplicableError{}}
+
+      PlanetManagerMock
+      |> expect(:unload_item_box_weapon, fn _, _, _ ->
+        error
+      end)
+
+      assert Server.unload_item_box_weapon(server, weapon.uuid) == error
+    end
+
+    test "handles empty_magazine response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, :empty_magazine}
+
+      PlanetManagerMock
+      |> expect(:unload_item_box_weapon, fn _, _, _ ->
+        error
+      end)
+
+      assert Server.unload_item_box_weapon(server, weapon.uuid) == error
     end
   end
 

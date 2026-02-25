@@ -3,6 +3,7 @@ defmodule Europa.Server.Loot.Weapon do
 
   alias Europa.Tools.Types
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Weapon.Ammo
 
   import Europa.Tools.Conf
 
@@ -86,6 +87,18 @@ defmodule Europa.Server.Loot.Weapon do
     else
       {:ok, weapon.magazine_size - weapon.rounds_loaded}
     end
+  end
+
+  @spec unload(t()) :: {:ok, {t(), Ammo.t()}} | {:error, :empty_magazine}
+  def unload(%__MODULE__{rounds_loaded: 0}) do
+    {:error, :empty_magazine}
+  end
+
+  def unload(%__MODULE__{} = weapon) do
+    ammo = Ammo.new(%{caliber: weapon.caliber, count: weapon.rounds_loaded})
+    updated_weapon = decrease_rounds_loaded(weapon, weapon.rounds_loaded)
+
+    {:ok, {updated_weapon, ammo}}
   end
 end
 

@@ -19,6 +19,8 @@ defmodule EuropaWeb.GameHTMLTest do
   @pl Planet.player()
 
   @weapon build(:weapon)
+  @ammo build(:ammo)
+
   @ib build(:loot_item_box, items: [@weapon])
 
   @en build(:enemy)
@@ -109,6 +111,13 @@ defmodule EuropaWeb.GameHTMLTest do
   describe "item_equipable?/1" do
     test "returns boolean value" do
       assert GameHTML.item_equipable?(@weapon) == true
+    end
+  end
+
+  describe "weapon?/1" do
+    test "returns boolean value" do
+      assert GameHTML.weapon?(@weapon) == true
+      assert GameHTML.weapon?(@ammo) == false
     end
   end
 

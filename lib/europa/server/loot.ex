@@ -12,6 +12,7 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Helmet
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
+  alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
@@ -92,15 +93,29 @@ defmodule Europa.Server.Loot do
       end
     end
 
-    @spec take_item(ItemBox.t(), Loot.uuid()) :: {:error, :no_item} | {:ok, Item.t(), ItemBox.t()}
-    def take_item(%ItemBox{items: items} = item_box, item_uuid) do
-      case Enum.find(items, fn item -> item.uuid == item_uuid end) do
-        nil ->
-          {:error, :no_item}
+    @spec take_item(ItemBox.t(), Loot.uuid()) :: {:ok, Item.t(), ItemBox.t()} | {:error, :no_item}
+    def take_item(%ItemBox{} = item_box, item_uuid) do
+      with {:ok, item} <- find_item(item_box, item_uuid) do
+        updated_items = List.delete(item_box.items, item)
+        {:ok, item, struct(item_box, items: updated_items)}
+      end
+    end
 
-        item ->
-          updated_items = List.delete(items, item)
-          {:ok, item, struct(item_box, items: updated_items)}
+    @spec unload_weapon(ItemBox.t(), Loot.uuid()) ::
+            {:ok, ItemBox.t(), Weapon.t()}
+            | {:error, :no_item}
+            | {:error, :empty_magazine}
+            | {:error, Errors.NotApplicableError.t()}
+    def unload_weapon(%ItemBox{} = item_box, item_uuid) do
+      with {:ok, item} <- find_item(item_box, item_uuid),
+           :ok <- check_weapon(item),
+           {:ok, {updated_weapon, ammo}} <- Weapon.unload(item) do
+        updated_item_box =
+          item_box
+          |> add_or_update_item(updated_weapon)
+          |> add_or_update_item(ammo)
+
+        {:ok, updated_item_box, updated_weapon}
       end
     end
 
@@ -108,6 +123,40 @@ defmodule Europa.Server.Loot do
     def stand_on(%__MODULE__{} = item_box, tile) do
       struct(item_box, stand_on: tile)
     end
+
+    defp find_item(%ItemBox{} = item_box, item_uuid) do
+      case Enum.find(item_box.items, fn item -> item.uuid == item_uuid end) do
+        nil -> {:error, :no_item}
+        item -> {:ok, item}
+      end
+    end
+
+    defp add_or_update_item(%ItemBox{} = item_box, item) do
+      case find_item(item_box, item.uuid) do
+        {:ok, _} -> update_item(item_box, item)
+        _ -> add_item(item_box, item)
+      end
+    end
+
+    defp update_item(%ItemBox{} = item_box, new_item) do
+      updated_items =
+        Enum.map(item_box.items, fn item ->
+          if item.uuid == new_item.uuid do
+            new_item
+          else
+            item
+          end
+        end)
+
+      struct(item_box, items: updated_items)
+    end
+
+    defp add_item(%ItemBox{} = item_box, new_item) do
+      struct(item_box, items: [new_item | item_box.items])
+    end
+
+    defp check_weapon(%Weapon{}), do: :ok
+    defp check_weapon(_), do: {:error, %Errors.NotApplicableError{}}
   end
 
   @spec allowed_item_types() :: [item_type(), ...]

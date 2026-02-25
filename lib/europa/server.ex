@@ -11,7 +11,7 @@ defmodule Europa.Server do
   alias Europa.Server.Chat
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
-  alias Eurpa.Server.Errors
+  alias Europa.Server.Errors
   alias Europa.Tools.TextGenerator
 
   import Europa.Tools.Conf
@@ -116,14 +116,20 @@ defmodule Europa.Server do
     GenServer.call(server, :shoot)
   end
 
-  @spec reload(pid()) ::
-          :ok
-          | {:error, :no_weapon}
-          | {:error, :no_ammo}
-          | {:error, :full_magazine}
-          | {:error, Errors.NotApplicable.t()}
+  @spec reload(pid()) :: :ok
   def reload(server) do
     GenServer.call(server, :reload)
+  end
+
+  @spec unload_weapon(pid(), Loot.uuid()) :: {:ok, Player.t()} | {:error, :not_found} | {:error, :empty_magazine}
+  def unload_weapon(server, item_uuid) do
+    GenServer.call(server, {:unload_weapon, item_uuid})
+  end
+
+  @spec unload_item_box_weapon(pid(), Loot.uuid()) ::
+          {:ok, Loot.ItemBox.t()} | {:error, :not_found} | {:error, :empty_magazine} | {:error, :nothing}
+  def unload_item_box_weapon(server, item_uuid) do
+    GenServer.call(server, {:unload_item_box_weapon, item_uuid})
   end
 
   @spec get_inventory(pid()) :: Player.inventory()
@@ -131,13 +137,14 @@ defmodule Europa.Server do
     GenServer.call(server, :get_inventory)
   end
 
-  @spec equip_item(pid(), Loot.uuid()) :: {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicable.t()}
+  @spec equip_item(pid(), Loot.uuid()) ::
+          {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def equip_item(server, item_uuid) do
     GenServer.call(server, {:equip_item, item_uuid})
   end
 
   @spec unequip_item(pid(), Loot.uuid()) ::
-          {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicable.t()}
+          {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def unequip_item(server, item_uuid) do
     GenServer.call(server, {:unequip_item, item_uuid})
   end
@@ -337,6 +344,51 @@ defmodule Europa.Server do
     end
   end
 
+  def handle_call({:unload_weapon, item_uuid}, {caller_pid, _}, state) do
+    case PlayerManager.unload_weapon(state.player, item_uuid) do
+      {:ok, updated_player, weapon} ->
+        unloaded_message = unloaded_message(weapon)
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(unloaded_message)
+
+        {:reply, {:ok, updated_player}, struct(state, player: updated_player, chat: updated_chat),
+         {:continue, {:tick, weapon.reload_cost, caller_pid}}}
+
+      {:error, :empty_magazine} = error ->
+        empty_magazine_message = empty_magazine_message()
+        updated_chat = Chat.add_message(state.chat, empty_magazine_message)
+        {:reply, error, struct(state, chat: updated_chat)}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  def handle_call({:unload_item_box_weapon, item_uuid}, {caller_pid, _}, state) do
+    case PlanetManager.unload_item_box_weapon(state.planet, state.player, item_uuid) do
+      {:ok, updated_planet, updated_player, updated_item_box, weapon} ->
+        unloaded_message = unloaded_message(weapon)
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(unloaded_message)
+
+        {:reply, {:ok, updated_item_box, updated_player},
+         struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
+         {:continue, {:tick, weapon.reload_cost, caller_pid}}}
+
+      {:error, :empty_magazine} = error ->
+        empty_magazine_message = empty_magazine_message()
+        updated_chat = Chat.add_message(state.chat, empty_magazine_message)
+        {:reply, error, struct(state, chat: updated_chat)}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
   def handle_call(:get_inventory, _from, state) do
     {:reply, state.player.inventory, state}
   end
@@ -499,6 +551,16 @@ defmodule Europa.Server do
       Gettext.gettext(
         Europa.Gettext,
         "You reloaded #{weapon.name}, it took #{weapon.reload_cost} step(s)"
+      )
+
+    Chat.Message.new(msg, :regular)
+  end
+
+  defp unloaded_message(%Loot.Weapon{} = weapon) do
+    msg =
+      Gettext.gettext(
+        Europa.Gettext,
+        "You unloaded #{weapon.name}, it took #{weapon.reload_cost} step(s)"
       )
 
     Chat.Message.new(msg, :regular)
