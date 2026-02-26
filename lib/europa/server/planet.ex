@@ -68,7 +68,7 @@ defmodule Europa.Server.Planet do
 
   @type readable_tile_name :: String.t()
 
-  @type tile :: unquote(Types.one_of([@player | @landscape_tiles])) | Loot.Item.t()
+  @type tile :: unquote(Types.one_of([@player | @landscape_tiles])) | Loot.ItemBox.t()
 
   @type land :: list(list(tile()))
 

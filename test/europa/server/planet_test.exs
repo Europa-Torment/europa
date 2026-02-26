@@ -31,7 +31,9 @@ defmodule Europa.Server.PlanetTest do
   @w Planet.water()
 
   @pl Planet.player()
+
   @ib build(:loot_item_box, items: [build(:weapon)])
+  @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)])
 
   @en build(:enemy, name: "E1", move_distance: 2, health: @initial_enemy_health)
   @en2 build(:enemy, name: "E2", move_distance: 2, health: @initial_enemy_health)
@@ -602,67 +604,28 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :right)
 
-      item = Enum.random(@ib.items)
-
-      PlayerManagerMock
-      |> expect(:add_item, fn ^player, ^item ->
-        {:ok, player}
-      end)
-
-      assert {:ok, updated_planet, %Player{}, %ItemBox{items: []}} = Planet.take_loot(planet, player, item.uuid)
-
-      assert %ItemBox{items: []} = tile_at(updated_planet.land, {4 + 1, 4})
+      test_take_loot(planet, player, {4 + 1, 4})
     end
 
     test "takes item from left item box" do
       planet = build(:planet, land: @land_player_look_left_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :left)
 
-      item = Enum.random(@ib.items)
-
-      PlayerManagerMock
-      |> expect(:add_item, fn ^player, ^item ->
-        {:ok, player}
-      end)
-
-      assert {:ok, updated_planet, %Player{}, %ItemBox{items: []}} =
-               Planet.take_loot(planet, player, item.uuid)
-
-      assert %ItemBox{items: []} = tile_at(updated_planet.land, {4 - 1, 4})
+      test_take_loot(planet, player, {4 - 1, 4})
     end
 
     test "takes item from top item box" do
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :up)
 
-      item = Enum.random(@ib.items)
-
-      PlayerManagerMock
-      |> expect(:add_item, fn ^player, ^item ->
-        {:ok, player}
-      end)
-
-      assert {:ok, updated_planet, %Player{}, %ItemBox{items: []}} =
-               Planet.take_loot(planet, player, item.uuid)
-
-      assert %ItemBox{items: []} = tile_at(updated_planet.land, {4, 4 - 1})
+      test_take_loot(planet, player, {4, 4 - 1})
     end
 
     test "takes item from bottom item box" do
       planet = build(:planet, land: @land_player_look_down_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :down)
 
-      item = Enum.random(@ib.items)
-
-      PlayerManagerMock
-      |> expect(:add_item, fn ^player, ^item ->
-        {:ok, player}
-      end)
-
-      assert {:ok, updated_planet, %Player{}, %ItemBox{items: []}} =
-               Planet.take_loot(planet, player, item.uuid)
-
-      assert %ItemBox{items: []} = tile_at(updated_planet.land, {4, 4 + 1})
+      test_take_loot(planet, player, {4, 4 + 1})
     end
 
     test "retunrs {:error, :noting} when there is not item box next to player view direction" do
@@ -694,6 +657,19 @@ defmodule Europa.Server.PlanetTest do
       end)
 
       assert Planet.take_loot(planet, player, item.uuid) == error
+    end
+
+    defp test_take_loot(planet, player, target_coord) do
+      item = Enum.random(@ib.items)
+
+      PlayerManagerMock
+      |> expect(:add_item, fn ^player, ^item ->
+        {:ok, player}
+      end)
+
+      assert {:ok, updated_planet, %Player{}, %ItemBox{items: []}} = Planet.take_loot(planet, player, item.uuid)
+
+      assert %ItemBox{items: []} = tile_at(updated_planet.land, target_coord)
     end
   end
 
@@ -745,26 +721,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_up_at_enemies, current_coord: {4, 7})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages bottom enemy (bullet)" do
@@ -778,26 +740,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_down_at_enemies, current_coord: {4, 1})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages right enemy (bullet)" do
@@ -811,26 +759,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_right_at_enemies, current_coord: {2, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages left enemy (bullet)" do
@@ -844,26 +778,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages top enemy (burst)" do
@@ -877,26 +797,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage * @burst_bullets_per_shot
-
       player =
         build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_up_at_enemies, current_coord: {4, 7})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages bottom enemy (burst)" do
@@ -910,26 +816,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage * @burst_bullets_per_shot
-
       player =
         build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_down_at_enemies, current_coord: {4, 1})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages right enemy (burst)" do
@@ -943,26 +835,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage * @burst_bullets_per_shot
-
       player =
         build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_right_at_enemies, current_coord: {2, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages left enemy (burst)" do
@@ -976,26 +854,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage * @burst_bullets_per_shot
-
       player =
         build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 1
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 1)
     end
 
     test "damages top enemies (shot)" do
@@ -1009,26 +873,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_up_at_enemies, current_coord: {4, 7})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 5
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 5)
     end
 
     test "damages bottom enemies (shot)" do
@@ -1042,26 +892,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_down_at_enemies, current_coord: {4, 1})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 5
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 5)
     end
 
     test "damages right enemies (shot)" do
@@ -1075,26 +911,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_right_at_enemies, current_coord: {2, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 5
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 5)
     end
 
     test "damages left enemies (shot)" do
@@ -1108,26 +930,12 @@ defmodule Europa.Server.PlanetTest do
           accuracy: 30
         )
 
-      expected_damage = weapon.damage
-
       player =
         build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 5
-      assert move_cost == weapon.shot_cost
-
-      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      test_shoot(planet, player, weapon, 5)
     end
 
     test "changes killed enemies on monster_body item boxes" do
@@ -1146,18 +954,7 @@ defmodule Europa.Server.PlanetTest do
 
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
-      PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
-      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
-        assert_rounds_loaded_decreased(weapon, updated_weapon)
-        player
-      end)
-
-      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
-
-      assert Enum.count(damaged_enemies) == 5
-      assert move_cost == weapon.shot_cost
-
+      {:ok, updated_planet} = test_shoot(planet, player, weapon, 5, _check_damage = false)
       assert_monster_bodies(updated_planet, _monster_bodies_count = 5)
     end
 
@@ -1187,6 +984,32 @@ defmodule Europa.Server.PlanetTest do
       assert {:error, :miss, ^player, move_cost} = Planet.shoot(planet, player)
       assert move_cost == weapon.shot_cost
     end
+
+    defp test_shoot(planet, player, weapon, expected_damaged_enemies_count, check_damage \\ true) do
+      expected_damage =
+        case weapon.shooting_type do
+          :burst -> weapon.damage * @burst_bullets_per_shot
+          _ -> weapon.damage
+        end
+
+      PlayerManagerMock
+      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
+      |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
+        assert_rounds_loaded_decreased(weapon, updated_weapon)
+        player
+      end)
+
+      assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
+
+      assert Enum.count(damaged_enemies) == expected_damaged_enemies_count
+      assert move_cost == weapon.shot_cost
+
+      if check_damage do
+        assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
+      end
+
+      {:ok, updated_planet}
+    end
   end
 
   describe "unload_item_box_weapon/3" do
@@ -1194,64 +1017,45 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :right)
 
-      weapon = Enum.find(@ib.items, fn item -> Item.item_type(item) == :weapon end)
-      caliber = weapon.caliber
-      ammo_count = weapon.rounds_loaded
-
-      assert {:ok, updated_planet, ^player,
-              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0} = weapon]} =
-                updated_item_box, weapon} =
-               Planet.unload_item_box_weapon(planet, player, weapon.uuid)
-
-      assert tile_at(updated_planet.land, {4 + 1, 4}) == updated_item_box
+      test_unload_item_box_weapon(planet, player, {4 + 1, 4})
     end
 
     test "updates left item box" do
       planet = build(:planet, land: @land_player_look_left_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :left)
 
-      weapon = Enum.find(@ib.items, fn item -> Item.item_type(item) == :weapon end)
-      caliber = weapon.caliber
-      ammo_count = weapon.rounds_loaded
-
-      assert {:ok, updated_planet, ^player,
-              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0} = weapon]} =
-                updated_item_box, weapon} =
-               Planet.unload_item_box_weapon(planet, player, weapon.uuid)
-
-      assert tile_at(updated_planet.land, {4 - 1, 4}) == updated_item_box
+      test_unload_item_box_weapon(planet, player, {4 - 1, 4})
     end
 
     test "updates top item box" do
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :up)
 
-      weapon = Enum.find(@ib.items, fn item -> Item.item_type(item) == :weapon end)
-      caliber = weapon.caliber
-      ammo_count = weapon.rounds_loaded
-
-      assert {:ok, updated_planet, ^player,
-              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0} = weapon]} =
-                updated_item_box, weapon} =
-               Planet.unload_item_box_weapon(planet, player, weapon.uuid)
-
-      assert tile_at(updated_planet.land, {4, 4 - 1}) == updated_item_box
+      test_unload_item_box_weapon(planet, player, {4, 4 - 1})
     end
 
     test "updates bottom item box" do
       planet = build(:planet, land: @land_player_look_down_at_loot, current_coord: {4, 4})
       player = build(:player, view_direction: :down)
 
-      weapon = Enum.find(@ib.items, fn item -> Item.item_type(item) == :weapon end)
+      test_unload_item_box_weapon(planet, player, {4, 4 + 1})
+    end
+
+    test "updates item box under player" do
+      planet = build(:planet, land: @land_player_look_down_at_loot, current_coord: {4, 4})
+      player = build(:player, view_direction: :down, stand_on: @ib2)
+
+      weapon = Enum.find(@ib2.items, fn item -> Item.item_type(item) == :weapon end)
       caliber = weapon.caliber
       ammo_count = weapon.rounds_loaded
 
-      assert {:ok, updated_planet, ^player,
-              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0} = weapon]} =
-                updated_item_box, weapon} =
-               Planet.unload_item_box_weapon(planet, player, weapon.uuid)
+      PlayerManagerMock
+      |> expect(:stand_on, fn player,
+                              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0}]} ->
+        player
+      end)
 
-      assert tile_at(updated_planet.land, {4, 4 + 1}) == updated_item_box
+      assert {:ok, ^planet, ^player, %ItemBox{}, %Weapon{}} = Planet.unload_item_box_weapon(planet, player, weapon.uuid)
     end
 
     test "retunrs {:error, :noting} when there is not item box next to player view direction" do
@@ -1268,6 +1072,19 @@ defmodule Europa.Server.PlanetTest do
       item_uuid = 10
 
       assert {:error, :no_item} = Planet.unload_item_box_weapon(planet, player, item_uuid)
+    end
+
+    defp test_unload_item_box_weapon(planet, player, target_coord) do
+      weapon = Enum.find(@ib.items, fn item -> Item.item_type(item) == :weapon end)
+      caliber = weapon.caliber
+      ammo_count = weapon.rounds_loaded
+
+      assert {:ok, updated_planet, ^player,
+              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0} = weapon]} =
+                updated_item_box, weapon} =
+               Planet.unload_item_box_weapon(planet, player, weapon.uuid)
+
+      assert tile_at(updated_planet.land, target_coord) == updated_item_box
     end
   end
 

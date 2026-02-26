@@ -22,7 +22,7 @@ defmodule Europa.Server.Loot.Weapon do
     field :reload_cost, pos_integer()
     field :magazine_size, pos_integer()
     field :accuracy, pos_integer()
-    field :rounds_loaded, pos_integer()
+    field :rounds_loaded, integer()
     field :shooting_type, shooting_type()
     field :damage, pos_integer()
     field :caliber, caliber()
