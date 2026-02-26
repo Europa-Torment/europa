@@ -14,6 +14,8 @@ defmodule EuropaWeb.GameLive do
   @inventory_keys ["i", "I"]
   @reload_keys ["r", "R"]
 
+  @close_keys ["Escape"]
+
   @impl true
   def mount(%{"uuid" => uuid}, _session, socket) do
     with {:ok, %Game{state: :active} = game} <- Games.get_by_uuid(uuid),
@@ -91,6 +93,10 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @inventory_keys do
     open_inventory(socket)
+  end
+
+  def handle_event("key_pressed", %{"key" => key}, socket) when key in @close_keys do
+    {:noreply, assign(socket, inventory: nil, item_box: nil)}
   end
 
   def handle_event("key_pressed", %{"key" => " "}, socket) do
