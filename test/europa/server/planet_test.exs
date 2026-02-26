@@ -102,6 +102,20 @@ defmodule Europa.Server.PlanetTest do
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
+  @land_player_look_right_at_monster_body [
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @pl, @ib2, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                          ]
+                                          |> PlanetLandConverter.from_matrix()
+
   @land_player_look_left_at_loot [
                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -447,6 +461,14 @@ defmodule Europa.Server.PlanetTest do
       assert Planet.get_visible_land(updated_planet) == expected_visible_land
     end
 
+    test "moves at monster body" do
+      planet = build(:planet, land: @land_player_look_right_at_monster_body, current_coord: {4, 4})
+
+      assert {:moved, %Planet{}, move_cost, stand_on_tile} = Planet.move(planet, :right, @s)
+      assert stand_on_tile == @ib2
+      assert move_cost == Map.fetch!(@move_costs, @ib2.stand_on)
+    end
+
     test "not moves in not movable tile" do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
       assert {:stay, @ib} = Planet.move(planet, :right, @s)
@@ -593,6 +615,12 @@ defmodule Europa.Server.PlanetTest do
       assert {:open_item_box, @ib} = Planet.loot(planet, build(:player, view_direction: :down))
     end
 
+    test "opens under player item box" do
+      planet = build(:planet)
+      player = build(:player, stand_on: @ib2)
+      assert {:open_item_box, @ib2} = Planet.loot(planet, player)
+    end
+
     test "retunrs {:error, :noting} when there is not item box next to player view direction" do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
       assert {:error, :nothing} = Planet.loot(planet, build(:player, view_direction: :left))
@@ -626,6 +654,21 @@ defmodule Europa.Server.PlanetTest do
       player = build(:player, view_direction: :down)
 
       test_take_loot(planet, player, {4, 4 + 1})
+    end
+
+    test "takes item from item box under player" do
+      planet = build(:planet, land: @land_player_look_down_at_loot, current_coord: {4, 4})
+      player = build(:player, view_direction: :down, stand_on: @ib2)
+
+      item = Enum.random(@ib2.items)
+
+      PlayerManagerMock
+      |> expect(:add_item, fn ^player, ^item ->
+        {:ok, player}
+      end)
+      |> expect(:stand_on, fn ^player, %ItemBox{items: []} -> player end)
+
+      assert {:ok, %Planet{}, %Player{}, %ItemBox{items: []}} = Planet.take_loot(planet, player, item.uuid)
     end
 
     test "retunrs {:error, :noting} when there is not item box next to player view direction" do
