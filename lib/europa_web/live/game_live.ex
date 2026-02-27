@@ -131,7 +131,7 @@ defmodule EuropaWeb.GameLive do
      )}
   end
 
-  def handle_event("open_inventory", params , socket) do
+  def handle_event("open_inventory", params, socket) do
     type =
       params
       |> Map.get("type", "all")
@@ -140,7 +140,7 @@ defmodule EuropaWeb.GameLive do
     open_inventory(socket, type)
   end
 
-  def handle_event("take_item_" <> item_uuid, _, socket) do
+  def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
     case Server.take_loot(socket.assigns.server, item_uuid) do
       {:ok, item_box} ->
         player = Server.get_player(socket.assigns.server)
@@ -160,7 +160,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("equip_item_" <> item_uuid, _, socket) do
+  def handle_event("equip_item", %{"uuid" => item_uuid}, socket) do
     case Server.equip_item(socket.assigns.server, item_uuid) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
@@ -185,7 +185,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("unequip_item_" <> item_uuid, _, socket) do
+  def handle_event("unequip_item", %{"uuid" => item_uuid}, socket) do
     case Server.unequip_item(socket.assigns.server, item_uuid) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
@@ -210,7 +210,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("unload_weapon_" <> item_uuid, _, socket) do
+  def handle_event("unload_weapon", %{"uuid" => item_uuid}, socket) do
     case Server.unload_weapon(socket.assigns.server, item_uuid) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
@@ -231,7 +231,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("unload_item_box_weapon_" <> item_uuid, _, socket) do
+  def handle_event("unload_item_box_weapon", %{"uuid" => item_uuid}, socket) do
     case Server.unload_item_box_weapon(socket.assigns.server, item_uuid) do
       {:ok, updated_item_box, updated_player} ->
         {:noreply,
@@ -248,7 +248,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("consume_supply_" <> item_uuid, _, socket) do
+  def handle_event("consume_supply", %{"uuid" => item_uuid}, socket) do
     case Server.consume_supply(socket.assigns.server, item_uuid) do
       {:ok, updated_player} ->
         {:noreply,

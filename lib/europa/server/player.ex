@@ -240,6 +240,7 @@ defmodule Europa.Server.Player do
 
   @impl true
   def get_inventory(%__MODULE__{inventory: inventory}, :all), do: inventory
+
   def get_inventory(%__MODULE__{inventory: inventory}, items_type) do
     Enum.filter(inventory, fn item -> Loot.Item.item_type(item) == items_type end)
   end

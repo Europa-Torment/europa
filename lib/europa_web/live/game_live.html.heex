@@ -161,12 +161,14 @@
                 phx-hook="Tooltip"
                 data-tooltip={EuropaWeb.GameHTML.item_tooltip(item, @player)}
               >
-                <.link phx-click={"take_item_#{item.uuid}"}>{EuropaWeb.GameHTML.render_item_name(item)}</.link>
+                <.link phx-click="take_item" phx-value-uuid={"#{item.uuid}"}>
+                  {EuropaWeb.GameHTML.render_item_name(item)}
+                </.link>
                 <%= if EuropaWeb.GameHTML.weapon?(item) do %>
                   <div class="dropdown">
                     <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
                     <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
-                      <li phx-click={"unload_item_box_weapon_#{item.uuid}"}><a>Unload</a></li>
+                      <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"}><a>Unload</a></li>
                     </ul>
                   </div>
                 <% end %>
@@ -190,9 +192,24 @@
     <div class="modal-box overflow-visible overflow-y-auto">
       <h3 class="text-lg font-bold">Inventory ({@player_stats.inventory})</h3>
       <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
-        <a role="tab" class={"#{EuropaWeb.GameHTML.item_tab_class(:all, @inventory_type)}"} id="tab-all" phx-click="open_inventory">All</a>
+        <a
+          role="tab"
+          class={"#{EuropaWeb.GameHTML.item_tab_class(:all, @inventory_type)}"}
+          id="tab-all"
+          phx-click="open_inventory"
+        >
+          All
+        </a>
         <%= for {item_type, item_type_name} <- EuropaWeb.GameHTML.item_types() do %>
-          <a role="tab" class={"#{EuropaWeb.GameHTML.item_tab_class(item_type, @inventory_type)}"} id={"tab-#{item_type}"} phx-click="open_inventory" phx-value-type={"#{item_type}"}>{item_type_name}</a>
+          <a
+            role="tab"
+            class={"#{EuropaWeb.GameHTML.item_tab_class(item_type, @inventory_type)}"}
+            id={"tab-#{item_type}"}
+            phx-click="open_inventory"
+            phx-value-type={"#{item_type}"}
+          >
+            {item_type_name}
+          </a>
         <% end %>
       </div>
       <%= if Enum.count(@inventory) > 0 do %>
@@ -207,17 +224,17 @@
                 {EuropaWeb.GameHTML.render_item_name(item)}
                 <%= if EuropaWeb.GameHTML.item_consumable?(item) do %>
                   <div class="tooltip" data-tip="Consume">
-                    <.link phx-click={"consume_supply_#{item.uuid}"}>💊</.link>
+                    <.link phx-click="consume_supply" phx-value-uuid={"#{item.uuid}"}>💊</.link>
                   </div>
                 <% end %>
                 <%= if EuropaWeb.GameHTML.item_equipable?(item) do %>
                   <%= if item.equiped do %>
                     <div class="tooltip" data-tip="Unequip">
-                      <.link phx-click={"unequip_item_#{item.uuid}"}>🫳🏻</.link>
+                      <.link phx-click="unequip_item" phx-value-uuid={"#{item.uuid}"}>🫳🏻</.link>
                     </div>
                   <% else %>
                     <div class="tooltip" data-tip="Equip">
-                      <.link phx-click={"equip_item_#{item.uuid}"}>🛠️</.link>
+                      <.link phx-click="equip_item" phx-value-uuid={"#{item.uuid}"}>🛠️</.link>
                     </div>
                   <% end %>
                 <% end %>
@@ -225,7 +242,7 @@
                   <div class="dropdown">
                     <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
                     <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
-                      <li phx-click={"unload_weapon_#{item.uuid}"}><a>Unload</a></li>
+                      <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>Unload</a></li>
                     </ul>
                   </div>
                 <% end %>
