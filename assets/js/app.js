@@ -66,6 +66,14 @@ colocatedHooks.Tooltip = {
       this.tooltip = tooltip; // сохраняем для удаления
     });
 
+    this.onDocumentKeydown = (event) => {
+      if (event.key === 'Escape' && this.tooltip) {
+        this.tooltip.remove();
+        this.tooltip = null;
+      }
+    };
+    document.addEventListener('keydown', this.onDocumentKeydown);
+
     events = ['mouseleave', 'click'];
 
     events.forEach(event => {
