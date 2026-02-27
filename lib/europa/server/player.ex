@@ -299,7 +299,10 @@ defmodule Europa.Server.Player do
 
   defp already_have_such_item?(inventory, item) do
     inventory
-    |> Enum.filter(fn i -> Loot.Item.item_type(i) in @stackable_items end)
+    |> Enum.filter(fn i ->
+      item_type = Loot.Item.item_type(i)
+      item_type in @stackable_items && item_type == Loot.Item.item_type(item)
+    end)
     |> Enum.any?(fn inventory_item ->
       case Loot.Item.item_type(inventory_item) do
         :ammo -> inventory_item.caliber == item.caliber
