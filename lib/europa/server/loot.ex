@@ -12,6 +12,7 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Helmet
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
+  alias Europa.Server.Loot.Supply
   alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
@@ -19,7 +20,7 @@ defmodule Europa.Server.Loot do
 
   @max_items_in_item_box fetch_config!([:random_params, :loot, :max_items_in_item_box])
 
-  @allowed_item_types [:weapon, :ammo, :helmet, :suit, :boots]
+  @allowed_item_types [:weapon, :ammo, :helmet, :suit, :boots, :supply]
   @allowed_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle]
 
   @templates_path "/items/"
@@ -29,7 +30,8 @@ defmodule Europa.Server.Loot do
     ammo: "ammo.json",
     helmet: "helmets.json",
     suit: "suits.json",
-    boots: "boots.json"
+    boots: "boots.json",
+    supply: "supplies.json"
   }
 
   @type item_type :: unquote(Types.one_of(@allowed_item_types))
@@ -47,8 +49,9 @@ defmodule Europa.Server.Loot do
     alias Europa.Server.Loot.Helmet
     alias Europa.Server.Loot.Suit
     alias Europa.Server.Loot.Boots
+    alias Europa.Server.Loot.Supply
 
-    @type item() :: Weapon.t() | Ammo.t() | Helmet.t() | Suit.t() | Boots.t()
+    @type item() :: Weapon.t() | Ammo.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t()
 
     @spec item_type(item()) :: Loot.item_type()
     def item_type(item)
@@ -58,6 +61,9 @@ defmodule Europa.Server.Loot do
 
     @spec readable_attrs(item()) :: list()
     def readable_attrs(item)
+
+    @spec consumable?(item()) :: boolean()
+    def consumable?(item)
 
     @spec equipable?(item()) :: boolean()
     def equipable?(item)
@@ -173,6 +179,7 @@ defmodule Europa.Server.Loot do
       :helmet -> Helmet.new(attrs)
       :suit -> Suit.new(attrs)
       :boots -> Boots.new(attrs)
+      :supply -> Supply.new(attrs)
     end
   end
 

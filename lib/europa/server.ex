@@ -149,6 +149,12 @@ defmodule Europa.Server do
     GenServer.call(server, {:unequip_item, item_uuid})
   end
 
+  @spec consume_supply(pid(), Loot.uuid()) ::
+          {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+  def consume_supply(server, item_uuid) do
+    GenServer.call(server, {:consume_supply, item_uuid})
+  end
+
   ### CALLBACKS ###
 
   @impl true
@@ -389,6 +395,23 @@ defmodule Europa.Server do
     end
   end
 
+  def handle_call({:consume_supply, item_uuid}, {caller_pid, _}, state) do
+    case PlayerManager.consume_supply(state.player, item_uuid) do
+      {:ok, updated_player, supply} ->
+        consumed_supply_message = consumed_supply_message(supply)
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(consumed_supply_message)
+
+        {:reply, {:ok, updated_player}, struct(state, player: updated_player, chat: updated_chat),
+         {:continue, {:tick, supply.consume_cost, caller_pid}}}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
   def handle_call(:get_inventory, _from, state) do
     {:reply, state.player.inventory, state}
   end
@@ -571,6 +594,16 @@ defmodule Europa.Server do
       Gettext.gettext(
         Europa.Gettext,
         "You fired, it took #{moves_count} step(s)"
+      )
+
+    Chat.Message.new(msg, :regular)
+  end
+
+  defp consumed_supply_message(%Loot.Supply{} = supply) do
+    msg =
+      Gettext.gettext(
+        Europa.Gettext,
+        "You consumed #{supply.name}, it took #{supply.consume_cost} step(s)"
       )
 
     Chat.Message.new(msg, :regular)

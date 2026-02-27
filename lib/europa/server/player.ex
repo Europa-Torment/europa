@@ -8,11 +8,15 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Loot.Supply
+  alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
 
   @type inventory :: list(Loot.Item.t())
+
+  @stackable_items [:ammo, :supply]
 
   typedstruct do
     field :view_direction, Planet.direction(), enforce: true
@@ -99,16 +103,10 @@ defmodule Europa.Server.Player do
 
   @impl true
   def add_item(%__MODULE__{} = player, item) do
-    case item do
-      %Weapon.Ammo{} = ammo ->
-        if already_have_such_ammo?(player.inventory, ammo) do
-          stack_ammo(player, ammo)
-        else
-          do_add_item(player, item)
-        end
-
-      item ->
-        do_add_item(player, item)
+    if Loot.Item.item_type(item) in @stackable_items && already_have_such_item?(player.inventory, item) do
+      stack_items(player, item)
+    else
+      do_add_item(player, item)
     end
   end
 
@@ -233,6 +231,36 @@ defmodule Europa.Server.Player do
     end
   end
 
+  @impl true
+  def consume_supply(%__MODULE__{} = player, supply_uuid) do
+    with {:ok, supply} <- find_item(player.inventory, supply_uuid) do
+      do_consume_supply(player, supply)
+    end
+  end
+
+  ### PRIVATE ###
+
+  defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do
+    stats_changes = Loot.Item.player_stats_changes(supply)
+
+    updated_supply = Supply.decrease_count(supply)
+
+    updated_player =
+      if updated_supply.count > 0 do
+        player
+        |> increase_attrs(stats_changes)
+        |> update_item(updated_supply)
+      else
+        player
+        |> increase_attrs(stats_changes)
+        |> delete_item(supply)
+      end
+
+    {:ok, updated_player, updated_supply}
+  end
+
+  defp do_consume_supply(_player, _supply), do: {:error, %Errors.NotApplicableError{}}
+
   defp do_add_item(player, item) do
     if Enum.count(player.inventory) < player.inventory_size do
       {:ok, struct(player, inventory: [item | player.inventory])}
@@ -269,18 +297,25 @@ defmodule Europa.Server.Player do
     end
   end
 
-  defp already_have_such_ammo?(inventory, %Weapon.Ammo{} = ammo) do
-    Enum.any?(inventory, fn
-      %Weapon.Ammo{caliber: caliber} when caliber == ammo.caliber -> true
-      _ -> false
+  defp already_have_such_item?(inventory, item) do
+    inventory
+    |> Enum.filter(fn i -> Loot.Item.item_type(i) in @stackable_items end)
+    |> Enum.any?(fn inventory_item ->
+      case Loot.Item.item_type(inventory_item) do
+        :ammo -> inventory_item.caliber == item.caliber
+        _ -> inventory_item.name == item.name
+      end
     end)
   end
 
-  defp stack_ammo(%__MODULE__{} = player, %Weapon.Ammo{} = ammo) do
+  defp stack_items(%__MODULE__{} = player, item) do
     updated_inventory =
       Enum.map(player.inventory, fn
-        %Weapon.Ammo{caliber: caliber} = inventory_ammo when caliber == ammo.caliber ->
-          struct(inventory_ammo, count: inventory_ammo.count + ammo.count)
+        %Weapon.Ammo{caliber: caliber} = inventory_ammo when caliber == item.caliber ->
+          struct(inventory_ammo, count: inventory_ammo.count + item.count)
+
+        %Supply{type: type, name: name} = inventory_supply when name == item.name and type == item.type ->
+          struct(inventory_supply, count: inventory_supply.count + item.count)
 
         item ->
           item
@@ -356,6 +391,7 @@ defmodule Europa.Server.Player do
         :accuracy -> struct(player, accuracy: player.accuracy + attr_value)
         :efficiency -> struct(player, efficiency: player.efficiency + attr_value)
         :max_health -> struct(player, max_health: player.max_health + attr_value)
+        :health -> struct(player, health: min(player.max_health, player.health + attr_value))
         _ -> player
       end
     end)

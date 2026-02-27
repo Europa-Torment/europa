@@ -115,15 +115,15 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
     [
       weapon.name,
       " (",
-      "D:#{weapon.damage}",
-      " A:#{weapon.accuracy}",
-      " SD:#{weapon.shooting_distance}",
-      " T:#{weapon.shooting_type}",
-      " C:#{weapon.caliber}",
-      " M:#{weapon.magazine_size}",
-      " L:#{weapon.rounds_loaded}",
-      " SC:#{weapon.shot_cost}",
-      " RC:#{weapon.reload_cost}",
+      "D:#{weapon.damage} ",
+      "A:#{weapon.accuracy} ",
+      "SD:#{weapon.shooting_distance} ",
+      "T:#{weapon.shooting_type} ",
+      "C:#{weapon.caliber} ",
+      "M:#{weapon.magazine_size} ",
+      "L:#{weapon.rounds_loaded} ",
+      "SC:#{weapon.shot_cost} ",
+      "RC:#{weapon.reload_cost}",
       ")"
     ]
     |> to_string()
@@ -157,6 +157,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   @spec equipable?(Weapon.t()) :: true
   def equipable?(%Weapon{}), do: true
+
+  @spec consumable?(Weapon.t()) :: false
+  def consumable?(%Weapon{}), do: false
 
   @spec player_stats_changes(Weapon.t()) :: map()
   def player_stats_changes(%Weapon{} = weapon) do

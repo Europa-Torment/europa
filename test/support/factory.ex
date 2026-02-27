@@ -115,6 +115,25 @@ defmodule Europa.Support.Factory do
     }
   end
 
+  @spec supply_factory() :: Loot.Supply.t()
+  def supply_factory do
+    %Loot.Supply{
+      uuid: Ecto.UUID.generate(),
+      type: :medicine,
+      name: sequence(:name, &"supply #{&1 + 1}"),
+      count: 1,
+      consume_cost: 1,
+      properties: build(:supply_properties)
+    }
+  end
+
+  @spec supply_properties_factory() :: Loot.Supply.Properties.t()
+  def supply_properties_factory do
+    %Loot.Supply.Properties{
+      health: 10
+    }
+  end
+
   @spec player_factory() :: Player.t()
   def player_factory do
     %Player{

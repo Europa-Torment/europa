@@ -8,7 +8,7 @@ defmodule Europa.Server.Loot.ItemTest do
 
   describe "composed_name/1" do
     test "returns string with item name" do
-      for item <- [build(:weapon), build(:ammo), build(:helmet), build(:suit), build(:boots)] do
+      for item <- [build(:weapon), build(:ammo), build(:helmet), build(:suit), build(:boots), build(:supply)] do
         assert Item.composed_name(item) |> is_binary()
       end
     end
@@ -80,6 +80,49 @@ defmodule Europa.Server.Loot.ItemTest do
 
       assert Item.readable_attrs(boots) == expected_attrs
     end
+
+    test "returns attrs for supply" do
+      supply = build(:supply, properties: build(:supply_properties, health: 11))
+
+      expected_attrs = [
+        {"Health", supply.properties.health},
+        {"Count", supply.count}
+      ]
+
+      assert Item.readable_attrs(supply) == expected_attrs
+    end
+  end
+
+  describe "consumable?/1" do
+    test "returns false for weapon" do
+      weapon = build(:weapon)
+      assert Item.consumable?(weapon) == false
+    end
+
+    test "returns false for ammo" do
+      ammo = build(:ammo)
+      assert Item.consumable?(ammo) == false
+    end
+
+    test "returns false for helmet" do
+      helmet = build(:helmet)
+      assert Item.consumable?(helmet) == false
+    end
+
+    test "returns false for suit" do
+      suit = build(:suit)
+      assert Item.consumable?(suit) == false
+    end
+
+    test "returns false for boots" do
+      boots = build(:boots)
+      assert Item.consumable?(boots) == false
+    end
+
+    test "returns true for supply" do
+      supply = build(:supply)
+      assert Item.consumable?(supply) == true
+    end
   end
 
   describe "equipable?/1" do
@@ -106,6 +149,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns true for boots" do
       boots = build(:boots)
       assert Item.equipable?(boots) == true
+    end
+
+    test "returns false for supply" do
+      ammo = build(:supply)
+      assert Item.equipable?(ammo) == false
     end
   end
 
@@ -204,6 +252,7 @@ defmodule Europa.Server.LootTest do
   alias Europa.Server.Loot.Helmet
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
+  alias Europa.Server.Loot.Supply
 
   describe "generate_item/1" do
     test "generates item of given type" do
@@ -226,5 +275,6 @@ defmodule Europa.Server.LootTest do
   defp item?(%Boots{}), do: true
   defp item?(%Weapon{}), do: true
   defp item?(%Ammo{}), do: true
+  defp item?(%Supply{}), do: true
   defp item?(_), do: false
 end

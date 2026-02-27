@@ -78,6 +78,11 @@ defmodule Europa.Tools.AttrsDeterminator do
     end
   end
 
+  # nested attrs
+  defp determine_attr(_attrs, attr) when is_map(attr) do
+    determine_attrs(attr)
+  end
+
   defp get_raw_attr(attrs, attr_name) when is_binary(attr_name) do
     attr_name = String.to_atom(attr_name)
     get_raw_attr(attrs, attr_name)

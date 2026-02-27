@@ -114,6 +114,12 @@ defmodule EuropaWeb.GameHTMLTest do
     end
   end
 
+  describe "item_consumable?/1" do
+    test "returns boolean value" do
+      assert GameHTML.item_consumable?(@weapon) == false
+    end
+  end
+
   describe "weapon?/1" do
     test "returns boolean value" do
       assert GameHTML.weapon?(@weapon) == true

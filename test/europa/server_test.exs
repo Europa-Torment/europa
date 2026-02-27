@@ -445,6 +445,49 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "consume_supply/2" do
+    test "handles success response", %{server: server} do
+      supply = build(:supply)
+      supply_uuid = supply.uuid
+      moves_count = supply.consume_cost
+
+      PlayerManagerMock
+      |> expect(:consume_supply, fn %Player{} = player, ^supply_uuid ->
+        {:ok, player, supply}
+      end)
+
+      PlanetManagerMock
+      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+
+      assert {:ok, %Player{}} = Server.consume_supply(server, supply_uuid)
+      :timer.sleep(100)
+    end
+
+    test "handles not_found response", %{server: server} do
+      supply = build(:supply)
+      error = {:error, :not_found}
+
+      PlayerManagerMock
+      |> expect(:consume_supply, fn _player, _supply_uuid ->
+        error
+      end)
+
+      assert Server.consume_supply(server, supply.uuid) == error
+    end
+
+    test "handles NotApplicable response", %{server: server} do
+      supply = build(:supply)
+      error = {:error, %Errors.NotApplicableError{}}
+
+      PlayerManagerMock
+      |> expect(:consume_supply, fn _player, _supply_uuid ->
+        error
+      end)
+
+      assert Server.consume_supply(server, supply.uuid) == error
+    end
+  end
+
   test "calls planet land crop after timeout", %{server: server} do
     planet = Server.get_planet(server)
 

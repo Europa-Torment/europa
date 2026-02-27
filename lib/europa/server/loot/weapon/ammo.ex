@@ -61,6 +61,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   @spec equipable?(Ammo.t()) :: false
   def equipable?(%Ammo{}), do: false
 
+  @spec consumable?(Ammo.t()) :: false
+  def consumable?(%Ammo{}), do: false
+
   @spec player_stats_changes(Ammo.t()) :: map()
   def player_stats_changes(%Ammo{}), do: %{}
 end

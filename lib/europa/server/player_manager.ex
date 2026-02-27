@@ -113,6 +113,11 @@ defmodule Europa.Server.PlayerManager do
   """
   @callback take_damage(Player.t(), damage :: pos_integer()) :: Player.t()
 
+  @callback consume_supply(Player.t(), Loot.uuid()) ::
+              {:ok, Player.t(), item :: Loot.Item.item()}
+              | {:error, :not_found}
+              | {:error, Errors.NotApplicableError.t()}
+
   ### Implementation callers ###
 
   def new, do: manager_impl().new()
@@ -146,6 +151,8 @@ defmodule Europa.Server.PlayerManager do
   def reload_weapon(player), do: manager_impl().reload_weapon(player)
 
   def unload_weapon(player, weapon_uuid), do: manager_impl().unload_weapon(player, weapon_uuid)
+
+  def consume_supply(player, supply_uuid), do: manager_impl().consume_supply(player, supply_uuid)
 
   ### PRIVATE ###
 

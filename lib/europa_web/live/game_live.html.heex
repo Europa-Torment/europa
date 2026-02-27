@@ -199,6 +199,11 @@
                 data-tooltip={EuropaWeb.GameHTML.item_tooltip(item, @player)}
               >
                 {EuropaWeb.GameHTML.render_item_name(item)}
+                <%= if EuropaWeb.GameHTML.item_consumable?(item) do %>
+                  <div class="tooltip" data-tip="Consume">
+                    <.link phx-click={"consume_supply_#{item.uuid}"}>💊</.link>
+                  </div>
+                <% end %>
                 <%= if EuropaWeb.GameHTML.item_equipable?(item) do %>
                   <%= if item.equiped do %>
                     <div class="tooltip" data-tip="Unequip">

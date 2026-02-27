@@ -67,6 +67,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
   @spec equipable?(Boots.t()) :: true
   def equipable?(%Boots{}), do: true
 
+  @spec consumable?(Boots.t()) :: false
+  def consumable?(%Boots{}), do: false
+
   @spec player_stats_changes(Boots.t()) :: map()
   def player_stats_changes(%Boots{} = boots) do
     %{

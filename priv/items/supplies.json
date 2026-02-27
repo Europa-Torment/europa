@@ -1,0 +1,22 @@
+[
+    {
+        "name": "WCC medical kit", 
+        "type": "medicine",
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "properties": {
+            "health": 30
+        },
+        "random_weight": 2.0
+    },
+    {
+        "name": "Stem cell injector", 
+        "type": "medicine",
+        "count": 1,
+        "consume_cost": 2,
+        "properties": {
+            "health": 50
+        },
+        "random_weight": 0.05
+    }
+]

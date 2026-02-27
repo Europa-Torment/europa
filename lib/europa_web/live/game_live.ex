@@ -243,6 +243,22 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
+  def handle_event("consume_supply_" <> item_uuid, _, socket) do
+    case Server.consume_supply(socket.assigns.server, item_uuid) do
+      {:ok, updated_player} ->
+        {:noreply,
+         assign(socket,
+           player: updated_player,
+           inventory: updated_player.inventory,
+           player_stats: get_player_stats(updated_player),
+           chat: Server.get_chat(socket.assigns.server)
+         )}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("close_item_box", _, socket) do
     {:noreply, assign(socket, item_box: nil)}
   end

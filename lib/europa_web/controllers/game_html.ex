@@ -82,6 +82,11 @@ defmodule EuropaWeb.GameHTML do
     Item.equipable?(item)
   end
 
+  @spec item_consumable?(Item.item()) :: boolean()
+  def item_consumable?(item) do
+    Item.consumable?(item)
+  end
+
   @spec weapon?(Item.item()) :: boolean()
   def weapon?(%Loot.Weapon{}), do: true
   def weapon?(_), do: false

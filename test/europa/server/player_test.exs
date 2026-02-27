@@ -119,17 +119,19 @@ defmodule Europa.Server.PlayerTest do
       assert inventory == [item | player.inventory]
     end
 
-    test "stacks same ammo" do
-      player = build(:player, inventory: [])
-      ammo = build(:ammo)
-      ammo2 = struct(ammo, count: 100)
+    test "stacks same stackable items" do
+      for item_type <- [:ammo, :supply] do
+        player = build(:player, inventory: [])
+        item = build(item_type)
+        item2 = struct(item, count: 100)
 
-      expected_count = ammo.count + ammo2.count
+        expected_count = item.count + item2.count
 
-      assert {:ok, updated_player} = Player.add_item(player, ammo)
+        assert {:ok, updated_player} = Player.add_item(player, item)
 
-      assert {:ok, %Player{inventory: [updated_ammo]}} = Player.add_item(updated_player, ammo2)
-      assert updated_ammo.count == expected_count
+        assert {:ok, %Player{inventory: [updated_item]}} = Player.add_item(updated_player, item2)
+        assert updated_item.count == expected_count
+      end
     end
 
     test "returns error when inventory is full", %{player: player, item: item} do
@@ -408,6 +410,34 @@ defmodule Europa.Server.PlayerTest do
       player = build(:player, inventory_size: 1, inventory: [])
 
       assert Player.unload_weapon(player, weapon_uuid) == {:error, :not_found}
+    end
+  end
+
+  describe "consume_supply/2" do
+    test "medicine supply heals player" do
+      supply = build(:supply, count: 3, type: :medicine, properties: build(:supply_properties, health: 15))
+      player = build(:player, health: 10, inventory: [supply])
+
+      assert {:ok, %Player{health: updated_health, inventory: [updated_supply]}, updated_supply} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_health == player.health + supply.properties.health
+      assert updated_supply.count == supply.count - 1
+    end
+
+    test "health not exeed max_health" do
+      supply = build(:supply, count: 3, type: :medicine, properties: build(:supply_properties, health: 1000))
+      player = build(:player, health: 10, max_health: 100, inventory: [supply])
+
+      assert {:ok, %Player{health: updated_health}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
+      assert updated_health == player.max_health
+    end
+
+    test "supply removes from inventory" do
+      supply = build(:supply, count: 1, type: :medicine, properties: build(:supply_properties, health: 15))
+      player = build(:player, health: 10, inventory: [supply])
+
+      assert {:ok, %Player{inventory: []}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
     end
   end
 

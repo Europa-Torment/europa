@@ -10,6 +10,18 @@ defmodule Europa.Tools.AttrsDeterminatorTest do
       assert AttrsDeterminator.determine_attrs(%{attr: 1}) == %{attr: 1}
     end
 
+    test "determines nested attrs" do
+      assert %{attr: "value", attr2: attr2, attr3: %{attr4: attr4, attr5: %{attr6: "value 6"}}} =
+               AttrsDeterminator.determine_attrs(%{
+                 attr: "value",
+                 attr2: %{from: 1, to: 2},
+                 attr3: %{attr4: %{from: 1, to: 2}, attr5: %{attr6: "value 6"}}
+               })
+
+      assert attr2 in 1..2
+      assert attr4 in 1..2
+    end
+
     property "returns random value from range" do
       check all(n <- StreamData.integer(2..100)) do
         assert %{attr: m} = AttrsDeterminator.determine_attrs(%{attr: %{from: 1, to: n}})
