@@ -61,9 +61,17 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "get_inventory/1" do
+  describe "get_inventory/2" do
     test "returns players inventory", %{server: server} do
-      assert Server.get_inventory(server) |> is_list()
+      type = :weapon
+      inventory = build(:player).inventory
+
+      PlayerManagerMock
+      |> expect(:get_inventory, fn %Player{}, ^type ->
+        inventory
+      end)
+
+      assert Server.get_inventory(server, type) == inventory
     end
   end
 

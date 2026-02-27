@@ -1,5 +1,6 @@
 defmodule Europa.Server.Loot do
   use TypedStruct
+  use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet
 
@@ -20,7 +21,17 @@ defmodule Europa.Server.Loot do
 
   @max_items_in_item_box fetch_config!([:random_params, :loot, :max_items_in_item_box])
 
-  @allowed_item_types [:weapon, :ammo, :helmet, :suit, :boots, :supply]
+  @item_types %{
+    weapon: gettext("Weapons"),
+    ammo: gettext("Ammo"),
+    helmet: gettext("Helmets"),
+    suit: gettext("Suits"),
+    boots: gettext("Boots"),
+    supply: gettext("Supplies")
+  }
+
+  @allowed_item_types Map.keys(@item_types)
+
   @allowed_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle]
 
   @templates_path "/items/"
@@ -165,8 +176,8 @@ defmodule Europa.Server.Loot do
     defp check_weapon(_), do: {:error, %Errors.NotApplicableError{}}
   end
 
-  @spec allowed_item_types() :: [item_type(), ...]
-  def allowed_item_types, do: @allowed_item_types
+  @spec allowed_item_types() :: map()
+  def allowed_item_types, do: @item_types
 
   @spec allowed_item_box_types() :: [item_box_type(), ...]
   def allowed_item_box_types, do: @allowed_item_box_types

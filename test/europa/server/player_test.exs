@@ -441,6 +441,27 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "get_inventory/2" do
+    setup do
+      ammo = build(:ammo)
+      weapon = build(:weapon)
+      supply = build(:supply)
+      player = build(:player, inventory: [ammo, weapon, supply])
+
+      {:ok, player: player, ammo: ammo, weapon: weapon, supply: supply}
+    end
+
+    test "returns all inventory", %{player: player} do
+      assert Player.get_inventory(player, :all) == player.inventory
+    end
+
+    test "returns items of given type", %{player: player, ammo: ammo, weapon: weapon, supply: supply} do
+      assert Player.get_inventory(player, :weapon) == [weapon]
+      assert Player.get_inventory(player, :ammo) == [ammo]
+      assert Player.get_inventory(player, :supply) == [supply]
+    end
+  end
+
   defp inventory_size_range do
     from = fetch_config!([:random_params, :player, :inventory_size, :from])
     to = fetch_config!([:random_params, :player, :inventory_size, :to])

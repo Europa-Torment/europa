@@ -131,8 +131,13 @@ defmodule EuropaWeb.GameLive do
      )}
   end
 
-  def handle_event("open_inventory", _, socket) do
-    open_inventory(socket)
+  def handle_event("open_inventory", params , socket) do
+    type =
+      params
+      |> Map.get("type", "all")
+      |> String.to_atom()
+
+    open_inventory(socket, type)
   end
 
   def handle_event("take_item_" <> item_uuid, _, socket) do
@@ -280,9 +285,9 @@ defmodule EuropaWeb.GameLive do
     redirect(socket, to: ~p"/games/#{game_uuid}/game-over")
   end
 
-  defp open_inventory(socket) do
-    inventory = Server.get_inventory(socket.assigns.server)
-    {:noreply, assign(socket, inventory: inventory)}
+  defp open_inventory(socket, type \\ :all) do
+    inventory = Server.get_inventory(socket.assigns.server, type)
+    {:noreply, assign(socket, inventory: inventory, inventory_type: type)}
   end
 
   defp parse_direction("Up"), do: :up

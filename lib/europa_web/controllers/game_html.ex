@@ -49,6 +49,19 @@ defmodule EuropaWeb.GameHTML do
     Item.composed_name(item)
   end
 
+  @spec item_types() :: map()
+  def item_types do
+    Loot.allowed_item_types()
+  end
+
+  def item_tab_class(tab, current_type) do
+    if tab == current_type do
+      "tab tab-active"
+    else
+      "tab"
+    end
+  end
+
   @spec get_item_attrs(Item.item(), Item.item() | nil) :: list()
   def get_item_attrs(item, nil) do
     Item.readable_attrs(item)

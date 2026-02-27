@@ -118,6 +118,8 @@ defmodule Europa.Server.PlayerManager do
               | {:error, :not_found}
               | {:error, Errors.NotApplicableError.t()}
 
+  @callback get_inventory(Player.t(), Loot.item_type() | :all) :: Player.inventory()
+
   ### Implementation callers ###
 
   def new, do: manager_impl().new()
@@ -153,6 +155,8 @@ defmodule Europa.Server.PlayerManager do
   def unload_weapon(player, weapon_uuid), do: manager_impl().unload_weapon(player, weapon_uuid)
 
   def consume_supply(player, supply_uuid), do: manager_impl().consume_supply(player, supply_uuid)
+
+  def get_inventory(player, items_type), do: manager_impl().get_inventory(player, items_type)
 
   ### PRIVATE ###
 

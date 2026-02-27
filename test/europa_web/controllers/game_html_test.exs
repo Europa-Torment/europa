@@ -120,6 +120,19 @@ defmodule EuropaWeb.GameHTMLTest do
     end
   end
 
+  describe "item_types/0" do
+    test "returns map value" do
+      assert GameHTML.item_types() |> is_map()
+    end
+  end
+
+  describe "item_tab_class/2" do
+    test "returns tab class" do
+      assert GameHTML.item_tab_class(:weapon, :weapon) == "tab tab-active"
+      assert GameHTML.item_tab_class(:weapon, :ammo) == "tab"
+    end
+  end
+
   describe "weapon?/1" do
     test "returns boolean value" do
       assert GameHTML.weapon?(@weapon) == true

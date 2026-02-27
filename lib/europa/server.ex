@@ -132,9 +132,9 @@ defmodule Europa.Server do
     GenServer.call(server, {:unload_item_box_weapon, item_uuid})
   end
 
-  @spec get_inventory(pid()) :: Player.inventory()
-  def get_inventory(server) do
-    GenServer.call(server, :get_inventory)
+  @spec get_inventory(pid(), Loot.item_type() | :all) :: Player.inventory()
+  def get_inventory(server, type \\ :all) do
+    GenServer.call(server, {:get_inventory, type})
   end
 
   @spec equip_item(pid(), Loot.uuid()) ::
@@ -412,8 +412,8 @@ defmodule Europa.Server do
     end
   end
 
-  def handle_call(:get_inventory, _from, state) do
-    {:reply, state.player.inventory, state}
+  def handle_call({:get_inventory, type}, _from, state) do
+    {:reply, PlayerManager.get_inventory(state.player, type), state}
   end
 
   @impl true

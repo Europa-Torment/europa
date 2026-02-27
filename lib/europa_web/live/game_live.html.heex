@@ -189,6 +189,12 @@
   <div class="modal overflow-visible" role="dialog">
     <div class="modal-box overflow-visible overflow-y-auto">
       <h3 class="text-lg font-bold">Inventory ({@player_stats.inventory})</h3>
+      <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
+        <a role="tab" class={"#{EuropaWeb.GameHTML.item_tab_class(:all, @inventory_type)}"} id="tab-all" phx-click="open_inventory">All</a>
+        <%= for {item_type, item_type_name} <- EuropaWeb.GameHTML.item_types() do %>
+          <a role="tab" class={"#{EuropaWeb.GameHTML.item_tab_class(item_type, @inventory_type)}"} id={"tab-#{item_type}"} phx-click="open_inventory" phx-value-type={"#{item_type}"}>{item_type_name}</a>
+        <% end %>
+      </div>
       <%= if Enum.count(@inventory) > 0 do %>
         <ul class="list-disc list-inside space-y-2 text-sm">
           <%= for item <- @inventory do %>
