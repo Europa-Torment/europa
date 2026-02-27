@@ -92,7 +92,9 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @inventory_keys do
-    open_inventory(socket)
+    socket
+    |> assign(inventory_type: :all)
+    |> open_inventory()
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @close_keys do
@@ -137,7 +139,9 @@ defmodule EuropaWeb.GameLive do
       |> Map.get("type", "all")
       |> String.to_atom()
 
-    open_inventory(socket, type)
+    socket
+    |> assign(inventory_type: type)
+    |> open_inventory()
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -176,7 +180,7 @@ defmodule EuropaWeb.GameLive do
            suit: suit,
            boots: boots,
            ammo_count: ammo_count,
-           inventory: updated_player.inventory,
+           inventory: get_player_inventory(socket),
            player_stats: get_player_stats(updated_player)
          )}
 
@@ -201,7 +205,7 @@ defmodule EuropaWeb.GameLive do
            suit: suit,
            boots: boots,
            ammo_count: ammo_count,
-           inventory: updated_player.inventory,
+           inventory: get_player_inventory(socket),
            player_stats: get_player_stats(updated_player)
          )}
 
@@ -221,7 +225,7 @@ defmodule EuropaWeb.GameLive do
            player: updated_player,
            weapon: weapon,
            ammo_count: ammo_count,
-           inventory: updated_player.inventory,
+           inventory: get_player_inventory(socket),
            player_stats: get_player_stats(updated_player),
            chat: Server.get_chat(socket.assigns.server)
          )}
@@ -254,7 +258,7 @@ defmodule EuropaWeb.GameLive do
         {:noreply,
          assign(socket,
            player: updated_player,
-           inventory: updated_player.inventory,
+           inventory: get_player_inventory(socket),
            player_stats: get_player_stats(updated_player),
            chat: Server.get_chat(socket.assigns.server)
          )}
@@ -269,7 +273,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("close_inventory", _, socket) do
-    {:noreply, assign(socket, inventory: nil)}
+    {:noreply, assign(socket, inventory: nil, inventory_type: nil)}
   end
 
   def handle_event(_, _, socket) do
@@ -285,9 +289,13 @@ defmodule EuropaWeb.GameLive do
     redirect(socket, to: ~p"/games/#{game_uuid}/game-over")
   end
 
-  defp open_inventory(socket, type \\ :all) do
-    inventory = Server.get_inventory(socket.assigns.server, type)
-    {:noreply, assign(socket, inventory: inventory, inventory_type: type)}
+  defp open_inventory(socket) do
+    inventory = get_player_inventory(socket)
+    {:noreply, assign(socket, inventory: inventory)}
+  end
+
+  defp get_player_inventory(socket) do
+    Server.get_inventory(socket.assigns.server, socket.assigns[:inventory_type] || :all)
   end
 
   defp parse_direction("Up"), do: :up
