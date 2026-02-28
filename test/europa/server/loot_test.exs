@@ -86,7 +86,8 @@ defmodule Europa.Server.Loot.ItemTest do
 
       expected_attrs = [
         {"Health", supply.properties.health},
-        {"Count", supply.count}
+        {"Count", supply.count},
+        {"Consume cost", supply.consume_cost}
       ]
 
       assert Item.readable_attrs(supply) == expected_attrs

@@ -64,6 +64,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
       supply.name,
       " (",
       properties_for_composed_name(supply.properties),
+      " CC:#{supply.consume_cost}",
       ") ",
       "(#{supply.count})"
     ]
@@ -84,7 +85,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
         {name, value}
       end)
 
-    properties_attrs ++ [{gettext("Count"), supply.count}]
+    properties_attrs ++ [{gettext("Count"), supply.count}, {gettext("Consume cost"), supply.consume_cost}]
   end
 
   @spec equip(Supply.t()) :: {:error, Errors.NotApplicableError.t()}
