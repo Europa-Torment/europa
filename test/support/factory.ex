@@ -33,7 +33,8 @@ defmodule Europa.Support.Factory do
   @spec chat_factory() :: Chat.t()
   def chat_factory do
     %Chat{
-      messages: []
+      messages: [],
+      last_id: 0
     }
   end
 

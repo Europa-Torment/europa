@@ -18,9 +18,10 @@ defmodule Europa.Server.Chat do
     @type category :: unquote(Types.one_of(@allowed_categories))
     @type text :: String.t()
 
-    typedstruct enforce: true do
-      field :text, text()
-      field :category, category()
+    typedstruct do
+      field :id, integer()
+      field :text, text(), enforce: true
+      field :category, category(), enforce: true
     end
 
     @spec new(text(), category()) :: t()
@@ -34,6 +35,7 @@ defmodule Europa.Server.Chat do
 
   typedstruct enforce: true do
     field :messages, list(Message.t())
+    field :last_id, integer()
   end
 
   @doc """
@@ -42,8 +44,10 @@ defmodule Europa.Server.Chat do
   @spec new(Message.t()) :: t()
   def new(%Message{} = initial_message) do
     %__MODULE__{
-      messages: [initial_message]
+      messages: [],
+      last_id: 0
     }
+    |> add_message(initial_message)
   end
 
   @doc """
@@ -66,6 +70,9 @@ defmodule Europa.Server.Chat do
   """
   @spec add_message(t(), Message.t()) :: t()
   def add_message(%__MODULE__{messages: messages} = chat, %Message{} = message) do
+    message_id = chat.last_id + 1
+    message = struct(message, id: message_id)
+
     updated_messages =
       if Enum.count(messages) == fetch_config!([__MODULE__, :messages_limit]) do
         List.delete_at(messages, 0) ++ [message]
@@ -73,6 +80,6 @@ defmodule Europa.Server.Chat do
         messages ++ [message]
       end
 
-    struct(chat, messages: updated_messages)
+    struct(chat, messages: updated_messages, last_id: message_id)
   end
 end

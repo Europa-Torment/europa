@@ -509,7 +509,7 @@ defmodule Europa.ServerTest do
   end
 
   defp assert_chat_message(server, category, text) do
-    message = Chat.Message.new(text, category)
-    assert message in Server.get_chat(server).messages
+    messages = Server.get_chat(server).messages
+    assert Enum.find(messages, fn message -> message.text == text && message.category == category end)
   end
 end

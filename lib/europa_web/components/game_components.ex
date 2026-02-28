@@ -59,7 +59,9 @@ defmodule EuropaWeb.GameCompotents do
     ~H"""
     <div class="h-80 overflow-y-auto bg-base-200 p-5 rounded-box shadow-md text-xs">
       <%= for message <- Enum.reverse(@chat.messages) do %>
-        <p class={"break-words p-1.5 #{chat_color(message)}"}>{message.text}</p>
+        <p class={"break-words p-1.5 #{chat_color(message)}"}>
+          <span class="italic text-gray-400 text-[10px]">{message.id}.</span> {message.text}
+        </p>
       <% end %>
     </div>
     """
