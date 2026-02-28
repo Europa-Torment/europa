@@ -79,6 +79,18 @@ config :europa, :random_params,
     max_items_in_item_box: 6
   ]
 
+config :europa, :control_bindings,
+  move_up: ["ArrowUp", "W", "w"],
+  move_down: ["ArrowDown", "S", "s"],
+  move_left: ["ArrowLeft", "A", "a"],
+  move_right: ["ArrowRight", "D", "d"],
+  loot: ["L", "l"],
+  inventory: ["I", "i"],
+  control_hints: ["H", "h"],
+  shoot: [" ", "Space"],
+  reload: ["R", "r"],
+  close: ["Escape"]
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
