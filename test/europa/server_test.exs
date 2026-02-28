@@ -225,7 +225,7 @@ defmodule Europa.ServerTest do
       end)
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
-      assert Server.shoot(server) == :ok
+      assert Server.shoot(server) == {:ok, :shot}
       :timer.sleep(100)
     end
 
@@ -238,7 +238,7 @@ defmodule Europa.ServerTest do
       end)
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
-      assert Server.shoot(server) == :ok
+      assert Server.shoot(server) == {:ok, :miss}
       :timer.sleep(100)
     end
 
@@ -248,7 +248,7 @@ defmodule Europa.ServerTest do
         {:error, :no_weapon}
       end)
 
-      assert Server.shoot(server) == :ok
+      assert Server.shoot(server) == {:error, :no_weapon}
     end
 
     test "handles empty_magazine response", %{server: server} do
@@ -257,7 +257,7 @@ defmodule Europa.ServerTest do
         {:error, :empty_magazine}
       end)
 
-      assert Server.shoot(server) == :ok
+      assert Server.shoot(server) == {:error, :empty_magazine}
     end
   end
 
@@ -279,30 +279,36 @@ defmodule Europa.ServerTest do
     end
 
     test "handles no_weapon response", %{server: server} do
+      error = {:error, :no_weapon}
+
       PlayerManagerMock
       |> expect(:reload_weapon, fn %Player{} ->
-        {:error, :no_weapon}
+        error
       end)
 
-      assert Server.reload(server) == :ok
+      assert Server.reload(server) == error
     end
 
     test "handles no_ammo response", %{server: server} do
+      error = {:error, :no_ammo}
+
       PlayerManagerMock
       |> expect(:reload_weapon, fn %Player{} ->
-        {:error, :no_ammo}
+        error
       end)
 
-      assert Server.reload(server) == :ok
+      assert Server.reload(server) == error
     end
 
     test "handles full_magazine response", %{server: server} do
+      error = {:error, :full_magazine}
+
       PlayerManagerMock
       |> expect(:reload_weapon, fn %Player{} ->
-        {:error, :full_magazine}
+        error
       end)
 
-      assert Server.reload(server) == :ok
+      assert Server.reload(server) == error
     end
   end
 

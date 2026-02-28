@@ -76,7 +76,7 @@ defmodule EuropaWeb.GameCompotents do
             💙 {@player_stats.health}
           </div>
         </li>
-        <li phx-click="open_inventory">
+        <li phx-click={open_inventory_click()}>
           <div class="tooltip" data-tip={gettext("Inventory")}>
             💼 {@player_stats.inventory}
           </div>
@@ -244,7 +244,7 @@ defmodule EuropaWeb.GameCompotents do
               role="tab"
               class={"#{item_tab_class(:all, @inventory_type)}"}
               id="tab-all"
-              phx-click="open_inventory"
+              phx-click={open_inventory_click()}
             >
               All
             </a>
@@ -253,7 +253,7 @@ defmodule EuropaWeb.GameCompotents do
                 role="tab"
                 class={"#{item_tab_class(item_type, @inventory_type)}"}
                 id={"tab-#{item_type}"}
-                phx-click="open_inventory"
+                phx-click={open_inventory_click()}
                 phx-value-type={"#{item_type}"}
               >
                 {item_type_name}
@@ -572,6 +572,10 @@ defmodule EuropaWeb.GameCompotents do
   defp maybe_format_key_name("ArrowLeft"), do: "◀︎"
   defp maybe_format_key_name("ArrowRight"), do: "▶︎"
   defp maybe_format_key_name(key), do: key
+
+  defp open_inventory_click do
+    JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_inventory")
+  end
 
   # coveralls-ignore-stop
 end

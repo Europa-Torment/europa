@@ -28,6 +28,7 @@ defmodule Europa.Server.Loot.Weapon do
     field :caliber, caliber()
     field :shooting_distance, pos_integer()
     field :image_name, String.t()
+    field :sound_name, String.t()
   end
 
   @spec new(map()) :: t()
@@ -45,7 +46,8 @@ defmodule Europa.Server.Loot.Weapon do
       damage: Map.fetch!(attrs, :damage),
       caliber: Map.fetch!(attrs, :caliber),
       shooting_distance: Map.fetch!(attrs, :shooting_distance),
-      image_name: Map.fetch!(attrs, :image_name)
+      image_name: Map.fetch!(attrs, :image_name),
+      sound_name: Map.fetch!(attrs, :sound_name)
     }
   end
 

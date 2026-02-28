@@ -111,12 +111,12 @@ defmodule Europa.Server do
     GenServer.call(server, {:take_loot, item_uuid})
   end
 
-  @spec shoot(pid()) :: :ok
+  @spec shoot(pid()) :: {:ok, :shot} | {:ok, :miss} | {:error, :no_weapon} | {:error, :empty_magazine}
   def shoot(server) do
     GenServer.call(server, :shoot)
   end
 
-  @spec reload(pid()) :: :ok
+  @spec reload(pid()) :: :ok | {:error, :no_weapon} | {:error, :no_ammo} | {:error, :full_magazine}
   def reload(server) do
     GenServer.call(server, :reload)
   end
@@ -294,7 +294,7 @@ defmodule Europa.Server do
           |> Chat.add_message(shoot_message)
           |> add_damage_messages_to_chat(damaged_enemies)
 
-        {:reply, :ok, struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, :shot}, struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :miss, updated_player, moves_count} ->
@@ -306,18 +306,18 @@ defmodule Europa.Server do
           |> Chat.add_message(shoot_message)
           |> Chat.add_message(miss_message)
 
-        {:reply, :ok, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, :miss}, struct(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
         updated_chat = Chat.add_message(state.chat, no_weapon_message)
-        {:reply, :ok, struct(state, chat: updated_chat)}
+        {:reply, {:error, :no_weapon}, struct(state, chat: updated_chat)}
 
       {:error, :empty_magazine} ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, :ok, struct(state, chat: updated_chat)}
+        {:reply, {:error, :empty_magazine}, struct(state, chat: updated_chat)}
     end
   end
 
@@ -336,17 +336,17 @@ defmodule Europa.Server do
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
         updated_chat = Chat.add_message(state.chat, no_weapon_message)
-        {:reply, :ok, struct(state, chat: updated_chat)}
+        {:reply, {:error, :no_weapon}, struct(state, chat: updated_chat)}
 
       {:error, :no_ammo} ->
         no_ammo_message = no_ammo_message()
         updated_chat = Chat.add_message(state.chat, no_ammo_message)
-        {:reply, :ok, struct(state, chat: updated_chat)}
+        {:reply, {:error, :no_ammo}, struct(state, chat: updated_chat)}
 
       {:error, :full_magazine} ->
         full_magazine_message = full_magazine_message()
         updated_chat = Chat.add_message(state.chat, full_magazine_message)
-        {:reply, :ok, struct(state, chat: updated_chat)}
+        {:reply, {:error, :full_magazine}, struct(state, chat: updated_chat)}
     end
   end
 

@@ -70,7 +70,8 @@ defmodule Europa.Support.Factory do
       damage: 10,
       caliber: "8mm",
       shooting_distance: 5,
-      image_name: "default_pistol"
+      image_name: "default_pistol",
+      sound_name: "pistol"
     }
   end
 
