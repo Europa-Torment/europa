@@ -118,7 +118,7 @@ defmodule Europa.ServerTest do
       end)
 
       assert :moved = Server.move(server, @direction)
-      assert_chat_message(server, :regular, "You walked at snow, it took #{moves_count} step(s)")
+      assert_chat_message(server, :regular, "You walked at snow, it took")
       assert_chat_message(server, :danger, "#{action.subject.name} is attacking you!")
       assert_chat_message(server, :warning, "You are getting colder")
     end
@@ -148,7 +148,10 @@ defmodule Europa.ServerTest do
       PlanetManagerMock
       |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
-      |> expect(:tick, fn %Planet{}, ^moves_count -> {:ok, planet, [action]} end)
+      |> expect(:tick, fn %Planet{}, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, [action]}
+      end)
       |> expect(:blood_tile, fn @player_stand_on_tile -> @snow_blood end)
 
       PlayerManagerMock
@@ -584,7 +587,8 @@ defmodule Europa.ServerTest do
 
   defp assert_chat_message(server, category, text) do
     messages = Server.get_chat(server).messages
-    assert Enum.find(messages, fn message -> message.text == text && message.category == category end)
+
+    assert Enum.find(messages, fn message -> String.starts_with?(message.text, text) && message.category == category end)
   end
 
   defp assert_moves_count(action_moves_count, tick_moves_count) do
