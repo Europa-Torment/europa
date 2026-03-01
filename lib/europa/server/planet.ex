@@ -564,6 +564,10 @@ defmodule Europa.Server.Planet do
           coord
       end)
 
+    desperate_moves =
+      [{ex + 1, ey}, {ex - 1, ey}, {ex, ey + 1}, {ex, ey - 1}]
+      |> Enum.filter(fn coord -> movable_tile?(planet.land, coord) end)
+
     cond do
       x_diff > y_diff && move_x ->
         move_x
@@ -579,6 +583,9 @@ defmodule Europa.Server.Planet do
 
       move_y != nil ->
         move_y
+
+      !Enum.empty?(desperate_moves) ->
+        Enum.random(desperate_moves)
 
       true ->
         :stay
