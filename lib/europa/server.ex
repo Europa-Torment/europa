@@ -121,7 +121,7 @@ defmodule Europa.Server do
     GenServer.call(server, :reload)
   end
 
-  @spec unload_weapon(pid(), Loot.uuid()) :: {:ok, Player.t()} | {:error, :not_found} | {:error, :empty_magazine}
+  @spec unload_weapon(pid(), Loot.uuid()) :: :ok | {:error, :not_found} | {:error, :empty_magazine}
   def unload_weapon(server, item_uuid) do
     GenServer.call(server, {:unload_weapon, item_uuid})
   end
@@ -150,12 +150,15 @@ defmodule Europa.Server do
   end
 
   @spec consume_supply(pid(), Loot.uuid()) ::
-          {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+          {:ok, Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def consume_supply(server, item_uuid) do
     GenServer.call(server, {:consume_supply, item_uuid})
   end
 
   ### CALLBACKS ###
+
+  # NOTICE: Do not return updated planet or player structs if callback calls :tick
+  # Game client should get updated structs by itself, otherwise client will get not actual data
 
   @impl true
   def init(uuid) do
@@ -359,7 +362,7 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(unloaded_message)
 
-        {:reply, {:ok, updated_player}, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, :ok, struct(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, weapon.reload_cost, caller_pid}}}
 
       {:error, :empty_magazine} = error ->
@@ -381,7 +384,7 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(unloaded_message)
 
-        {:reply, {:ok, updated_item_box, updated_player},
+        {:reply, {:ok, updated_item_box},
          struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
          {:continue, {:tick, weapon.reload_cost, caller_pid}}}
 
@@ -404,7 +407,7 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(consumed_supply_message)
 
-        {:reply, {:ok, updated_player, supply}, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, supply}, struct(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, supply.consume_cost, caller_pid}}}
 
       error ->

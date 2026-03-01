@@ -90,7 +90,7 @@ defmodule EuropaWeb.GameLive do
             player_stats: get_player_stats(player)
           )
           |> step_sound(player.stand_on)
-          |> damaged_sound(player_before, player)
+          |> damaged_sound(player_before.health, player.health)
 
         {:noreply, socket}
 
@@ -149,7 +149,7 @@ defmodule EuropaWeb.GameLive do
         player_stats: get_player_stats(player)
       )
       |> shoot_sound(shoot_result, weapon)
-      |> damaged_sound(player_before, player)
+      |> damaged_sound(player_before.health, player.health)
 
     {:noreply, socket}
   end
@@ -172,7 +172,7 @@ defmodule EuropaWeb.GameLive do
         player_stats: get_player_stats(player)
       )
       |> reload_sound(result)
-      |> damaged_sound(player_before, player)
+      |> damaged_sound(player_before.health, player.health)
 
     {:noreply, socket}
   end
@@ -287,7 +287,8 @@ defmodule EuropaWeb.GameLive do
     player_before = socket.assigns.player
 
     case Server.unload_weapon(socket.assigns.server, item_uuid) do
-      {:ok, updated_player} ->
+      :ok ->
+        updated_player = Server.get_player(socket.assigns.server)
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
 
         socket =
@@ -302,7 +303,7 @@ defmodule EuropaWeb.GameLive do
             chat: Server.get_chat(socket.assigns.server)
           )
           |> play_sound("unload")
-          |> damaged_sound(player_before, updated_player)
+          |> damaged_sound(player_before.health, updated_player.health)
 
         {:noreply, socket}
 
@@ -315,7 +316,9 @@ defmodule EuropaWeb.GameLive do
     player_before = socket.assigns.player
 
     case Server.unload_item_box_weapon(socket.assigns.server, item_uuid) do
-      {:ok, updated_item_box, updated_player} ->
+      {:ok, updated_item_box} ->
+        updated_player = Server.get_player(socket.assigns.server)
+
         socket =
           socket
           |> assign(
@@ -326,7 +329,7 @@ defmodule EuropaWeb.GameLive do
             chat: Server.get_chat(socket.assigns.server)
           )
           |> play_sound("unload")
-          |> damaged_sound(player_before, updated_player)
+          |> damaged_sound(player_before.health, updated_player.health)
 
         {:noreply, socket}
 
@@ -339,7 +342,16 @@ defmodule EuropaWeb.GameLive do
     player_before = socket.assigns.player
 
     case Server.consume_supply(socket.assigns.server, item_uuid) do
-      {:ok, updated_player, supply} ->
+      {:ok, supply} ->
+        updated_player = Server.get_player(socket.assigns.server)
+
+        now_health =
+          if supply.properties.health do
+            updated_player.health - supply.properties.health
+          else
+            updated_player.health
+          end
+
         socket =
           socket
           |> assign(
@@ -350,7 +362,7 @@ defmodule EuropaWeb.GameLive do
             chat: Server.get_chat(socket.assigns.server)
           )
           |> play_sound(supply.sound_name)
-          |> damaged_sound(player_before, updated_player)
+          |> damaged_sound(player_before.health, now_health)
 
         {:noreply, socket}
 
@@ -444,8 +456,8 @@ defmodule EuropaWeb.GameLive do
     play_sound(socket, sound)
   end
 
-  defp damaged_sound(socket, player_before, player_after) do
-    if player_before.health > player_after.health do
+  defp damaged_sound(socket, health_before, health_now) do
+    if health_before > health_now do
       sound = Enum.random(["damage1", "damage2", "damage3"])
       play_sound_with_delay(socket, sound)
     else

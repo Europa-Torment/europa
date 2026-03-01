@@ -578,6 +578,7 @@ defmodule EuropaWeb.GameCompotents do
   defp filter_keys(keys) do
     Enum.reduce(keys, [], fn key, acc ->
       upcased_key = String.upcase(key)
+
       if upcased_key in acc do
         acc
       else

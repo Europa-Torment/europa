@@ -326,7 +326,7 @@ defmodule Europa.ServerTest do
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
-      assert {:ok, %Player{}} = Server.unload_weapon(server, weapon.uuid)
+      assert Server.unload_weapon(server, weapon.uuid) == :ok
       :timer.sleep(100)
     end
 
@@ -368,7 +368,7 @@ defmodule Europa.ServerTest do
         {:ok, planet, player, item_box, weapon}
       end)
 
-      assert {:ok, ^item_box, %Player{}} = Server.unload_item_box_weapon(server, weapon.uuid)
+      assert {:ok, ^item_box} = Server.unload_item_box_weapon(server, weapon.uuid)
       :timer.sleep(100)
     end
 
@@ -473,7 +473,7 @@ defmodule Europa.ServerTest do
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
-      assert {:ok, %Player{}, ^supply} = Server.consume_supply(server, supply_uuid)
+      assert {:ok, ^supply} = Server.consume_supply(server, supply_uuid)
       :timer.sleep(100)
     end
 
