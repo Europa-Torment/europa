@@ -473,7 +473,7 @@ defmodule Europa.ServerTest do
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
-      assert {:ok, %Player{}} = Server.consume_supply(server, supply_uuid)
+      assert {:ok, %Player{}, ^supply} = Server.consume_supply(server, supply_uuid)
       :timer.sleep(100)
     end
 

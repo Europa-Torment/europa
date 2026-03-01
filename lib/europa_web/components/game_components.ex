@@ -34,6 +34,14 @@ defmodule EuropaWeb.GameCompotents do
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
 
+  def start_screen(assigns) do
+    ~H"""
+    <div class="w-full bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
+      <button id="start_buttom" phx-click="start_game" class="btn btn-xl btn-success">{gettext("Start game")}</button>
+    </div>
+    """
+  end
+
   def game_field(assigns) do
     ~H"""
     <div class="w-3/6 h-fit bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">

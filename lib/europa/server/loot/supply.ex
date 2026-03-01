@@ -28,6 +28,7 @@ defmodule Europa.Server.Loot.Supply do
     field :count, pos_integer()
     field :consume_cost, pos_integer()
     field :properties, Properties.t()
+    field :sound_name, String.t()
   end
 
   @spec new(map()) :: t()
@@ -38,7 +39,8 @@ defmodule Europa.Server.Loot.Supply do
       name: Map.fetch!(attrs, :name),
       count: Map.fetch!(attrs, :count),
       consume_cost: Map.fetch!(attrs, :consume_cost),
-      properties: Map.fetch!(attrs, :properties) |> Properties.new()
+      properties: Map.fetch!(attrs, :properties) |> Properties.new(),
+      sound_name: "eat"
     }
   end
 

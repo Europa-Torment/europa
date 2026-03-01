@@ -150,7 +150,7 @@ defmodule Europa.Server do
   end
 
   @spec consume_supply(pid(), Loot.uuid()) ::
-          {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+          {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def consume_supply(server, item_uuid) do
     GenServer.call(server, {:consume_supply, item_uuid})
   end
@@ -404,7 +404,7 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(consumed_supply_message)
 
-        {:reply, {:ok, updated_player}, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, updated_player, supply}, struct(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, supply.consume_cost, caller_pid}}}
 
       error ->

@@ -60,7 +60,8 @@ defmodule EuropaWeb.GameLive do
           item_box: nil,
           inventory: nil,
           inventory_type: nil,
-          show_control_hints: false
+          show_control_hints: false,
+          game_started: false
         )
         |> assign_sounds()
 
@@ -174,6 +175,10 @@ defmodule EuropaWeb.GameLive do
       |> damaged_sound(player_before, player)
 
     {:noreply, socket}
+  end
+
+  def handle_event("start_game", _params, socket) do
+    {:noreply, assign(socket, game_started: true)}
   end
 
   def handle_event("open_inventory", params, socket) do
@@ -334,7 +339,7 @@ defmodule EuropaWeb.GameLive do
     player_before = socket.assigns.player
 
     case Server.consume_supply(socket.assigns.server, item_uuid) do
-      {:ok, updated_player} ->
+      {:ok, updated_player, supply} ->
         socket =
           socket
           |> assign(
@@ -343,7 +348,7 @@ defmodule EuropaWeb.GameLive do
             player_stats: get_player_stats(updated_player),
             chat: Server.get_chat(socket.assigns.server)
           )
-          |> play_sound("eat")
+          |> play_sound(supply.sound_name)
           |> damaged_sound(player_before, updated_player)
 
         {:noreply, socket}
@@ -383,7 +388,7 @@ defmodule EuropaWeb.GameLive do
   defp assign_sounds(socket) do
     json =
       Jason.encode!(%{
-        background_music: %{name: ~p"/sounds/background_music.mp3", volume: 0.3, loop: true},
+        background_music: %{name: ~p"/sounds/background_music.mp3", volume: 0.1, loop: true},
         snow1: %{name: ~p"/sounds/snow1.mp3", volume: 0.01},
         snow2: %{name: ~p"/sounds/snow2.mp3", volume: 0.01},
         snow3: %{name: ~p"/sounds/snow3.mp3", volume: 0.01},

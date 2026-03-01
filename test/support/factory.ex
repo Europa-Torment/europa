@@ -125,7 +125,8 @@ defmodule Europa.Support.Factory do
       name: sequence(:name, &"supply #{&1 + 1}"),
       count: 1,
       consume_cost: 1,
-      properties: build(:supply_properties)
+      properties: build(:supply_properties),
+      sound_name: "eat"
     }
   end
 
