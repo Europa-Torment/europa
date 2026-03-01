@@ -324,7 +324,7 @@ defmodule EuropaWeb.GameCompotents do
       <input type="checkbox" id="item_box" class="modal-toggle" checked={true} phx-change="close_item_box" />
       <div class="modal overflow-visible" role="dialog">
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
-          <h3 class="text-lg font-bold">{ItemBox.readable_name(@item_box)}</h3>
+          <h3 class="text-lg font-bold pb-3">{ItemBox.readable_name(@item_box)}</h3>
           <%= if Enum.count(@item_box.items) > 0 do %>
             <ul class="list-disc list-inside space-y-2 text-sm">
               <%= for item <- @item_box.items do %>
