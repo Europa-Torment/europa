@@ -36,7 +36,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def start_screen(assigns) do
     ~H"""
-    <div class="w-full bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
+    <div class="w-full p-5 m-5 rounded-box shadow-md grid place-items-center">
       <button id="start_buttom" phx-click="start_game" class="btn btn-xl btn-success">{gettext("Start game")}</button>
     </div>
     """

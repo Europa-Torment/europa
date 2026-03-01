@@ -19,11 +19,11 @@
       <div class="flex-none">
         <ul class="menu menu-horizontal px-1">
           <%= if assigns[:current_user] do %>
-            <li><.link navigate={~p"/games"}>Games</.link></li>
-            <li><.link navigate={~p"/users/logout"}>Sign out</.link></li>
+            <li><.link navigate={~p"/games"}>{gettext("Games")}</.link></li>
+            <li><.link navigate={~p"/users/logout"}>{gettext("Sign out")}</.link></li>
           <% else %>
-            <li><.link navigate={~p"/users/register"}>Sign up</.link></li>
-            <li><.link navigate={~p"/users/login"}>Sign in</.link></li>
+            <li><.link navigate={~p"/users/register"}>{gettext("Sign up")}</.link></li>
+            <li><.link navigate={~p"/users/login"}>{gettext("Sign in")}</.link></li>
           <% end %>
         </ul>
       </div>

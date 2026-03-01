@@ -1,16 +1,16 @@
-<.button navigate={~p"/games/new"}>Start new game</.button>
+<.button navigate={~p"/games/new"}>{gettext("New game")}</.button>
 
 <ul class="list bg-base-100 rounded-box shadow-md">
-  <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Recent games</li>
+  <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{gettext("Recent games")}</li>
 
   <%= for game <- @games do %>
     <li class="list-row">
       <div class="text-4xl font-thin opacity-30 tabular-nums">{game.id}</div>
       <div class="list-col-grow">
         <%= if game.state == :active do %>
-          <div><.link navigate={~p"/games/#{game.uuid}"}>Continue game #{game.id}</.link></div>
+          <div><.link navigate={~p"/games/#{game.uuid}"}>{gettext("Continue game")} #{game.id}</.link></div>
         <% else %>
-          <div>Game over</div>
+          <div>{gettext("Game over")}</div>
         <% end %>
       </div>
     </li>
