@@ -21,16 +21,16 @@ defmodule Europa.Server.Loot do
 
   @max_items_in_item_box fetch_config!([:random_params, :loot, :max_items_in_item_box])
 
-  @item_types %{
-    weapon: gettext("Weapons"),
-    ammo: gettext("Ammo"),
-    helmet: gettext("Helmets"),
-    suit: gettext("Suits"),
-    boots: gettext("Boots"),
-    supply: gettext("Supplies")
-  }
+  @item_types [
+    {:weapon, gettext("Weapons")},
+    {:ammo, gettext("Ammo")},
+    {:supply, gettext("Supplies")},
+    {:helmet, gettext("Helmets")},
+    {:suit, gettext("Suits")},
+    {:boots, gettext("Boots")}
+  ]
 
-  @allowed_item_types Map.keys(@item_types)
+  @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
   @allowed_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle]
 
@@ -176,7 +176,7 @@ defmodule Europa.Server.Loot do
     defp check_weapon(_), do: {:error, %Errors.NotApplicableError{}}
   end
 
-  @spec allowed_item_types() :: map()
+  @spec allowed_item_types() :: list()
   def allowed_item_types, do: @item_types
 
   @spec allowed_item_box_types() :: [item_box_type(), ...]
