@@ -40,7 +40,7 @@ defmodule Europa.Server.Loot.Supply do
       count: Map.fetch!(attrs, :count),
       consume_cost: Map.fetch!(attrs, :consume_cost),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
-      sound_name: "eat"
+      sound_name: Map.fetch!(attrs, :sound_name)
     }
   end
 

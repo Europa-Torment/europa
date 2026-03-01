@@ -4,6 +4,7 @@
         "type": "medicine",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
+        "sound_name": "eat",
         "properties": {
             "health": 30
         },
@@ -14,9 +15,10 @@
         "type": "medicine",
         "count": 1,
         "consume_cost": 2,
+        "sound_name": "injection",
         "properties": {
             "health": 100
         },
-        "random_weight": 0.05
+        "random_weight": 0.08
     }
 ]

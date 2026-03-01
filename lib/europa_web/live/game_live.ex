@@ -343,6 +343,7 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> assign(
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
             player: updated_player,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
@@ -402,6 +403,7 @@ defmodule EuropaWeb.GameLive do
         equip: %{name: ~p"/sounds/equip.mp3", volume: 0.08},
         unequip: %{name: ~p"/sounds/unequip.mp3", volume: 0.08},
         eat: %{name: ~p"/sounds/eat.mp3", volume: 0.08},
+        injection: %{name: ~p"/sounds/injection.mp3", volume: 0.08},
         click: %{name: ~p"/sounds/click.mp3", volume: 0.6},
         damage1: %{name: ~p"/sounds/damage1.mp3", volume: 0.1},
         damage2: %{name: ~p"/sounds/damage2.mp3", volume: 0.1},
