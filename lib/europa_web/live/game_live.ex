@@ -349,10 +349,10 @@ defmodule EuropaWeb.GameLive do
           supply.properties.health && player_before.health != updated_player.health - supply.properties.health
 
         now_health =
-          if is_health_not_changed do
-            updated_player.health
-          else
-            updated_player.health - supply.properties.health
+          cond do
+            is_health_not_changed -> updated_player.health
+            supply.properties.health -> updated_player.health - supply.properties.health
+            true -> updated_player.health
           end
 
         socket =
@@ -516,6 +516,8 @@ defmodule EuropaWeb.GameLive do
     %Player{
       health: health,
       max_health: max_health,
+      warm: warm,
+      max_warm: max_warm,
       accuracy: accuracy,
       efficiency: efficiency,
       inventory: inventory,
@@ -526,6 +528,7 @@ defmodule EuropaWeb.GameLive do
 
     %{
       health: "#{health}/#{max_health}",
+      warm: "#{warm}/#{max_warm}",
       inventory: "#{items_count}/#{inventory_size}",
       accuracy: accuracy,
       efficiency: efficiency

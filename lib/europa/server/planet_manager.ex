@@ -5,10 +5,12 @@ defmodule Europa.Server.PlanetManager do
   Planet manager interface.
   """
 
+  alias Europa.Server
   alias Europa.Server.Planet
   alias Europa.Server.Loot
   alias Europa.Server.Player
   alias Europa.Server.Enemy
+  alias Europa.Server.Action
   alias Europa.Server.Errors
 
   import Europa.Tools.Conf
@@ -111,7 +113,7 @@ defmodule Europa.Server.PlanetManager do
   where `tile` is tile player can't step on.
   """
   @callback move(Planet.t(), Planet.direction(), player_stand_on :: Planet.tile()) ::
-              {:moved, Planet.t(), Planet.move_cost(), Planet.tile()} | {:stay, Planet.tile()}
+              {:moved, Planet.t(), Server.move_cost(), Planet.tile()} | {:stay, Planet.tile()}
 
   @doc """
   Checks if there is `ItemBox` at next tile by current `view_direction` and returns the `ItemBox` if so.
@@ -146,10 +148,10 @@ defmodule Europa.Server.PlanetManager do
   ```
   """
   @callback shoot(Planet.t(), Player.t()) ::
-              {:ok, {Planet.t(), Player.t(), list({Enemy.t(), damage :: pos_integer()}), Planet.move_cost()}}
+              {:ok, {Planet.t(), Player.t(), list({Enemy.t(), damage :: pos_integer()}), Server.move_cost()}}
               | {:error, :empty_magazine}
               | {:error, :no_weapon}
-              | {:error, :miss, Player.t(), Planet.move_cost()}
+              | {:error, :miss, Player.t(), Server.move_cost()}
 
   @callback unload_item_box_weapon(Planet.t(), Player.t(), Loot.uuid()) ::
               {:ok, Planet.t(), Player.t(), Loot.ItemBox.t(), Loot.Item.item()}
@@ -164,7 +166,7 @@ defmodule Europa.Server.PlanetManager do
 
   Should be called after each player's action with moves cost.
   """
-  @callback tick(Planet.t(), Planet.move_cost()) :: {:ok, Planet.t(), list(Planet.Action.t())}
+  @callback tick(Planet.t(), Server.move_cost()) :: {:ok, Planet.t(), list(Action.t())}
 
   @doc """
   Сrops land to size of visible land.

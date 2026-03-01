@@ -20,5 +20,16 @@
             "health": 100
         },
         "random_weight": 0.08
+    },
+    {
+        "name": "Self-heating food tube", 
+        "type": "food",
+        "count": {"from": 1, "to": 5},
+        "consume_cost": 2,
+        "sound_name": "eat",
+        "properties": {
+            "warm": 50
+        },
+        "random_weight": 1.0
     }
 ]

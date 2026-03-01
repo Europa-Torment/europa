@@ -89,7 +89,8 @@ defmodule Europa.ServerTest do
   describe "move/2" do
     test "returns success response (moved)", %{server: server, planet: planet} do
       moves_count = 10
-      action = build(:planet_action)
+      action = build(:action)
+      action2 = build(:action, subject: :player, action_type: :get_cold)
 
       PlanetManagerMock
       |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
@@ -108,10 +109,12 @@ defmodule Europa.ServerTest do
         assert damage == action.subject.damage
         player
       end)
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, [action2]} end)
 
       assert :moved = Server.move(server, @direction)
       assert_chat_message(server, :regular, "You walked at snow, it took #{moves_count} step(s)")
       assert_chat_message(server, :danger, "#{action.subject.name} is attacking you!")
+      assert_chat_message(server, :warning, "You are getting colder")
     end
 
     test "returns success response (stay)", %{server: server} do
@@ -133,7 +136,8 @@ defmodule Europa.ServerTest do
       insert(:game, uuid: game_uuid, state: :active)
 
       moves_count = 10
-      action = build(:planet_action, action_type: :attack, subject: build(:enemy, damage: 500))
+      action = build(:action, action_type: :attack, subject: build(:enemy, damage: 500))
+      action2 = build(:action, action_type: :get_cold, subject: :player)
 
       PlanetManagerMock
       |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
@@ -152,6 +156,7 @@ defmodule Europa.ServerTest do
         assert damage == action.subject.damage
         struct(player, health: 0)
       end)
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, [action2]} end)
 
       assert :moved = Server.move(server, @direction)
       :timer.sleep(200)
@@ -225,6 +230,9 @@ defmodule Europa.ServerTest do
       end)
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+
       assert Server.shoot(server) == {:ok, :shot}
       :timer.sleep(100)
     end
@@ -237,6 +245,9 @@ defmodule Europa.ServerTest do
         {:error, :miss, player, moves_count}
       end)
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
 
       assert Server.shoot(server) == {:ok, :miss}
       :timer.sleep(100)
@@ -273,6 +284,9 @@ defmodule Europa.ServerTest do
 
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
 
       assert Server.reload(server) == :ok
       :timer.sleep(100)
@@ -326,6 +340,9 @@ defmodule Europa.ServerTest do
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
 
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+
       assert Server.unload_weapon(server, weapon.uuid) == :ok
       :timer.sleep(100)
     end
@@ -367,6 +384,9 @@ defmodule Europa.ServerTest do
         assert weapon_uuid == weapon.uuid
         {:ok, planet, player, item_box, weapon}
       end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
 
       assert {:ok, ^item_box} = Server.unload_item_box_weapon(server, weapon.uuid)
       :timer.sleep(100)
@@ -472,6 +492,9 @@ defmodule Europa.ServerTest do
 
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
 
       assert {:ok, ^supply} = Server.consume_supply(server, supply_uuid)
       :timer.sleep(100)

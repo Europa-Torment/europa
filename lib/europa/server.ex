@@ -11,6 +11,7 @@ defmodule Europa.Server do
   alias Europa.Server.Chat
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
+  alias Europa.Server.Action
   alias Europa.Server.Errors
   alias Europa.Tools.TextGenerator
 
@@ -19,6 +20,8 @@ defmodule Europa.Server do
   require Logger
 
   @type land :: list(list())
+
+  @type move_cost :: pos_integer()
 
   @finish_game_on_exit fetch_config!([__MODULE__, :finish_game_on_server_exit])
 
@@ -450,9 +453,12 @@ defmodule Europa.Server do
 
   @impl true
   def handle_continue({:tick, moves_count, caller_pid}, state) do
-    {:ok, updated_planet, actions} = PlanetManager.tick(state.planet, moves_count)
+    {:ok, updated_planet, planet_actions} = PlanetManager.tick(state.planet, moves_count)
+    {:ok, updated_player, player_actions} = PlayerManager.tick(state.player, moves_count)
 
-    updated_player = process_actions(state.player, actions, state.game_uuid, caller_pid)
+    actions = planet_actions ++ player_actions
+
+    updated_player = process_actions(updated_player, actions, state.game_uuid, caller_pid)
 
     updated_chat =
       state.chat
@@ -486,7 +492,7 @@ defmodule Europa.Server do
   defp process_actions(%Player{} = player, actions, game_uuid, caller_pid) when is_list(actions) do
     Enum.reduce(actions, player, fn action, player ->
       case action do
-        %Planet.Action{action_type: :attack, subject: enemy} ->
+        %Action{action_type: :attack, subject: enemy} ->
           blood_tile = PlanetManager.blood_tile(player.stand_on)
 
           player
@@ -617,17 +623,27 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :story)
   end
 
-  defp action_message(%Planet.Action{subject: %Enemy{} = enemy, action_type: :chasing}) do
+  defp action_message(%Action{subject: :player, action_type: :get_cold}) do
+    msg = gettext("You are getting colder")
+    Chat.Message.new(msg, :warning)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: :frostbite}) do
+    msg = gettext("You get frostbite")
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :chasing}) do
     msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} is chasing you")
     Chat.Message.new(msg, :warning)
   end
 
-  defp action_message(%Planet.Action{subject: %Enemy{} = enemy, action_type: :attack}) do
+  defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :attack}) do
     msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} is attacking you!")
     Chat.Message.new(msg, :danger)
   end
 
-  defp action_message(%Planet.Action{subject: %Enemy{} = enemy, action_type: :miss_attack}) do
+  defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :miss_attack}) do
     msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} attacks you but misses.")
     Chat.Message.new(msg, :warning)
   end

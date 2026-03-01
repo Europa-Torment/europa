@@ -4,6 +4,8 @@ defmodule Europa.Server.PlayerManager do
   Player manager interface.
   """
 
+  alias Europa.Server
+  alias Europa.Server.Action
   alias Europa.Server.Player
   alias Europa.Server.Planet
   alias Europa.Server.Loot
@@ -120,6 +122,8 @@ defmodule Europa.Server.PlayerManager do
 
   @callback get_inventory(Player.t(), Loot.item_type() | :all) :: Player.inventory()
 
+  @callback tick(Player.t(), Server.move_cost()) :: {:ok, Player.t(), list(Action.t())}
+
   ### Implementation callers ###
 
   def new, do: manager_impl().new()
@@ -157,6 +161,8 @@ defmodule Europa.Server.PlayerManager do
   def consume_supply(player, supply_uuid), do: manager_impl().consume_supply(player, supply_uuid)
 
   def get_inventory(player, items_type), do: manager_impl().get_inventory(player, items_type)
+
+  def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
 
   ### PRIVATE ###
 

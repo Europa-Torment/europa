@@ -1,22 +1,25 @@
 defmodule Europa.Server.Loot.Supply do
   use TypedStruct
 
+  alias Europa.Server
   alias Europa.Server.Loot
   alias Europa.Tools.Types
 
-  @allowed_types [:medicine]
+  @allowed_types [:medicine, :food]
 
   @type supply_type() :: unquote(Types.one_of(@allowed_types))
 
   defmodule Properties do
     typedstruct do
-      field :health, integer()
+      field :health, integer() | nil
+      field :warm, integer() | nil
     end
 
     @spec new(map()) :: t()
     def new(attrs) when is_map(attrs) do
       %__MODULE__{
-        health: Map.get(attrs, :health)
+        health: Map.get(attrs, :health),
+        warm: Map.get(attrs, :warm)
       }
     end
   end
@@ -26,7 +29,7 @@ defmodule Europa.Server.Loot.Supply do
     field :type, supply_type()
     field :name, String.t()
     field :count, pos_integer()
-    field :consume_cost, pos_integer()
+    field :consume_cost, Server.move_cost()
     field :properties, Properties.t()
     field :sound_name, String.t()
   end
@@ -87,6 +90,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
         name =
           case property do
             :health -> gettext("Health")
+            :warm -> gettext("Warm")
           end
 
         {property, name, value}
@@ -125,6 +129,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
     |> Enum.map_join(", ", fn {property, value} ->
       case property do
         :health -> "H:#{value}"
+        :warm -> "W:#{value}"
       end
     end)
   end

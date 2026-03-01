@@ -77,11 +77,16 @@ defmodule EuropaWeb.GameCompotents do
 
   def player_stats(assigns) do
     ~H"""
-    <div class="bg-base-200 p-5 rounded-box shadow-md text-lg">
-      <ul class="flex space-x-4">
+    <div class="bg-base-200 p-5 rounded-box shadow-md text-sm">
+      <ul class="grid grid-cols-3 gap-3">
         <li>
           <div class="tooltip" data-tip={gettext("Health")}>
             💙 {@player_stats.health}
+          </div>
+        </li>
+        <li>
+          <div class="tooltip" data-tip={gettext("Warm")}>
+            ❄️ {@player_stats.warm}
           </div>
         </li>
         <li {open_inventory_attrs()}>

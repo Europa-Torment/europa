@@ -7,6 +7,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Player
   alias Europa.Server.Planet
   alias Europa.Server.Enemy
+  alias Europa.Server.Action
   alias Europa.Users.User
   alias Europa.Games.Game
   alias Europa.Support.PlanetLandConverter
@@ -90,6 +91,7 @@ defmodule Europa.Support.Factory do
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"helmet #{&1 + 1}"),
       max_health: 1,
+      max_warm: 1,
       accuracy: 2,
       image_name: "default_helmet"
     }
@@ -101,6 +103,7 @@ defmodule Europa.Support.Factory do
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"suit #{&1 + 1}"),
       max_health: 1,
+      max_warm: 1,
       efficiency: 2,
       image_name: "default_suit"
     }
@@ -112,6 +115,7 @@ defmodule Europa.Support.Factory do
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"boots #{&1 + 1}"),
       max_health: 1,
+      max_warm: 1,
       efficiency: 2,
       image_name: "default_boots"
     }
@@ -147,6 +151,8 @@ defmodule Europa.Support.Factory do
       health: 50,
       accuracy: 5,
       efficiency: 1,
+      max_warm: 100,
+      warm: 100,
       stand_on: Planet.snow()
     }
   end
@@ -160,9 +166,9 @@ defmodule Europa.Support.Factory do
     }
   end
 
-  @spec planet_action_factory() :: Planet.Action.t()
-  def planet_action_factory do
-    %Planet.Action{
+  @spec action_factory() :: Action.t()
+  def action_factory do
+    %Action{
       subject: build(:enemy),
       action_type: :attack
     }

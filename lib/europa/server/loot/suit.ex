@@ -9,6 +9,7 @@ defmodule Europa.Server.Loot.Suit do
     field :name, String.t()
     field :efficiency, pos_integer()
     field :max_health, pos_integer()
+    field :max_warm, pos_integer()
     field :image_name, String.t()
   end
 
@@ -20,6 +21,7 @@ defmodule Europa.Server.Loot.Suit do
       name: Map.fetch!(attrs, :name),
       efficiency: Map.fetch!(attrs, :efficiency),
       max_health: Map.fetch!(attrs, :max_health),
+      max_warm: Map.fetch!(attrs, :max_warm),
       image_name: Map.fetch!(attrs, :image_name)
     }
   end
@@ -45,6 +47,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
       " (",
       "E:#{suit.efficiency}",
       " H:#{suit.max_health}",
+      " W:#{suit.max_warm}",
       ")"
     ]
     |> to_string()
@@ -55,7 +58,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
     [
       {:name, gettext("Name"), suit.name},
       {:efficiency, gettext("Efficiency"), suit.efficiency},
-      {:health, gettext("Health"), suit.max_health}
+      {:health, gettext("Health"), suit.max_health},
+      {:warm, gettext("Warm"), suit.max_warm}
     ]
   end
 
@@ -79,7 +83,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
   def player_stats_changes(%Suit{} = suit) do
     %{
       efficiency: suit.efficiency,
-      max_health: suit.max_health
+      max_health: suit.max_health,
+      max_warm: suit.max_warm
     }
   end
 end

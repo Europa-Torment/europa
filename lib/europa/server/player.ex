@@ -5,6 +5,7 @@ defmodule Europa.Server.Player do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet
+  alias Europa.Server.Action
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
@@ -26,6 +27,8 @@ defmodule Europa.Server.Player do
     field :health, non_neg_integer(), enforce: true
     field :accuracy, pos_integer(), enforce: true
     field :efficiency, pos_integer(), enforce: true
+    field :max_warm, pos_integer(), enforce: true
+    field :warm, pos_integer(), enforce: true
     field :stand_on, Planet.tile(), enforce: true
     field :weapon_uuid, Loot.uuid()
     field :helmet_uuid, Loot.uuid()
@@ -36,6 +39,7 @@ defmodule Europa.Server.Player do
   @impl true
   def new do
     max_health = max_health()
+    max_warm = max_warm()
 
     %__MODULE__{
       view_direction: Planet.allowed_directions() |> Enum.random(),
@@ -45,6 +49,8 @@ defmodule Europa.Server.Player do
       health: health(max_health),
       accuracy: accuracy(),
       efficiency: efficiency(),
+      max_warm: max_warm(),
+      warm: warm(max_warm),
       stand_on: Planet.snow()
     }
   end
@@ -77,6 +83,7 @@ defmodule Europa.Server.Player do
 
     [
       {gettext("Health"), "#{player.health}/#{player.max_health}"},
+      {gettext("Warm"), "#{player.warm}/#{player.max_warm}"},
       {gettext("Inventory"), "#{Enum.count(player.inventory)}/#{player.inventory_size}"},
       {gettext("Accuracy"), player.accuracy},
       {gettext("Efficiency"), player.efficiency},
@@ -245,7 +252,63 @@ defmodule Europa.Server.Player do
     Enum.filter(inventory, fn item -> Loot.Item.item_type(item) == items_type end)
   end
 
+  @impl true
+  def tick(%__MODULE__{} = player, moves_count) when moves_count > 0 do
+    do_tick(player, moves_count)
+  end
+
+  def tick(player, _), do: {:ok, player, []}
+
   ### PRIVATE ###
+
+  defp do_tick(player, moves_count) do
+    do_tick(player, moves_count, [])
+  end
+
+  defp do_tick(player, 0, actions) do
+    {:ok, player, actions}
+  end
+
+  defp do_tick(player, moves_count, actions) do
+    ticks = [
+      fn player -> get_cold(player) end
+    ]
+
+    {updated_player, actions} =
+      Enum.reduce(ticks, {player, actions}, fn tick_fn, {player, actions} ->
+        {updated_player, new_actions} = tick_fn.(player)
+        {updated_player, actions ++ new_actions}
+      end)
+
+    do_tick(updated_player, moves_count - 1, actions)
+  end
+
+  defp get_cold(%__MODULE__{warm: 0} = player) do
+    if m_to_n?(1, 10) do
+      {take_damage(player, 1), [Action.new(:player, :frostbite)]}
+    else
+      {player, []}
+    end
+  end
+
+  defp get_cold(%__MODULE__{max_warm: max_warm, warm: warm} = player) do
+    is_get_colder =
+      if m_to_n?(warm, max_warm) do
+        if m_to_n?(1, 10) do
+          false
+        else
+          true
+        end
+      else
+        true
+      end
+
+    if is_get_colder do
+      {struct(player, warm: max(player.warm - 1, 0)), [Action.new(:player, :get_cold)]}
+    else
+      {player, []}
+    end
+  end
 
   defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do
     stats_changes = Loot.Item.player_stats_changes(supply)
@@ -385,11 +448,25 @@ defmodule Europa.Server.Player do
   defp decrease_attrs(player, attrs) do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
-        :inventory_size -> struct(player, inventory_size: player.inventory_size - attr_value)
-        :accuracy -> struct(player, accuracy: player.accuracy - attr_value)
-        :efficiency -> struct(player, efficiency: player.efficiency - attr_value)
-        :max_health -> struct(player, max_health: player.max_health - attr_value)
-        _ -> player
+        :inventory_size ->
+          struct(player, inventory_size: player.inventory_size - attr_value)
+
+        :accuracy ->
+          struct(player, accuracy: player.accuracy - attr_value)
+
+        :efficiency ->
+          struct(player, efficiency: player.efficiency - attr_value)
+
+        :max_health ->
+          max_health = player.max_health - attr_value
+          struct(player, max_health: max_health, health: min(player.health, max_health))
+
+        :max_warm ->
+          max_warm = player.max_warm - attr_value
+          struct(player, max_warm: max_warm, warm: min(player.warm, max_warm))
+
+        _ ->
+          player
       end
     end)
   end
@@ -402,6 +479,8 @@ defmodule Europa.Server.Player do
         :efficiency -> struct(player, efficiency: player.efficiency + attr_value)
         :max_health -> struct(player, max_health: player.max_health + attr_value)
         :health -> struct(player, health: min(player.max_health, player.health + attr_value))
+        :max_warm -> struct(player, max_warm: player.max_warm + attr_value)
+        :warm -> struct(player, warm: min(player.max_warm, player.warm + attr_value))
         _ -> player
       end
     end)
@@ -460,5 +539,17 @@ defmodule Europa.Server.Player do
     to = fetch_config!([:random_params, :player, :efficiency, :to])
 
     m_to_n(from, to)
+  end
+
+  defp max_warm do
+    from = fetch_config!([:random_params, :player, :max_warm, :from])
+    to = fetch_config!([:random_params, :player, :max_warm, :to])
+
+    m_to_n(from, to)
+  end
+
+  defp warm(max_warm) do
+    half_of_warm = div(max_warm, 2)
+    m_to_n(half_of_warm, max_warm)
   end
 end

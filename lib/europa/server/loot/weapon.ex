@@ -2,6 +2,7 @@ defmodule Europa.Server.Loot.Weapon do
   use TypedStruct
 
   alias Europa.Tools.Types
+  alias Europa.Server
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon.Ammo
 
@@ -18,8 +19,8 @@ defmodule Europa.Server.Loot.Weapon do
     field :uuid, Loot.uuid()
     field :equiped, boolean(), default: false
     field :name, String.t()
-    field :shot_cost, pos_integer()
-    field :reload_cost, pos_integer()
+    field :shot_cost, Server.move_cost()
+    field :reload_cost, Server.move_cost()
     field :magazine_size, pos_integer()
     field :accuracy, pos_integer()
     field :rounds_loaded, integer()

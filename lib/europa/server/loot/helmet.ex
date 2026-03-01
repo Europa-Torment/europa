@@ -9,6 +9,7 @@ defmodule Europa.Server.Loot.Helmet do
     field :name, String.t()
     field :accuracy, pos_integer()
     field :max_health, pos_integer()
+    field :max_warm, pos_integer()
     field :image_name, String.t()
   end
 
@@ -20,6 +21,7 @@ defmodule Europa.Server.Loot.Helmet do
       name: Map.fetch!(attrs, :name),
       accuracy: Map.fetch!(attrs, :accuracy),
       max_health: Map.fetch!(attrs, :max_health),
+      max_warm: Map.fetch!(attrs, :max_warm),
       image_name: Map.fetch!(attrs, :image_name)
     }
   end
@@ -45,6 +47,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
       " (",
       "A:#{helmet.accuracy}",
       " H:#{helmet.max_health}",
+      " W:#{helmet.max_warm}",
       ")"
     ]
     |> to_string()
@@ -55,7 +58,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
     [
       {:name, gettext("Name"), helmet.name},
       {:accuracy, gettext("Accuracy"), helmet.accuracy},
-      {:health, gettext("Health"), helmet.max_health}
+      {:health, gettext("Health"), helmet.max_health},
+      {:warm, gettext("Warm"), helmet.max_warm}
     ]
   end
 
@@ -79,7 +83,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
   def player_stats_changes(%Helmet{} = helmet) do
     %{
       accuracy: helmet.accuracy,
-      max_health: helmet.max_health
+      max_health: helmet.max_health,
+      max_warm: helmet.max_warm
     }
   end
 end

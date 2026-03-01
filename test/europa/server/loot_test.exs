@@ -59,7 +59,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:name, "Name", helmet.name},
         {:accuracy, "Accuracy", helmet.accuracy},
-        {:health, "Health", helmet.max_health}
+        {:health, "Health", helmet.max_health},
+        {:warm, "Warm", helmet.max_warm}
       ]
 
       assert Item.readable_attrs(helmet) == expected_attrs
@@ -71,7 +72,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:name, "Name", suit.name},
         {:efficiency, "Efficiency", suit.efficiency},
-        {:health, "Health", suit.max_health}
+        {:health, "Health", suit.max_health},
+        {:warm, "Warm", suit.max_warm}
       ]
 
       assert Item.readable_attrs(suit) == expected_attrs
@@ -83,7 +85,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:name, "Name", boots.name},
         {:efficiency, "Efficiency", boots.efficiency},
-        {:health, "Health", boots.max_health}
+        {:health, "Health", boots.max_health},
+        {:warm, "Warm", boots.max_warm}
       ]
 
       assert Item.readable_attrs(boots) == expected_attrs

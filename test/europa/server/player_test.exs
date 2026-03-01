@@ -36,6 +36,7 @@ defmodule Europa.Server.PlayerTest do
 
       expected_stats = [
         {"Health", "#{player.health}/#{player.max_health}"},
+        {"Warm", "#{player.warm}/#{player.max_warm}"},
         {"Inventory", "#{Enum.count(player.inventory)}/#{player.inventory_size}"},
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
@@ -65,6 +66,7 @@ defmodule Europa.Server.PlayerTest do
 
       expected_stats = [
         {"Health", "#{player.health}/#{player.max_health}"},
+        {"Warm", "#{player.warm}/#{player.max_warm}"},
         {"Inventory", "#{Enum.count(player.inventory)}/#{player.inventory_size}"},
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
@@ -212,6 +214,26 @@ defmodule Europa.Server.PlayerTest do
 
       expected_accuracy = player.accuracy - weapon.accuracy
       assert {:ok, %Player{accuracy: ^expected_accuracy}} = Player.unequip_item(player, weapon.uuid)
+    end
+
+    test "decreases health" do
+      suit = build(:suit, max_health: 10)
+      player = build(:player, max_health: 100, health: 100, suit_uuid: suit.uuid, inventory: [suit])
+
+      expected_max_health = player.max_health - suit.max_health
+
+      assert {:ok, %Player{max_health: ^expected_max_health, health: ^expected_max_health}} =
+               Player.unequip_item(player, suit.uuid)
+    end
+
+    test "decreases warm" do
+      suit = build(:suit, max_warm: 10)
+      player = build(:player, max_warm: 100, warm: 100, suit_uuid: suit.uuid, inventory: [suit])
+
+      expected_max_warm = player.max_warm - suit.max_warm
+
+      assert {:ok, %Player{max_warm: ^expected_max_warm, warm: ^expected_max_warm}} =
+               Player.unequip_item(player, suit.uuid)
     end
 
     test "returns error when no given item in inventory", %{player: player} do
@@ -459,6 +481,55 @@ defmodule Europa.Server.PlayerTest do
       assert Player.get_inventory(player, :weapon) == [weapon]
       assert Player.get_inventory(player, :ammo) == [ammo]
       assert Player.get_inventory(player, :supply) == [supply]
+    end
+  end
+
+  describe "tick/2" do
+    property "damages frozen player" do
+      player = build(:player, health: 100, max_warm: 100, warm: 0)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          damages_count =
+            Enum.count(results, fn {:ok, updated_player, actions} ->
+              updated_player.health < player.health &&
+                Enum.find(actions, fn action -> action.action_type == :frostbite end)
+            end)
+
+          damages_proportion = damages_count / num_runs
+
+          assert damages_proportion >= 0.01
+          assert damages_proportion <= 0.4
+        end
+      end
+    end
+
+    property "decreases player warm" do
+      player = build(:player, health: 100, max_warm: 100, warm: 100)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          get_cold_count =
+            Enum.count(results, fn {:ok, updated_player, actions} ->
+              updated_player.warm < player.warm && Enum.find(actions, fn action -> action.action_type == :get_cold end)
+            end)
+
+          get_cold_proportion = get_cold_count / num_runs
+
+          assert get_cold_proportion >= 0.01
+          assert get_cold_proportion <= 1.0
+        end
+      end
     end
   end
 

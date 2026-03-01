@@ -73,6 +73,10 @@ config :europa, :random_params,
     efficiency: [
       from: 1,
       to: 5
+    ],
+    max_warm: [
+      from: 100,
+      to: 120
     ]
   ],
   loot: [

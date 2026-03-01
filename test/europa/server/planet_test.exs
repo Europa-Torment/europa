@@ -6,6 +6,7 @@ defmodule Europa.Server.PlanetTest do
   alias Europa.Server.Player
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Enemy
+  alias Europa.Server.Action
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Loot.Weapon
@@ -523,7 +524,7 @@ defmodule Europa.Server.PlanetTest do
     test "enemy moves down to player" do
       planet = build(:planet, land: @land_player_look_up_at_enemy, current_coord: {4, 7})
 
-      assert {:ok, %Planet{land: updated_land}, [%Planet.Action{subject: @en, action_type: :chasing}]} =
+      assert {:ok, %Planet{land: updated_land}, [%Action{subject: @en, action_type: :chasing}]} =
                Planet.tick(planet, 1)
 
       assert updated_land == @land_player_up_close_to_enemy
@@ -532,7 +533,7 @@ defmodule Europa.Server.PlanetTest do
     test "enemy moves up to player" do
       planet = build(:planet, land: @land_player_look_down_at_enemy, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: updated_land}, [%Planet.Action{subject: @en, action_type: :chasing}]} =
+      assert {:ok, %Planet{land: updated_land}, [%Action{subject: @en, action_type: :chasing}]} =
                Planet.tick(planet, 1)
 
       assert updated_land == @land_player_down_close_to_enemy
@@ -541,7 +542,7 @@ defmodule Europa.Server.PlanetTest do
     test "enemy moves left to player" do
       planet = build(:planet, land: @land_player_look_right_at_enemy, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: updated_land}, [%Planet.Action{subject: @en, action_type: :chasing}]} =
+      assert {:ok, %Planet{land: updated_land}, [%Action{subject: @en, action_type: :chasing}]} =
                Planet.tick(planet, 1)
 
       assert updated_land == @land_player_left_close_to_enemy
@@ -550,7 +551,7 @@ defmodule Europa.Server.PlanetTest do
     test "enemy moves right to player" do
       planet = build(:planet, land: @land_player_look_left_at_enemy, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: updated_land}, [%Planet.Action{subject: @en, action_type: :chasing}]} =
+      assert {:ok, %Planet{land: updated_land}, [%Action{subject: @en, action_type: :chasing}]} =
                Planet.tick(planet, 1)
 
       assert updated_land == @land_player_right_close_to_enemy

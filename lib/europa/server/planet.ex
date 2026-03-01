@@ -11,6 +11,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
+  alias Europa.Server.Action
 
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
@@ -64,8 +65,6 @@ defmodule Europa.Server.Planet do
   @directions [:up, :down, :right, :left]
   @type direction :: unquote(Types.one_of(@directions))
 
-  @type move_cost :: pos_integer()
-
   @type readable_tile_name :: String.t()
 
   @type tile :: unquote(Types.one_of([@player | @landscape_tiles])) | Loot.ItemBox.t()
@@ -85,26 +84,6 @@ defmodule Europa.Server.Planet do
     field :land, Land.t()
     field :current_coord, coord()
     field :year, pos_integer()
-  end
-
-  defmodule Action do
-    @allowed_action_types [:attack, :miss_attack, :chasing, :stay]
-
-    @type subject :: Enemy.t()
-    @type action_type :: unquote(Types.one_of(@allowed_action_types))
-
-    typedstruct enforce: true do
-      field :subject, subject()
-      field :action_type, action_type()
-    end
-
-    @spec new(subject(), action_type()) :: t()
-    def new(subject, action_type) when action_type in @allowed_action_types do
-      %__MODULE__{
-        subject: subject,
-        action_type: action_type
-      }
-    end
   end
 
   ### PUBLIC INTERFACE ###
