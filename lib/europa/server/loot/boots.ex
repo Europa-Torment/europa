@@ -33,6 +33,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
   @spec item_type(Boots.t()) :: :boots
   def item_type(%Boots{}), do: :boots
 
+  @spec negative_attrs(Boots.t()) :: list(atom())
+  def negative_attrs(%Boots{}) do
+    []
+  end
+
   @spec composed_name(Boots.t()) :: String.t()
   def composed_name(%Boots{} = boots) do
     [
@@ -48,9 +53,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
   @spec readable_attrs(Boots.t()) :: list()
   def readable_attrs(%Boots{} = boots) do
     [
-      {gettext("Name"), boots.name},
-      {gettext("Efficiency"), boots.efficiency},
-      {gettext("Health"), boots.max_health}
+      {:name, gettext("Name"), boots.name},
+      {:efficiency, gettext("Efficiency"), boots.efficiency},
+      {:health, gettext("Health"), boots.max_health}
     ]
   end
 

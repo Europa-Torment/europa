@@ -14,21 +14,29 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "negative_attrs/1" do
+    test "returns list of atoms" do
+      for item <- [build(:weapon), build(:ammo), build(:helmet), build(:suit), build(:boots), build(:supply)] do
+        assert Item.negative_attrs(item) |> Enum.all?(&is_atom/1)
+      end
+    end
+  end
+
   describe "readable_attrs/1" do
     test "returns attrs for weapon" do
       weapon = build(:weapon)
 
       expected_attrs = [
-        {"Name", weapon.name},
-        {"Damage", weapon.damage},
-        {"Accuracy", weapon.accuracy},
-        {"Shooting distance", weapon.shooting_distance},
-        {"Shooting type", weapon.shooting_type},
-        {"Shot cost", weapon.shot_cost},
-        {"Reload cost", weapon.reload_cost},
-        {"Magazine", weapon.magazine_size},
-        {"Loaded", weapon.rounds_loaded},
-        {"Caliber", weapon.caliber}
+        {:name, "Name", weapon.name},
+        {:damage, "Damage", weapon.damage},
+        {:accuracy, "Accuracy", weapon.accuracy},
+        {:shooting_distance, "Shooting distance", weapon.shooting_distance},
+        {:shooting_type, "Shooting type", weapon.shooting_type},
+        {:shot_cost, "Shot cost", weapon.shot_cost},
+        {:reload_cost, "Reload cost", weapon.reload_cost},
+        {:magazine_size, "Magazine", weapon.magazine_size},
+        {:rounds_loaded, "Loaded", weapon.rounds_loaded},
+        {:caliber, "Caliber", weapon.caliber}
       ]
 
       assert Item.readable_attrs(weapon) == expected_attrs
@@ -38,8 +46,8 @@ defmodule Europa.Server.Loot.ItemTest do
       ammo = build(:ammo)
 
       expected_attrs = [
-        {"Caliber", ammo.caliber},
-        {"Count", ammo.count}
+        {:caliber, "Caliber", ammo.caliber},
+        {:count, "Count", ammo.count}
       ]
 
       assert Item.readable_attrs(ammo) == expected_attrs
@@ -49,9 +57,9 @@ defmodule Europa.Server.Loot.ItemTest do
       helmet = build(:helmet)
 
       expected_attrs = [
-        {"Name", helmet.name},
-        {"Accuracy", helmet.accuracy},
-        {"Health", helmet.max_health}
+        {:name, "Name", helmet.name},
+        {:accuracy, "Accuracy", helmet.accuracy},
+        {:health, "Health", helmet.max_health}
       ]
 
       assert Item.readable_attrs(helmet) == expected_attrs
@@ -61,9 +69,9 @@ defmodule Europa.Server.Loot.ItemTest do
       suit = build(:suit)
 
       expected_attrs = [
-        {"Name", suit.name},
-        {"Efficiency", suit.efficiency},
-        {"Health", suit.max_health}
+        {:name, "Name", suit.name},
+        {:efficiency, "Efficiency", suit.efficiency},
+        {:health, "Health", suit.max_health}
       ]
 
       assert Item.readable_attrs(suit) == expected_attrs
@@ -73,9 +81,9 @@ defmodule Europa.Server.Loot.ItemTest do
       boots = build(:boots)
 
       expected_attrs = [
-        {"Name", boots.name},
-        {"Efficiency", boots.efficiency},
-        {"Health", boots.max_health}
+        {:name, "Name", boots.name},
+        {:efficiency, "Efficiency", boots.efficiency},
+        {:health, "Health", boots.max_health}
       ]
 
       assert Item.readable_attrs(boots) == expected_attrs
@@ -85,9 +93,9 @@ defmodule Europa.Server.Loot.ItemTest do
       supply = build(:supply, properties: build(:supply_properties, health: 11))
 
       expected_attrs = [
-        {"Health", supply.properties.health},
-        {"Count", supply.count},
-        {"Consume cost", supply.consume_cost}
+        {:health, "Health", supply.properties.health},
+        {:count, "Count", supply.count},
+        {:consume_cost, "Consume cost", supply.consume_cost}
       ]
 
       assert Item.readable_attrs(supply) == expected_attrs

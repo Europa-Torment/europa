@@ -87,6 +87,9 @@ defmodule Europa.Server.Loot do
 
     @spec player_stats_changes(item()) :: map()
     def player_stats_changes(item)
+
+    @spec negative_attrs(item()) :: list(atom())
+    def negative_attrs(item)
   end
 
   defmodule ItemBox do

@@ -394,25 +394,33 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_item_attrs(item, nil) do
-    Item.readable_attrs(item)
+    item
+    |> Item.readable_attrs()
+    |> Enum.map(fn {_attr, name, value} -> {name, value} end)
   end
 
   defp get_item_attrs(item, current_item) do
     item_attrs = Item.readable_attrs(item)
     current_item_attrs = Item.readable_attrs(current_item)
 
-    Enum.with_index(item_attrs, fn {name, value}, index ->
-      {_current_name, current_value} = Enum.at(current_item_attrs, index)
+    Enum.with_index(item_attrs, fn {attr, name, value}, index ->
+      {_current_attr, _current_name, current_value} = Enum.at(current_item_attrs, index)
 
       cond do
         (is_binary(value) or is_atom(value)) && value != current_value ->
           {name, "#{value} (diff)"}
 
-        is_integer(value) && value > current_value ->
+        is_integer(value) && value > current_value && attr not in Item.negative_attrs(item) ->
           {name, "#{value} (+#{value - current_value})", "text-blue-500"}
 
-        is_integer(value) && value < current_value ->
+        is_integer(value) && value > current_value && attr in Item.negative_attrs(item) ->
+          {name, "#{value} (+#{value - current_value})", "text-red-500"}
+
+        is_integer(value) && value < current_value && attr not in Item.negative_attrs(item) ->
           {name, "#{value} (-#{current_value - value})", "text-red-500"}
+
+        is_integer(value) && value < current_value && attr in Item.negative_attrs(item) ->
+          {name, "#{value} (-#{current_value - value})", "text-blue-500"}
 
         true ->
           {name, value}

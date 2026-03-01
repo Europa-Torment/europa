@@ -60,6 +60,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   @spec item_type(Supply.t()) :: :supply
   def item_type(%Supply{}), do: :supply
 
+  @spec negative_attrs(Supply.t()) :: list(atom())
+  def negative_attrs(%Supply{}) do
+    [:consume_cost]
+  end
+
   @spec composed_name(Supply.t()) :: String.t()
   def composed_name(%Supply{} = supply) do
     [
@@ -84,10 +89,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
             :health -> gettext("Health")
           end
 
-        {name, value}
+        {property, name, value}
       end)
 
-    properties_attrs ++ [{gettext("Count"), supply.count}, {gettext("Consume cost"), supply.consume_cost}]
+    properties_attrs ++
+      [{:count, gettext("Count"), supply.count}, {:consume_cost, gettext("Consume cost"), supply.consume_cost}]
   end
 
   @spec equip(Supply.t()) :: {:error, Errors.NotApplicableError.t()}

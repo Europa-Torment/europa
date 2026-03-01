@@ -345,11 +345,14 @@ defmodule EuropaWeb.GameLive do
       {:ok, supply} ->
         updated_player = Server.get_player(socket.assigns.server)
 
+        is_health_not_changed =
+          supply.properties.health && player_before.health != updated_player.health - supply.properties.health
+
         now_health =
-          if supply.properties.health do
-            updated_player.health - supply.properties.health
-          else
+          if is_health_not_changed do
             updated_player.health
+          else
+            updated_player.health - supply.properties.health
           end
 
         socket =

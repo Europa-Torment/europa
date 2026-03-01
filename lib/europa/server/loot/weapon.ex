@@ -112,6 +112,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
   @spec item_type(Weapon.t()) :: :weapon
   def item_type(%Weapon{}), do: :weapon
 
+  @spec negative_attrs(Weapon.t()) :: list(atom())
+  def negative_attrs(%Weapon{}) do
+    [:reload_cost, :shot_cost]
+  end
+
   @spec composed_name(Weapon.t()) :: String.t()
   def composed_name(%Weapon{} = weapon) do
     [
@@ -134,16 +139,16 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
   @spec readable_attrs(Weapon.t()) :: list()
   def readable_attrs(%Weapon{} = weapon) do
     [
-      {gettext("Name"), weapon.name},
-      {gettext("Damage"), weapon.damage},
-      {gettext("Accuracy"), weapon.accuracy},
-      {gettext("Shooting distance"), weapon.shooting_distance},
-      {gettext("Shooting type"), weapon.shooting_type},
-      {gettext("Shot cost"), weapon.shot_cost},
-      {gettext("Reload cost"), weapon.reload_cost},
-      {gettext("Magazine"), weapon.magazine_size},
-      {gettext("Loaded"), weapon.rounds_loaded},
-      {gettext("Caliber"), weapon.caliber}
+      {:name, gettext("Name"), weapon.name},
+      {:damage, gettext("Damage"), weapon.damage},
+      {:accuracy, gettext("Accuracy"), weapon.accuracy},
+      {:shooting_distance, gettext("Shooting distance"), weapon.shooting_distance},
+      {:shooting_type, gettext("Shooting type"), weapon.shooting_type},
+      {:shot_cost, gettext("Shot cost"), weapon.shot_cost},
+      {:reload_cost, gettext("Reload cost"), weapon.reload_cost},
+      {:magazine_size, gettext("Magazine"), weapon.magazine_size},
+      {:rounds_loaded, gettext("Loaded"), weapon.rounds_loaded},
+      {:caliber, gettext("Caliber"), weapon.caliber}
     ]
   end
 

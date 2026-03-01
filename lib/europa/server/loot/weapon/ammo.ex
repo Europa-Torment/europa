@@ -35,6 +35,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   @spec item_type(Ammo.t()) :: :ammo
   def item_type(%Ammo{}), do: :ammo
 
+  @spec negative_attrs(Ammo.t()) :: list(atom())
+  def negative_attrs(%Ammo{}) do
+    []
+  end
+
   @spec composed_name(Ammo.t()) :: String.t()
   def composed_name(%Ammo{} = ammo) do
     "AMMO: #{ammo.caliber} (#{ammo.count})"
@@ -43,8 +48,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   @spec readable_attrs(Ammo.t()) :: list()
   def readable_attrs(%Ammo{} = ammo) do
     [
-      {gettext("Caliber"), ammo.caliber},
-      {gettext("Count"), ammo.count}
+      {:caliber, gettext("Caliber"), ammo.caliber},
+      {:count, gettext("Count"), ammo.count}
     ]
   end
 
