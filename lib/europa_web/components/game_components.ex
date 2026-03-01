@@ -565,7 +565,7 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp control_hint(action, keys) do
-    assigns = %{action: action, keys: keys}
+    assigns = %{action: action, keys: filter_keys(keys)}
 
     ~H"""
     <%= for key <- @keys do %>
@@ -575,10 +575,21 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
-  defp maybe_format_key_name("ArrowUp"), do: "▲"
-  defp maybe_format_key_name("ArrowDown"), do: "▼"
-  defp maybe_format_key_name("ArrowLeft"), do: "◀︎"
-  defp maybe_format_key_name("ArrowRight"), do: "▶︎"
+  defp filter_keys(keys) do
+    Enum.reduce(keys, [], fn key, acc ->
+      upcased_key = String.upcase(key)
+      if upcased_key in acc do
+        acc
+      else
+        acc ++ [upcased_key]
+      end
+    end)
+  end
+
+  defp maybe_format_key_name("ARROWUP"), do: "▲"
+  defp maybe_format_key_name("ARROWDOWN"), do: "▼"
+  defp maybe_format_key_name("ARROWLEFT"), do: "◀︎"
+  defp maybe_format_key_name("ARROWRIGHT"), do: "▶︎"
   defp maybe_format_key_name(key), do: key
 
   defp open_inventory_click do
