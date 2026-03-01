@@ -84,7 +84,7 @@ defmodule EuropaWeb.GameCompotents do
             💙 {@player_stats.health}
           </div>
         </li>
-        <li phx-click={open_inventory_click()}>
+        <li {open_inventory_attrs()}>
           <div class="tooltip" data-tip={gettext("Inventory")}>
             💼 {@player_stats.inventory}
           </div>
@@ -120,6 +120,7 @@ defmodule EuropaWeb.GameCompotents do
           <%= if @helmet do %>
             <img
               id={"helmet-#{@helmet.uuid}"}
+              {open_inventory_attrs("helmet")}
               phx-hook="Tooltip"
               data-tooltip={item_tooltip(@helmet, @player)}
               src={~p"/images/#{@helmet.image_name <> ".png"}"}
@@ -129,6 +130,7 @@ defmodule EuropaWeb.GameCompotents do
           <% else %>
             <img
               id="no-helmet"
+              {open_inventory_attrs("helmet")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No helmet")}
               src={~p"/images/no_helmet.png"}
@@ -140,6 +142,7 @@ defmodule EuropaWeb.GameCompotents do
           <%= if @suit do %>
             <img
               id={"suit-#{@suit.uuid}"}
+              {open_inventory_attrs("suit")}
               phx-hook="Tooltip"
               data-tooltip={item_tooltip(@suit, @player)}
               src={~p"/images/#{@suit.image_name <> ".png"}"}
@@ -149,6 +152,7 @@ defmodule EuropaWeb.GameCompotents do
           <% else %>
             <img
               id="no-suit"
+              {open_inventory_attrs("suit")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No suit")}
               src={~p"/images/no_suit.png"}
@@ -160,6 +164,7 @@ defmodule EuropaWeb.GameCompotents do
           <%= if @boots do %>
             <img
               id={"boots-#{@boots.uuid}"}
+              {open_inventory_attrs("boots")}
               phx-hook="Tooltip"
               data-tooltip={item_tooltip(@boots, @player)}
               src={~p"/images/#{@boots.image_name <> ".png"}"}
@@ -169,6 +174,7 @@ defmodule EuropaWeb.GameCompotents do
           <% else %>
             <img
               id="no-boots"
+              {open_inventory_attrs("boots")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No boots")}
               src={~p"/images/no_boots.png"}
@@ -182,6 +188,7 @@ defmodule EuropaWeb.GameCompotents do
           <%= if @weapon do %>
             <img
               id={"weapon-#{@weapon.uuid}"}
+              {open_inventory_attrs("weapon")}
               phx-hook="Tooltip"
               data-tooltip={item_tooltip(@weapon, @player)}
               src={~p"/images/#{@weapon.image_name <> ".png"}"}
@@ -191,6 +198,7 @@ defmodule EuropaWeb.GameCompotents do
           <% else %>
             <img
               id="no-weapon"
+              {open_inventory_attrs("weapon")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No weapon")}
               src={~p"/images/no_weapon.png"}
@@ -207,7 +215,7 @@ defmodule EuropaWeb.GameCompotents do
   def ammo_info(assigns) do
     ~H"""
     <%= if @weapon do %>
-      <div class="bg-base-200 p-5 rounded-box shadow-md text-xs">
+      <div class="bg-base-200 p-5 rounded-box shadow-md text-xs" {open_inventory_attrs("ammo")}>
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")}/#{gettext("In inventory")}"}>
           {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
         </p>
@@ -252,7 +260,7 @@ defmodule EuropaWeb.GameCompotents do
               role="tab"
               class={"#{item_tab_class(:all, @inventory_type)}"}
               id="tab-all"
-              phx-click={open_inventory_click()}
+              {open_inventory_attrs()}
             >
               All
             </a>
@@ -261,8 +269,7 @@ defmodule EuropaWeb.GameCompotents do
                 role="tab"
                 class={"#{item_tab_class(item_type, @inventory_type)}"}
                 id={"tab-#{item_type}"}
-                phx-click={open_inventory_click()}
-                phx-value-type={"#{item_type}"}
+                {open_inventory_attrs(item_type)}
               >
                 {item_type_name}
               </a>
@@ -592,6 +599,16 @@ defmodule EuropaWeb.GameCompotents do
   defp maybe_format_key_name("ARROWLEFT"), do: "◀︎"
   defp maybe_format_key_name("ARROWRIGHT"), do: "▶︎"
   defp maybe_format_key_name(key), do: key
+
+  defp open_inventory_attrs(type \\ nil) do
+    attrs = ["phx-click": open_inventory_click()]
+
+    if type do
+      attrs ++ ["phx-value-type": type]
+    else
+      attrs
+    end
+  end
 
   defp open_inventory_click do
     JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_inventory")
