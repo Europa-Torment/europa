@@ -219,6 +219,7 @@ defmodule Europa.Server do
   def handle_call({:move, direction}, {caller_pid, _}, state) do
     case PlanetManager.move(state.planet, direction, state.player.stand_on) do
       {:moved, updated_planet, moves_count, step_on_tile} ->
+        moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, state.player.efficiency)
         moved_message = moved_message(moves_count, step_on_tile)
 
         updated_chat =
@@ -296,6 +297,7 @@ defmodule Europa.Server do
   def handle_call(:shoot, {caller_pid, _}, state) do
     case PlanetManager.shoot(state.planet, state.player) do
       {:ok, {updated_planet, updated_player, damaged_enemies, moves_count}} ->
+        moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
         shoot_message = shoot_message(moves_count)
 
         updated_chat =
@@ -307,6 +309,7 @@ defmodule Europa.Server do
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :miss, updated_player, moves_count} ->
+        moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
         shoot_message = shoot_message(moves_count)
         miss_message = miss_message()
 
@@ -333,7 +336,8 @@ defmodule Europa.Server do
   def handle_call(:reload, {caller_pid, _}, state) do
     case PlayerManager.reload_weapon(state.player) do
       {:ok, updated_player, weapon} ->
-        reloaded_message = reloaded_message(weapon)
+        moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
+        reloaded_message = reloaded_message(weapon, moves_count)
 
         updated_chat =
           state.chat
@@ -362,14 +366,15 @@ defmodule Europa.Server do
   def handle_call({:unload_weapon, item_uuid}, {caller_pid, _}, state) do
     case PlayerManager.unload_weapon(state.player, item_uuid) do
       {:ok, updated_player, weapon} ->
-        unloaded_message = unloaded_message(weapon)
+        moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
+        unloaded_message = unloaded_message(weapon, moves_count)
 
         updated_chat =
           state.chat
           |> Chat.add_message(unloaded_message)
 
         {:reply, :ok, struct(state, player: updated_player, chat: updated_chat),
-         {:continue, {:tick, weapon.reload_cost, caller_pid}}}
+         {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :empty_magazine} = error ->
         empty_magazine_message = empty_magazine_message()
@@ -384,7 +389,8 @@ defmodule Europa.Server do
   def handle_call({:unload_item_box_weapon, item_uuid}, {caller_pid, _}, state) do
     case PlanetManager.unload_item_box_weapon(state.planet, state.player, item_uuid) do
       {:ok, updated_planet, updated_player, updated_item_box, weapon} ->
-        unloaded_message = unloaded_message(weapon)
+        moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
+        unloaded_message = unloaded_message(weapon, moves_count)
 
         updated_chat =
           state.chat
@@ -392,7 +398,7 @@ defmodule Europa.Server do
 
         {:reply, {:ok, updated_item_box},
          struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
-         {:continue, {:tick, weapon.reload_cost, caller_pid}}}
+         {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :empty_magazine} = error ->
         empty_magazine_message = empty_magazine_message()
@@ -407,7 +413,8 @@ defmodule Europa.Server do
   def handle_call({:consume_supply, item_uuid}, {caller_pid, _}, state) do
     case PlayerManager.consume_supply(state.player, item_uuid) do
       {:ok, updated_player, supply} ->
-        consumed_supply_message = consumed_supply_message(supply)
+        moves_count = maybe_decrease_moves_count_with_efficiency(supply.consume_cost, updated_player.efficiency)
+        consumed_supply_message = consumed_supply_message(supply, moves_count)
 
         updated_chat =
           state.chat
@@ -456,8 +463,6 @@ defmodule Europa.Server do
 
   @impl true
   def handle_continue({:tick, moves_count, caller_pid}, state) do
-    moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, state.player.efficiency)
-
     {:ok, updated_planet, planet_actions} = PlanetManager.tick(state.planet, moves_count)
     {:ok, updated_player, player_actions} = PlayerManager.tick(state.player, moves_count)
 
@@ -597,21 +602,21 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :warning)
   end
 
-  defp reloaded_message(%Loot.Weapon{} = weapon) do
+  defp reloaded_message(%Loot.Weapon{} = weapon, moves_count) do
     msg =
       Gettext.gettext(
         Europa.Gettext,
-        "You reloaded #{weapon.name}, it took #{weapon.reload_cost} step(s)"
+        "You reloaded #{weapon.name}, it took #{moves_count} step(s)"
       )
 
     Chat.Message.new(msg, :regular)
   end
 
-  defp unloaded_message(%Loot.Weapon{} = weapon) do
+  defp unloaded_message(%Loot.Weapon{} = weapon, moves_count) do
     msg =
       Gettext.gettext(
         Europa.Gettext,
-        "You unloaded #{weapon.name}, it took #{weapon.reload_cost} step(s)"
+        "You unloaded #{weapon.name}, it took #{moves_count} step(s)"
       )
 
     Chat.Message.new(msg, :regular)
@@ -627,11 +632,11 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :regular)
   end
 
-  defp consumed_supply_message(%Loot.Supply{} = supply) do
+  defp consumed_supply_message(%Loot.Supply{} = supply, moves_count) do
     msg =
       Gettext.gettext(
         Europa.Gettext,
-        "You consumed #{supply.name}, it took #{supply.consume_cost} step(s)"
+        "You consumed #{supply.name}, it took #{moves_count} step(s)"
       )
 
     Chat.Message.new(msg, :regular)
