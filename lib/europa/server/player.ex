@@ -294,7 +294,7 @@ defmodule Europa.Server.Player do
   defp get_cold(%__MODULE__{max_warm: max_warm, warm: warm} = player) do
     is_get_colder =
       if m_to_n?(warm, max_warm) do
-        if m_to_n?(1, 10) do
+        if m_to_n?(1, 2) do
           false
         else
           true

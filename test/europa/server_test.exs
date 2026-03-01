@@ -95,7 +95,10 @@ defmodule Europa.ServerTest do
       PlanetManagerMock
       |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
-      |> expect(:tick, fn %Planet{}, ^moves_count -> {:ok, planet, [action]} end)
+      |> expect(:tick, fn %Planet{}, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, [action]}
+      end)
       |> expect(:blood_tile, fn @player_stand_on_tile -> @snow_blood end)
 
       PlayerManagerMock
@@ -109,7 +112,10 @@ defmodule Europa.ServerTest do
         assert damage == action.subject.damage
         player
       end)
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, [action2]} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, [action2]}
+      end)
 
       assert :moved = Server.move(server, @direction)
       assert_chat_message(server, :regular, "You walked at snow, it took #{moves_count} step(s)")
@@ -156,7 +162,10 @@ defmodule Europa.ServerTest do
         assert damage == action.subject.damage
         struct(player, health: 0)
       end)
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, [action2]} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, [action2]}
+      end)
 
       assert :moved = Server.move(server, @direction)
       :timer.sleep(200)
@@ -228,10 +237,16 @@ defmodule Europa.ServerTest do
       |> expect(:shoot, fn %Planet{} = planet, %Player{} = player ->
         {:ok, {planet, player, damaged_enemies, moves_count}}
       end)
-      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
 
       PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       assert Server.shoot(server) == {:ok, :shot}
       :timer.sleep(100)
@@ -244,10 +259,16 @@ defmodule Europa.ServerTest do
       |> expect(:shoot, fn %Planet{}, %Player{} = player ->
         {:error, :miss, player, moves_count}
       end)
-      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
 
       PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       assert Server.shoot(server) == {:ok, :miss}
       :timer.sleep(100)
@@ -283,10 +304,16 @@ defmodule Europa.ServerTest do
       end)
 
       PlanetManagerMock
-      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
 
       PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       assert Server.reload(server) == :ok
       :timer.sleep(100)
@@ -338,10 +365,16 @@ defmodule Europa.ServerTest do
       end)
 
       PlanetManagerMock
-      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
 
       PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       assert Server.unload_weapon(server, weapon.uuid) == :ok
       :timer.sleep(100)
@@ -379,14 +412,20 @@ defmodule Europa.ServerTest do
       moves_count = weapon.reload_cost
 
       PlanetManagerMock
-      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
       |> expect(:unload_item_box_weapon, fn %Planet{} = planet, %Player{} = player, weapon_uuid ->
         assert weapon_uuid == weapon.uuid
         {:ok, planet, player, item_box, weapon}
       end)
 
       PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       assert {:ok, ^item_box} = Server.unload_item_box_weapon(server, weapon.uuid)
       :timer.sleep(100)
@@ -491,10 +530,16 @@ defmodule Europa.ServerTest do
       end)
 
       PlanetManagerMock
-      |> expect(:tick, fn %Planet{} = planet, ^moves_count -> {:ok, planet, []} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
 
       PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, ^moves_count -> {:ok, player, []} end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       assert {:ok, ^supply} = Server.consume_supply(server, supply_uuid)
       :timer.sleep(100)
@@ -540,5 +585,9 @@ defmodule Europa.ServerTest do
   defp assert_chat_message(server, category, text) do
     messages = Server.get_chat(server).messages
     assert Enum.find(messages, fn message -> message.text == text && message.category == category end)
+  end
+
+  defp assert_moves_count(action_moves_count, tick_moves_count) do
+    assert tick_moves_count in (action_moves_count - 1)..action_moves_count
   end
 end

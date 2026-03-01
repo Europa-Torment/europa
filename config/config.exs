@@ -29,7 +29,8 @@ config :europa, Europa.Server.PlayerManager, implementation: Europa.Server.Playe
 
 config :europa, Europa.Server,
   finish_game_on_server_exit: true,
-  crop_land_period_ms: 10_000
+  crop_land_period_ms: 10_000,
+  max_efficiency: 50
 
 config :europa, Europa.Server.Planet,
   initial_game_field: [width: 32, height: 32],
@@ -54,7 +55,7 @@ config :europa, Europa.Server.Planet,
 config :europa, :weapons,
   shotgun_radius: 2,
   burst_bullets_per_shot: 3,
-  max_accuracy: 30
+  max_accuracy: 50
 
 config :europa, :random_params,
   player: [

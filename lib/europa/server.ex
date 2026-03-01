@@ -16,6 +16,7 @@ defmodule Europa.Server do
   alias Europa.Tools.TextGenerator
 
   import Europa.Tools.Conf
+  import Europa.Tools.Randomizer
 
   require Logger
 
@@ -27,6 +28,8 @@ defmodule Europa.Server do
 
   @crop_period_ms fetch_config!([__MODULE__, :crop_land_period_ms])
   @crop_size fetch_config!([Planet, :crop_land_size])
+
+  @max_efficiency fetch_config!([__MODULE__, :max_efficiency])
 
   typedstruct enforce: true do
     field :game_uuid, Ecto.UUID.t()
@@ -453,6 +456,8 @@ defmodule Europa.Server do
 
   @impl true
   def handle_continue({:tick, moves_count, caller_pid}, state) do
+    moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, state.player.efficiency)
+
     {:ok, updated_planet, planet_actions} = PlanetManager.tick(state.planet, moves_count)
     {:ok, updated_player, player_actions} = PlayerManager.tick(state.player, moves_count)
 
@@ -474,6 +479,20 @@ defmodule Europa.Server do
   end
 
   ### PRIVATE ###
+
+  defp maybe_decrease_moves_count_with_efficiency(moves_count, efficiency) do
+    decreased_moves_count = max(moves_count - 1, 1)
+
+    if efficiency >= @max_efficiency do
+      decreased_moves_count
+    else
+      if m_to_n?(efficiency, @max_efficiency) do
+        decreased_moves_count
+      else
+        moves_count
+      end
+    end
+  end
 
   defp add_player_items(%Player{} = player, items) when is_list(items) do
     Enum.reduce(items, player, fn item, player ->
