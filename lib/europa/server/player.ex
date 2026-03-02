@@ -49,8 +49,8 @@ defmodule Europa.Server.Player do
       health: health(max_health),
       accuracy: accuracy(),
       efficiency: efficiency(),
-      max_warm: max_warm(),
-      warm: warm(max_warm),
+      max_warm: max_warm,
+      warm: max_warm,
       stand_on: Planet.snow()
     }
   end
@@ -293,14 +293,15 @@ defmodule Europa.Server.Player do
 
   defp get_cold(%__MODULE__{max_warm: max_warm, warm: warm} = player) do
     is_get_colder =
-      if m_to_n?(warm, max_warm) do
-        if m_to_n?(1, 2) do
+      cond do
+        warm == max_warm ->
+          !m_to_n?(90, 100)
+
+        !m_to_n?(warm, max_warm) ->
+          !m_to_n?(3, 5)
+
+        true ->
           false
-        else
-          true
-        end
-      else
-        true
       end
 
     if is_get_colder do
@@ -546,10 +547,5 @@ defmodule Europa.Server.Player do
     to = fetch_config!([:random_params, :player, :max_warm, :to])
 
     m_to_n(from, to)
-  end
-
-  defp warm(max_warm) do
-    half_of_warm = div(max_warm, 2)
-    m_to_n(half_of_warm, max_warm)
   end
 end

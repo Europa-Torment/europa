@@ -55,7 +55,7 @@ config :europa, Europa.Server.Planet,
 config :europa, :weapons,
   shotgun_radius: 2,
   burst_bullets_per_shot: 3,
-  max_accuracy: 50
+  max_accuracy: 40
 
 config :europa, :random_params,
   player: [
