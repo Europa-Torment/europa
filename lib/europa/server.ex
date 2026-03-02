@@ -344,7 +344,7 @@ defmodule Europa.Server do
           |> Chat.add_message(reloaded_message)
 
         {:reply, :ok, struct(state, player: updated_player, chat: updated_chat),
-         {:continue, {:tick, weapon.reload_cost, caller_pid}}}
+         {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
@@ -421,7 +421,7 @@ defmodule Europa.Server do
           |> Chat.add_message(consumed_supply_message)
 
         {:reply, {:ok, supply}, struct(state, player: updated_player, chat: updated_chat),
-         {:continue, {:tick, supply.consume_cost, caller_pid}}}
+         {:continue, {:tick, moves_count, caller_pid}}}
 
       error ->
         {:reply, error, state}
