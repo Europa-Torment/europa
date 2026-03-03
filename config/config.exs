@@ -76,8 +76,8 @@ config :europa, :random_params,
       to: 5
     ],
     max_warm: [
-      from: 100,
-      to: 120
+      from: 60,
+      to: 80
     ]
   ],
   loot: [

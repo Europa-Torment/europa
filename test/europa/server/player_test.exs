@@ -136,6 +136,15 @@ defmodule Europa.Server.PlayerTest do
       end
     end
 
+    test "not stacks supplies with different properties" do
+      player = build(:player, inventory: [])
+      supply1 = build(:supply, name: "supply", properties: build(:supply_properties, health: 10, warm: 1))
+      supply2 = build(:supply, name: "supply", properties: build(:supply_properties, health: 10, warm: 2))
+
+      assert {:ok, updated_player} = Player.add_item(player, supply1)
+      assert {:ok, %Player{inventory: [^supply2, ^supply1]}} = Player.add_item(updated_player, supply2)
+    end
+
     test "returns error when inventory is full", %{player: player, item: item} do
       assert {:ok, player} = Player.add_item(player, item)
       assert {:error, :full_inventory} = Player.add_item(player, item)

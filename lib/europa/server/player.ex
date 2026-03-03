@@ -377,7 +377,7 @@ defmodule Europa.Server.Player do
     |> Enum.any?(fn inventory_item ->
       case Loot.Item.item_type(inventory_item) do
         :ammo -> inventory_item.caliber == item.caliber
-        _ -> inventory_item.name == item.name
+        :supply -> inventory_item.name == item.name && inventory_item.properties == item.properties
       end
     end)
   end
