@@ -314,6 +314,9 @@ defmodule Europa.Server.Player do
   end
 
   defp do_drop_item(%__MODULE__{stand_on: stand_on} = player, item) do
+    stand_on_tile = Tiles.tile_by_blood_version(stand_on) || Tiles.tile_by_atom_value(stand_on)
+    stand_on = stand_on_tile.atom_value
+
     item_box =
       Loot.new_item_box(:bunch, [item])
       |> Loot.ItemBox.stand_on(stand_on)
