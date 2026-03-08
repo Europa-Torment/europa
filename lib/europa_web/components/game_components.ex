@@ -322,7 +322,7 @@ defmodule EuropaWeb.GameCompotents do
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
                         <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Drop")}</a></li>
-                        <%= if weapon?(item) do %>
+                        <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                           <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Unload")}</a></li>
                         <% end %>
                       </ul>
@@ -362,7 +362,7 @@ defmodule EuropaWeb.GameCompotents do
                     <.link phx-click="take_item" phx-value-uuid={"#{item.uuid}"}>
                       {Item.composed_name(item)}
                     </.link>
-                    <%= if weapon?(item) do %>
+                    <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                       <div class="dropdown" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                         <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                         <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">

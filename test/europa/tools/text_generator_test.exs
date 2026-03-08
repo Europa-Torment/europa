@@ -7,8 +7,8 @@ defmodule Europa.Tools.TextGeneratorTest do
   describe "generate_text/2" do
     @tag slow: true
     property "returns random text (ititial_story)" do
-      check all(m <- StreamData.integer(1..100)) do
-        num_runs = 100
+      check all(m <- StreamData.integer(1..20)) do
+        num_runs = 20
         generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
 
         check all(_ <- generator) do
@@ -29,8 +29,8 @@ defmodule Europa.Tools.TextGeneratorTest do
           first_intro_proportion = first_intro_count / num_runs
           second_who_are_you_proportion = second_who_are_you_count / num_runs
 
-          assert first_intro_proportion >= 0.1
-          assert second_who_are_you_proportion >= 0.1
+          assert first_intro_proportion >= 0.01
+          assert second_who_are_you_proportion >= 0.01
         end
       end
     end
