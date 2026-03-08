@@ -272,6 +272,7 @@ defmodule Europa.Server.Player do
     Enum.reduce(inventory, 0, fn i, weight ->
       weight + Loot.Item.weight(i)
     end)
+    |> Float.round(2)
   end
 
   @impl true

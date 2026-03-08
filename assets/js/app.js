@@ -26,12 +26,13 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/europa"
 import * as AudioMp3 from "./hooks/audio_mp3"
 import * as Tooltip from "./hooks/tooltip"
+import * as Dropdown from "./hooks/dropdown"
 
 import topbar from "../vendor/topbar"
 
 colocatedHooks.AudioMp3 = AudioMp3.hooks.AudioMp3;
-
 colocatedHooks.Tooltip = Tooltip.hooks.Tooltip;
+colocatedHooks.Dropdown = Dropdown.hooks.Dropdown;
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {

@@ -64,7 +64,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
     [
       {:caliber, gettext("Caliber"), ammo.caliber},
       {:count, gettext("Count"), ammo.count},
-      {:weight, gettext("Weight"), ammo.count * ammo.weight}
+      {:weight, gettext("Weight"), Float.round(ammo.count * ammo.weight, 2)}
     ]
   end
 

@@ -102,7 +102,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
       [
         {:count, gettext("Count"), supply.count},
         {:consume_cost, gettext("Consume cost"), supply.consume_cost},
-        {:weight, gettext("Weight"), supply.count * supply.weight}
+        {:weight, gettext("Weight"), Float.round(supply.count * supply.weight, 2)}
       ]
   end
 

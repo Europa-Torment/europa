@@ -64,7 +64,6 @@ defmodule EuropaWeb.GameLive do
           show_control_hints: false,
           game_started: false
         )
-        |> assign_sounds()
 
       {:ok, socket}
     else
@@ -74,6 +73,20 @@ defmodule EuropaWeb.GameLive do
   end
 
   @impl true
+  def handle_event("start_game", _params, socket) do
+    socket =
+      socket
+      |> assign_sounds()
+      |> assign(game_started: true)
+      |> play_sound("background_music")
+
+    {:noreply, socket}
+  end
+
+  def handle_event(_, _, %{assigns: %{game_started: false}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @move_keys do
     direction = move_key_to_direction(key)
     player_before = socket.assigns.player
@@ -177,10 +190,6 @@ defmodule EuropaWeb.GameLive do
       |> damaged_sound(player_before.health, player.health)
 
     {:noreply, socket}
-  end
-
-  def handle_event("start_game", _params, socket) do
-    {:noreply, assign(socket, game_started: true)}
   end
 
   def handle_event("open_inventory", params, socket) do
@@ -531,7 +540,7 @@ defmodule EuropaWeb.GameLive do
 
   defp open_inventory(socket) do
     inventory = get_player_inventory(socket)
-    {:noreply, assign(socket, inventory: inventory)}
+    {:noreply, assign(socket, inventory: inventory, item_box: nil)}
   end
 
   defp close_inventory(socket) do
@@ -541,7 +550,7 @@ defmodule EuropaWeb.GameLive do
   defp open_item_box(socket) do
     case Server.loot(socket.assigns.server) do
       {:open_item_box, item_box} ->
-        {:noreply, assign(socket, item_box: item_box)}
+        {:noreply, assign(socket, item_box: item_box, inventory: nil)}
 
       _ ->
         {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}

@@ -1,13 +1,12 @@
-<div
-  class="flex w-full"
-  id="game_field"
-  phx-window-keyup="key_pressed"
-  phx-throttle="50"
-  phx-hook="AudioMp3"
-  data-sounds={@sounds}
-  phx-connected={JS.dispatch("js:play-sound", detail: %{name: "background_music"})}
->
-  <%= if @game_started do %>
+<%= if @game_started do %>
+  <div
+    class="flex w-full"
+    id="game_field"
+    phx-window-keyup="key_pressed"
+    phx-throttle="50"
+    phx-hook="AudioMp3"
+    data-sounds={@sounds}
+  >
     <div class="w-1/6 flex flex-col gap-4 m-5">
       <.equipment player={@player} weapon={@weapon} helmet={@helmet} suit={@suit} boots={@boots} />
       <.ammo_info weapon={@weapon} ammo_count={@ammo_count} />
@@ -20,13 +19,11 @@
       <.chat chat={@chat} />
       <.player_stats player_stats={@player_stats} />
     </div>
-  <% else %>
-    <.start_screen />
-  <% end %>
-</div>
+  </div>
 
-<.item_box item_box={@item_box} player={@player} />
-
-<.inventory inventory={@inventory} inventory_type={@inventory_type} player_stats={@player_stats} player={@player} />
-
-<.control_hints show_control_hints={@show_control_hints} />
+  <.item_box item_box={@item_box} player={@player} />
+  <.inventory inventory={@inventory} inventory_type={@inventory_type} player_stats={@player_stats} player={@player} />
+  <.control_hints show_control_hints={@show_control_hints} />
+<% else %>
+  <.start_screen />
+<% end %>
