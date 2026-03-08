@@ -378,57 +378,33 @@ defmodule Europa.Server.Player do
 
   defp get_thirsty(%__MODULE__{thirst: thirst} = player) when thirst >= @max_thirst do
     if m_to_n?(3, 10) do
-      {take_damage(player, 5), [Action.new(:player, :dehydration)]}
+      {take_damage(player, 2), [Action.new(:player, :dehydration)]}
     else
       {player, []}
     end
   end
 
   defp get_thirsty(%__MODULE__{thirst: thirst} = player) do
-    is_get_thirsy =
-      cond do
-        thirst == 0 ->
-          !m_to_n?(90, 100)
-
-        m_to_n?(thirst, @max_thirst) ->
-          !m_to_n?(3, 5)
-
-        true ->
-          false
-      end
-
-    if is_get_thirsy do
-      {struct(player, thirst: thirst + 1), []}
-    else
+    if m_to_n?(900, 1000) do
       {player, []}
+    else
+      {struct(player, thirst: thirst + 1), []}
     end
   end
 
   defp get_hungry(%__MODULE__{hunger: hunger} = player) when hunger >= @max_hunger do
     if m_to_n?(3, 10) do
-      {take_damage(player, 3), [Action.new(:player, :hunger)]}
+      {take_damage(player, 1), [Action.new(:player, :hunger)]}
     else
       {player, []}
     end
   end
 
   defp get_hungry(%__MODULE__{hunger: hunger} = player) do
-    is_get_hungry =
-      cond do
-        hunger == 0 ->
-          !m_to_n?(90, 100)
-
-        m_to_n?(hunger, @max_hunger) ->
-          !m_to_n?(3, 5)
-
-        true ->
-          false
-      end
-
-    if is_get_hungry do
-      {struct(player, hunger: hunger + 1), []}
-    else
+    if m_to_n?(900, 1000) do
       {player, []}
+    else
+      {struct(player, hunger: hunger + 1), []}
     end
   end
 
