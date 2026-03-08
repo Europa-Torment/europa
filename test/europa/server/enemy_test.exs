@@ -2,10 +2,10 @@ defmodule Europa.Server.EnemyTest do
   use Europa.DataCase, async: true
 
   alias Europa.Server.Enemy
-  alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
 
-  @snow Planet.snow()
-  @snow_blood Planet.snow_blood()
+  @snow Tiles.tile(:snow).atom_value
+  @snow_blood Tiles.tile(:snow).blood_version
 
   @initial_stand_on_tile @snow
 

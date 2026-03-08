@@ -10,6 +10,7 @@ defmodule Europa.Server.Loot.Boots do
     field :efficiency, pos_integer()
     field :max_health, pos_integer()
     field :max_warm, pos_integer()
+    field :weight, Loot.Item.weight()
     field :image_name, String.t()
   end
 
@@ -22,6 +23,7 @@ defmodule Europa.Server.Loot.Boots do
       efficiency: Map.fetch!(attrs, :efficiency),
       max_health: Map.fetch!(attrs, :max_health),
       max_warm: Map.fetch!(attrs, :max_warm),
+      weight: Map.fetch!(attrs, :weight),
       image_name: Map.fetch!(attrs, :image_name)
     }
   end
@@ -59,7 +61,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
       {:name, gettext("Name"), boots.name},
       {:efficiency, gettext("Efficiency"), boots.efficiency},
       {:health, gettext("Health"), boots.max_health},
-      {:warm, gettext("Warm"), boots.max_warm}
+      {:warm, gettext("Warm"), boots.max_warm},
+      {:weight, gettext("Weight"), boots.weight}
     ]
   end
 
@@ -78,6 +81,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
 
   @spec consumable?(Boots.t()) :: false
   def consumable?(%Boots{}), do: false
+
+  @spec weight(Boot.t()) :: Loot.Item.weight()
+  def weight(%Boots{weight: weight}) do
+    weight
+  end
 
   @spec player_stats_changes(Boots.t()) :: map()
   def player_stats_changes(%Boots{} = boots) do

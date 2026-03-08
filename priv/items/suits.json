@@ -3,7 +3,9 @@
         "name": "WCC civil suit", 
         "efficiency": {"from": 1, "to": 3}, 
         "max_health": {"from": 5, "to": 10},
-        "max_warm": {"from": 5, "to": 10}, 
+        "max_warm": {"from": 5, "to": 10},
+        "max_weight": {"from": 5, "to": 10}, 
+        "weight": 15.0,
         "image_name": "no_suit",
         "random_weight": 2.0
     },
@@ -12,6 +14,8 @@
         "efficiency": {"from": 2, "to": 4}, 
         "max_health": {"from": 8, "to": 12},
         "max_warm": {"from": 10, "to": 15}, 
+        "max_weight": {"from": 7, "to": 15}, 
+        "weight": 17.5,
         "image_name": "no_suit", 
         "random_weight": 0.8
     }

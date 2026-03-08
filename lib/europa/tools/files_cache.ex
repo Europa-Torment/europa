@@ -20,7 +20,8 @@ defmodule Europa.Tools.FilesCache do
   end
 
   @spec put(path :: String.t(), file_content()) :: :ok | {:error, :cache_error}
-  def put(path, file_content) when (is_binary(path) and is_map(file_content)) or is_list(file_content) do
+  def put(path, file_content)
+      when (is_binary(path) and is_map(file_content)) or is_list(file_content) or is_binary(file_content) do
     case Cachex.put(@cache_name, path, file_content) do
       {:ok, true} ->
         :ok

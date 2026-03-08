@@ -28,6 +28,7 @@ defmodule Europa.Server.Loot.Weapon do
     field :damage, pos_integer()
     field :caliber, caliber()
     field :shooting_distance, pos_integer()
+    field :weight, Loot.Item.weight()
     field :image_name, String.t()
     field :sound_name, String.t()
   end
@@ -47,6 +48,7 @@ defmodule Europa.Server.Loot.Weapon do
       damage: Map.fetch!(attrs, :damage),
       caliber: Map.fetch!(attrs, :caliber),
       shooting_distance: Map.fetch!(attrs, :shooting_distance),
+      weight: Map.fetch!(attrs, :weight),
       image_name: Map.fetch!(attrs, :image_name),
       sound_name: Map.fetch!(attrs, :sound_name)
     }
@@ -98,7 +100,7 @@ defmodule Europa.Server.Loot.Weapon do
   end
 
   def unload(%__MODULE__{} = weapon) do
-    ammo = Ammo.new(%{caliber: weapon.caliber, count: weapon.rounds_loaded})
+    ammo = Ammo.new(%{caliber: weapon.caliber, count: weapon.rounds_loaded, weight: Ammo.weight(weapon.caliber)})
     updated_weapon = decrease_rounds_loaded(weapon, weapon.rounds_loaded)
 
     {:ok, {updated_weapon, ammo}}
@@ -149,7 +151,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
       {:reload_cost, gettext("Reload cost"), weapon.reload_cost},
       {:magazine_size, gettext("Magazine"), weapon.magazine_size},
       {:rounds_loaded, gettext("Loaded"), weapon.rounds_loaded},
-      {:caliber, gettext("Caliber"), weapon.caliber}
+      {:caliber, gettext("Caliber"), weapon.caliber},
+      {:weight, gettext("Weight"), weapon.weight}
     ]
   end
 
@@ -168,6 +171,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   @spec consumable?(Weapon.t()) :: false
   def consumable?(%Weapon{}), do: false
+
+  @spec weight(Weapon.t()) :: Loot.Item.weight()
+  def weight(%Weapon{weight: weight}) do
+    weight
+  end
 
   @spec player_stats_changes(Weapon.t()) :: map()
   def player_stats_changes(%Weapon{} = weapon) do

@@ -42,15 +42,7 @@ config :europa, Europa.Server.Planet,
   # should be greater than year's :to value
   base_enemy_generate_possibility: 4000,
   enemy_view_distance: 6,
-  enemy_move_possibility: [from: 95, to: 100],
-  move_costs: [
-    snow: 2,
-    snow_blood: 2,
-    ice: 1,
-    ice_blood: 1,
-    path: 1,
-    path_blood: 1
-  ]
+  enemy_move_possibility: [from: 95, to: 100]
 
 config :europa, :weapons,
   shotgun_radius: 2,
@@ -59,9 +51,9 @@ config :europa, :weapons,
 
 config :europa, :random_params,
   player: [
-    inventory_size: [
-      from: 15,
-      to: 30
+    max_weight: [
+      from: 50,
+      to: 65
     ],
     max_health: [
       from: 100,

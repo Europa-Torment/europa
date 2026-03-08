@@ -6,6 +6,7 @@ defmodule Europa.Server do
   alias Europa.Games
   alias Europa.Server.Planet
   alias Europa.Server.PlanetManager
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
   alias Europa.Server.Chat
@@ -102,7 +103,7 @@ defmodule Europa.Server do
     GenServer.call(server, :get_visible_planet)
   end
 
-  @spec move(pid(), Planet.direction()) :: :moved | :stay
+  @spec move(pid(), Planet.direction()) :: {:moved, :normal | :overloaded} | :stay
   def move(server, direction) do
     GenServer.call(server, {:move, direction})
   end
@@ -153,6 +154,12 @@ defmodule Europa.Server do
           {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def unequip_item(server, item_uuid) do
     GenServer.call(server, {:unequip_item, item_uuid})
+  end
+
+  @spec drop_item(pid(), Loot.uuid()) ::
+          {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
+  def drop_item(server, item_uuid) do
+    GenServer.call(server, {:drop_item, item_uuid})
   end
 
   @spec consume_supply(pid(), Loot.uuid()) ::
@@ -217,35 +224,16 @@ defmodule Europa.Server do
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do
-    case PlanetManager.move(state.planet, direction, state.player.stand_on) do
-      {:moved, updated_planet, moves_count, step_on_tile} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, state.player.efficiency)
-        moved_message = moved_message(moves_count, step_on_tile)
+    if PlayerManager.weight_ratio(state.player) >= 1.5 do
+      message = overloaded_message()
 
-        updated_chat =
-          state.chat
-          |> Chat.add_message(moved_message)
+      updated_player =
+        state.player
+        |> PlayerManager.change_view_direction(direction)
 
-        updated_player =
-          state.player
-          |> PlayerManager.change_view_direction(direction)
-          |> PlayerManager.stand_on(step_on_tile)
-
-        {:reply, :moved,
-         struct(state,
-           planet: updated_planet,
-           player: updated_player,
-           chat: updated_chat
-         ), {:continue, {:tick, moves_count, caller_pid}}}
-
-      {:stay, tile} ->
-        message = cant_move_message(tile)
-
-        {:reply, :stay,
-         struct(state,
-           player: PlayerManager.change_view_direction(state.player, direction),
-           chat: Chat.add_message(state.chat, message)
-         )}
+      {:reply, :stay, struct(state, player: updated_player, chat: Chat.add_message(state.chat, message))}
+    else
+      do_move(direction, state, caller_pid)
     end
   end
 
@@ -265,10 +253,6 @@ defmodule Europa.Server do
       {:ok, updated_planet, updated_player, updated_item_box} ->
         {:reply, {:ok, updated_item_box}, struct(state, planet: updated_planet, player: updated_player)}
 
-      {:error, :full_inventory} ->
-        message = full_inventory_message()
-        {:reply, {:error, :nothing}, struct(state, chat: Chat.add_message(state.chat, message))}
-
       _ ->
         {:reply, {:error, :nothing}, state}
     end
@@ -287,6 +271,16 @@ defmodule Europa.Server do
   def handle_call({:unequip_item, item_uuid}, _from, state) do
     case PlayerManager.unequip_item(state.player, item_uuid) do
       {:ok, updated_player} ->
+        {:reply, {:ok, updated_player}, struct(state, player: updated_player)}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  def handle_call({:drop_item, item_uuid}, _from, state) do
+    case PlayerManager.drop_item(state.player, item_uuid) do
+      {:ok, updated_player, _item} ->
         {:reply, {:ok, updated_player}, struct(state, player: updated_player)}
 
       error ->
@@ -485,6 +479,46 @@ defmodule Europa.Server do
 
   ### PRIVATE ###
 
+  defp do_move(direction, state, caller_pid) do
+    case PlanetManager.move(state.planet, direction, state.player.stand_on) do
+      {:moved, updated_planet, moves_count, step_on_tile} ->
+        weight_ratio = PlayerManager.weight_ratio(state.player)
+        status = if weight_ratio < 1.0, do: :normal, else: :overloaded
+
+        moves_count =
+          moves_count
+          |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
+          |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
+
+        moved_message = moved_message(moves_count, step_on_tile)
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(moved_message)
+
+        updated_player =
+          state.player
+          |> PlayerManager.change_view_direction(direction)
+          |> PlayerManager.stand_on(step_on_tile)
+
+        {:reply, {:moved, status},
+         struct(state,
+           planet: updated_planet,
+           player: updated_player,
+           chat: updated_chat
+         ), {:continue, {:tick, moves_count, caller_pid}}}
+
+      {:stay, tile} ->
+        message = cant_move_message(tile)
+
+        {:reply, :stay,
+         struct(state,
+           player: PlayerManager.change_view_direction(state.player, direction),
+           chat: Chat.add_message(state.chat, message)
+         )}
+    end
+  end
+
   defp maybe_decrease_moves_count_with_efficiency(moves_count, efficiency) do
     decreased_moves_count = max(moves_count - 1, 1)
 
@@ -496,6 +530,16 @@ defmodule Europa.Server do
       else
         moves_count
       end
+    end
+  end
+
+  defp maybe_increase_moves_count_with_inventory_weight(moves_count, weight_ratio) do
+    cond do
+      weight_ratio <= 1.0 -> moves_count
+      weight_ratio <= 1.1 -> moves_count + 1
+      weight_ratio <= 1.2 -> moves_count + 2
+      weight_ratio <= 1.3 -> moves_count + 3
+      true -> moves_count + 4
     end
   end
 
@@ -517,7 +561,7 @@ defmodule Europa.Server do
     Enum.reduce(actions, player, fn action, player ->
       case action do
         %Action{action_type: :attack, subject: enemy} ->
-          blood_tile = PlanetManager.blood_tile(player.stand_on)
+          blood_tile = blood_tile(player.stand_on)
 
           player
           |> PlayerManager.take_damage(enemy.damage)
@@ -528,6 +572,13 @@ defmodule Europa.Server do
       end
     end)
     |> maybe_finish_game(game_uuid, caller_pid)
+  end
+
+  defp blood_tile(tile) do
+    case Tiles.tile_by_atom_value(tile) do
+      %Tiles.Tile{blood_version: bv} when not is_nil(bv) -> bv
+      _ -> tile
+    end
   end
 
   defp maybe_finish_game(%Player{health: 0} = player, game_uuid, caller_pid) do
@@ -567,13 +618,13 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :warning)
   end
 
-  defp nothing_to_loot_message do
-    msg = gettext("There is nothing to loot")
+  defp overloaded_message do
+    msg = gettext("You can't walk because you're overloaded")
     Chat.Message.new(msg, :warning)
   end
 
-  defp full_inventory_message do
-    msg = gettext("Can't take item because of full inventory")
+  defp nothing_to_loot_message do
+    msg = gettext("There is nothing to loot")
     Chat.Message.new(msg, :warning)
   end
 

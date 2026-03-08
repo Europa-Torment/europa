@@ -3,6 +3,7 @@ defmodule Europa.Server.Enemy do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Tools.AttrsDeterminator
   alias Europa.Tools.FilesCache
   alias Europa.Tools.Types
@@ -36,7 +37,7 @@ defmodule Europa.Server.Enemy do
       move_distance: Map.fetch!(attrs, :move_distance),
       accuracy: Map.fetch!(attrs, :accuracy),
       image_name: Map.fetch!(attrs, :image_name),
-      stand_on: Planet.snow()
+      stand_on: Tiles.tile(:snow).atom_value
     }
   end
 

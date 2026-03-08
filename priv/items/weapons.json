@@ -10,6 +10,7 @@
         "shooting_type": "bullet",
         "damage": {"from": 8, "to": 11},
         "shooting_distance": {"from": 5, "to": 7},
+        "weight": 1.5,
         "image_name": "default_pistol",
         "sound_name": "pistol",
         "random_weight": 2.0
@@ -25,6 +26,7 @@
         "shooting_type": "shot",
         "damage": {"from": 20, "to": 30},
         "shooting_distance": {"from": 3, "to": 5},
+        "weight": 4.0,
         "image_name": "default_pistol",
         "sound_name": "shotgun",
         "random_weight": 1.0
@@ -40,6 +42,7 @@
         "shooting_type": "burst",
         "damage": {"from": 5, "to": 10},
         "shooting_distance": {"from": 5, "to": 10},
+        "weight": 7.0,
         "image_name": "default_pistol",
         "sound_name": "rifle",
         "random_weight": 0.4

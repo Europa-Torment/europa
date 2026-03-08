@@ -4,6 +4,7 @@
         "efficiency": {"from": 1, "to": 3}, 
         "max_health": {"from": 5, "to": 10}, 
         "max_warm": {"from": 5, "to": 10}, 
+        "weight": 3.0,
         "image_name": "no_boots",
         "random_weight": 2.0
     },
@@ -11,7 +12,8 @@
         "name": "WCC security boots", 
         "efficiency": {"from": 2, "to": 4}, 
         "max_health": {"from": 8, "to": 12},
-        "max_warm": {"from": 10, "to": 15}, 
+        "max_warm": {"from": 10, "to": 15},
+        "weight": 3.5,
         "image_name": "no_boots", 
         "random_weight": 0.8
     }

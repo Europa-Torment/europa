@@ -5,6 +5,7 @@ defmodule Europa.Server.Player do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Action
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
@@ -22,7 +23,7 @@ defmodule Europa.Server.Player do
   typedstruct do
     field :view_direction, Planet.direction(), enforce: true
     field :inventory, inventory(), enforce: true
-    field :inventory_size, pos_integer(), enforce: true
+    field :max_weight, number(), enforce: true
     field :max_health, pos_integer(), enforce: true
     field :health, non_neg_integer(), enforce: true
     field :accuracy, pos_integer(), enforce: true
@@ -44,14 +45,14 @@ defmodule Europa.Server.Player do
     %__MODULE__{
       view_direction: Planet.allowed_directions() |> Enum.random(),
       inventory: [],
-      inventory_size: inventory_size(),
+      max_weight: max_weight(),
       max_health: max_health,
       health: health(max_health),
       accuracy: accuracy(),
       efficiency: efficiency(),
       max_warm: max_warm,
       warm: max_warm,
-      stand_on: Planet.snow()
+      stand_on: Tiles.tile(:snow).atom_value
     }
   end
 
@@ -84,7 +85,7 @@ defmodule Europa.Server.Player do
     [
       {gettext("Health"), "#{player.health}/#{player.max_health}"},
       {gettext("Warm"), "#{player.warm}/#{player.max_warm}"},
-      {gettext("Inventory"), "#{Enum.count(player.inventory)}/#{player.inventory_size}"},
+      {gettext("Inventory"), "#{inventory_weight(player)}/#{player.max_weight}" <> gettext("kg")},
       {gettext("Accuracy"), player.accuracy},
       {gettext("Efficiency"), player.efficiency},
       {gettext("Weapon"), equiped_weapon},
@@ -114,6 +115,20 @@ defmodule Europa.Server.Player do
       stack_items(player, item)
     else
       do_add_item(player, item)
+    end
+  end
+
+  @impl true
+  def drop_item(%__MODULE__{} = player, item_uuid) do
+    with {:ok, item} <- find_item(player.inventory, item_uuid) do
+      {player, item} = maybe_unequip_item(player, item)
+
+      updated_player =
+        player
+        |> delete_item(item)
+        |> do_drop_item(item)
+
+      {:ok, updated_player, item}
     end
   end
 
@@ -253,6 +268,18 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
+  def inventory_weight(%__MODULE__{inventory: inventory}) do
+    Enum.reduce(inventory, 0, fn i, weight ->
+      weight + Loot.Item.weight(i)
+    end)
+  end
+
+  @impl true
+  def weight_ratio(%__MODULE__{} = player) do
+    inventory_weight(player) / player.max_weight
+  end
+
+  @impl true
   def tick(%__MODULE__{} = player, moves_count) when moves_count > 0 do
     do_tick(player, moves_count)
   end
@@ -260,6 +287,28 @@ defmodule Europa.Server.Player do
   def tick(player, _), do: {:ok, player, []}
 
   ### PRIVATE ###
+
+  defp maybe_unequip_item(%__MODULE__{} = player, item) do
+    if Loot.Item.equipable?(item) && item.equiped do
+      {:ok, updated_player} = unequip_item(player, item.uuid)
+      {updated_player, struct(item, equiped: false)}
+    else
+      {player, item}
+    end
+  end
+
+  defp do_drop_item(%__MODULE__{stand_on: %Loot.ItemBox{} = item_box} = player, item) do
+    updated_item_box = Loot.ItemBox.add_item(item_box, item)
+    stand_on(player, updated_item_box)
+  end
+
+  defp do_drop_item(%__MODULE__{stand_on: stand_on} = player, item) do
+    item_box =
+      Loot.new_item_box(:bunch, [item])
+      |> Loot.ItemBox.stand_on(stand_on)
+
+    stand_on(player, item_box)
+  end
 
   defp do_tick(player, moves_count) do
     do_tick(player, moves_count, [])
@@ -333,11 +382,7 @@ defmodule Europa.Server.Player do
   defp do_consume_supply(_player, _supply), do: {:error, %Errors.NotApplicableError{}}
 
   defp do_add_item(player, item) do
-    if Enum.count(player.inventory) < player.inventory_size do
-      {:ok, struct(player, inventory: [item | player.inventory])}
-    else
-      {:error, :full_inventory}
-    end
+    {:ok, struct(player, inventory: [item | player.inventory])}
   end
 
   defp do_reload_weapon(player, weapon, ammo) do
@@ -449,8 +494,8 @@ defmodule Europa.Server.Player do
   defp decrease_attrs(player, attrs) do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
-        :inventory_size ->
-          struct(player, inventory_size: player.inventory_size - attr_value)
+        :max_weight ->
+          struct(player, max_weight: player.max_weight - attr_value)
 
         :accuracy ->
           struct(player, accuracy: player.accuracy - attr_value)
@@ -475,7 +520,7 @@ defmodule Europa.Server.Player do
   defp increase_attrs(player, attrs) do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
-        :inventory_size -> struct(player, inventory_size: player.inventory_size + attr_value)
+        :max_weight -> struct(player, max_weight: player.max_weight + attr_value)
         :accuracy -> struct(player, accuracy: player.accuracy + attr_value)
         :efficiency -> struct(player, efficiency: player.efficiency + attr_value)
         :max_health -> struct(player, max_health: player.max_health + attr_value)
@@ -509,11 +554,11 @@ defmodule Europa.Server.Player do
     end
   end
 
-  defp inventory_size do
-    from = fetch_config!([:random_params, :player, :inventory_size, :from])
-    to = fetch_config!([:random_params, :player, :inventory_size, :to])
+  defp max_weight do
+    from = fetch_config!([:random_params, :player, :max_weight, :from])
+    to = fetch_config!([:random_params, :player, :max_weight, :to])
 
-    m_to_n(from, to)
+    m_to_n(from, to) + 0.0
   end
 
   defp max_health do

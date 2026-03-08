@@ -5,6 +5,7 @@ defmodule Europa.ServerTest do
   alias Europa.Server
   alias Europa.Server.Player
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Chat
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
@@ -13,9 +14,8 @@ defmodule Europa.ServerTest do
 
   import Europa.Tools.Conf
 
-  @snow Planet.snow()
-  @water Planet.water()
-  @snow_blood Planet.snow_blood()
+  @snow Tiles.tile(:snow).atom_value
+  @water Tiles.tile(:water).atom_value
 
   @player_stand_on_tile @snow
 
@@ -33,7 +33,7 @@ defmodule Europa.ServerTest do
     |> stub(:player_initial_stand_on_tile, fn _ -> @snow end)
 
     PlayerManagerMock
-    |> stub(:new, fn -> build(:player, stand_on: @player_stand_on_tile, inventory_size: 20) end)
+    |> stub(:new, fn -> build(:player, stand_on: @player_stand_on_tile, max_weight: 20.0) end)
     |> stub(:stand_on, fn player, @snow -> player end)
 
     {:ok, server} = Server.start_link(Ecto.UUID.generate())
@@ -99,9 +99,9 @@ defmodule Europa.ServerTest do
         assert_moves_count(moves_count, tick_moves_count)
         {:ok, planet, [action]}
       end)
-      |> expect(:blood_tile, fn @player_stand_on_tile -> @snow_blood end)
 
       PlayerManagerMock
+      |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
         struct(player, view_direction: @direction)
       end)
@@ -117,10 +117,17 @@ defmodule Europa.ServerTest do
         {:ok, player, [action2]}
       end)
 
-      assert :moved = Server.move(server, @direction)
+      assert {:moved, :normal} = Server.move(server, @direction)
       assert_chat_message(server, :regular, "You walked at snow, it took")
       assert_chat_message(server, :danger, "#{action.subject.name} is attacking you!")
       assert_chat_message(server, :warning, "You are getting colder")
+    end
+
+    test "increases moves_count when player overloaded", %{server: server, planet: planet} do
+      test_overloaded_move(server, planet, _weight_ratio = 1.1, _additional_moves = 1)
+      test_overloaded_move(server, planet, _weight_ratio = 1.2, _additional_moves = 2)
+      test_overloaded_move(server, planet, _weight_ratio = 1.3, _additional_moves = 3)
+      test_overloaded_move(server, planet, _weight_ratio = 1.35, _additional_moves = 4)
     end
 
     test "returns success response (stay)", %{server: server} do
@@ -129,12 +136,24 @@ defmodule Europa.ServerTest do
       |> expect(:readable_tile_name, fn _tile -> "water" end)
 
       PlayerManagerMock
+      |> expect(:weight_ratio, fn %Player{} -> 0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
         struct(player, view_direction: @direction)
       end)
 
       assert :stay = Server.move(server, @direction)
       assert_chat_message(server, :warning, "You can't walk through water")
+    end
+
+    test "doesn't walk when player overloaded", %{server: server} do
+      PlayerManagerMock
+      |> expect(:weight_ratio, fn %Player{} -> 2.0 end)
+      |> expect(:change_view_direction, fn %Player{} = player, @direction ->
+        struct(player, view_direction: @direction)
+      end)
+
+      assert :stay = Server.move(server, @direction)
+      assert_chat_message(server, :warning, "You can't walk because you're overloaded")
     end
 
     test "finishes game when player dies", %{server: server, planet: planet} do
@@ -152,9 +171,9 @@ defmodule Europa.ServerTest do
         assert_moves_count(moves_count, tick_moves_count)
         {:ok, planet, [action]}
       end)
-      |> expect(:blood_tile, fn @player_stand_on_tile -> @snow_blood end)
 
       PlayerManagerMock
+      |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
         struct(player, view_direction: @direction)
       end)
@@ -170,11 +189,39 @@ defmodule Europa.ServerTest do
         {:ok, player, [action2]}
       end)
 
-      assert :moved = Server.move(server, @direction)
+      assert {:moved, :normal} = Server.move(server, @direction)
       :timer.sleep(200)
       assert {:ok, %Games.Game{state: :finished, finish_reason: :died}} = Games.get_by_uuid(game_uuid)
 
       assert_received :game_over
+    end
+
+    defp test_overloaded_move(server, planet, weight_ratio, expected_additional_moves) do
+      moves_count = 10
+
+      PlanetManagerMock
+      |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
+      |> expect(:readable_tile_name, fn _tile -> "snow" end)
+      |> expect(:tick, fn %Planet{}, tick_moves_count ->
+        assert_moves_count(moves_count + expected_additional_moves, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      PlayerManagerMock
+      |> expect(:weight_ratio, 2, fn %Player{} -> weight_ratio end)
+      |> expect(:change_view_direction, fn %Player{} = player, @direction ->
+        struct(player, view_direction: @direction)
+      end)
+      |> expect(:stand_on, fn %Player{} = player, @snow ->
+        struct(player, stand_on: @snow)
+      end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count + expected_additional_moves, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      assert {:moved, :overloaded} = Server.move(server, @direction)
+      :timer.sleep(200)
     end
   end
 
@@ -216,18 +263,6 @@ defmodule Europa.ServerTest do
       end)
 
       assert {:error, :nothing} = Server.take_loot(server, item_uuid)
-    end
-
-    test "returns error when player inventory is full", %{server: server} do
-      item_uuid = Ecto.UUID.generate()
-
-      PlanetManagerMock
-      |> expect(:take_loot, fn _planet, _player, ^item_uuid ->
-        {:error, :full_inventory}
-      end)
-
-      assert {:error, :nothing} = Server.take_loot(server, item_uuid)
-      assert_chat_message(server, :warning, "Can't take item because of full inventory")
     end
   end
 
@@ -518,6 +553,31 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.unequip_item(server, item_uuid) == error
+    end
+  end
+
+  describe "drop_item/2" do
+    test "handles success response", %{server: server} do
+      item_uuid = Ecto.UUID.generate()
+
+      PlayerManagerMock
+      |> expect(:drop_item, fn %Player{} = player, ^item_uuid ->
+        {:ok, player, build(:ammo)}
+      end)
+
+      assert {:ok, %Player{}} = Server.drop_item(server, item_uuid)
+    end
+
+    test "handles not_found response", %{server: server} do
+      item_uuid = Ecto.UUID.generate()
+      error = {:error, :not_found}
+
+      PlayerManagerMock
+      |> expect(:drop_item, fn %Player{}, ^item_uuid ->
+        error
+      end)
+
+      assert Server.drop_item(server, item_uuid) == error
     end
   end
 

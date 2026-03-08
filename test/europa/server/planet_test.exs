@@ -3,6 +3,7 @@ defmodule Europa.Server.PlanetTest do
   use ExUnitProperties
 
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Player
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Enemy
@@ -20,18 +21,13 @@ defmodule Europa.Server.PlanetTest do
 
   @initial_enemy_health 100
 
-  @s Planet.snow()
-  @sb Planet.snow_blood()
-
-  @i Planet.ice()
-  @icb Planet.ice_blood()
-
-  @p Planet.path()
-  @pb Planet.path_blood()
-
-  @w Planet.water()
-
+  @s Tiles.tile(:snow).atom_value
+  @i Tiles.tile(:ice).atom_value
+  @p Tiles.tile(:path).atom_value
+  @w Tiles.tile(:water).atom_value
   @pl Planet.player()
+
+  @wl Tiles.tile(:wall).atom_value
 
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)])
@@ -47,11 +43,7 @@ defmodule Europa.Server.PlanetTest do
   @year_from fetch_config!([Planet, :year, :from])
   @year_to fetch_config!([Planet, :year, :to])
 
-  @move_costs %{
-    @s => fetch_config!([Planet, :move_costs, :snow]),
-    @p => fetch_config!([Planet, :move_costs, :path]),
-    @i => fetch_config!([Planet, :move_costs, :ice])
-  }
+  @move_costs Tiles.move_costs()
 
   @tiles [
     @s,
@@ -354,6 +346,62 @@ defmodule Europa.Server.PlanetTest do
                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
+
+  @land_player_look_up_at_enemies_behind_wall [
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@s, @en, @en2, @en3, @en4, @en5, @en6, @en7, @s, @s],
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl],
+                                                [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                              ]
+                                              |> PlanetLandConverter.from_matrix()
+
+  @land_player_look_down_at_enemies_behind_wall [
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl],
+                                                  [@s, @en, @en2, @en3, @en4, @en5, @en6, @en7, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                ]
+                                                |> PlanetLandConverter.from_matrix()
+
+  @land_player_look_right_at_enemies_behind_wall [
+                                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @wl, @en, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @wl, @en2, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @wl, @en3, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @pl, @wl, @en4, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @wl, @en5, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @wl, @en6, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @wl, @en7, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                 ]
+                                                 |> PlanetLandConverter.from_matrix()
+
+  @land_player_look_left_at_enemies_behind_wall [
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @en, @wl, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @en2, @wl, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @en3, @wl, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @en4, @wl, @s, @pl, @s, @s],
+                                                  [@s, @s, @s, @s, @en5, @wl, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @en6, @wl, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @en7, @wl, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                ]
+                                                |> PlanetLandConverter.from_matrix()
 
   setup do
     planet = Planet.new()
@@ -688,21 +736,6 @@ defmodule Europa.Server.PlanetTest do
       assert {:error, :no_item} = Planet.take_loot(planet, player, item_uuid)
     end
 
-    test "returns {:error, :full_inventory} when player inventory is full" do
-      planet = build(:planet, land: @land_player_look_down_at_loot, current_coord: {4, 4})
-      player = build(:player, view_direction: :down, inventory_size: 2, inventory: build_list(2, :weapon))
-      error = {:error, :full_inventory}
-
-      item = Enum.random(@ib.items)
-
-      PlayerManagerMock
-      |> expect(:add_item, fn ^player, ^item ->
-        error
-      end)
-
-      assert Planet.take_loot(planet, player, item.uuid) == error
-    end
-
     defp test_take_loot(planet, player, target_coord) do
       item = Enum.random(@ib.items)
 
@@ -732,24 +765,6 @@ defmodule Europa.Server.PlanetTest do
     test "retursn land size (cols*rows)" do
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
       assert Planet.land_size(planet) == 100
-    end
-  end
-
-  describe "blood_tile/1" do
-    test "returns bloody version of given tile" do
-      tiles = [
-        {@s, @sb},
-        {@i, @icb},
-        {@p, @pb}
-      ]
-
-      for {tile, blood_tile} <- tiles do
-        assert Planet.blood_tile(tile) == blood_tile
-      end
-    end
-
-    test "returns unchanged tile if no blood version of it" do
-      assert Planet.blood_tile(@w) == @w
     end
   end
 
@@ -1018,6 +1033,162 @@ defmodule Europa.Server.PlanetTest do
 
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
 
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses top enemies behind wall (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_up_at_enemies_behind_wall, current_coord: {4, 7})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses bottom enemies behind wall (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_down_at_enemies_behind_wall, current_coord: {4, 1})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses left enemies behind wall (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_left_at_enemies_behind_wall, current_coord: {7, 4})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses right enemies behind wall (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_right_at_enemies_behind_wall, current_coord: {2, 4})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses top enemies behind wall (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_up_at_enemies_behind_wall, current_coord: {4, 7})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses bottom enemies behind wall (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_down_at_enemies_behind_wall, current_coord: {4, 1})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses left enemies behind wall (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_left_at_enemies_behind_wall, current_coord: {7, 4})
+
+      test_miss(planet, player, weapon)
+    end
+
+    test "misses right enemies behind wall (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_look_right_at_enemies_behind_wall, current_coord: {2, 4})
+
+      test_miss(planet, player, weapon)
+    end
+
+    defp test_miss(planet, player, weapon) do
       PlayerManagerMock
       |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
       |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->

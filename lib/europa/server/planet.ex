@@ -4,6 +4,10 @@ defmodule Europa.Server.Planet do
 
   use TypedStruct
 
+  alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Tile
+  alias Europa.Server.Planet.Predefined
+
   alias Europa.Tools.Types
   alias Europa.Tools.PerlinNoise
 
@@ -37,28 +41,9 @@ defmodule Europa.Server.Planet do
 
   @base_loot_generate_possibility fetch_config!([__MODULE__, :base_loot_generate_possibility])
 
-  @snow :s
-  @water :w
-  @ice :i
-  @path :p
-  @snow_blood :sb
-  @ice_blood :ib
-  @path_blood :pb
-
   @player :player
 
-  @landscape_tiles [@snow, @water, @ice, @path, @snow_blood, @ice_blood, @path_blood]
-
-  @move_costs %{
-    @snow => fetch_config!([__MODULE__, :move_costs, :snow]),
-    @path => fetch_config!([__MODULE__, :move_costs, :path]),
-    @ice => fetch_config!([__MODULE__, :move_costs, :ice]),
-    @snow_blood => fetch_config!([__MODULE__, :move_costs, :snow_blood]),
-    @path_blood => fetch_config!([__MODULE__, :move_costs, :path_blood]),
-    @ice_blood => fetch_config!([__MODULE__, :move_costs, :ice_blood])
-  }
-
-  @movable_tiles [@snow, @path, @ice, @snow_blood, @ice_blood, @path_blood]
+  @type player() :: :player
 
   @type coord :: {x :: pos_integer(), y :: pos_integer()}
 
@@ -67,9 +52,21 @@ defmodule Europa.Server.Planet do
 
   @type readable_tile_name :: String.t()
 
-  @type tile :: unquote(Types.one_of([@player | @landscape_tiles])) | Loot.ItemBox.t()
+  @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t()
 
   @type land :: list(list(tile()))
+
+  @ice Tiles.tile(:ice).atom_value
+  @water Tiles.tile(:water).atom_value
+  @snow Tiles.tile(:snow).atom_value
+  @path Tiles.tile(:path).atom_value
+
+  @movable_tiles Tiles.movable_tiles()
+  @high_tiles Tiles.high_tiles()
+
+  @move_costs Tiles.move_costs()
+
+  @tiles_readable_names Tiles.readable_names()
 
   typedstruct module: Land, enforce: true do
     field :tiles, map()
@@ -116,52 +113,19 @@ defmodule Europa.Server.Planet do
   # Too trivial for testing
   # coveralls-ignore-start
   @impl true
-  def snow, do: @snow
-
-  @impl true
-  def path, do: @path
-
-  @impl true
-  def water, do: @water
-
-  @impl true
-  def ice, do: @ice
-
-  @impl true
-  def snow_blood, do: @snow_blood
-
-  @impl true
-  def path_blood, do: @path_blood
-
-  @impl true
-  def ice_blood, do: @ice_blood
-
-  @impl true
   def view_distance, do: @view_distance
 
   @impl true
   def player, do: @player
 
   @impl true
-  def blood_tile(@snow), do: @snow_blood
-  def blood_tile(@ice), do: @ice_blood
-  def blood_tile(@path), do: @path_blood
-  def blood_tile(tile), do: tile
-
-  @impl true
   def allowed_directions, do: @directions
   # coveralls-ignore-stop
 
   @impl true
-  def readable_tile_name(@snow), do: "snow"
-  def readable_tile_name(@ice), do: "ice"
-  def readable_tile_name(@water), do: "water"
-  def readable_tile_name(@path), do: "path"
-  def readable_tile_name(@snow_blood), do: "bloody snow"
-  def readable_tile_name(@ice_blood), do: "bloody ice"
-  def readable_tile_name(@path_blood), do: "bloody path"
   def readable_tile_name(%Loot.ItemBox{} = item_box), do: Loot.ItemBox.readable_name(item_box)
   def readable_tile_name(%Enemy{name: name}), do: Gettext.gettext(Europa.Gettext, name)
+  def readable_tile_name(tile), do: Map.get(@tiles_readable_names, tile)
 
   @impl true
   def get_visible_land(%__MODULE__{land: land} = planet) do
@@ -322,6 +286,7 @@ defmodule Europa.Server.Planet do
         :up -> Enum.map(1..shooting_distance, fn n -> {x, y - n} end)
         :down -> Enum.map(1..shooting_distance, fn n -> {x, y + n} end)
       end
+      |> stop_on_barrier(land)
       |> Enum.find(fn coord ->
         case get_tile(land, coord) do
           %Enemy{} -> true
@@ -342,16 +307,16 @@ defmodule Europa.Server.Planet do
        ) do
     case view_direction do
       :right ->
-        shotgun_targets_right(x, y, shooting_distance)
+        shotgun_targets_right(x, y, shooting_distance, land)
 
       :left ->
-        shotgun_targets_left(x, y, shooting_distance)
+        shotgun_targets_left(x, y, shooting_distance, land)
 
       :up ->
-        shotgun_targets_up(x, y, shooting_distance)
+        shotgun_targets_up(x, y, shooting_distance, land)
 
       :down ->
-        shotgun_targets_down(x, y, shooting_distance)
+        shotgun_targets_down(x, y, shooting_distance, land)
     end
     |> List.flatten()
     |> Enum.filter(fn coord ->
@@ -362,28 +327,45 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp shotgun_targets_right(x, y, shooting_distance) do
-    Enum.map(1..shooting_distance, fn n ->
-      Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {x + n, y + m} end)
+  defp shotgun_targets_right(x, y, shooting_distance, land) do
+    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
+      Enum.map(1..shooting_distance, fn n -> {x + n, y + m} end) |> stop_on_barrier(land)
     end)
   end
 
-  defp shotgun_targets_left(x, y, shooting_distance) do
-    Enum.map(1..shooting_distance, fn n ->
-      Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {x - n, y + m} end)
+  defp shotgun_targets_left(x, y, shooting_distance, land) do
+    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
+      Enum.map(1..shooting_distance, fn n -> {x - n, y + m} end) |> stop_on_barrier(land)
     end)
   end
 
-  defp shotgun_targets_up(x, y, shooting_distance) do
-    Enum.map(1..shooting_distance, fn n ->
-      Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {x + m, y - n} end)
+  defp shotgun_targets_up(x, y, shooting_distance, land) do
+    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
+      Enum.map(1..shooting_distance, fn n -> {x + m, y - n} end) |> stop_on_barrier(land)
     end)
   end
 
-  defp shotgun_targets_down(x, y, shooting_distance) do
-    Enum.map(1..shooting_distance, fn n ->
-      Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {x + m, y + n} end)
+  defp shotgun_targets_down(x, y, shooting_distance, land) do
+    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
+      Enum.map(1..shooting_distance, fn n -> {x + m, y + n} end) |> stop_on_barrier(land)
     end)
+  end
+
+  defp stop_on_barrier(coords, land) do
+    closest_barrier_index =
+      Enum.find_index(coords, fn coord ->
+        case get_tile(land, coord) do
+          nil -> false
+          %Enemy{} -> true
+          tile -> tile in @high_tiles
+        end
+      end)
+
+    if closest_barrier_index do
+      Enum.take(coords, closest_barrier_index + 1)
+    else
+      coords
+    end
   end
 
   defp shoot_enemies(%__MODULE__{} = planet, %Player{} = player, %Loot.Weapon{} = weapon, enemies_coords)
@@ -440,14 +422,23 @@ defmodule Europa.Server.Planet do
     Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
   end
 
+  defp blood_tile(tile) do
+    case Tiles.tile_by_atom_value(tile) do
+      %Tile{blood_version: blood_tile} when not is_nil(blood_tile) -> blood_tile
+      _ -> tile
+    end
+  end
+
   defp tile_without_blood(%Loot.ItemBox{type: :monster_body, stand_on: stand_on}) do
     tile_without_blood(stand_on)
   end
 
-  defp tile_without_blood(@snow_blood), do: @snow
-  defp tile_without_blood(@ice_blood), do: @ice
-  defp tile_without_blood(@path_blood), do: @path
-  defp tile_without_blood(tile), do: tile
+  defp tile_without_blood(tile) do
+    case Tiles.tile_by_blood_version(tile) do
+      %Tiles.Tile{atom_value: atom_value} -> atom_value
+      _ -> tile
+    end
+  end
 
   defp maybe_perfrom_enemies_actions(%__MODULE__{} = planet, moves_count) do
     do_move_enemies(planet, moves_count, [])
@@ -584,7 +575,7 @@ defmodule Europa.Server.Planet do
       tile when tile in @movable_tiles ->
         true
 
-      %Loot.ItemBox{type: :monster_body} ->
+      %Loot.ItemBox{type: type} when type in [:monster_body, :bunch] ->
         true
 
       _ ->
@@ -615,7 +606,7 @@ defmodule Europa.Server.Planet do
          %Loot.ItemBox{} = updated_item_box,
          %Player{stand_on: %Loot.ItemBox{}} = updated_player
        ) do
-    {:ok, planet, struct(updated_player, stand_on: updated_item_box), updated_item_box}
+    {:ok, planet, struct(updated_player, stand_on: maybe_delete_empty_item_box(updated_item_box)), updated_item_box}
   end
 
   defp do_take_loot(
@@ -627,7 +618,7 @@ defmodule Europa.Server.Planet do
 
     updated_land =
       planet.land
-      |> change_tile(target_coord, updated_item_box)
+      |> change_tile(target_coord, maybe_delete_empty_item_box(updated_item_box))
 
     {:ok, struct(planet, land: updated_land), updated_player, updated_item_box}
   end
@@ -641,6 +632,9 @@ defmodule Europa.Server.Planet do
       stay(tile)
     end
   end
+
+  defp maybe_delete_empty_item_box(%Loot.ItemBox{type: :bunch, items: [], stand_on: stand_on}), do: stand_on
+  defp maybe_delete_empty_item_box(item_box), do: item_box
 
   defp do_move(planet, tile, target_coord, direction, player_stand_on) do
     updated_land =
@@ -675,7 +669,7 @@ defmodule Europa.Server.Planet do
     struct(land, tiles: tiles)
   end
 
-  defp move_cost(%Loot.ItemBox{type: :monster_body, stand_on: tile}) do
+  defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in [:monster_body, :bunch] do
     move_cost(tile)
   end
 
@@ -867,8 +861,10 @@ defmodule Europa.Server.Planet do
       for y <- land.min_y..land.max_y, into: %{} do
         {{new_max_x, y}, generate_tile(planet, {new_max_x, y})}
       end
+      |> filter_exist_tiles(land)
 
     struct(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
+    |> maybe_generate_predefined(:right)
   end
 
   defp add_left_column(%__MODULE__{land: land} = planet) do
@@ -878,8 +874,10 @@ defmodule Europa.Server.Planet do
       for y <- land.min_y..land.max_y, into: %{} do
         {{new_min_x, y}, generate_tile(planet, {new_min_x, y})}
       end
+      |> filter_exist_tiles(land)
 
     struct(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
+    |> maybe_generate_predefined(:left)
   end
 
   defp add_top_row(%__MODULE__{land: land} = planet) do
@@ -889,8 +887,10 @@ defmodule Europa.Server.Planet do
       for x <- land.min_x..land.max_x, into: %{} do
         {{x, new_min_y}, generate_tile(planet, {x, new_min_y})}
       end
+      |> filter_exist_tiles(land)
 
     struct(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
+    |> maybe_generate_predefined(:up)
   end
 
   defp add_bottom_row(%__MODULE__{land: land} = planet) do
@@ -900,7 +900,90 @@ defmodule Europa.Server.Planet do
       for x <- land.min_x..land.max_x, into: %{} do
         {{x, new_max_y}, generate_tile(planet, {x, new_max_y})}
       end
+      |> filter_exist_tiles(land)
 
     struct(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
+    |> maybe_generate_predefined(:down)
   end
+
+  defp filter_exist_tiles(tiles, land) do
+    tiles
+    |> Enum.filter(fn {coord, _} -> get_tile(land, coord) |> is_nil() end)
+    |> Enum.into(%{})
+  end
+
+  # TODO: figure out how to test this
+  # coveralls-ignore-start
+
+  defp maybe_generate_predefined(land, direction) do
+    if m_to_n?(5, 100) do
+      template = Predefined.generate_random()
+
+      coord_fun = generate_template_coord_fun(land, direction)
+      new_tiles = generate_tiles_for_template(template, coord_fun, land)
+
+      is_all_tiles_movable =
+        Enum.all?(new_tiles, fn {{x, y}, _} ->
+          get_tile(land, {x, y}) |> is_nil() && tile_by_perlin_noise(x, y, land.noise_coef) in @movable_tiles
+        end)
+
+      if is_all_tiles_movable do
+        struct(land, tiles: Map.merge(land.tiles, new_tiles))
+      else
+        land
+      end
+    else
+      land
+    end
+  end
+
+  defp generate_template_coord_fun(land, direction) do
+    x_padding = Enum.random(land.min_x..land.max_x) |> maybe_negative()
+    y_padding = Enum.random(land.min_y..land.max_y) |> maybe_negative()
+
+    case direction do
+      :up -> fn x, y -> {x + x_padding, y - abs(land.min_y - @view_distance)} end
+      :down -> fn x, y -> {x + x_padding, y + (land.max_y + @view_distance)} end
+      :left -> fn x, y -> {x - abs(land.min_x - @view_distance), y + y_padding} end
+      :right -> fn x, y -> {x + (land.max_x + @view_distance), y + y_padding} end
+    end
+  end
+
+  defp generate_tiles_for_template(template, coord_fun, land) do
+    Enum.with_index(template, fn row, y ->
+      Enum.with_index(row, fn tile, x ->
+        coord = coord_fun.(x, y)
+        {coord, prepare_predefined_tile(tile, land, coord)}
+      end)
+    end)
+    |> List.flatten()
+    |> Enum.filter(fn {_, tile} -> tile != :skip end)
+    |> Enum.into(%{})
+  end
+
+  defp prepare_predefined_tile(%Enemy{} = enemy, land, coord) do
+    stand_on = predefined_stand_on_tile(land, coord)
+    Enemy.stand_on(enemy, stand_on)
+  end
+
+  defp prepare_predefined_tile(%Loot.ItemBox{} = item_box, land, coord) do
+    stand_on = predefined_stand_on_tile(land, coord)
+    Loot.ItemBox.stand_on(item_box, stand_on)
+  end
+
+  defp prepare_predefined_tile(tile, _, _), do: tile
+
+  defp predefined_stand_on_tile(land, {x, y}) do
+    tile_by_perlin_noise(x, y, land.noise_coef)
+  end
+
+  defp maybe_negative(number) do
+    if m_to_n?(1, 2) do
+      number * -1
+    else
+      number
+    end
+  end
+
+  # coveralls-ignore-stop
 end

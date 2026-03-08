@@ -22,6 +22,8 @@ config :europa, EuropaWeb.Endpoint,
 
 config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/test/"
 
+config :europa, Europa.Server.Planet.Predefined, templates_path: "/planet/test/"
+
 # Changing will break tests
 config :europa, Europa.Server.Planet,
   initial_game_field: [width: 20, height: 20],

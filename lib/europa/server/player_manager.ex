@@ -37,9 +37,14 @@ defmodule Europa.Server.PlayerManager do
   @callback stand_on(Player.t(), Planet.tile()) :: Player.t()
 
   @doc """
-  Adds item to player's inventory or returns error when inventory is full.
+  Adds item to player's inventory.
   """
-  @callback add_item(Player.t(), Loot.Item.item()) :: {:ok, Player.t()} | {:error, :full_inventory}
+  @callback add_item(Player.t(), Loot.Item.item()) :: {:ok, Player.t()}
+
+  @doc """
+  Drops item from inventory.
+  """
+  @callback drop_item(Player.t(), Loot.uuid()) :: {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
 
   @doc """
   Equips given item or returns error if item is not exists or not equipable.
@@ -108,7 +113,6 @@ defmodule Europa.Server.PlayerManager do
               {:ok, Player.t(), weapon :: Loot.Item.item()}
               | {:error, :not_found}
               | {:error, :empty_magazine}
-              | {:error, :full_inventory}
 
   @doc """
   Decreases player's health on given `damage`.
@@ -122,6 +126,13 @@ defmodule Europa.Server.PlayerManager do
 
   @callback get_inventory(Player.t(), Loot.item_type() | :all) :: Player.inventory()
 
+  @callback inventory_weight(Player.t()) :: number()
+
+  @doc """
+  Returns inventory_weight/max_weight ratio.
+  """
+  @callback weight_ratio(Player.t()) :: number()
+
   @callback tick(Player.t(), Server.move_cost()) :: {:ok, Player.t(), list(Action.t())}
 
   ### Implementation callers ###
@@ -133,6 +144,8 @@ defmodule Europa.Server.PlayerManager do
   def stand_on(player, tile), do: manager_impl().stand_on(player, tile)
 
   def add_item(player, item), do: manager_impl().add_item(player, item)
+
+  def drop_item(player, item_uuid), do: manager_impl().drop_item(player, item_uuid)
 
   def equip_item(player, item_uuid), do: manager_impl().equip_item(player, item_uuid)
 
@@ -161,6 +174,10 @@ defmodule Europa.Server.PlayerManager do
   def consume_supply(player, supply_uuid), do: manager_impl().consume_supply(player, supply_uuid)
 
   def get_inventory(player, items_type), do: manager_impl().get_inventory(player, items_type)
+
+  def inventory_weight(player), do: manager_impl().inventory_weight(player)
+
+  def weight_ratio(player), do: manager_impl().weight_ratio(player)
 
   def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
 

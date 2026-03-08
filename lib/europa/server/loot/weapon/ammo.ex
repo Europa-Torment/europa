@@ -7,6 +7,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
     field :caliber, Weapon.caliber()
+    field :weight, Loot.Item.weight()
     field :count, pos_integer()
   end
 
@@ -15,6 +16,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
       caliber: Map.fetch!(attrs, :caliber),
+      weight: Map.fetch!(attrs, :weight),
       count: Map.fetch!(attrs, :count)
     }
   end
@@ -23,6 +25,18 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   def decrease_count(%__MODULE__{} = ammo, n) when n > 0 do
     updated_value = (ammo.count - n) |> max(0)
     struct(ammo, count: updated_value)
+  end
+
+  @spec weight(Weapon.caliber()) :: Loot.Item.weight()
+  def weight(caliber) when is_binary(caliber) do
+    get_weights()
+    |> Map.fetch!(caliber)
+  end
+
+  defp get_weights do
+    Loot.parse_file(:ammo)
+    |> Enum.map(fn {%{caliber: caliber, weight: weight}, _} -> {caliber, weight} end)
+    |> Enum.into(%{})
   end
 end
 
@@ -49,7 +63,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   def readable_attrs(%Ammo{} = ammo) do
     [
       {:caliber, gettext("Caliber"), ammo.caliber},
-      {:count, gettext("Count"), ammo.count}
+      {:count, gettext("Count"), ammo.count},
+      {:weight, gettext("Weight"), ammo.count * ammo.weight}
     ]
   end
 
@@ -71,4 +86,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
 
   @spec player_stats_changes(Ammo.t()) :: map()
   def player_stats_changes(%Ammo{}), do: %{}
+
+  @spec weight(Ammo.t()) :: Loot.Item.weight()
+  def weight(%Ammo{weight: weight, count: count}) do
+    weight * count
+  end
 end

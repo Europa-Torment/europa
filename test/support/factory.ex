@@ -6,6 +6,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Loot
   alias Europa.Server.Player
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Enemy
   alias Europa.Server.Action
   alias Europa.Users.User
@@ -52,7 +53,7 @@ defmodule Europa.Support.Factory do
     %Loot.ItemBox{
       type: :box,
       items: [build(:weapon), build(:ammo)],
-      stand_on: Planet.snow()
+      stand_on: Tiles.tile(:snow).atom_value
     }
   end
 
@@ -69,8 +70,9 @@ defmodule Europa.Support.Factory do
       rounds_loaded: 10,
       shooting_type: :bullet,
       damage: 10,
-      caliber: "8mm",
+      caliber: "9mm",
       shooting_distance: 5,
+      weight: 1.0,
       image_name: "default_pistol",
       sound_name: "pistol"
     }
@@ -80,7 +82,8 @@ defmodule Europa.Support.Factory do
   def ammo_factory do
     %Loot.Weapon.Ammo{
       uuid: Ecto.UUID.generate(),
-      caliber: "8mm",
+      caliber: "9mm",
+      weight: 1.0,
       count: 10
     }
   end
@@ -93,6 +96,7 @@ defmodule Europa.Support.Factory do
       max_health: 1,
       max_warm: 1,
       accuracy: 2,
+      weight: 1.0,
       image_name: "default_helmet"
     }
   end
@@ -104,7 +108,9 @@ defmodule Europa.Support.Factory do
       name: sequence(:name, &"suit #{&1 + 1}"),
       max_health: 1,
       max_warm: 1,
+      max_weight: 1,
       efficiency: 2,
+      weight: 1.0,
       image_name: "default_suit"
     }
   end
@@ -117,6 +123,7 @@ defmodule Europa.Support.Factory do
       max_health: 1,
       max_warm: 1,
       efficiency: 2,
+      weight: 1.0,
       image_name: "default_boots"
     }
   end
@@ -130,6 +137,7 @@ defmodule Europa.Support.Factory do
       count: 1,
       consume_cost: 1,
       properties: build(:supply_properties),
+      weight: 1.0,
       sound_name: "eat"
     }
   end
@@ -146,14 +154,14 @@ defmodule Europa.Support.Factory do
     %Player{
       view_direction: :up,
       inventory: [],
-      inventory_size: 10,
+      max_weight: 10.0,
       max_health: 100,
       health: 50,
       accuracy: 5,
       efficiency: 1,
       max_warm: 100,
       warm: 100,
-      stand_on: Planet.snow()
+      stand_on: Tiles.tile(:snow).atom_value
     }
   end
 
@@ -183,7 +191,7 @@ defmodule Europa.Support.Factory do
       damage: 5,
       move_distance: 2,
       accuracy: 5,
-      stand_on: Planet.snow(),
+      stand_on: Tiles.tile(:snow).atom_value,
       image_name: "monster_semiworm"
     }
   end
@@ -191,7 +199,7 @@ defmodule Europa.Support.Factory do
   ### PRIVATE ###
 
   defp default_land do
-    s = Planet.snow()
+    s = Tiles.tile(:snow).atom_value
     p = Planet.player()
 
     [

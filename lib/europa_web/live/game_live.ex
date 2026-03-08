@@ -12,6 +12,7 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server.PlayerManager
 
   import Europa.Tools.Conf
+  import Europa.Tools.Randomizer
 
   @move_up_keys fetch_config!([:control_bindings, :move_up])
   @move_down_keys fetch_config!([:control_bindings, :move_down])
@@ -78,7 +79,7 @@ defmodule EuropaWeb.GameLive do
     player_before = socket.assigns.player
 
     case Server.move(socket.assigns.server, direction) do
-      :moved ->
+      {:moved, move_status} ->
         player = Server.get_player(socket.assigns.server)
 
         socket =
@@ -91,6 +92,7 @@ defmodule EuropaWeb.GameLive do
           )
           |> step_sound(player.stand_on)
           |> damaged_sound(player_before.health, player.health)
+          |> overloaded_sound(move_status)
 
         {:noreply, socket}
 
@@ -210,6 +212,7 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> assign(
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
             item_box: item_box,
             player: player,
             weapon: weapon,
@@ -275,6 +278,35 @@ defmodule EuropaWeb.GameLive do
             player_stats: get_player_stats(updated_player)
           )
           |> play_sound("unequip")
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("drop_item", %{"uuid" => item_uuid}, socket) do
+    case Server.drop_item(socket.assigns.server, item_uuid) do
+      {:ok, updated_player} ->
+        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
+        helmet = get_current_helmet(updated_player)
+        suit = get_current_suit(updated_player)
+        boots = get_current_boots(updated_player)
+
+        socket =
+          socket
+          |> assign(
+            player: updated_player,
+            weapon: weapon,
+            helmet: helmet,
+            suit: suit,
+            boots: boots,
+            ammo_count: ammo_count,
+            inventory: get_player_inventory(socket),
+            player_stats: get_player_stats(updated_player)
+          )
+          |> play_sound("equip")
 
         {:noreply, socket}
 
@@ -423,6 +455,9 @@ defmodule EuropaWeb.GameLive do
         damage1: %{name: ~p"/sounds/damage1.mp3", volume: 0.1},
         damage2: %{name: ~p"/sounds/damage2.mp3", volume: 0.1},
         damage3: %{name: ~p"/sounds/damage3.mp3", volume: 0.1},
+        overloaded1: %{name: ~p"/sounds/overloaded1.mp3", volume: 0.08},
+        overloaded2: %{name: ~p"/sounds/overloaded2.mp3", volume: 0.08},
+        overloaded3: %{name: ~p"/sounds/overloaded3.mp3", volume: 0.08},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.5}
       })
 
@@ -466,6 +501,19 @@ defmodule EuropaWeb.GameLive do
     else
       socket
     end
+  end
+
+  defp overloaded_sound(socket, :overloaded) do
+    if m_to_n?(1, 10) do
+      sound = Enum.random(["overloaded1", "overloaded2", "overloaded3"])
+      play_sound_with_delay(socket, sound)
+    else
+      socket
+    end
+  end
+
+  defp overloaded_sound(socket, _) do
+    socket
   end
 
   defp play_sound(socket, sound_name) do
@@ -520,16 +568,17 @@ defmodule EuropaWeb.GameLive do
       max_warm: max_warm,
       accuracy: accuracy,
       efficiency: efficiency,
-      inventory: inventory,
-      inventory_size: inventory_size
+      max_weight: max_weight
     } = player
 
-    items_count = Enum.count(inventory)
+    inventory_weight = PlayerManager.inventory_weight(player)
 
     %{
       health: "#{health}/#{max_health}",
       warm: "#{warm}/#{max_warm}",
-      inventory: "#{items_count}/#{inventory_size}",
+      max_weight: player.max_weight,
+      inventory_weight: inventory_weight,
+      inventory: "#{inventory_weight}/#{max_weight}" <> gettext("kg"),
       accuracy: accuracy,
       efficiency: efficiency
     }

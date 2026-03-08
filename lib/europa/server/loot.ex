@@ -8,6 +8,8 @@ defmodule Europa.Server.Loot do
   alias Europa.Tools.AttrsDeterminator
   alias Europa.Tools.FilesCache
 
+  alias Europa.Server.Planet.Tiles
+
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Loot.Helmet
@@ -32,7 +34,7 @@ defmodule Europa.Server.Loot do
 
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
-  @allowed_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle]
+  @allowed_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle, :bunch]
 
   @templates_path "/items/"
 
@@ -63,6 +65,7 @@ defmodule Europa.Server.Loot do
     alias Europa.Server.Loot.Supply
 
     @type item() :: Weapon.t() | Ammo.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t()
+    @type weight() :: number()
 
     @spec item_type(item()) :: Loot.item_type()
     def item_type(item)
@@ -90,6 +93,9 @@ defmodule Europa.Server.Loot do
 
     @spec negative_attrs(item()) :: list(atom())
     def negative_attrs(item)
+
+    @spec weight(item()) :: weight()
+    def weight(item)
   end
 
   defmodule ItemBox do
@@ -110,7 +116,13 @@ defmodule Europa.Server.Loot do
         :monster_body -> gettext("Monster body")
         :human_body -> gettext("Human body")
         :crashed_shuttle -> gettext("Crashed shuttle")
+        :bunch -> gettext("Bunch of items")
       end
+    end
+
+    @spec add_item(ItemBox.t(), Item.item()) :: ItemBox.t()
+    def add_item(%ItemBox{} = item_box, new_item) do
+      struct(item_box, items: [new_item | item_box.items])
     end
 
     @spec take_item(ItemBox.t(), Loot.uuid()) :: {:ok, Item.t(), ItemBox.t()} | {:error, :no_item}
@@ -171,10 +183,6 @@ defmodule Europa.Server.Loot do
       struct(item_box, items: updated_items)
     end
 
-    defp add_item(%ItemBox{} = item_box, new_item) do
-      struct(item_box, items: [new_item | item_box.items])
-    end
-
     defp check_weapon(%Weapon{}), do: :ok
     defp check_weapon(_), do: {:error, %Errors.NotApplicableError{}}
   end
@@ -199,7 +207,7 @@ defmodule Europa.Server.Loot do
 
   @spec new_item_box(item_box_type(), list(Item.t())) :: ItemBox.t()
   def new_item_box(item_box_type, items) when item_box_type in @allowed_item_box_types and is_list(items) do
-    stand_on = Enum.random([Planet.snow(), Planet.ice()])
+    stand_on = Enum.random([Tiles.tile(:snow).atom_value, Tiles.tile(:ice).atom_value])
     new_item_box(item_box_type, items, stand_on)
   end
 
@@ -240,7 +248,7 @@ defmodule Europa.Server.Loot do
 
   @spec generate_item_box(item_box_type()) :: ItemBox.t()
   def generate_item_box(item_box_type) when item_box_type in @allowed_item_box_types do
-    stand_on = Enum.random([Planet.snow(), Planet.ice()])
+    stand_on = Enum.random([Tiles.tile(:snow).atom_value, Tiles.tile(:ice).atom_value])
     generate_item_box(item_box_type, stand_on)
   end
 
@@ -255,7 +263,8 @@ defmodule Europa.Server.Loot do
     new_item_box(item_box_type, items, stand_on)
   end
 
-  defp parse_file(category) do
+  @spec parse_file(item_type()) :: map()
+  def parse_file(category) do
     priv_dir = :code.priv_dir(:europa)
     path = Path.join([priv_dir, @templates_path, Map.fetch!(@filenames, category)])
 

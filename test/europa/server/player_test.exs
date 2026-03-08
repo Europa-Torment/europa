@@ -4,22 +4,24 @@ defmodule Europa.Server.PlayerTest do
 
   alias Europa.Server.Player
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Loot
   alias Europa.Server.Errors
 
   import Europa.Tools.Conf
 
-  @snow Planet.snow()
-  @snow_blood Planet.snow_blood()
+  @snow Tiles.tile(:snow).atom_value
+  @snow_blood Tiles.tile(:snow).blood_version
 
   describe "new/0" do
     test "builds player" do
       assert %Player{} = Player.new()
     end
 
-    property "sets random inventory_size" do
+    property "sets random max_weight" do
       check all(_ <- StreamData.integer(1..100)) do
-        assert Player.new().inventory_size in inventory_size_range()
+        max_weight = Player.new().max_weight |> round()
+        assert max_weight in max_weight_range()
       end
     end
 
@@ -37,7 +39,7 @@ defmodule Europa.Server.PlayerTest do
       expected_stats = [
         {"Health", "#{player.health}/#{player.max_health}"},
         {"Warm", "#{player.warm}/#{player.max_warm}"},
-        {"Inventory", "#{Enum.count(player.inventory)}/#{player.inventory_size}"},
+        {"Inventory", "#{Player.inventory_weight(player)}/#{player.max_weight}kg"},
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
         {"Weapon", "No"},
@@ -67,7 +69,7 @@ defmodule Europa.Server.PlayerTest do
       expected_stats = [
         {"Health", "#{player.health}/#{player.max_health}"},
         {"Warm", "#{player.warm}/#{player.max_warm}"},
-        {"Inventory", "#{Enum.count(player.inventory)}/#{player.inventory_size}"},
+        {"Inventory", "#{Player.inventory_weight(player)}/#{player.max_weight}kg"},
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
         {"Weapon", weapon.name},
@@ -110,7 +112,7 @@ defmodule Europa.Server.PlayerTest do
 
   describe "add_item/2" do
     setup do
-      player = build(:player, inventory_size: 2, inventory: [build(:weapon)])
+      player = build(:player, inventory: [build(:weapon)])
       item = build(:weapon)
 
       {:ok, player: player, item: item}
@@ -144,10 +146,36 @@ defmodule Europa.Server.PlayerTest do
       assert {:ok, updated_player} = Player.add_item(player, supply1)
       assert {:ok, %Player{inventory: [^supply2, ^supply1]}} = Player.add_item(updated_player, supply2)
     end
+  end
 
-    test "returns error when inventory is full", %{player: player, item: item} do
-      assert {:ok, player} = Player.add_item(player, item)
-      assert {:error, :full_inventory} = Player.add_item(player, item)
+  describe "drop_item/2" do
+    setup do
+      weapon = build(:weapon)
+      ammo = build(:ammo)
+      player = build(:player, inventory: [weapon, ammo])
+
+      {:ok, player: player, weapon: weapon, ammo: ammo}
+    end
+
+    test "drops given item", %{player: player, ammo: ammo, weapon: weapon} do
+      player = Player.stand_on(player, @snow)
+
+      assert {:ok,
+              %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{type: :bunch, stand_on: @snow, items: [^ammo]}},
+              ^ammo} = Player.drop_item(player, ammo.uuid)
+    end
+
+    test "drops given item (player already stand on item box)", %{player: player, ammo: ammo, weapon: weapon} do
+      item_box = build(:loot_item_box, items: [])
+      player = Player.stand_on(player, item_box)
+
+      assert {:ok, %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{items: [^ammo]}}, ^ammo} =
+               Player.drop_item(player, ammo.uuid)
+    end
+
+    test "retunrs error when item not found", %{player: player} do
+      uuid = Ecto.UUID.generate()
+      assert Player.drop_item(player, uuid) == {:error, :not_found}
     end
   end
 
@@ -159,7 +187,7 @@ defmodule Europa.Server.PlayerTest do
       suit = build(:suit)
       boots = build(:boots)
 
-      player = build(:player, inventory_size: 5, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots])
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots])
 
       {:ok, player: player, weapon: weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
     end
@@ -202,7 +230,7 @@ defmodule Europa.Server.PlayerTest do
       suit = build(:suit, equiped: true)
       boots = build(:boots, equiped: true)
 
-      player = build(:player, inventory_size: 5, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots])
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots])
 
       {:ok, player: player, weapon: weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
     end
@@ -259,7 +287,7 @@ defmodule Europa.Server.PlayerTest do
     setup do
       weapon = build(:weapon)
       ammo = build(:ammo)
-      player = build(:player, inventory_size: 2, weapon_uuid: nil, inventory: [weapon, ammo])
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo])
 
       {:ok, player: player, weapon: weapon, ammo: ammo}
     end
@@ -274,7 +302,7 @@ defmodule Europa.Server.PlayerTest do
     setup do
       weapon = build(:weapon)
       ammo = build(:ammo)
-      player = build(:player, inventory_size: 2, weapon_uuid: nil, inventory: [weapon, ammo])
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo])
 
       {:ok, player: player, weapon: weapon, ammo: ammo}
     end
@@ -287,7 +315,7 @@ defmodule Europa.Server.PlayerTest do
   describe "get_equiped_weapon/1" do
     setup do
       weapon = build(:weapon)
-      player = build(:player, inventory_size: 2, weapon_uuid: weapon.uuid, inventory: [weapon])
+      player = build(:player, weapon_uuid: weapon.uuid, inventory: [weapon])
 
       {:ok, player: player, weapon: weapon}
     end
@@ -305,7 +333,7 @@ defmodule Europa.Server.PlayerTest do
   describe "get_equiped_helmet/1" do
     setup do
       helmet = build(:helmet)
-      player = build(:player, inventory_size: 2, helmet_uuid: helmet.uuid, inventory: [helmet])
+      player = build(:player, helmet_uuid: helmet.uuid, inventory: [helmet])
 
       {:ok, player: player, helmet: helmet}
     end
@@ -320,12 +348,33 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "inventory_weight/1" do
+    test "returns 0 when inventory is empty" do
+      player = build(:player, inventory: [])
+      assert Player.inventory_weight(player) == 0
+    end
+
+    test "reuturns inventory items weight" do
+      weapon = build(:weapon)
+      ammo = build(:ammo, count: 10)
+      helmet = build(:helmet)
+      suit = build(:suit)
+      boots = build(:boots)
+      supply = build(:supply, count: 20)
+      player = build(:player, inventory: [weapon, ammo, helmet, suit, boots, supply])
+
+      assert Player.inventory_weight(player) ==
+               weapon.weight + ammo.weight * ammo.count + helmet.weight + suit.weight + boots.weight +
+                 supply.weight * supply.count
+    end
+  end
+
   describe "find_weapon_ammo/2" do
     setup do
       weapon = build(:weapon)
       ammo = build(:ammo, caliber: weapon.caliber)
 
-      player = build(:player, inventory_size: 2, weapon_uuid: weapon.uuid, inventory: [weapon, ammo])
+      player = build(:player, weapon_uuid: weapon.uuid, inventory: [weapon, ammo])
 
       {:ok, player: player, weapon: weapon, ammo: ammo}
     end
@@ -364,7 +413,7 @@ defmodule Europa.Server.PlayerTest do
       weapon = build(:weapon, rounds_loaded: 10, magazine_size: 20)
       ammo = build(:ammo, caliber: weapon.caliber, count: 100)
 
-      player = build(:player, inventory_size: 2, weapon_uuid: weapon.uuid, inventory: [weapon, ammo])
+      player = build(:player, weapon_uuid: weapon.uuid, inventory: [weapon, ammo])
 
       {:ok, player: player, weapon: weapon, ammo: ammo}
     end
@@ -413,7 +462,7 @@ defmodule Europa.Server.PlayerTest do
 
       weapon = build(:weapon, caliber: caliber, rounds_loaded: rounds_loaded, magazine_size: rounds_loaded * 2)
       ammo = build(:ammo, caliber: caliber, count: 5)
-      player = build(:player, inventory_size: 2, inventory: [weapon, ammo])
+      player = build(:player, inventory: [weapon, ammo])
 
       assert {:ok, %Player{inventory: [updated_weapon, updated_ammo]}, updated_weapon} =
                Player.unload_weapon(player, weapon.uuid)
@@ -424,21 +473,14 @@ defmodule Europa.Server.PlayerTest do
 
     test "returns error when weapon not loaded" do
       weapon = build(:weapon, rounds_loaded: 0)
-      player = build(:player, inventory_size: 2, inventory: [weapon])
+      player = build(:player, inventory: [weapon])
 
       assert Player.unload_weapon(player, weapon.uuid) == {:error, :empty_magazine}
     end
 
-    test "returns error when inventory is full" do
-      weapon = build(:weapon, rounds_loaded: 10)
-      player = build(:player, inventory_size: 1, inventory: [weapon])
-
-      assert Player.unload_weapon(player, weapon.uuid) == {:error, :full_inventory}
-    end
-
     test "returns error when weapon not found" do
       weapon_uuid = Ecto.UUID.generate()
-      player = build(:player, inventory_size: 1, inventory: [])
+      player = build(:player, inventory: [])
 
       assert Player.unload_weapon(player, weapon_uuid) == {:error, :not_found}
     end
@@ -542,9 +584,9 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  defp inventory_size_range do
-    from = fetch_config!([:random_params, :player, :inventory_size, :from])
-    to = fetch_config!([:random_params, :player, :inventory_size, :to])
+  defp max_weight_range do
+    from = fetch_config!([:random_params, :player, :max_weight, :from])
+    to = fetch_config!([:random_params, :player, :max_weight, :to])
 
     from..to
   end

@@ -26,49 +26,9 @@ defmodule Europa.Server.PlanetManager do
   @callback player_initial_stand_on_tile(Planet.t()) :: Planet.tile()
 
   @doc """
-  Returns atom representation of `snow` tile
-  """
-  @callback snow() :: atom()
-
-  @doc """
-  Returns atom representation of `path` tile
-  """
-  @callback path() :: atom()
-
-  @doc """
-  Returns atom representation of `water` tile
-  """
-  @callback water() :: atom()
-
-  @doc """
-  Returns atom representation of `ice` tile
-  """
-  @callback ice() :: atom()
-
-  @doc """
-  Returns atom representation of `snow_blood` tile
-  """
-  @callback snow_blood() :: atom()
-
-  @doc """
-  Returns atom representation of `path_blood` tile
-  """
-  @callback path_blood() :: atom()
-
-  @doc """
-  Returns atom representation of `ice_blood` tile
-  """
-  @callback ice_blood() :: atom()
-
-  @doc """
   Returns atom representation of `player` tile
   """
   @callback player() :: atom()
-
-  @doc """
-  Returns bloody version of given tile or unchanged tile if there is no bloody version of it.
-  """
-  @callback blood_tile(Planet.tile()) :: Planet.tile()
 
   @doc """
   Returns planet view distance
@@ -130,7 +90,7 @@ defmodule Europa.Server.PlanetManager do
   Given item will moved from `ItemBox` to player's inventory.
   """
   @callback take_loot(Planet.t(), Player.t(), Loot.uuid()) ::
-              {:error, :full_inventory | :no_item | :nothing} | {:ok, Planet.t(), Player.t(), Loot.ItemBox.t()}
+              {:error, :no_item | :nothing} | {:ok, Planet.t(), Player.t(), Loot.ItemBox.t()}
 
   @doc """
   Performs player shoot.
@@ -177,35 +137,19 @@ defmodule Europa.Server.PlanetManager do
 
   def new, do: manager_impl().new()
   def player_initial_stand_on_tile(planet), do: manager_impl().player_initial_stand_on_tile(planet)
-  def snow, do: manager_impl().snow()
-  def ice, do: manager_impl().ice()
-  def water, do: manager_impl().water()
-  def path, do: manager_impl().path()
-
-  def snow_blood, do: manager_impl().snow_blood()
-  def ice_blood, do: manager_impl().ice_blood()
-  def path_blood, do: manager_impl().path_blood()
   def player, do: manager_impl().player()
-
   def blood_tile(tile), do: manager_impl().blood_tile(tile)
-
   def view_distance, do: manager_impl().view_distance()
   def allowed_directions, do: manager_impl().allowed_directions()
-
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
-
   def get_visible_land(planet), do: manager_impl().get_visible_land(planet)
-
   def land_size(planet), do: manager_impl().land_size(planet)
-
   def move(planet, direction, stand_on_tile), do: manager_impl().move(planet, direction, stand_on_tile)
-
   def loot(planet, direction), do: manager_impl().loot(planet, direction)
-
   def take_loot(planet, player, item_uuid), do: manager_impl().take_loot(planet, player, item_uuid)
 
+  def drop_item(planet, player, item_uuid), do: manager_impl().drop_item(planet, player, item_uuid)
   def tick(planet, moves_count), do: manager_impl().tick(planet, moves_count)
-
   def shoot(planet, player), do: manager_impl().shoot(planet, player)
 
   def unload_item_box_weapon(planet, player, item_uuid),

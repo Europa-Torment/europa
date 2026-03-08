@@ -4,7 +4,7 @@ defmodule Europa.GamesTest do
   alias Europa.Games
   alias Europa.Games.Game
   alias Europa.Server
-  alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
 
@@ -47,7 +47,7 @@ defmodule Europa.GamesTest do
 
   describe "create/1" do
     test "creates game for given user and starts game server", %{user: user} do
-      tile = Planet.snow()
+      tile = Tiles.tile(:snow).atom_value
 
       PlayerManagerMock
       |> allow_server_mock(user.id)

@@ -31,6 +31,7 @@ defmodule Europa.Server.Loot.Supply do
     field :count, pos_integer()
     field :consume_cost, Server.move_cost()
     field :properties, Properties.t()
+    field :weight, Loot.Item.weight()
     field :sound_name, String.t()
   end
 
@@ -43,6 +44,7 @@ defmodule Europa.Server.Loot.Supply do
       count: Map.fetch!(attrs, :count),
       consume_cost: Map.fetch!(attrs, :consume_cost),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
+      weight: Map.fetch!(attrs, :weight),
       sound_name: Map.fetch!(attrs, :sound_name)
     }
   end
@@ -97,7 +99,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
       end)
 
     properties_attrs ++
-      [{:count, gettext("Count"), supply.count}, {:consume_cost, gettext("Consume cost"), supply.consume_cost}]
+      [
+        {:count, gettext("Count"), supply.count},
+        {:consume_cost, gettext("Consume cost"), supply.consume_cost},
+        {:weight, gettext("Weight"), supply.count * supply.weight}
+      ]
   end
 
   @spec equip(Supply.t()) :: {:error, Errors.NotApplicableError.t()}
@@ -115,6 +121,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   @spec consumable?(Supply.t()) :: true
   def consumable?(%Supply{}), do: true
+
+  @spec weight(Supply.t()) :: Loot.Item.weight()
+  def weight(%Supply{weight: weight, count: count}) do
+    weight * count
+  end
 
   @spec player_stats_changes(Supply.t()) :: map()
   def player_stats_changes(%Supply{properties: pripertis}) do

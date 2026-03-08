@@ -3,7 +3,7 @@ defmodule EuropaWeb.GameControllerTest do
 
   alias Europa.Games
   alias Europa.Server
-  alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
 
@@ -41,7 +41,7 @@ defmodule EuropaWeb.GameControllerTest do
     end
 
     test "redirects to game page", %{conn: conn, path: path, user: user} do
-      tile = Planet.snow()
+      tile = Tiles.tile(:snow).atom_value
 
       PlayerManagerMock
       |> allow_server_mock(user.id)

@@ -10,6 +10,7 @@ defmodule Europa.Server.Loot.Helmet do
     field :accuracy, pos_integer()
     field :max_health, pos_integer()
     field :max_warm, pos_integer()
+    field :weight, Loot.Item.weight()
     field :image_name, String.t()
   end
 
@@ -22,6 +23,7 @@ defmodule Europa.Server.Loot.Helmet do
       accuracy: Map.fetch!(attrs, :accuracy),
       max_health: Map.fetch!(attrs, :max_health),
       max_warm: Map.fetch!(attrs, :max_warm),
+      weight: Map.fetch!(attrs, :weight),
       image_name: Map.fetch!(attrs, :image_name)
     }
   end
@@ -59,7 +61,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
       {:name, gettext("Name"), helmet.name},
       {:accuracy, gettext("Accuracy"), helmet.accuracy},
       {:health, gettext("Health"), helmet.max_health},
-      {:warm, gettext("Warm"), helmet.max_warm}
+      {:warm, gettext("Warm"), helmet.max_warm},
+      {:weight, gettext("Weight"), helmet.weight}
     ]
   end
 
@@ -78,6 +81,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   @spec consumable?(Helmet.t()) :: false
   def consumable?(%Helmet{}), do: false
+
+  @spec weight(Helmet.t()) :: Loot.Item.weight()
+  def weight(%Helmet{weight: weight}) do
+    weight
+  end
 
   @spec player_stats_changes(Helmet.t()) :: map()
   def player_stats_changes(%Helmet{} = helmet) do

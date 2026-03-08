@@ -4,6 +4,7 @@ defmodule EuropaWeb.GameCompotents do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Player
   alias Europa.Server.Enemy
   alias Europa.Server.Loot
@@ -14,13 +15,6 @@ defmodule EuropaWeb.GameCompotents do
   import Europa.Tools.Conf
 
   @player Planet.player()
-  @snow Planet.snow()
-  @snow_blood Planet.snow_blood()
-  @ice Planet.ice()
-  @ice_blood Planet.ice_blood()
-  @path Planet.path()
-  @path_blood Planet.path_blood()
-  @water Planet.water()
 
   @move_up_keys fetch_config!([:control_bindings, :move_up])
   @move_down_keys fetch_config!([:control_bindings, :move_down])
@@ -33,6 +27,11 @@ defmodule EuropaWeb.GameCompotents do
   @control_hints_keys fetch_config!([:control_bindings, :control_hints])
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
+
+  @tiles_readable_names Tiles.readable_names()
+  @tiles_image_names Tiles.image_names()
+
+  @gif_tiles Tiles.gif_tiles()
 
   def start_screen(assigns) do
     ~H"""
@@ -78,7 +77,7 @@ defmodule EuropaWeb.GameCompotents do
   def player_stats(assigns) do
     ~H"""
     <div class="bg-base-200 p-5 rounded-box shadow-md text-sm">
-      <ul class="grid grid-cols-3 gap-3">
+      <ul class="grid grid-cols-2 grid-rows-3 gap-3">
         <li>
           <div class="tooltip" data-tip={gettext("Health")}>
             💙 {@player_stats.health}
@@ -89,7 +88,7 @@ defmodule EuropaWeb.GameCompotents do
             ❄️ {@player_stats.warm}
           </div>
         </li>
-        <li {open_inventory_attrs()}>
+        <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
           <div class="tooltip" data-tip={gettext("Inventory")}>
             💼 {@player_stats.inventory}
           </div>
@@ -306,14 +305,15 @@ defmodule EuropaWeb.GameCompotents do
                         </div>
                       <% end %>
                     <% end %>
-                    <%= if weapon?(item) do %>
-                      <div class="dropdown">
-                        <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
-                        <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                    <div class="dropdown dropdown-left">
+                      <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
+                      <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                        <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Drop")}</a></li>
+                        <%= if weapon?(item) do %>
                           <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Unload")}</a></li>
-                        </ul>
-                      </div>
-                    <% end %>
+                        <% end %>
+                      </ul>
+                    </div>
                   </li>
                 </div>
               <% end %>
@@ -350,7 +350,7 @@ defmodule EuropaWeb.GameCompotents do
                       {Item.composed_name(item)}
                     </.link>
                     <%= if weapon?(item) do %>
-                      <div class="dropdown">
+                      <div class="dropdown dropdown-left">
                         <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1">actions</div>
                         <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
                           <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"}>
@@ -463,32 +463,11 @@ defmodule EuropaWeb.GameCompotents do
         |> Enemy.readable_stats()
         |> to_ul()
 
-      @snow ->
-        gettext("Snow")
-
-      @snow_blood ->
-        gettext("Bloody snow")
-
-      @ice ->
-        gettext("Ice")
-
-      @ice_blood ->
-        gettext("Ice blood")
-
-      @path ->
-        gettext("Path")
-
-      @path_blood ->
-        gettext("Bloody path")
-
-      @water ->
-        gettext("Water")
-
       %ItemBox{} = item_box ->
         ItemBox.readable_name(item_box)
 
-      _ ->
-        "..."
+      tile ->
+        Map.get(@tiles_readable_names, tile, "...")
     end
   end
 
@@ -507,11 +486,15 @@ defmodule EuropaWeb.GameCompotents do
     "player_#{view_direction}_#{landscape_name(stand_on)}.png"
   end
 
-  defp get_image_name(@water, _) do
-    "water.gif"
+  defp get_image_name(%ItemBox{type: :bunch, stand_on: stand_on}, _) do
+    "monster_corpse_#{landscape_name(stand_on)}.png"
   end
 
   defp get_image_name(%ItemBox{type: :monster_body, stand_on: stand_on}, _) do
+    "monster_corpse_#{landscape_name(stand_on)}.png"
+  end
+
+  defp get_image_name(%ItemBox{type: :human_body, stand_on: stand_on}, _) do
     "monster_corpse_#{landscape_name(stand_on)}.png"
   end
 
@@ -528,18 +511,19 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_image_name(tile, _) do
-    landscape_name(tile) <> ".png"
+    if tile in @gif_tiles do
+      landscape_name(tile) <> ".gif"
+    else
+      landscape_name(tile) <> ".png"
+    end
   end
 
-  defp landscape_name(@snow), do: "snow"
-  defp landscape_name(@ice), do: "ice"
-  defp landscape_name(@path), do: "path"
-  defp landscape_name(@snow_blood), do: "blood_snow"
-  defp landscape_name(@ice_blood), do: "blood_ice"
-  defp landscape_name(@path_blood), do: "blood_path"
-
-  defp landscape_name(%ItemBox{type: :monster_body, stand_on: stand_on}),
+  defp landscape_name(%ItemBox{stand_on: stand_on}),
     do: "monster_corpse_#{landscape_name(stand_on)}"
+
+  defp landscape_name(tile) do
+    Map.get(@tiles_image_names, tile)
+  end
 
   defp get_player_weapon(player) do
     case Player.get_equiped_weapon(player) do
@@ -625,6 +609,14 @@ defmodule EuropaWeb.GameCompotents do
 
   defp open_inventory_click do
     JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_inventory")
+  end
+
+  defp inventory_stats_class(player_stats) do
+    if player_stats.inventory_weight > player_stats.max_weight do
+      "text-red-500"
+    else
+      ""
+    end
   end
 
   # coveralls-ignore-stop

@@ -8,6 +8,7 @@
         "properties": {
             "health": 30
         },
+        "weight": 0.5,
         "random_weight": 2.0
     },
     {
@@ -19,6 +20,7 @@
         "properties": {
             "health": 100
         },
+        "weight": 0.2,
         "random_weight": 0.08
     },
     {
@@ -30,6 +32,7 @@
         "properties": {
             "warm": 50
         },
+        "weight": 0.4,
         "random_weight": 1.0
     }
 ]

@@ -36,7 +36,8 @@ defmodule Europa.Server.Loot.ItemTest do
         {:reload_cost, "Reload cost", weapon.reload_cost},
         {:magazine_size, "Magazine", weapon.magazine_size},
         {:rounds_loaded, "Loaded", weapon.rounds_loaded},
-        {:caliber, "Caliber", weapon.caliber}
+        {:caliber, "Caliber", weapon.caliber},
+        {:weight, "Weight", weapon.weight}
       ]
 
       assert Item.readable_attrs(weapon) == expected_attrs
@@ -47,7 +48,8 @@ defmodule Europa.Server.Loot.ItemTest do
 
       expected_attrs = [
         {:caliber, "Caliber", ammo.caliber},
-        {:count, "Count", ammo.count}
+        {:count, "Count", ammo.count},
+        {:weight, "Weight", ammo.count * ammo.weight}
       ]
 
       assert Item.readable_attrs(ammo) == expected_attrs
@@ -60,7 +62,8 @@ defmodule Europa.Server.Loot.ItemTest do
         {:name, "Name", helmet.name},
         {:accuracy, "Accuracy", helmet.accuracy},
         {:health, "Health", helmet.max_health},
-        {:warm, "Warm", helmet.max_warm}
+        {:warm, "Warm", helmet.max_warm},
+        {:weight, "Weight", helmet.weight}
       ]
 
       assert Item.readable_attrs(helmet) == expected_attrs
@@ -73,7 +76,9 @@ defmodule Europa.Server.Loot.ItemTest do
         {:name, "Name", suit.name},
         {:efficiency, "Efficiency", suit.efficiency},
         {:health, "Health", suit.max_health},
-        {:warm, "Warm", suit.max_warm}
+        {:warm, "Warm", suit.max_warm},
+        {:max_weight, "Max weight", suit.max_weight},
+        {:weight, "Weight", suit.weight}
       ]
 
       assert Item.readable_attrs(suit) == expected_attrs
@@ -86,7 +91,8 @@ defmodule Europa.Server.Loot.ItemTest do
         {:name, "Name", boots.name},
         {:efficiency, "Efficiency", boots.efficiency},
         {:health, "Health", boots.max_health},
-        {:warm, "Warm", boots.max_warm}
+        {:warm, "Warm", boots.max_warm},
+        {:weight, "Weight", boots.weight}
       ]
 
       assert Item.readable_attrs(boots) == expected_attrs
@@ -98,7 +104,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:health, "Health", supply.properties.health},
         {:count, "Count", supply.count},
-        {:consume_cost, "Consume cost", supply.consume_cost}
+        {:consume_cost, "Consume cost", supply.consume_cost},
+        {:weight, "Weight", supply.count * supply.weight}
       ]
 
       assert Item.readable_attrs(supply) == expected_attrs
@@ -169,6 +176,38 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "weight/1" do
+    test "returns weapon weight" do
+      weapon = build(:weapon)
+      assert Item.weight(weapon) == weapon.weight
+    end
+
+    test "returns ammo weight" do
+      ammo = build(:ammo, count: 100)
+      assert Item.weight(ammo) == ammo.count * ammo.weight
+    end
+
+    test "returns helmet weight" do
+      helmet = build(:helmet)
+      assert Item.weight(helmet) == helmet.weight
+    end
+
+    test "returns suit weight" do
+      suit = build(:suit)
+      assert Item.weight(suit) == suit.weight
+    end
+
+    test "returns boots weight" do
+      boots = build(:boots)
+      assert Item.weight(boots) == boots.weight
+    end
+
+    test "returns supply weight" do
+      supply = build(:supply, count: 20)
+      assert Item.weight(supply) == supply.count * supply.weight
+    end
+  end
+
   describe "equip/1" do
     test "changes equiped to true" do
       weapon = build(:weapon, equiped: false)
@@ -197,6 +236,20 @@ defmodule Europa.Server.Loot.ItemBoxTest do
         item_box = build(:loot_item_box, type: type)
         assert ItemBox.readable_name(item_box) |> is_binary()
       end
+    end
+  end
+
+  describe "add_item/2" do
+    setup do
+      weapon = build(:weapon)
+      ammo = build(:ammo)
+      item_box = build(:loot_item_box, items: [weapon])
+
+      {:ok, item_box: item_box, weapon: weapon, ammo: ammo}
+    end
+
+    test "adds item", %{item_box: item_box, weapon: weapon, ammo: ammo} do
+      assert %ItemBox{items: [^ammo, ^weapon]} = ItemBox.add_item(item_box, ammo)
     end
   end
 
