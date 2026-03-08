@@ -12,6 +12,7 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Errors
+  alias Europa.Tools.NumberHelpers
 
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
@@ -272,7 +273,7 @@ defmodule Europa.Server.Player do
     Enum.reduce(inventory, 0, fn i, weight ->
       weight + Loot.Item.weight(i)
     end)
-    |> Float.round(2)
+    |> NumberHelpers.round(2)
   end
 
   @impl true

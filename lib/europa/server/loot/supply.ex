@@ -61,6 +61,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Errors
+  alias Europa.Tools.NumberHelpers
 
   @spec item_type(Supply.t()) :: :supply
   def item_type(%Supply{}), do: :supply
@@ -102,7 +103,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
       [
         {:count, gettext("Count"), supply.count},
         {:consume_cost, gettext("Consume cost"), supply.consume_cost},
-        {:weight, gettext("Weight"), Float.round(supply.count * supply.weight, 2)}
+        {:weight, gettext("Weight"), NumberHelpers.round(supply.count * supply.weight, 2)}
       ]
   end
 

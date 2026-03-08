@@ -45,6 +45,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
 
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Errors
+  alias Europa.Tools.NumberHelpers
 
   @spec item_type(Ammo.t()) :: :ammo
   def item_type(%Ammo{}), do: :ammo
@@ -64,7 +65,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
     [
       {:caliber, gettext("Caliber"), ammo.caliber},
       {:count, gettext("Count"), ammo.count},
-      {:weight, gettext("Weight"), Float.round(ammo.count * ammo.weight, 2)}
+      {:weight, gettext("Weight"), NumberHelpers.round(ammo.count * ammo.weight, 2)}
     ]
   end
 
