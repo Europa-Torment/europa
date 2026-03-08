@@ -68,9 +68,19 @@ config :europa, :random_params,
       to: 5
     ],
     max_warm: [
-      from: 60,
-      to: 80
-    ]
+      from: 40,
+      to: 60
+    ],
+    hunger: [
+      from: 0,
+      to: 10
+    ],
+    thirst: [
+      from: 0,
+      to: 10
+    ],
+    max_thirst: 50,
+    max_hunger: 50
   ],
   loot: [
     max_items_in_item_box: 6

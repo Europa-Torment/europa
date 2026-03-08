@@ -1,7 +1,6 @@
 [
     {
         "name": "WCC medical kit", 
-        "type": "medicine",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
         "sound_name": "eat",
@@ -13,7 +12,6 @@
     },
     {
         "name": "Stem cell injector", 
-        "type": "medicine",
         "count": 1,
         "consume_cost": 2,
         "sound_name": "injection",
@@ -25,14 +23,39 @@
     },
     {
         "name": "Self-heating food tube", 
-        "type": "food",
         "count": {"from": 1, "to": 5},
         "consume_cost": 2,
         "sound_name": "eat",
         "properties": {
-            "warm": 50
+            "warm": 50,
+            "health": 10,
+            "hunger": -10
         },
         "weight": 0.4,
+        "random_weight": 1.0
+    },
+    {
+        "name": "Bottle of pure water", 
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "drink",
+        "properties": {
+            "thirst": -20
+        },
+        "weight": 0.5,
+        "random_weight": 1.0
+    },
+    {
+        "name": "Fish crackers", 
+        "count": {"from": 1, "to": 5},
+        "consume_cost": 1,
+        "sound_name": "eat",
+        "properties": {
+            "hunger": -20,
+            "health": 10,
+            "thirst": 5
+        },
+        "weight": 0.5,
         "random_weight": 1.0
     }
 ]

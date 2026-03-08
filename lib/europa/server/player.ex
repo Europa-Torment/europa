@@ -19,6 +19,9 @@ defmodule Europa.Server.Player do
 
   @type inventory :: list(Loot.Item.t())
 
+  @max_thirst fetch_config!([:random_params, :player, :max_thirst])
+  @max_hunger fetch_config!([:random_params, :player, :max_hunger])
+
   @stackable_items [:ammo, :supply]
 
   typedstruct do
@@ -31,6 +34,8 @@ defmodule Europa.Server.Player do
     field :efficiency, pos_integer(), enforce: true
     field :max_warm, pos_integer(), enforce: true
     field :warm, pos_integer(), enforce: true
+    field :hunger, non_neg_integer(), enforce: true
+    field :thirst, non_neg_integer(), enforce: true
     field :stand_on, Planet.tile(), enforce: true
     field :weapon_uuid, Loot.uuid()
     field :helmet_uuid, Loot.uuid()
@@ -53,6 +58,8 @@ defmodule Europa.Server.Player do
       efficiency: efficiency(),
       max_warm: max_warm,
       warm: max_warm,
+      hunger: hunger(),
+      thirst: thirst(),
       stand_on: Tiles.tile(:snow).atom_value
     }
   end
@@ -86,6 +93,8 @@ defmodule Europa.Server.Player do
     [
       {gettext("Health"), "#{player.health}/#{player.max_health}"},
       {gettext("Warm"), "#{player.warm}/#{player.max_warm}"},
+      {gettext("Hunger"), player.hunger},
+      {gettext("Thirst"), player.thirst},
       {gettext("Inventory"), "#{inventory_weight(player)}/#{player.max_weight}" <> gettext("kg")},
       {gettext("Accuracy"), player.accuracy},
       {gettext("Efficiency"), player.efficiency},
@@ -322,7 +331,9 @@ defmodule Europa.Server.Player do
 
   defp do_tick(player, moves_count, actions) do
     ticks = [
-      fn player -> get_cold(player) end
+      fn player -> get_cold(player) end,
+      fn player -> get_thirsty(player) end,
+      fn player -> get_hungry(player) end
     ]
 
     {updated_player, actions} =
@@ -357,6 +368,62 @@ defmodule Europa.Server.Player do
 
     if is_get_colder do
       {struct(player, warm: max(player.warm - 1, 0)), [Action.new(:player, :get_cold)]}
+    else
+      {player, []}
+    end
+  end
+
+  defp get_thirsty(%__MODULE__{thirst: thirst} = player) when thirst >= @max_thirst do
+    if m_to_n?(3, 10) do
+      {take_damage(player, 5), [Action.new(:player, :dehydration)]}
+    else
+      {player, []}
+    end
+  end
+
+  defp get_thirsty(%__MODULE__{thirst: thirst} = player) do
+    is_get_thirsy =
+      cond do
+        thirst == 0 ->
+          !m_to_n?(90, 100)
+
+        m_to_n?(thirst, @max_thirst) ->
+          !m_to_n?(3, 5)
+
+        true ->
+          false
+      end
+
+    if is_get_thirsy do
+      {struct(player, thirst: thirst + 1), []}
+    else
+      {player, []}
+    end
+  end
+
+  defp get_hungry(%__MODULE__{hunger: hunger} = player) when hunger >= @max_hunger do
+    if m_to_n?(3, 10) do
+      {take_damage(player, 3), [Action.new(:player, :hunger)]}
+    else
+      {player, []}
+    end
+  end
+
+  defp get_hungry(%__MODULE__{hunger: hunger} = player) do
+    is_get_hungry =
+      cond do
+        hunger == 0 ->
+          !m_to_n?(90, 100)
+
+        m_to_n?(hunger, @max_hunger) ->
+          !m_to_n?(3, 5)
+
+        true ->
+          false
+      end
+
+    if is_get_hungry do
+      {struct(player, hunger: hunger + 1), []}
     else
       {player, []}
     end
@@ -435,7 +502,7 @@ defmodule Europa.Server.Player do
         %Weapon.Ammo{caliber: caliber} = inventory_ammo when caliber == item.caliber ->
           struct(inventory_ammo, count: inventory_ammo.count + item.count)
 
-        %Supply{type: type, name: name} = inventory_supply when name == item.name and type == item.type ->
+        %Supply{name: name} = inventory_supply when name == item.name ->
           struct(inventory_supply, count: inventory_supply.count + item.count)
 
         item ->
@@ -529,6 +596,8 @@ defmodule Europa.Server.Player do
         :health -> struct(player, health: min(player.max_health, player.health + attr_value))
         :max_warm -> struct(player, max_warm: player.max_warm + attr_value)
         :warm -> struct(player, warm: min(player.max_warm, player.warm + attr_value))
+        :hunger -> struct(player, hunger: max(0, player.hunger + attr_value))
+        :thirst -> struct(player, thirst: max(0, player.thirst + attr_value))
         _ -> player
       end
     end)
@@ -592,6 +661,20 @@ defmodule Europa.Server.Player do
   defp max_warm do
     from = fetch_config!([:random_params, :player, :max_warm, :from])
     to = fetch_config!([:random_params, :player, :max_warm, :to])
+
+    m_to_n(from, to)
+  end
+
+  defp hunger do
+    from = fetch_config!([:random_params, :player, :hunger, :from])
+    to = fetch_config!([:random_params, :player, :hunger, :to])
+
+    m_to_n(from, to)
+  end
+
+  defp thirst do
+    from = fetch_config!([:random_params, :player, :thirst, :from])
+    to = fetch_config!([:random_params, :player, :thirst, :to])
 
     m_to_n(from, to)
   end

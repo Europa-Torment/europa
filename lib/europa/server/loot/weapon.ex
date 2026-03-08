@@ -117,7 +117,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   @spec negative_attrs(Weapon.t()) :: list(atom())
   def negative_attrs(%Weapon{}) do
-    [:reload_cost, :shot_cost]
+    [:reload_cost, :shot_cost, :weight]
   end
 
   @spec composed_name(Weapon.t()) :: String.t()

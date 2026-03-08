@@ -39,6 +39,8 @@ defmodule Europa.Server.PlayerTest do
       expected_stats = [
         {"Health", "#{player.health}/#{player.max_health}"},
         {"Warm", "#{player.warm}/#{player.max_warm}"},
+        {"Hunger", player.hunger},
+        {"Thirst", player.thirst},
         {"Inventory", "#{Player.inventory_weight(player)}/#{player.max_weight}kg"},
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
@@ -69,6 +71,8 @@ defmodule Europa.Server.PlayerTest do
       expected_stats = [
         {"Health", "#{player.health}/#{player.max_health}"},
         {"Warm", "#{player.warm}/#{player.max_warm}"},
+        {"Hunger", player.hunger},
+        {"Thirst", player.thirst},
         {"Inventory", "#{Player.inventory_weight(player)}/#{player.max_weight}kg"},
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
@@ -487,8 +491,8 @@ defmodule Europa.Server.PlayerTest do
   end
 
   describe "consume_supply/2" do
-    test "medicine supply heals player" do
-      supply = build(:supply, count: 3, type: :medicine, properties: build(:supply_properties, health: 15))
+    test "heals player" do
+      supply = build(:supply, count: 3, properties: build(:supply_properties, health: 15))
       player = build(:player, health: 10, inventory: [supply])
 
       assert {:ok, %Player{health: updated_health, inventory: [updated_supply]}, updated_supply} =
@@ -499,15 +503,37 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "health not exeed max_health" do
-      supply = build(:supply, count: 3, type: :medicine, properties: build(:supply_properties, health: 1000))
+      supply = build(:supply, count: 3, properties: build(:supply_properties, health: 1000))
       player = build(:player, health: 10, max_health: 100, inventory: [supply])
 
       assert {:ok, %Player{health: updated_health}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
       assert updated_health == player.max_health
     end
 
+    test "quenches thirst" do
+      supply = build(:supply, count: 3, properties: build(:supply_properties, thirst: -10))
+      player = build(:player, thirst: 20, inventory: [supply])
+
+      assert {:ok, %Player{thirst: updated_thirst, inventory: [updated_supply]}, updated_supply} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_thirst == player.thirst + supply.properties.thirst
+      assert updated_supply.count == supply.count - 1
+    end
+
+    test "satisfies hunger" do
+      supply = build(:supply, count: 3, properties: build(:supply_properties, hunger: -10))
+      player = build(:player, hunger: 20, inventory: [supply])
+
+      assert {:ok, %Player{hunger: updated_hunger, inventory: [updated_supply]}, updated_supply} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_hunger == player.hunger + supply.properties.hunger
+      assert updated_supply.count == supply.count - 1
+    end
+
     test "supply removes from inventory" do
-      supply = build(:supply, count: 1, type: :medicine, properties: build(:supply_properties, health: 15))
+      supply = build(:supply, count: 1, properties: build(:supply_properties, health: 15))
       player = build(:player, health: 10, inventory: [supply])
 
       assert {:ok, %Player{inventory: []}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
@@ -579,6 +605,100 @@ defmodule Europa.Server.PlayerTest do
 
           assert get_cold_proportion >= 0.01
           assert get_cold_proportion <= 1.0
+        end
+      end
+    end
+
+    property "damages thirsty player" do
+      player = build(:player, health: 100, max_warm: 100, warm: 100, hunger: 0, thirst: 50)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          damages_count =
+            Enum.count(results, fn {:ok, updated_player, actions} ->
+              updated_player.health < player.health &&
+                Enum.find(actions, fn action -> action.action_type == :dehydration end)
+            end)
+
+          damages_proportion = damages_count / num_runs
+
+          assert damages_proportion >= 0.01
+          assert damages_proportion <= 0.4
+        end
+      end
+    end
+
+    property "increases player thirst" do
+      player = build(:player, health: 100, thirst: 10)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          get_thirsty_count =
+            Enum.count(results, fn {:ok, updated_player, _actions} ->
+              updated_player.thirst > player.thirst
+            end)
+
+          get_thirsty_proportion = get_thirsty_count / num_runs
+
+          assert get_thirsty_proportion >= 0.01
+          assert get_thirsty_proportion <= 1.0
+        end
+      end
+    end
+
+    property "damages hungry player" do
+      player = build(:player, health: 100, max_warm: 100, warm: 100, thirst: 0, hunger: 50)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          damages_count =
+            Enum.count(results, fn {:ok, updated_player, actions} ->
+              updated_player.health < player.health &&
+                Enum.find(actions, fn action -> action.action_type == :hunger end)
+            end)
+
+          damages_proportion = damages_count / num_runs
+
+          assert damages_proportion >= 0.01
+          assert damages_proportion <= 0.4
+        end
+      end
+    end
+
+    property "increases player hunger" do
+      player = build(:player, health: 100, hunger: 10)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          get_hungry_count =
+            Enum.count(results, fn {:ok, updated_player, _actions} ->
+              updated_player.hunger > player.hunger
+            end)
+
+          get_hungry_proportion = get_hungry_count / num_runs
+
+          assert get_hungry_proportion >= 0.01
+          assert get_hungry_proportion <= 1.0
         end
       end
     end

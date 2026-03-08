@@ -3,30 +3,28 @@ defmodule Europa.Server.Loot.Supply do
 
   alias Europa.Server
   alias Europa.Server.Loot
-  alias Europa.Tools.Types
-
-  @allowed_types [:medicine, :food]
-
-  @type supply_type() :: unquote(Types.one_of(@allowed_types))
 
   defmodule Properties do
     typedstruct do
       field :health, integer() | nil
       field :warm, integer() | nil
+      field :hunger, integer() | nil
+      field :thirst, integer() | nil
     end
 
     @spec new(map()) :: t()
     def new(attrs) when is_map(attrs) do
       %__MODULE__{
         health: Map.get(attrs, :health),
-        warm: Map.get(attrs, :warm)
+        warm: Map.get(attrs, :warm),
+        hunger: Map.get(attrs, :hunger),
+        thirst: Map.get(attrs, :thirst)
       }
     end
   end
 
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
-    field :type, supply_type()
     field :name, String.t()
     field :count, pos_integer()
     field :consume_cost, Server.move_cost()
@@ -39,7 +37,6 @@ defmodule Europa.Server.Loot.Supply do
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
-      type: Map.fetch!(attrs, :type) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
       count: Map.fetch!(attrs, :count),
       consume_cost: Map.fetch!(attrs, :consume_cost),
@@ -94,6 +91,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
           case property do
             :health -> gettext("Health")
             :warm -> gettext("Warm")
+            :hunger -> gettext("Hunger")
+            :thirst -> gettext("Thirst")
           end
 
         {property, name, value}
@@ -142,6 +141,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
       case property do
         :health -> "H:#{value}"
         :warm -> "W:#{value}"
+        :hunger -> "HG:#{value}"
+        :thirst -> "TH:#{value}"
       end
     end)
   end

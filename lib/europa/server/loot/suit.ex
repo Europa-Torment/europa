@@ -41,7 +41,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
 
   @spec negative_attrs(Suit.t()) :: list(atom())
   def negative_attrs(%Suit{}) do
-    []
+    [:weight]
   end
 
   @spec composed_name(Suit.t()) :: String.t()

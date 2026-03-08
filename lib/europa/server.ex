@@ -704,7 +704,17 @@ defmodule Europa.Server do
   end
 
   defp action_message(%Action{subject: :player, action_type: :frostbite}) do
-    msg = gettext("You get frostbite")
+    msg = gettext("You get frostbite!")
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: :dehydration}) do
+    msg = gettext("You are dying of dehydration!")
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: :hunger}) do
+    msg = gettext("You are dying of hunger!")
     Chat.Message.new(msg, :danger)
   end
 

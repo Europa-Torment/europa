@@ -132,7 +132,6 @@ defmodule Europa.Support.Factory do
   def supply_factory do
     %Loot.Supply{
       uuid: Ecto.UUID.generate(),
-      type: :medicine,
       name: sequence(:name, &"supply #{&1 + 1}"),
       count: 1,
       consume_cost: 1,
@@ -161,6 +160,8 @@ defmodule Europa.Support.Factory do
       efficiency: 1,
       max_warm: 100,
       warm: 100,
+      hunger: 0,
+      thirst: 0,
       stand_on: Tiles.tile(:snow).atom_value
     }
   end

@@ -459,6 +459,7 @@ defmodule EuropaWeb.GameLive do
         equip: %{name: ~p"/sounds/equip.mp3", volume: 0.08},
         unequip: %{name: ~p"/sounds/unequip.mp3", volume: 0.08},
         eat: %{name: ~p"/sounds/eat.mp3", volume: 0.08},
+        drink: %{name: ~p"/sounds/drink.mp3", volume: 0.5},
         injection: %{name: ~p"/sounds/injection.mp3", volume: 0.08},
         click: %{name: ~p"/sounds/click.mp3", volume: 0.6},
         damage1: %{name: ~p"/sounds/damage1.mp3", volume: 0.1},
@@ -584,7 +585,10 @@ defmodule EuropaWeb.GameLive do
 
     %{
       health: "#{health}/#{max_health}",
-      warm: "#{warm}/#{max_warm}",
+      warm: warm,
+      warm_ratio: "#{warm}/#{max_warm}",
+      hunger: player.hunger,
+      thirst: player.thirst,
       max_weight: player.max_weight,
       inventory_weight: inventory_weight,
       inventory: "#{inventory_weight}/#{max_weight}" <> gettext("kg"),

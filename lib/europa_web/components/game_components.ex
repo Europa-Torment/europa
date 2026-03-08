@@ -28,6 +28,9 @@ defmodule EuropaWeb.GameCompotents do
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
 
+  @max_thirst fetch_config!([:random_params, :player, :max_thirst])
+  @max_hunger fetch_config!([:random_params, :player, :max_hunger])
+
   @tiles_readable_names Tiles.readable_names()
   @tiles_image_names Tiles.image_names()
 
@@ -83,14 +86,14 @@ defmodule EuropaWeb.GameCompotents do
             💙 {@player_stats.health}
           </div>
         </li>
-        <li>
-          <div class="tooltip" data-tip={gettext("Warm")}>
-            ❄️ {@player_stats.warm}
-          </div>
-        </li>
         <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
           <div class="tooltip" data-tip={gettext("Inventory")}>
             💼 {@player_stats.inventory}
+          </div>
+        </li>
+        <li class={"#{warm_stats_class(@player_stats)}"}>
+          <div class="tooltip" data-tip={gettext("Warm")}>
+            ❄️ {@player_stats.warm_ratio}
           </div>
         </li>
         <li>
@@ -98,9 +101,19 @@ defmodule EuropaWeb.GameCompotents do
             🎯 {@player_stats.accuracy}
           </div>
         </li>
+        <li class={"#{thirst_stats_class(@player_stats)}"}>
+          <div class="tooltip" data-tip={gettext("Thirst")}>
+            💧 {@player_stats.thirst}
+          </div>
+        </li>
         <li>
           <div class="tooltip" data-tip={gettext("Efficiency")}>
             🦌 {@player_stats.efficiency}
+          </div>
+        </li>
+        <li class={"#{hunger_stats_class(@player_stats)}"}>
+          <div class="tooltip" data-tip={gettext("Hunger")}>
+            🍗 {@player_stats.hunger}
           </div>
         </li>
       </ul>
@@ -415,16 +428,16 @@ defmodule EuropaWeb.GameCompotents do
         (is_binary(value) or is_atom(value)) && value != current_value ->
           {name, "#{value} (diff)"}
 
-        is_integer(value) && value > current_value && attr not in Item.negative_attrs(item) ->
+        is_number(value) && value > current_value && attr not in Item.negative_attrs(item) ->
           {name, "#{value} (+#{value - current_value})", "text-blue-500"}
 
-        is_integer(value) && value > current_value && attr in Item.negative_attrs(item) ->
+        is_number(value) && value > current_value && attr in Item.negative_attrs(item) ->
           {name, "#{value} (+#{value - current_value})", "text-red-500"}
 
-        is_integer(value) && value < current_value && attr not in Item.negative_attrs(item) ->
+        is_number(value) && value < current_value && attr not in Item.negative_attrs(item) ->
           {name, "#{value} (-#{current_value - value})", "text-red-500"}
 
-        is_integer(value) && value < current_value && attr in Item.negative_attrs(item) ->
+        is_number(value) && value < current_value && attr in Item.negative_attrs(item) ->
           {name, "#{value} (-#{current_value - value})", "text-blue-500"}
 
         true ->
@@ -613,6 +626,30 @@ defmodule EuropaWeb.GameCompotents do
 
   defp inventory_stats_class(player_stats) do
     if player_stats.inventory_weight > player_stats.max_weight do
+      "text-red-500"
+    else
+      ""
+    end
+  end
+
+  defp thirst_stats_class(player_stats) do
+    if player_stats.thirst > 0 && @max_thirst / player_stats.thirst <= 1.8 do
+      "text-red-500"
+    else
+      ""
+    end
+  end
+
+  defp hunger_stats_class(player_stats) do
+    if player_stats.hunger > 0 && @max_hunger / player_stats.hunger <= 1.8 do
+      "text-red-500"
+    else
+      ""
+    end
+  end
+
+  defp warm_stats_class(player_stats) do
+    if player_stats.warm < 30 do
       "text-red-500"
     else
       ""
