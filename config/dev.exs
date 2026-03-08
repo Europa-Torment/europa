@@ -92,5 +92,5 @@ config :phoenix_live_view,
 config :phoenix_copy,
   default: [
     source: Path.expand("../priv/tile_images/tmp/ready", __DIR__),
-    destination: Path.expand("../priv/static/images", __DIR__)
+    destination: Path.expand("../priv/static/images/tiles", __DIR__)
   ]

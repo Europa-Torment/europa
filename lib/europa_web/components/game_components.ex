@@ -51,7 +51,7 @@ defmodule EuropaWeb.GameCompotents do
               id={"tile_#{x}_#{y}"}
               phx-hook="Tooltip"
               data-tooltip={tile_tooltip(tile, @player)}
-              src={~p"/images/#{render_tile(tile, @player)}"}
+              src={~p"/images/tiles/#{render_tile(tile, @player)}"}
               height="30"
               width="30"
             />
