@@ -156,10 +156,15 @@ defmodule Europa.Server do
     GenServer.call(server, {:unequip_item, item_uuid})
   end
 
-  @spec drop_item(pid(), Loot.uuid()) ::
+  @spec get_item(pid(), Loot.uuid()) :: {:ok, Loot.Item.item()} | {:error, :not_found}
+  def get_item(server, item_uuid) do
+    GenServer.call(server, {:get_item, item_uuid})
+  end
+
+  @spec drop_item(pid(), Loot.uuid(), count :: pos_integer() | nil) ::
           {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
-  def drop_item(server, item_uuid) do
-    GenServer.call(server, {:drop_item, item_uuid})
+  def drop_item(server, item_uuid, count \\ nil) do
+    GenServer.call(server, {:drop_item, item_uuid, count})
   end
 
   @spec consume_supply(pid(), Loot.uuid()) ::
@@ -278,8 +283,13 @@ defmodule Europa.Server do
     end
   end
 
-  def handle_call({:drop_item, item_uuid}, _from, state) do
-    case PlayerManager.drop_item(state.player, item_uuid) do
+  def handle_call({:get_item, item_uuid}, _from, state) do
+    result = PlayerManager.get_item(state.player, item_uuid)
+    {:reply, result, state}
+  end
+
+  def handle_call({:drop_item, item_uuid, count}, _from, state) do
+    case PlayerManager.drop_item(state.player, item_uuid, count) do
       {:ok, updated_player, _item} ->
         {:reply, {:ok, updated_player}, struct(state, player: updated_player)}
 

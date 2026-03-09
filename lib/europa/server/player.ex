@@ -22,8 +22,6 @@ defmodule Europa.Server.Player do
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
 
-  @stackable_items [:ammo, :supply]
-
   typedstruct do
     field :view_direction, Planet.direction(), enforce: true
     field :inventory, inventory(), enforce: true
@@ -121,7 +119,7 @@ defmodule Europa.Server.Player do
 
   @impl true
   def add_item(%__MODULE__{} = player, item) do
-    if Loot.Item.item_type(item) in @stackable_items && already_have_such_item?(player.inventory, item) do
+    if Loot.Item.stackable?(item) && already_have_such_item?(player.inventory, item) do
       stack_items(player, item)
     else
       do_add_item(player, item)
@@ -129,22 +127,32 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def drop_item(%__MODULE__{} = player, item_uuid) do
-    with {:ok, item} <- find_item(player.inventory, item_uuid) do
+  def get_item(%__MODULE__{inventory: inventory}, item_uuid) do
+    case Enum.find(inventory, fn item -> item.uuid == item_uuid end) do
+      nil -> {:error, :not_found}
+      item -> {:ok, item}
+    end
+  end
+
+  @impl true
+  def drop_item(%__MODULE__{} = player, item_uuid, count \\ nil) do
+    with {:ok, item} <- get_item(player, item_uuid) do
       {player, item} = maybe_unequip_item(player, item)
 
-      updated_player =
-        player
-        |> delete_item(item)
-        |> do_drop_item(item)
+      {updated_player, dropped_item} =
+        if Loot.Item.stackable?(item) && is_integer(count) && item.count > count do
+          drop_stackable_item(player, item, count)
+        else
+          drop_regular_item(player, item)
+        end
 
-      {:ok, updated_player, item}
+      {:ok, updated_player, dropped_item}
     end
   end
 
   @impl true
   def equip_item(%__MODULE__{} = player, item_uuid) do
-    with {:ok, item} <- find_item(player.inventory, item_uuid),
+    with {:ok, item} <- get_item(player, item_uuid),
          {:ok, updated_item} <- Loot.Item.equip(item) do
       do_equip_or_unequip_item(player, updated_item)
     end
@@ -152,7 +160,7 @@ defmodule Europa.Server.Player do
 
   @impl true
   def unequip_item(%__MODULE__{} = player, item_uuid) do
-    with {:ok, item} <- find_item(player.inventory, item_uuid),
+    with {:ok, item} <- get_item(player, item_uuid),
          {:ok, updated_item} <- Loot.Item.unequip(item) do
       do_equip_or_unequip_item(player, updated_item)
     end
@@ -184,7 +192,7 @@ defmodule Europa.Server.Player do
   end
 
   def get_equiped_weapon(%__MODULE__{weapon_uuid: weapon_uuid} = player) do
-    with {:error, :not_found} <- find_item(player.inventory, weapon_uuid) do
+    with {:error, :not_found} <- get_item(player, weapon_uuid) do
       {:error, :no_weapon}
     end
   end
@@ -195,7 +203,7 @@ defmodule Europa.Server.Player do
   end
 
   def get_equiped_helmet(%__MODULE__{helmet_uuid: helmet_uuid} = player) do
-    with {:error, :not_found} <- find_item(player.inventory, helmet_uuid) do
+    with {:error, :not_found} <- get_item(player, helmet_uuid) do
       {:error, :no_helmet}
     end
   end
@@ -206,7 +214,7 @@ defmodule Europa.Server.Player do
   end
 
   def get_equiped_suit(%__MODULE__{suit_uuid: suit_uuid} = player) do
-    with {:error, :not_found} <- find_item(player.inventory, suit_uuid) do
+    with {:error, :not_found} <- get_item(player, suit_uuid) do
       {:error, :no_suit}
     end
   end
@@ -217,7 +225,7 @@ defmodule Europa.Server.Player do
   end
 
   def get_equiped_boots(%__MODULE__{boots_uuid: boots_uuid} = player) do
-    with {:error, :not_found} <- find_item(player.inventory, boots_uuid) do
+    with {:error, :not_found} <- get_item(player, boots_uuid) do
       {:error, :no_boots}
     end
   end
@@ -256,7 +264,7 @@ defmodule Europa.Server.Player do
 
   @impl true
   def unload_weapon(%__MODULE__{} = player, weapon_uuid) do
-    with {:ok, %Weapon{} = weapon} <- find_item(player.inventory, weapon_uuid),
+    with {:ok, %Weapon{} = weapon} <- get_item(player, weapon_uuid),
          {:ok, {updated_weapon, ammo}} <- Weapon.unload(weapon),
          {:ok, updated_player} <- player |> update_item(updated_weapon) |> add_item(ammo) do
       {:ok, updated_player, updated_weapon}
@@ -265,7 +273,7 @@ defmodule Europa.Server.Player do
 
   @impl true
   def consume_supply(%__MODULE__{} = player, supply_uuid) do
-    with {:ok, supply} <- find_item(player.inventory, supply_uuid) do
+    with {:ok, supply} <- get_item(player, supply_uuid) do
       do_consume_supply(player, supply)
     end
   end
@@ -306,6 +314,27 @@ defmodule Europa.Server.Player do
     else
       {player, item}
     end
+  end
+
+  defp drop_regular_item(player, item) do
+    updated_player =
+      player
+      |> delete_item(item)
+      |> do_drop_item(item)
+
+    {updated_player, item}
+  end
+
+  defp drop_stackable_item(player, item, count) do
+    dropped_item = struct(item, uuid: Ecto.UUID.generate(), count: count)
+    updated_item = struct(item, count: item.count - count)
+
+    updated_player =
+      player
+      |> update_item(updated_item)
+      |> do_drop_item(dropped_item)
+
+    {updated_player, dropped_item}
   end
 
   defp do_drop_item(%__MODULE__{stand_on: %Loot.ItemBox{} = item_box} = player, item) do
@@ -465,7 +494,7 @@ defmodule Europa.Server.Player do
     inventory
     |> Enum.filter(fn i ->
       item_type = Loot.Item.item_type(i)
-      item_type in @stackable_items && item_type == Loot.Item.item_type(item)
+      Loot.Item.stackable?(i) && item_type == Loot.Item.item_type(item)
     end)
     |> Enum.any?(fn inventory_item ->
       case Loot.Item.item_type(inventory_item) do
@@ -591,16 +620,9 @@ defmodule Europa.Server.Player do
         %Loot.Boots{} -> player.boots_uuid
       end
 
-    case find_item(player.inventory, uuid) do
+    case get_item(player, uuid) do
       {:ok, current_item} -> Loot.Item.player_stats_changes(current_item)
       _ -> %{}
-    end
-  end
-
-  defp find_item(inventory, item_uuid) do
-    case Enum.find(inventory, fn item -> item.uuid == item_uuid end) do
-      nil -> {:error, :not_found}
-      item -> {:ok, item}
     end
   end
 

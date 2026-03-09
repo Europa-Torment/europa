@@ -43,6 +43,7 @@ end
 defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
@@ -84,6 +85,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
 
   @spec consumable?(Ammo.t()) :: false
   def consumable?(%Ammo{}), do: false
+
+  @spec stackable?(Ammo.t()) :: true
+  def stackable?(%Ammo{}), do: true
 
   @spec player_stats_changes(Ammo.t()) :: map()
   def player_stats_changes(%Ammo{}), do: %{}

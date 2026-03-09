@@ -10,6 +10,7 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
+  alias Europa.Server.Loot
 
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
@@ -64,7 +65,9 @@ defmodule EuropaWeb.GameLive do
           inventory: nil,
           inventory_type: nil,
           show_control_hints: false,
-          game_started: false
+          game_started: false,
+          item_to_drop: nil,
+          item_drop_count: 1
         )
 
       {:ok, socket}
@@ -299,7 +302,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("drop_item", %{"uuid" => item_uuid}, socket) do
-    case Server.drop_item(socket.assigns.server, item_uuid) do
+    case Server.drop_item(socket.assigns.server, item_uuid, socket.assigns.item_drop_count) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
         helmet = get_current_helmet(updated_player)
@@ -316,7 +319,9 @@ defmodule EuropaWeb.GameLive do
             boots: boots,
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player)
+            player_stats: get_player_stats(updated_player),
+            item_to_drop: nil,
+            item_drop_count: nil
           )
           |> play_sound("equip")
 
@@ -325,6 +330,29 @@ defmodule EuropaWeb.GameLive do
       _ ->
         {:noreply, socket}
     end
+  end
+
+  def handle_event("open_item_drop_menu", %{"uuid" => item_uuid}, socket) do
+    with {:ok, item} <- Server.get_item(socket.assigns.server, item_uuid),
+         true <- Loot.Item.stackable?(item) do
+      {:noreply, assign(socket, item_to_drop: item, item_drop_count: 1)}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("close_item_drop_menu", _, socket) do
+    {:noreply, assign(socket, item_to_drop: nil, item_drop_count: nil)}
+  end
+
+  def handle_event("change_item_drop_count", %{"item_drop_count" => count}, socket) do
+    count =
+      case Integer.parse(count) do
+        {count, _} when is_integer(count) and count > 0 -> count
+        _ -> socket.assigns.item_drop_count
+      end
+
+    {:noreply, assign(socket, item_drop_count: count)}
   end
 
   def handle_event("unload_weapon", %{"uuid" => item_uuid}, socket) do
@@ -471,7 +499,7 @@ defmodule EuropaWeb.GameLive do
         overloaded1: %{name: ~p"/sounds/overloaded1.mp3", volume: 0.08},
         overloaded2: %{name: ~p"/sounds/overloaded2.mp3", volume: 0.08},
         overloaded3: %{name: ~p"/sounds/overloaded3.mp3", volume: 0.08},
-        injured: %{name: ~p"/sounds/injured.mp3", volume: 0.05},
+        injured: %{name: ~p"/sounds/injured.mp3", volume: 0.07},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.5}
       })
 

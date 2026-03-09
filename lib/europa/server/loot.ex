@@ -84,6 +84,9 @@ defmodule Europa.Server.Loot do
     @spec equipable?(item()) :: boolean()
     def equipable?(item)
 
+    @spec stackable?(item()) :: boolean()
+    def stackable?(item)
+
     @spec equip(item()) :: {:ok, item()} | {:error, Errors.NotApplicableError.t()}
     def equip(item)
 

@@ -176,6 +176,38 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "stackable?/1" do
+    test "returns false for weapon" do
+      weapon = build(:weapon)
+      assert Item.stackable?(weapon) == false
+    end
+
+    test "returns true for ammo" do
+      ammo = build(:ammo)
+      assert Item.stackable?(ammo) == true
+    end
+
+    test "returns false for helmet" do
+      helmet = build(:helmet)
+      assert Item.stackable?(helmet) == false
+    end
+
+    test "returns false for suit" do
+      suit = build(:suit)
+      assert Item.stackable?(suit) == false
+    end
+
+    test "returns false for boots" do
+      boots = build(:boots)
+      assert Item.stackable?(boots) == false
+    end
+
+    test "returns true for supply" do
+      supply = build(:supply)
+      assert Item.stackable?(supply) == true
+    end
+  end
+
   describe "weight/1" do
     test "returns weapon weight" do
       weapon = build(:weapon)

@@ -6,6 +6,7 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Errors
 
   import Europa.Tools.Conf
@@ -152,10 +153,26 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  describe "drop_item/2" do
+  describe "get_item/2" do
+    test "returns given item" do
+      weapon = build(:weapon)
+      player = build(:player, inventory: [weapon])
+
+      assert {:ok, ^weapon} = Player.get_item(player, weapon.uuid)
+    end
+
+    test "returns not_found error" do
+      player = build(:player, inventory: [])
+      item_uuid = Ecto.UUID.generate()
+
+      assert Player.get_item(player, item_uuid) == {:error, :not_found}
+    end
+  end
+
+  describe "drop_item/3" do
     setup do
       weapon = build(:weapon)
-      ammo = build(:ammo)
+      ammo = build(:ammo, count: 20)
       player = build(:player, inventory: [weapon, ammo])
 
       {:ok, player: player, weapon: weapon, ammo: ammo}
@@ -165,16 +182,40 @@ defmodule Europa.Server.PlayerTest do
       player = Player.stand_on(player, @snow)
 
       assert {:ok,
+              %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{type: :bunch, stand_on: @snow, items: [^weapon]}},
+              ^weapon} = Player.drop_item(player, weapon.uuid)
+    end
+
+    test "drops stackable item (all)", %{player: player, ammo: ammo, weapon: weapon} do
+      player = Player.stand_on(player, @snow)
+
+      assert {:ok,
               %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{type: :bunch, stand_on: @snow, items: [^ammo]}},
-              ^ammo} = Player.drop_item(player, ammo.uuid)
+              ^ammo} = Player.drop_item(player, ammo.uuid, ammo.count)
+    end
+
+    test "drops stackable item (partly)", %{player: player, ammo: ammo, weapon: weapon} do
+      player = Player.stand_on(player, @snow)
+      drop_count = ammo.count - 5
+      new_ammo_count = ammo.count - drop_count
+
+      assert {:ok,
+              %Player{
+                inventory: [^weapon, %Ammo{count: ^new_ammo_count}],
+                stand_on: %Loot.ItemBox{
+                  type: :bunch,
+                  stand_on: @snow,
+                  items: [%Ammo{count: ^drop_count} = dropped_ammo]
+                }
+              }, dropped_ammo} = Player.drop_item(player, ammo.uuid, drop_count)
     end
 
     test "drops given item (player already stand on item box)", %{player: player, ammo: ammo, weapon: weapon} do
       item_box = build(:loot_item_box, items: [])
       player = Player.stand_on(player, item_box)
 
-      assert {:ok, %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{items: [^ammo]}}, ^ammo} =
-               Player.drop_item(player, ammo.uuid)
+      assert {:ok, %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{items: [^weapon]}}, ^weapon} =
+               Player.drop_item(player, weapon.uuid)
     end
 
     test "retunrs error when item not found", %{player: player} do

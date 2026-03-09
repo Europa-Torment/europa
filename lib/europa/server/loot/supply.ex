@@ -56,6 +56,7 @@ end
 defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Loot
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
@@ -121,6 +122,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   @spec consumable?(Supply.t()) :: true
   def consumable?(%Supply{}), do: true
+
+  @spec stackable?(Supply.t()) :: true
+  def stackable?(%Supply{}), do: true
 
   @spec weight(Supply.t()) :: Loot.Item.weight()
   def weight(%Supply{weight: weight, count: count}) do

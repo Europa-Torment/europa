@@ -32,6 +32,7 @@ end
 defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Loot
   alias Europa.Server.Loot.Boots
 
   @spec item_type(Boots.t()) :: :boots
@@ -81,6 +82,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
 
   @spec consumable?(Boots.t()) :: false
   def consumable?(%Boots{}), do: false
+
+  @spec stackable?(Boots.t()) :: false
+  def stackable?(%Boots{}), do: false
 
   @spec weight(Boot.t()) :: Loot.Item.weight()
   def weight(%Boots{weight: weight}) do

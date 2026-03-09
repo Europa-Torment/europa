@@ -556,28 +556,56 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "drop_item/2" do
+  describe "get_item/2" do
     test "handles success response", %{server: server} do
-      item_uuid = Ecto.UUID.generate()
+      weapon = build(:weapon)
+      item_uuid = weapon.uuid
 
       PlayerManagerMock
-      |> expect(:drop_item, fn %Player{} = player, ^item_uuid ->
-        {:ok, player, build(:ammo)}
+      |> expect(:get_item, fn %Player{}, ^item_uuid ->
+        {:ok, weapon}
       end)
 
-      assert {:ok, %Player{}} = Server.drop_item(server, item_uuid)
+      assert Server.get_item(server, item_uuid) == {:ok, weapon}
     end
 
-    test "handles not_found response", %{server: server} do
+    test "handles not_found error", %{server: server} do
       item_uuid = Ecto.UUID.generate()
       error = {:error, :not_found}
 
       PlayerManagerMock
-      |> expect(:drop_item, fn %Player{}, ^item_uuid ->
+      |> expect(:get_item, fn %Player{}, ^item_uuid ->
         error
       end)
 
-      assert Server.drop_item(server, item_uuid) == error
+      assert Server.get_item(server, item_uuid) == error
+    end
+  end
+
+  describe "drop_item/3" do
+    test "handles success response", %{server: server} do
+      count = 1
+      item_uuid = Ecto.UUID.generate()
+
+      PlayerManagerMock
+      |> expect(:drop_item, fn %Player{} = player, ^item_uuid, ^count ->
+        {:ok, player, build(:ammo)}
+      end)
+
+      assert {:ok, %Player{}} = Server.drop_item(server, item_uuid, count)
+    end
+
+    test "handles not_found response", %{server: server} do
+      count = 1
+      item_uuid = Ecto.UUID.generate()
+      error = {:error, :not_found}
+
+      PlayerManagerMock
+      |> expect(:drop_item, fn %Player{}, ^item_uuid, ^count ->
+        error
+      end)
+
+      assert Server.drop_item(server, item_uuid, count) == error
     end
   end
 

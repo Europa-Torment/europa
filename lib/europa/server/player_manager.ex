@@ -42,9 +42,15 @@ defmodule Europa.Server.PlayerManager do
   @callback add_item(Player.t(), Loot.Item.item()) :: {:ok, Player.t()}
 
   @doc """
+  Returns item from inventory.
+  """
+  @callback get_item(Player.t(), Loot.uuid()) :: {:ok, Loot.Item.item()} | {:error, :not_found}
+
+  @doc """
   Drops item from inventory.
   """
-  @callback drop_item(Player.t(), Loot.uuid()) :: {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
+  @callback drop_item(Player.t(), Loot.uuid(), count :: pos_integer() | nil) ::
+              {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
 
   @doc """
   Equips given item or returns error if item is not exists or not equipable.
@@ -145,7 +151,9 @@ defmodule Europa.Server.PlayerManager do
 
   def add_item(player, item), do: manager_impl().add_item(player, item)
 
-  def drop_item(player, item_uuid), do: manager_impl().drop_item(player, item_uuid)
+  def get_item(player, item_uuid), do: manager_impl().get_item(player, item_uuid)
+
+  def drop_item(player, item_uuid, count), do: manager_impl().drop_item(player, item_uuid, count)
 
   def equip_item(player, item_uuid), do: manager_impl().equip_item(player, item_uuid)
 

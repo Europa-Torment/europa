@@ -34,6 +34,7 @@ end
 defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Loot
   alias Europa.Server.Loot.Suit
 
   @spec item_type(Suit.t()) :: :suit
@@ -85,6 +86,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
 
   @spec consumable?(Suit.t()) :: false
   def consumable?(%Suit{}), do: false
+
+  @spec stackable?(Suit.t()) :: false
+  def stackable?(%Suit{}), do: false
 
   @spec weight(Suit.t()) :: Loot.Item.weight()
   def weight(%Suit{weight: weight}) do

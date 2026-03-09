@@ -325,6 +325,11 @@ defmodule EuropaWeb.GameCompotents do
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
                         <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Drop")}</a></li>
+                        <%= if Loot.Item.stackable?(item) do %>
+                          <li phx-click="open_item_drop_menu" phx-value-uuid={"#{item.uuid}"}>
+                            <a>{gettext("Drop partly")}</a>
+                          </li>
+                        <% end %>
                         <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                           <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Unload")}</a></li>
                         <% end %>
@@ -384,6 +389,44 @@ defmodule EuropaWeb.GameCompotents do
           <% end %>
           <div class="modal-action">
             <label phx-click="close_item_box" for="item_box" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def item_drop_menu(assigns) do
+    ~H"""
+    <%= if @item_to_drop do %>
+      <input type="checkbox" id="item_drop_menu" class="modal-toggle" checked={true} phx-change="close_item_drop_menu" />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+          <h3 class="text-lg font-bold pb-3">{gettext("Drop")} {Loot.Item.composed_name(@item_to_drop)}</h3>
+          <div>
+            <input
+              id="item_drop_count"
+              type="number"
+              class="input validator"
+              name="item_drop_count"
+              value={@item_drop_count}
+              phx-hook="ItemDropChangeCount"
+              phx-change="change_item_drop_count"
+              required
+              placeholder={gettext("How many?")}
+              min="1"
+              max={@item_to_drop.count}
+              title={gettext("Must be between") <> " 1-#{@item_to_drop.count}"}
+            />
+            <p class="validator-hint">
+              {gettext("Must be between")} 1-{@item_to_drop.count}
+            </p>
+            <button class="btn btn-neutral" phx-click="drop_item" phx-value-uuid={"#{@item_to_drop.uuid}"}>
+              {gettext("Drop")}
+            </button>
+          </div>
+          <div class="modal-action">
+            <label phx-click="close_item_drop_menu" for="item_drop_menu" class="btn">{gettext("Close")}</label>
           </div>
         </div>
       </div>
