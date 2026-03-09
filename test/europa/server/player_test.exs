@@ -610,7 +610,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     property "damages thirsty player" do
-      player = build(:player, health: 100, max_warm: 100, warm: 100, hunger: 0, thirst: 50)
+      player = build(:player, health: 100, max_warm: 100, warm: 100, hunger: 0, thirst: 100)
 
       check all(_n <- StreamData.integer(1..100)) do
         num_runs = 500
@@ -657,7 +657,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     property "damages hungry player" do
-      player = build(:player, health: 100, max_warm: 100, warm: 100, thirst: 0, hunger: 50)
+      player = build(:player, health: 100, max_warm: 100, warm: 100, thirst: 0, hunger: 100)
 
       check all(_n <- StreamData.integer(1..100)) do
         num_runs = 500
@@ -705,8 +705,8 @@ defmodule Europa.Server.PlayerTest do
   end
 
   defp max_weight_range do
-    from = fetch_config!([:random_params, :player, :max_weight, :from])
-    to = fetch_config!([:random_params, :player, :max_weight, :to])
+    from = fetch_config!([:game_params, :player, :max_weight, :from])
+    to = fetch_config!([:game_params, :player, :max_weight, :to])
 
     from..to
   end

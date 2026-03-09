@@ -28,8 +28,9 @@ defmodule EuropaWeb.GameCompotents do
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
 
-  @max_thirst fetch_config!([:random_params, :player, :max_thirst])
-  @max_hunger fetch_config!([:random_params, :player, :max_hunger])
+  @max_thirst fetch_config!([:game_params, :player, :max_thirst])
+  @max_hunger fetch_config!([:game_params, :player, :max_hunger])
+  @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
   @tiles_readable_names Tiles.readable_names()
   @tiles_image_names Tiles.image_names()
@@ -81,19 +82,19 @@ defmodule EuropaWeb.GameCompotents do
     ~H"""
     <div class="bg-base-200 p-5 rounded-box shadow-md text-sm">
       <ul class="grid grid-cols-2 grid-rows-3 gap-3">
-        <li>
+        <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Health")}>
-            💙 {@player_stats.health}
+            💙 {@player_stats.health}/{@player_stats.max_health}
           </div>
         </li>
         <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
           <div class="tooltip" data-tip={gettext("Inventory")}>
-            💼 {@player_stats.inventory}
+            💼 {@player_stats.inventory_weight}/{@player_stats.max_weight}
           </div>
         </li>
-        <li class={"#{warm_stats_class(@player_stats)}"}>
+        <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Warm")}>
-            ❄️ {@player_stats.warm_ratio}
+            ❄️ {@player_stats.warm}/{@player_stats.max_warm}
           </div>
         </li>
         <li>
@@ -101,7 +102,7 @@ defmodule EuropaWeb.GameCompotents do
             🎯 {@player_stats.accuracy}
           </div>
         </li>
-        <li class={"#{thirst_stats_class(@player_stats)}"}>
+        <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Thirst")}>
             💧 {@player_stats.thirst}
           </div>
@@ -111,7 +112,7 @@ defmodule EuropaWeb.GameCompotents do
             🦌 {@player_stats.efficiency}
           </div>
         </li>
-        <li class={"#{hunger_stats_class(@player_stats)}"}>
+        <li class={"#{hunger_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Hunger")}>
             🍗 {@player_stats.hunger}
           </div>
@@ -270,8 +271,10 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @inventory do %>
       <input type="checkbox" id="inventory" class="modal-toggle h-screen" checked={true} phx-change="close_inventory" />
       <div class="modal overflow-visible" role="dialog">
-        <div class="modal-box overflow-visible overflow-y-auto max-w-3xl">
-          <h3 class="text-lg font-bold">{gettext("Inventory")} ({@player_stats.inventory})</h3>
+        <div class="modal-box overflow-visible overflow-y-auto max-w-2xl">
+          <h3 class="text-lg font-bold">
+            {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
+          </h3>
           <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
             <a
               role="tab"
@@ -348,7 +351,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @item_box do %>
       <input type="checkbox" id="item_box" class="modal-toggle" checked={true} phx-change="close_item_box" />
       <div class="modal overflow-visible" role="dialog">
-        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-3xl">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
           <h3 class="text-lg font-bold pb-3">{ItemBox.readable_name(@item_box)}</h3>
           <%= if Enum.count(@item_box.items) > 0 do %>
             <ul class="list-disc list-inside space-y-2 text-sm">
@@ -622,6 +625,14 @@ defmodule EuropaWeb.GameCompotents do
 
   defp open_inventory_click do
     JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_inventory")
+  end
+
+  defp health_stats_class(player_stats) do
+    if player_stats.health > 0 && player_stats.health / player_stats.max_health <= @low_health_ratio do
+      "text-red-500"
+    else
+      ""
+    end
   end
 
   defp inventory_stats_class(player_stats) do

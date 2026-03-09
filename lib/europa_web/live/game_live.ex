@@ -28,6 +28,8 @@ defmodule EuropaWeb.GameLive do
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
 
+  @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
+
   @sound_deplay_ms 100
 
   @impl true
@@ -106,6 +108,7 @@ defmodule EuropaWeb.GameLive do
           |> step_sound(player.stand_on)
           |> damaged_sound(player_before.health, player.health)
           |> overloaded_sound(move_status)
+          |> low_health_sound(player)
 
         {:noreply, socket}
 
@@ -468,6 +471,7 @@ defmodule EuropaWeb.GameLive do
         overloaded1: %{name: ~p"/sounds/overloaded1.mp3", volume: 0.08},
         overloaded2: %{name: ~p"/sounds/overloaded2.mp3", volume: 0.08},
         overloaded3: %{name: ~p"/sounds/overloaded3.mp3", volume: 0.08},
+        injured: %{name: ~p"/sounds/injured.mp3", volume: 0.05},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.5}
       })
 
@@ -526,6 +530,14 @@ defmodule EuropaWeb.GameLive do
     socket
   end
 
+  defp low_health_sound(socket, player) do
+    if player.health / player.max_health <= @low_health_ratio && m_to_n?(2, 20) do
+      play_sound(socket, "injured")
+    else
+      socket
+    end
+  end
+
   defp play_sound(socket, sound_name) do
     push_event(socket, "play-sound", %{name: sound_name})
   end
@@ -570,30 +582,20 @@ defmodule EuropaWeb.GameLive do
     Server.get_inventory(socket.assigns.server, socket.assigns[:inventory_type] || :all)
   end
 
-  defp get_player_stats(player) do
-    %Player{
-      health: health,
-      max_health: max_health,
-      warm: warm,
-      max_warm: max_warm,
-      accuracy: accuracy,
-      efficiency: efficiency,
-      max_weight: max_weight
-    } = player
-
+  defp get_player_stats(%Player{} = player) do
     inventory_weight = PlayerManager.inventory_weight(player)
 
     %{
-      health: "#{health}/#{max_health}",
-      warm: warm,
-      warm_ratio: "#{warm}/#{max_warm}",
+      health: player.health,
+      max_health: player.max_health,
+      warm: player.warm,
+      max_warm: player.max_warm,
       hunger: player.hunger,
       thirst: player.thirst,
       max_weight: player.max_weight,
       inventory_weight: inventory_weight,
-      inventory: "#{inventory_weight}/#{max_weight}" <> gettext("kg"),
-      accuracy: accuracy,
-      efficiency: efficiency
+      accuracy: player.accuracy,
+      efficiency: player.efficiency
     }
   end
 

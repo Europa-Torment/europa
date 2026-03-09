@@ -21,7 +21,7 @@ defmodule Europa.Server.Loot do
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
 
-  @max_items_in_item_box fetch_config!([:random_params, :loot, :max_items_in_item_box])
+  @max_items_in_item_box fetch_config!([:game_params, :loot, :max_items_in_item_box])
 
   @weighted_item_types [
     {:weapon, gettext("Weapons"), 0.4},

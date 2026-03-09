@@ -49,7 +49,7 @@ config :europa, :weapons,
   burst_bullets_per_shot: 3,
   max_accuracy: 40
 
-config :europa, :random_params,
+config :europa, :game_params,
   player: [
     max_weight: [
       from: 50,
@@ -79,8 +79,9 @@ config :europa, :random_params,
       from: 0,
       to: 10
     ],
-    max_thirst: 50,
-    max_hunger: 50
+    max_thirst: 100,
+    max_hunger: 100,
+    low_health_ratio: 0.3
   ],
   loot: [
     max_items_in_item_box: 6

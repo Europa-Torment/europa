@@ -43,6 +43,18 @@
             "thirst": -20
         },
         "weight": 0.5,
+        "random_weight": 0.8
+    },
+    {
+        "name": "Can of expired Earth beer", 
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "drink",
+        "properties": {
+            "thirst": -30,
+            "health": -5
+        },
+        "weight": 0.5,
         "random_weight": 1.0
     },
     {
@@ -57,5 +69,17 @@
         },
         "weight": 0.5,
         "random_weight": 1.0
+    },
+    {
+        "name": "WCC dry rations", 
+        "count": {"from": 1, "to": 2},
+        "consume_cost": 2,
+        "sound_name": "eat",
+        "properties": {
+            "hunger": -50,
+            "health": 30
+        },
+        "weight": 2.0,
+        "random_weight": 0.1
     }
 ]

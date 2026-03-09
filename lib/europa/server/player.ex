@@ -19,8 +19,8 @@ defmodule Europa.Server.Player do
 
   @type inventory :: list(Loot.Item.t())
 
-  @max_thirst fetch_config!([:random_params, :player, :max_thirst])
-  @max_hunger fetch_config!([:random_params, :player, :max_hunger])
+  @max_thirst fetch_config!([:game_params, :player, :max_thirst])
+  @max_hunger fetch_config!([:game_params, :player, :max_hunger])
 
   @stackable_items [:ammo, :supply]
 
@@ -605,15 +605,15 @@ defmodule Europa.Server.Player do
   end
 
   defp max_weight do
-    from = fetch_config!([:random_params, :player, :max_weight, :from])
-    to = fetch_config!([:random_params, :player, :max_weight, :to])
+    from = fetch_config!([:game_params, :player, :max_weight, :from])
+    to = fetch_config!([:game_params, :player, :max_weight, :to])
 
     m_to_n(from, to) + 0.0
   end
 
   defp max_health do
-    from = fetch_config!([:random_params, :player, :max_health, :from])
-    to = fetch_config!([:random_params, :player, :max_health, :to])
+    from = fetch_config!([:game_params, :player, :max_health, :from])
+    to = fetch_config!([:game_params, :player, :max_health, :to])
 
     m_to_n(from, to)
   end
@@ -624,36 +624,36 @@ defmodule Europa.Server.Player do
   end
 
   defp accuracy do
-    from = fetch_config!([:random_params, :player, :accuracy, :from])
-    to = fetch_config!([:random_params, :player, :accuracy, :to])
+    from = fetch_config!([:game_params, :player, :accuracy, :from])
+    to = fetch_config!([:game_params, :player, :accuracy, :to])
 
     m_to_n(from, to)
   end
 
   defp efficiency do
-    from = fetch_config!([:random_params, :player, :efficiency, :from])
-    to = fetch_config!([:random_params, :player, :efficiency, :to])
+    from = fetch_config!([:game_params, :player, :efficiency, :from])
+    to = fetch_config!([:game_params, :player, :efficiency, :to])
 
     m_to_n(from, to)
   end
 
   defp max_warm do
-    from = fetch_config!([:random_params, :player, :max_warm, :from])
-    to = fetch_config!([:random_params, :player, :max_warm, :to])
+    from = fetch_config!([:game_params, :player, :max_warm, :from])
+    to = fetch_config!([:game_params, :player, :max_warm, :to])
 
     m_to_n(from, to)
   end
 
   defp hunger do
-    from = fetch_config!([:random_params, :player, :hunger, :from])
-    to = fetch_config!([:random_params, :player, :hunger, :to])
+    from = fetch_config!([:game_params, :player, :hunger, :from])
+    to = fetch_config!([:game_params, :player, :hunger, :to])
 
     m_to_n(from, to)
   end
 
   defp thirst do
-    from = fetch_config!([:random_params, :player, :thirst, :from])
-    to = fetch_config!([:random_params, :player, :thirst, :to])
+    from = fetch_config!([:game_params, :player, :thirst, :from])
+    to = fetch_config!([:game_params, :player, :thirst, :to])
 
     m_to_n(from, to)
   end
