@@ -575,8 +575,8 @@ defmodule Europa.Server.Player do
         :health -> struct(player, health: min(player.max_health, player.health + attr_value))
         :max_warm -> struct(player, max_warm: player.max_warm + attr_value)
         :warm -> struct(player, warm: min(player.max_warm, player.warm + attr_value))
-        :hunger -> struct(player, hunger: max(0, player.hunger + attr_value))
-        :thirst -> struct(player, thirst: max(0, player.thirst + attr_value))
+        :hunger -> struct(player, hunger: max(0, player.hunger + attr_value) |> min(@max_hunger))
+        :thirst -> struct(player, thirst: max(0, player.thirst + attr_value) |> min(@max_thirst))
         _ -> player
       end
     end)

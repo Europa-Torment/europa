@@ -23,14 +23,16 @@ defmodule Europa.Server.Loot do
 
   @max_items_in_item_box fetch_config!([:random_params, :loot, :max_items_in_item_box])
 
-  @item_types [
-    {:weapon, gettext("Weapons")},
-    {:ammo, gettext("Ammo")},
-    {:supply, gettext("Supplies")},
-    {:helmet, gettext("Helmets")},
-    {:suit, gettext("Suits")},
-    {:boots, gettext("Boots")}
+  @weighted_item_types [
+    {:weapon, gettext("Weapons"), 0.4},
+    {:ammo, gettext("Ammo"), 0.7},
+    {:supply, gettext("Supplies"), 1.0},
+    {:helmet, gettext("Helmets"), 0.4},
+    {:suit, gettext("Suits"), 0.2},
+    {:boots, gettext("Boots"), 0.4}
   ]
+
+  @item_types Enum.map(@weighted_item_types, fn {k, v, _} -> {k, v} end)
 
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
@@ -223,8 +225,9 @@ defmodule Europa.Server.Loot do
 
   @spec generate_item() :: Item.t()
   def generate_item do
-    @allowed_item_types
-    |> Enum.random()
+    @weighted_item_types
+    |> Enum.map(fn {item_type, _, weight} -> {item_type, weight} end)
+    |> WeightedRandom.take_one()
     |> generate_item()
   end
 
