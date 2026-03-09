@@ -149,7 +149,8 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @close_keys do
-    {:noreply, assign(socket, inventory: nil, item_box: nil, show_control_hints: false)}
+    {:noreply,
+     assign(socket, inventory: nil, item_box: nil, show_control_hints: false, item_drop_menu: false, item_to_drop: nil)}
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @shoot_keys do
