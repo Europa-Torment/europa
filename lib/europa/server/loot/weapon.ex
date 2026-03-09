@@ -128,12 +128,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
       "D:#{weapon.damage} ",
       "A:#{weapon.accuracy} ",
       "SD:#{weapon.shooting_distance} ",
-      "T:#{weapon.shooting_type} ",
-      "C:#{weapon.caliber} ",
-      "M:#{weapon.magazine_size} ",
-      "L:#{weapon.rounds_loaded} ",
-      "SC:#{weapon.shot_cost} ",
-      "RC:#{weapon.reload_cost}",
+      "C:#{weapon.caliber}",
       ")"
     ]
     |> to_string()

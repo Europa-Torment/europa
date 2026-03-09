@@ -270,7 +270,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @inventory do %>
       <input type="checkbox" id="inventory" class="modal-toggle h-screen" checked={true} phx-change="close_inventory" />
       <div class="modal overflow-visible" role="dialog">
-        <div class="modal-box overflow-visible overflow-y-auto">
+        <div class="modal-box overflow-visible overflow-y-auto max-w-3xl">
           <h3 class="text-lg font-bold">{gettext("Inventory")} ({@player_stats.inventory})</h3>
           <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
             <a
@@ -348,7 +348,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @item_box do %>
       <input type="checkbox" id="item_box" class="modal-toggle" checked={true} phx-change="close_item_box" />
       <div class="modal overflow-visible" role="dialog">
-        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-3xl">
           <h3 class="text-lg font-bold pb-3">{ItemBox.readable_name(@item_box)}</h3>
           <%= if Enum.count(@item_box.items) > 0 do %>
             <ul class="list-disc list-inside space-y-2 text-sm">
