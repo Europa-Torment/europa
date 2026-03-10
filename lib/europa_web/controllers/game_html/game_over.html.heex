@@ -1,3 +1,19 @@
 <div id="game_over">
-  Game over
+  <div class="p-10 text-center text-4xl font-bold">
+    <div class="inline-block text-accent opacity-0 animate-fade-in" style="animation-delay: 3.5s;">
+      {gettext("Game over")}
+    </div>
+  </div>
+  <div class="p-10 text-center text-4xl font-bold">
+    <div class="inline-block text-red-500 opacity-0 animate-fade-in" style="animation-delay: 0.5s;">
+      {gettext("Dead")}
+    </div>
+    <div class="inline-block opacity-0 animate-fade-in" style="animation-delay: 1.5s;">{gettext("like")}</div>
+    <div class="inline-block opacity-0 animate-fade-in" style="animation-delay: 2.5s;">{gettext("others")}.</div>
+  </div>
+  <div class="p-10 text-center text-4xl font-bold">
+    <.button class="btn btn-accent opacity-0 animate-fade-in" style="animation-delay: 4.2s;" navigate={~p"/games/new"}>
+      {gettext("New game")}
+    </.button>
+  </div>
 </div>

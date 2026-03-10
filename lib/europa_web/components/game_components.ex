@@ -671,7 +671,8 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp health_stats_class(player_stats) do
-    if player_stats.health > 0 && player_stats.health / player_stats.max_health <= @low_health_ratio do
+    if player_stats.health == 0 ||
+         (player_stats.health > 0 && player_stats.health / player_stats.max_health <= @low_health_ratio) do
       "text-red-500"
     else
       ""

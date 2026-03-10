@@ -31,7 +31,10 @@ defmodule EuropaWeb.GameLive do
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
-  @sound_deplay_ms 100
+  @default_sound_delay_ms 100
+  @game_over_sound_delay_ms 200
+
+  @game_over_redirect_delay_ms 8950
 
   @impl true
   def mount(%{"uuid" => uuid}, _session, socket) do
@@ -67,7 +70,8 @@ defmodule EuropaWeb.GameLive do
           show_control_hints: false,
           game_started: false,
           item_to_drop: nil,
-          item_drop_count: 1
+          item_drop_count: 1,
+          game_over: false
         )
 
       {:ok, socket}
@@ -78,6 +82,10 @@ defmodule EuropaWeb.GameLive do
   end
 
   @impl true
+  def handle_event(_, _, %{assigns: %{game_over: true}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("start_game", _params, socket) do
     socket =
       socket
@@ -461,6 +469,18 @@ defmodule EuropaWeb.GameLive do
 
   @impl true
   def handle_info(:game_over, socket) do
+    socket =
+      socket
+      |> assign(game_over: true)
+      |> stop_sound("background_music")
+      |> play_sound("dead")
+      |> play_sound_with_delay("game_over", @game_over_sound_delay_ms)
+
+    self() |> Process.send_after(:game_over_redirect, @game_over_redirect_delay_ms)
+    {:noreply, socket}
+  end
+
+  def handle_info(:game_over_redirect, socket) do
     {:noreply, redirect_to_game_over_page(socket, socket.assigns.game.uuid)}
   end
 
@@ -501,7 +521,8 @@ defmodule EuropaWeb.GameLive do
         overloaded2: %{name: ~p"/sounds/overloaded2.mp3", volume: 0.08},
         overloaded3: %{name: ~p"/sounds/overloaded3.mp3", volume: 0.08},
         injured: %{name: ~p"/sounds/injured.mp3", volume: 0.07},
-        game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.5}
+        dead: %{name: ~p"/sounds/dead.mp3", volume: 0.2},
+        game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1}
       })
 
     assign(socket, :sounds, json)
@@ -571,8 +592,12 @@ defmodule EuropaWeb.GameLive do
     push_event(socket, "play-sound", %{name: sound_name})
   end
 
-  defp play_sound_with_delay(socket, sound_name) do
-    self() |> Process.send_after({:play_sound, sound_name}, @sound_deplay_ms)
+  defp stop_sound(socket, sound_name) do
+    push_event(socket, "stop-sound", %{name: sound_name})
+  end
+
+  defp play_sound_with_delay(socket, sound_name, delay \\ @default_sound_delay_ms) do
+    self() |> Process.send_after({:play_sound, sound_name}, delay)
     socket
   end
 
