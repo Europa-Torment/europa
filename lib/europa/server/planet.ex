@@ -60,6 +60,8 @@ defmodule Europa.Server.Planet do
   @water Tiles.tile(:water).atom_value
   @snow Tiles.tile(:snow).atom_value
   @path Tiles.tile(:path).atom_value
+  @snow_blood Tiles.tile(:snow).blood_version
+  @path_blood Tiles.tile(:path).blood_version
 
   @movable_tiles Tiles.movable_tiles()
   @high_tiles Tiles.high_tiles()
@@ -658,6 +660,10 @@ defmodule Europa.Server.Planet do
 
   defp maybe_make_path(land, current_coord, @snow) do
     change_tile(land, current_coord, @path)
+  end
+
+  defp maybe_make_path(land, current_coord, @snow_blood) do
+    change_tile(land, current_coord, @path_blood)
   end
 
   defp maybe_make_path(land, current_coord, tile) do
