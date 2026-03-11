@@ -23,12 +23,8 @@
 
   <.item_box item_box={@item_box} player={@player} />
   <.inventory inventory={@inventory} inventory_type={@inventory_type} player_stats={@player_stats} player={@player} />
-  <.item_drop_menu
-    item_to_drop={@item_to_drop}
-    item_drop_count={@item_drop_count}
-    <.control_hints
-    show_control_hints={@show_control_hints}
-  />
+  <.item_drop_menu item_to_drop={@item_to_drop} item_drop_count={@item_drop_count} />
+  <.control_hints show_control_hints={@show_control_hints} />
 <% else %>
   <.start_screen />
 <% end %>
