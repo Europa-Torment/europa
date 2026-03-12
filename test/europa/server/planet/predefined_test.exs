@@ -3,16 +3,20 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
   alias Europa.Server.Planet.Predefined
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Enemy
 
-  @wall Tiles.tile(:wall).atom_value
   @floor Tiles.tile(:floor).atom_value
+  @wall_horizontal %Object{name: "wall", image_name: "wall_horizontal", high?: true}
+  @wall_right %Object{name: "wall", image_name: "wall_right", high?: true}
+  @wall_left %Object{name: "wall", image_name: "wall_left", high?: true}
+  @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
 
   @expected_house [
-    [@wall, @wall, @wall, @wall],
-    [@wall, @floor, @floor, @wall],
-    [@wall, @floor, @wall, @wall, :skip]
+    [@wall_left, @wall_horizontal, @wall_horizontal, @wall_horizontal, @wall_horizontal, @wall_right],
+    [@wall_left, @floor, @wall_vertical_inside, @floor, @floor, @wall_right],
+    [@wall_left, @wall_horizontal, @floor, @wall_horizontal, @wall_horizontal, @wall_right, :skip]
   ]
 
   describe "generate/1" do

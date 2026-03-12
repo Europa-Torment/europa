@@ -6,6 +6,7 @@ defmodule Europa.Server.Planet do
 
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Tile
+  alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Planet.Predefined
 
   alias Europa.Tools.Types
@@ -52,7 +53,7 @@ defmodule Europa.Server.Planet do
 
   @type readable_tile_name :: String.t()
 
-  @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t()
+  @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t() | Object.t()
 
   @type land :: list(list(tile()))
 
@@ -127,6 +128,7 @@ defmodule Europa.Server.Planet do
   @impl true
   def readable_tile_name(%Loot.ItemBox{} = item_box), do: Loot.ItemBox.readable_name(item_box)
   def readable_tile_name(%Enemy{name: name}), do: Gettext.gettext(Europa.Gettext, name)
+  def readable_tile_name(%Object{name: name}), do: Gettext.gettext(Europa.Gettext, name)
   def readable_tile_name(tile), do: Map.get(@tiles_readable_names, tile)
 
   @impl true
@@ -359,6 +361,7 @@ defmodule Europa.Server.Planet do
         case get_tile(land, coord) do
           nil -> false
           %Enemy{} -> true
+          %Object{high?: true} -> true
           tile -> tile in @high_tiles
         end
       end)
@@ -972,9 +975,14 @@ defmodule Europa.Server.Planet do
     Enemy.stand_on(enemy, stand_on)
   end
 
-  defp prepare_predefined_tile(%Loot.ItemBox{} = item_box, land, coord) do
+  defp prepare_predefined_tile(%Loot.ItemBox{stand_on: nil} = item_box, land, coord) do
     stand_on = predefined_stand_on_tile(land, coord)
     Loot.ItemBox.stand_on(item_box, stand_on)
+  end
+
+  defp prepare_predefined_tile(%Object{stand_on: nil} = object, land, coord) do
+    stand_on = predefined_stand_on_tile(land, coord)
+    Object.stand_on(object, stand_on)
   end
 
   defp prepare_predefined_tile(tile, _, _), do: tile

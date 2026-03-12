@@ -108,9 +108,9 @@ defmodule Europa.Server.Loot do
 
     alias Europa.Server.Loot
 
-    typedstruct enforce: true do
-      field :type, Loot.item_box_type()
-      field :items, list(Loot.Item.item())
+    typedstruct do
+      field :type, Loot.item_box_type(), enforce: true
+      field :items, list(Loot.Item.item()), enforce: true
       field :stand_on, Planet.tile()
     end
 
@@ -252,14 +252,8 @@ defmodule Europa.Server.Loot do
     |> generate_item_box()
   end
 
-  @spec generate_item_box(item_box_type()) :: ItemBox.t()
-  def generate_item_box(item_box_type) when item_box_type in @allowed_item_box_types do
-    stand_on = Enum.random([Tiles.tile(:snow).atom_value, Tiles.tile(:ice).atom_value])
-    generate_item_box(item_box_type, stand_on)
-  end
-
   @spec generate_item_box(item_box_type(), Planet.tile()) :: ItemBox.t()
-  def generate_item_box(item_box_type, stand_on) when item_box_type in @allowed_item_box_types do
+  def generate_item_box(item_box_type, stand_on \\ nil) when item_box_type in @allowed_item_box_types do
     items =
       case random_number(@max_items_in_item_box) do
         1 -> [generate_item()]

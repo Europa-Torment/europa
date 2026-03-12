@@ -7,6 +7,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Player
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Enemy
   alias Europa.Server.Action
   alias Europa.Users.User
@@ -172,6 +173,15 @@ defmodule Europa.Support.Factory do
       year: Map.get(opts, :year, 1000),
       current_coord: Map.get(opts, :current_coord, {4, 5}),
       land: Map.get(opts, :land, default_land())
+    }
+  end
+
+  @spec object_factory() :: Object.t()
+  def object_factory do
+    %Object{
+      name: "wall",
+      high?: true,
+      image_name: "wall"
     }
   end
 

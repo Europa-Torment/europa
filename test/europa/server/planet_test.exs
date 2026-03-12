@@ -27,7 +27,7 @@ defmodule Europa.Server.PlanetTest do
   @w Tiles.tile(:water).atom_value
   @pl Planet.player()
 
-  @wl Tiles.tile(:wall).atom_value
+  @wl build(:object, high?: true)
 
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)])

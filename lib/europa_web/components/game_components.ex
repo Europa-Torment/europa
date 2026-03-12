@@ -5,6 +5,7 @@ defmodule EuropaWeb.GameCompotents do
 
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Player
   alias Europa.Server.Enemy
   alias Europa.Server.Loot
@@ -32,7 +33,6 @@ defmodule EuropaWeb.GameCompotents do
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
-  @tiles_readable_names Tiles.readable_names()
   @tiles_image_names Tiles.image_names()
 
   @gif_tiles Tiles.gif_tiles()
@@ -522,11 +522,8 @@ defmodule EuropaWeb.GameCompotents do
         |> Enemy.readable_stats()
         |> to_ul()
 
-      %ItemBox{} = item_box ->
-        ItemBox.readable_name(item_box)
-
       tile ->
-        Map.get(@tiles_readable_names, tile, "...")
+        Planet.readable_tile_name(tile)
     end
   end
 
@@ -566,6 +563,10 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on}, _) do
+    "#{image_name}_#{landscape_name(stand_on)}.png"
+  end
+
+  defp get_image_name(%Object{image_name: image_name, stand_on: stand_on}, _) do
     "#{image_name}_#{landscape_name(stand_on)}.png"
   end
 

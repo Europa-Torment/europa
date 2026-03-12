@@ -38,15 +38,6 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "water",
       gif_tile?: true
     },
-    wall: %Tile{
-      atom_value: :wl,
-      blood_version: nil,
-      readable_name: gettext("wall"),
-      move_cost: nil,
-      movable?: false,
-      high?: true,
-      image_name: "wall"
-    },
     floor: %Tile{
       atom_value: :fl,
       blood_version: :flb,
