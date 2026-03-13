@@ -1,4 +1,82 @@
 <Layouts.flash_group flash={@flash} />
-<div>
-  Hello
+
+<div class="w-full pb-10">
+  <img src={~p"/images/game_art.png"} />
 </div>
+
+<div class="carousel w-full">
+  <div id="item1" class="carousel-item w-full">
+    <img
+      src={~p"/images/game_screen.png"}
+      class="w-100"
+    />
+    <div class="p-10 text-center text-2xl font-bold">
+      {gettext("Try to survive on cold Jupiter moon")}
+    </div>
+  </div>
+  <div id="item2" class="carousel-item w-full">
+    <img
+      src={~p"/images/game_screen.png"}
+      class="w-100"
+    />
+    <div class="p-10 text-center text-2xl font-bold">
+      {gettext("Browser single player turn-based survival game ")}
+    </div>
+  </div>
+  <div id="item3" class="carousel-item w-full">
+    <img
+      src={~p"/images/game_screen.png"}
+      class="w-100"
+    />
+    <div class="p-10 text-center text-2xl font-bold">
+      {gettext("Explore endless procedural generated Europa")}
+    </div>
+  </div>
+  <div id="item4" class="carousel-item w-full">
+    <img
+      src={~p"/images/game_screen.png"}
+      class="w-100"
+    />
+    <div class="p-10 text-center text-2xl font-bold">
+      {gettext("Kill monsters, loot abandoned buildings")}
+    </div>
+  </div>
+  <div id="item5" class="carousel-item w-full">
+    <img
+      src={~p"/images/game_screen.png"}
+      class="w-100"
+    />
+    <div class="p-10 text-center text-2xl font-bold">
+      {gettext("Manage resuorces and vital stats")}
+    </div>
+  </div>
+</div>
+
+<div class="flex w-full justify-center gap-2 py-2">
+  <a href="#item1" class="btn btn-xs">1</a>
+  <a href="#item2" class="btn btn-xs">2</a>
+  <a href="#item3" class="btn btn-xs">3</a>
+  <a href="#item4" class="btn btn-xs">4</a>
+  <a href="#item5" class="btn btn-xs">5</a>
+</div>
+
+<div class="p-10 text-center text-4xl font-bold">
+  <.button class="btn btn-xl btn-accent" navigate={~p"/games/new"}>
+    {gettext("Become European")}
+  </.button>
+</div>
+
+<footer class="footer footer-horizontal footer-center bg-base-200 text-base-content rounded p-10">
+  <nav class="grid grid-flow-col gap-4">
+    <a class="link link-hover">About game</a>
+    <a class="link link-hover">Contact us</a>
+    <a class="link link-hover">Become contributor</a>
+  </nav>
+  <nav>
+    <div class="grid grid-flow-col gap-4">
+      <a href="https://github.com/Europa-Torment/europa" target="_blank">
+        <img class="w-10" src={~p"/images/github.svg"} />
+      </a>
+    </div>
+  </nav>
+</footer>
