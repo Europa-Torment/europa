@@ -44,6 +44,7 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("floor"),
       move_cost: 1,
       movable?: true,
+      warm?: true,
       image_name: "floor"
     }
   }
@@ -87,6 +88,18 @@ defmodule Europa.Server.Planet.Tiles do
   def high_tiles do
     Enum.reduce(@tiles, [], fn {_, tile}, acc ->
       if tile.high? do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
+  end
+
+  @spec warm_tiles() :: list(atom())
+  def warm_tiles do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if tile.warm? do
         acc ++ [tile.atom_value, tile.blood_version]
       else
         acc

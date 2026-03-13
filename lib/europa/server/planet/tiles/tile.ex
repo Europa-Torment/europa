@@ -10,5 +10,6 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :image_name, String.t(), enforce: true
     field :gif_tile?, boolean(), default: false
     field :high?, boolean(), default: false
+    field :warm?, boolean(), default: false
   end
 end

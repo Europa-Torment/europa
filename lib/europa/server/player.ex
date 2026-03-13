@@ -114,7 +114,13 @@ defmodule Europa.Server.Player do
 
   @impl true
   def stand_on(%__MODULE__{} = player, tile) do
-    struct(player, stand_on: tile)
+    player
+    |> struct(stand_on: tile)
+  end
+
+  @impl true
+  def warm_up(%__MODULE__{} = player, warm_units) when is_integer(warm_units) and warm_units > 0 do
+    increase_attrs(player, %{warm: warm_units})
   end
 
   @impl true

@@ -115,6 +115,24 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "warm_up/2" do
+    setup do
+      player = build(:player, warm: 10, max_warm: 50)
+      {:ok, player: player}
+    end
+
+    test "increases warm", %{player: player} do
+      warm_units = 20
+      expected_warm = player.warm + warm_units
+      assert %Player{warm: ^expected_warm} = Player.warm_up(player, warm_units)
+    end
+
+    test "doensn't exceed max_warm", %{player: player} do
+      expected_warm = player.max_warm
+      assert %Player{warm: ^expected_warm} = Player.warm_up(player, player.max_warm + 100)
+    end
+  end
+
   describe "add_item/2" do
     setup do
       player = build(:player, inventory: [build(:weapon)])

@@ -32,6 +32,8 @@ defmodule Europa.Server do
 
   @max_efficiency fetch_config!([__MODULE__, :max_efficiency])
 
+  @warm_tiles Tiles.warm_tiles()
+
   typedstruct enforce: true do
     field :game_uuid, Ecto.UUID.t()
     field :planet, Planet.t()
@@ -510,6 +512,7 @@ defmodule Europa.Server do
           state.player
           |> PlayerManager.change_view_direction(direction)
           |> PlayerManager.stand_on(step_on_tile)
+          |> maybe_warm_up(step_on_tile)
 
         {:reply, {:moved, status},
          struct(state,
@@ -566,6 +569,12 @@ defmodule Europa.Server do
       updated_player
     end)
   end
+
+  defp maybe_warm_up(%Player{} = player, tile) when tile in @warm_tiles do
+    PlayerManager.warm_up(player, 25)
+  end
+
+  defp maybe_warm_up(player, _), do: player
 
   defp process_actions(%Player{} = player, actions, game_uuid, caller_pid) when is_list(actions) do
     Enum.reduce(actions, player, fn action, player ->

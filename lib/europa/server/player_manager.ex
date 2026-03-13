@@ -139,6 +139,11 @@ defmodule Europa.Server.PlayerManager do
   """
   @callback weight_ratio(Player.t()) :: number()
 
+  @doc """
+  Increases player's `warm`.
+  """
+  @callback warm_up(Player.t(), warm_units :: pos_integer()) :: Player.t()
+
   @callback tick(Player.t(), Server.move_cost()) :: {:ok, Player.t(), list(Action.t())}
 
   ### Implementation callers ###
@@ -186,6 +191,8 @@ defmodule Europa.Server.PlayerManager do
   def inventory_weight(player), do: manager_impl().inventory_weight(player)
 
   def weight_ratio(player), do: manager_impl().weight_ratio(player)
+
+  def warm_up(player, warm_units), do: manager_impl().warm_up(player, warm_units)
 
   def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
 
