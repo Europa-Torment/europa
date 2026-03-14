@@ -17,6 +17,8 @@ defmodule EuropaWeb.GameCompotents do
 
   @player Planet.player()
 
+  @game_version Mix.Project.config()[:version] |> to_string()
+
   @move_up_keys fetch_config!([:control_bindings, :move_up])
   @move_down_keys fetch_config!([:control_bindings, :move_down])
   @move_left_keys fetch_config!([:control_bindings, :move_left])
@@ -123,9 +125,16 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def control_hints_link(assigns) do
+    assigns = Map.put(assigns, :version, @game_version)
+
     ~H"""
     <div class="bg-base-200 p-5 rounded-box shadow-md text-xs">
       <.link phx-click="show_control_hints">{gettext("Control hints")}</.link>
+    </div>
+    <div class="p-1 text-center text-xs">
+      <div class="inline-block text-neutral">
+        v{@version}
+      </div>
     </div>
     """
   end
