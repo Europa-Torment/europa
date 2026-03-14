@@ -8,6 +8,7 @@ defmodule Europa.Games.Game do
 
   @required_create_params [:user_id, :uuid, :state]
   @required_finish_params [:state, :finish_reason]
+  @required_update_stats_params [:moves_count, :great_red_spots, :killed_enemies]
 
   @states [:active, :finished]
 
@@ -21,6 +22,9 @@ defmodule Europa.Games.Game do
     field :uuid, :string
     field :state, Ecto.Enum, values: @states
     field :finish_reason, Ecto.Enum, values: @finish_reasons
+    field :moves_count, :integer, default: 0
+    field :great_red_spots, :integer, default: 0
+    field :killed_enemies, :integer, default: 0
 
     timestamps()
   end
@@ -39,5 +43,15 @@ defmodule Europa.Games.Game do
     game
     |> cast(params, @required_finish_params)
     |> validate_required(@required_finish_params)
+  end
+
+  @spec update_stats_changeset(%__MODULE__{}, map()) :: Ecto.Changeset.t()
+  def update_stats_changeset(%__MODULE__{} = game, params \\ %{}) do
+    game
+    |> cast(params, @required_update_stats_params)
+    |> validate_required(@required_update_stats_params)
+    |> validate_number(:moves_count, greater_than_or_equal_to: 0)
+    |> validate_number(:great_red_spots, greater_than_or_equal_to: 0)
+    |> validate_number(:killed_enemies, greater_than_or_equal_to: 0)
   end
 end

@@ -44,6 +44,12 @@ config :europa, Europa.Server.Planet,
   enemy_view_distance: 6,
   enemy_move_possibility: [from: 95, to: 100]
 
+config :europa, Europa.Server.Planet.Predefined,
+  building: [
+    enemy_generate_possibility: 100,
+    loot_generate_possibility: 5
+  ]
+
 config :europa, :weapons,
   shotgun_radius: 2,
   burst_bullets_per_shot: 3,
@@ -51,6 +57,7 @@ config :europa, :weapons,
 
 config :europa, :game_params,
   player: [
+    warm_up_quantity: 25,
     max_weight: [
       from: 50,
       to: 65

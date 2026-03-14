@@ -992,7 +992,7 @@ defmodule Europa.Server.Planet do
     |> Enum.into(%{})
   end
 
-  defp prepare_predefined_tile(%Enemy{} = enemy, land, coord) do
+  defp prepare_predefined_tile(%Enemy{stand_on: nil} = enemy, land, coord) do
     stand_on = predefined_stand_on_tile(land, coord)
     Enemy.stand_on(enemy, stand_on)
   end

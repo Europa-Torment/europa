@@ -24,6 +24,12 @@ config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/test/"
 
 config :europa, Europa.Server.Planet.Predefined, templates_path: "/planet/test/"
 
+config :europa, Europa.Server.Planet.Predefined,
+  building: [
+    enemy_generate_possibility: 100_000_000,
+    loot_generate_possibility: 1
+  ]
+
 # Changing will break tests
 config :europa, Europa.Server.Planet,
   initial_game_field: [width: 20, height: 20],

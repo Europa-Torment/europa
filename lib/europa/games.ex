@@ -43,6 +43,16 @@ defmodule Europa.Games do
     end
   end
 
+  @spec update_stats(Ecto.UUID.t(), params :: map()) ::
+          {:ok, Game.t()} | {:error, Ecto.Changeset.t()} | {:error, :not_found}
+  def update_stats(uuid, params) when is_map(params) do
+    with {:ok, game} <- get_by_uuid(uuid) do
+      game
+      |> Game.update_stats_changeset(params)
+      |> Repo.update()
+    end
+  end
+
   defp build_create_params(user_id) do
     %{
       user_id: user_id,

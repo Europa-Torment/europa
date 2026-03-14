@@ -89,6 +89,27 @@ defmodule Europa.GamesTest do
     end
   end
 
+  describe "update_stats/2" do
+    setup do
+      game = insert(:game)
+      {:ok, game: game}
+    end
+
+    test "updates game stats", %{game: game} do
+      params = %{moves_count: 10, great_red_spots: 2, killed_enemies: 100}
+
+      assert {:ok, updated_game} = Games.update_stats(game.uuid, params)
+      assert updated_game.moves_count == params.moves_count
+      assert updated_game.great_red_spots == params.great_red_spots
+      assert updated_game.killed_enemies == params.killed_enemies
+    end
+
+    test "returns error if game not found" do
+      params = %{moves_count: 10, great_red_spots: 2, killed_enemies: 10}
+      assert Games.update_stats("fake", params) == {:error, :not_found}
+    end
+  end
+
   defp allow_server_mock(mock_module, user_id) do
     mock_module
     |> allow(self(), fn ->

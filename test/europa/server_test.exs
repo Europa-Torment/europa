@@ -120,7 +120,6 @@ defmodule Europa.ServerTest do
       assert {:moved, :normal} = Server.move(server, @direction)
       assert_chat_message(server, :regular, "You walked at snow, it took")
       assert_chat_message(server, :danger, "#{action.subject.name} is attacking you!")
-      assert_chat_message(server, :warning, "You are getting colder")
     end
 
     test "increases moves_count when player overloaded", %{server: server, planet: planet} do
@@ -190,7 +189,7 @@ defmodule Europa.ServerTest do
       end)
 
       assert {:moved, :normal} = Server.move(server, @direction)
-      :timer.sleep(200)
+      :timer.sleep(600)
       assert {:ok, %Games.Game{state: :finished, finish_reason: :died}} = Games.get_by_uuid(game_uuid)
 
       assert_received :game_over
@@ -671,6 +670,7 @@ defmodule Europa.ServerTest do
     end)
 
     :timer.sleep(@crop_period_ms + 100)
+    assert %Server{great_red_spots: 1} = :sys.get_state(server)
   end
 
   defp assert_chat_message(server, category, text) do

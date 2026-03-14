@@ -12,12 +12,13 @@ defmodule Europa.Server.Planet.Predefined do
   alias Europa.Tools.Types
 
   import Europa.Tools.Conf
+  import Europa.Tools.Randomizer
 
   @default_templates_path "/planet"
 
   @categories %{
-    building: %{dir: "/buildings", weight: 1.5},
-    situation: %{dir: "/situations", weight: 2.0}
+    building: %{dir: "/buildings", weight: 0.3},
+    situation: %{dir: "/situations", weight: 0.7}
   }
 
   @floor Tiles.tile(:floor).atom_value
@@ -28,6 +29,9 @@ defmodule Europa.Server.Planet.Predefined do
   @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
 
   @bonefire %Object{name: "bonefire", image_name: "bonefire", warm?: true}
+
+  @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
+  @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
 
   @type category() :: unquote(@categories |> Map.keys() |> Types.one_of())
   @type template() :: list(Tiles.Tile.t() | :skip)
@@ -62,11 +66,24 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:building, "r"), do: @wall_right
   defp elem_to_tile(:building, "h"), do: @wall_horizontal
   defp elem_to_tile(:building, "i"), do: @wall_vertical_inside
-  defp elem_to_tile(:building, "f"), do: @floor
+
+  defp elem_to_tile(:building, "f") do
+    if m_to_n?(1, @building_enemy_generate_possibility) do
+      Enemy.generate_enemy()
+      |> Enemy.stand_on(@floor)
+    else
+      @floor
+    end
+  end
 
   defp elem_to_tile(:building, "L") do
     item_box = Loot.generate_item_box(:box, @floor)
-    Enum.random([item_box, @floor])
+
+    if m_to_n?(1, @building_loot_generate_possibility) do
+      item_box
+    else
+      @floor
+    end
   end
 
   # situations

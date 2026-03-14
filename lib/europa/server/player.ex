@@ -21,6 +21,7 @@ defmodule Europa.Server.Player do
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
+  @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
 
   @warm_tiles Tiles.warm_tiles()
 
@@ -451,7 +452,7 @@ defmodule Europa.Server.Player do
   end
 
   defp maybe_warm_up(%__MODULE__{stand_on: stand_on} = player) when stand_on in @warm_tiles do
-    {warm_up(player, 25), []}
+    {warm_up(player, @warm_up_quantity), []}
   end
 
   defp maybe_warm_up(player) do

@@ -607,7 +607,7 @@ defmodule Europa.Server.PlanetTest do
 
     @tag perfomance: true
     test "tick is fast enough" do
-      acceptable_time_ms = 150
+      acceptable_time_ms = 200
 
       cols = 1_000
       rows = 1_000

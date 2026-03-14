@@ -4,6 +4,16 @@
   <img src={~p"/images/game_art.png"} />
 </div>
 
+<div class="text-center text-lg text-accent font-bold">
+  {gettext(
+    "In the near future, humans colonized Europa. It was the first and last attempt to colonize another space object: terraforming turned into a disaster and the people with money and power fled the satellite, leaving the rest to their deaths."
+  )}
+</div>
+
+<div class="pb-10 text-center text-md text-accent font-bold">
+  {gettext("Will you survive?")}
+</div>
+
 <div class="carousel w-full">
   <div id="item1" class="carousel-item w-full">
     <img
@@ -60,7 +70,7 @@
   <a href="#item5" class="btn btn-xs">5</a>
 </div>
 
-<div class="p-10 text-center text-4xl font-bold">
+<div class="p-10 text-center text-xl font-bold">
   <.button class="btn btn-xl btn-accent" navigate={~p"/games/new"}>
     {gettext("Become European")}
   </.button>

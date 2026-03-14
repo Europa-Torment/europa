@@ -32,11 +32,16 @@ defmodule Europa.Server do
 
   @max_efficiency fetch_config!([__MODULE__, :max_efficiency])
 
+  @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
+
   typedstruct enforce: true do
     field :game_uuid, Ecto.UUID.t()
     field :planet, Planet.t()
     field :player, Player.t()
     field :chat, Chat.t()
+    field :moves_count, non_neg_integer()
+    field :great_red_spots, non_neg_integer()
+    field :killed_enemies, non_neg_integer()
   end
 
   ### PUBLIC INTERFACE ###
@@ -205,7 +210,16 @@ defmodule Europa.Server do
 
     chat = Chat.new(init_message)
 
-    state = %__MODULE__{game_uuid: uuid, planet: planet, chat: chat, player: player}
+    state = %__MODULE__{
+      game_uuid: uuid,
+      planet: planet,
+      chat: chat,
+      player: player,
+      moves_count: 0,
+      great_red_spots: 0,
+      killed_enemies: 0
+    }
+
     schedule_planet_land_crop()
 
     {:ok, state}
@@ -309,8 +323,15 @@ defmodule Europa.Server do
           |> Chat.add_message(shoot_message)
           |> add_damage_messages_to_chat(damaged_enemies)
 
-        {:reply, {:ok, :shot}, struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
-         {:continue, {:tick, moves_count, caller_pid}}}
+        killed_enemies_count = killed_enemies_count(damaged_enemies)
+
+        {:reply, {:ok, :shot},
+         struct(state,
+           planet: updated_planet,
+           player: updated_player,
+           chat: updated_chat,
+           killed_enemies: state.killed_enemies + killed_enemies_count
+         ), {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :miss, updated_player, moves_count} ->
         moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
@@ -444,14 +465,28 @@ defmodule Europa.Server do
       {:ok, updated_planet} = PlanetManager.crop_land(state.planet)
       message = crop_planet_land_message()
 
-      {:noreply, struct(state, planet: updated_planet, chat: Chat.add_message(state.chat, message))}
+      {:noreply,
+       struct(state,
+         planet: updated_planet,
+         chat: Chat.add_message(state.chat, message),
+         great_red_spots: state.great_red_spots + 1
+       )}
     else
       {:noreply, state}
     end
   end
 
-  def handle_info({:game_over, _reason}, _state) do
+  def handle_info(:game_over, state) do
+    stats = %{
+      moves_count: state.moves_count,
+      great_red_spots: state.great_red_spots,
+      killed_enemies: state.killed_enemies
+    }
+
+    Games.update_stats(state.game_uuid, stats)
+
     Process.exit(self(), :normal)
+    {:noreply, state}
   end
 
   def handle_info({:EXIT, _pid, reason}, state) do
@@ -478,7 +513,13 @@ defmodule Europa.Server do
       state.chat
       |> add_action_messages_to_chat(actions)
 
-    {:noreply, struct(state, planet: updated_planet, player: updated_player, chat: updated_chat)}
+    {:noreply,
+     struct(state,
+       planet: updated_planet,
+       player: updated_player,
+       chat: updated_chat,
+       moves_count: state.moves_count + moves_count
+     )}
   end
 
   @impl true
@@ -488,6 +529,10 @@ defmodule Europa.Server do
   end
 
   ### PRIVATE ###
+
+  defp killed_enemies_count(damaged_enemies) do
+    Enum.count(damaged_enemies, fn {enemy, _} -> enemy.health == 0 end)
+  end
 
   defp do_move(direction, state, caller_pid) do
     case PlanetManager.move(state.planet, direction, state.player.stand_on) do
@@ -578,7 +623,7 @@ defmodule Europa.Server do
           |> Player.stand_on(blood_tile)
 
         %Action{action_type: :warm_up, subject: :player} ->
-          PlayerManager.warm_up(player, 25)
+          PlayerManager.warm_up(player, @warm_up_quantity)
 
         _ ->
           player
@@ -711,11 +756,6 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :story)
   end
 
-  defp action_message(%Action{subject: :player, action_type: :get_cold}) do
-    msg = gettext("You are getting colder")
-    Chat.Message.new(msg, :warning)
-  end
-
   defp action_message(%Action{subject: :player, action_type: :frostbite}) do
     msg = gettext("You get frostbite!")
     Chat.Message.new(msg, :danger)
@@ -759,7 +799,13 @@ defmodule Europa.Server do
 
   defp add_damage_messages_to_chat(%Chat{} = chat, damaged_enemies) do
     Enum.reduce(damaged_enemies, chat, fn {enemy, damage}, chat ->
-      msg = Gettext.gettext(Europa.Gettext, "You shot #{enemy.name} and dealt #{damage} damage to it!")
+      msg =
+        if enemy.health > 0 do
+          Gettext.gettext(Europa.Gettext, "You shot #{enemy.name} and dealt #{damage} damage to it!")
+        else
+          Gettext.gettext(Europa.Gettext, "You killed #{enemy.name}!")
+        end
+
       message = Chat.Message.new(msg, :regular)
       Chat.add_message(chat, message)
     end)
