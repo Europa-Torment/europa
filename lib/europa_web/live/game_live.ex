@@ -37,8 +37,10 @@ defmodule EuropaWeb.GameLive do
   @game_over_redirect_delay_ms 8950
 
   @impl true
-  def mount(%{"uuid" => uuid}, _session, socket) do
-    with {:ok, %Game{state: :active} = game} <- Games.get_by_uuid(uuid),
+  def mount(%{"uuid" => uuid}, session, socket) do
+    current_user = Map.fetch!(session, "current_user")
+
+    with {:ok, %Game{state: :active, user_id: ^current_user} = game} <- Games.get_by_uuid(uuid),
          {:ok, server} <- Server.get_pid(uuid) do
       visible_land = Server.get_visible_planet(server)
       player = Server.get_player(server)
@@ -78,6 +80,9 @@ defmodule EuropaWeb.GameLive do
     else
       {:ok, %Game{state: :finished} = game} ->
         {:ok, redirect_to_game_over_page(socket, game.uuid)}
+
+      _ ->
+        {:ok, redirect(socket, to: "/")}
     end
   end
 

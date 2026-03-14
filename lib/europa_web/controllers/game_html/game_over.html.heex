@@ -23,7 +23,11 @@
   </div>
   <div class="p-2 text-center text-sm font-bold">
     <div class="inline-block text-accent opacity-0 animate-fade-in" style="animation-delay: 3.9s;">
-      {@game.great_red_spots} {ngettext("Great Red Spot", "Great Red Spots", @game.great_red_spots)}
+      {gettext("Survived")} {@game.great_red_spots} {ngettext(
+        "Great Red Spot",
+        "Great Red Spots",
+        @game.great_red_spots
+      )}
     </div>
   </div>
   <div class="p-10 text-center text-4xl font-bold">
