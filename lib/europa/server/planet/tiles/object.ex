@@ -5,7 +5,8 @@ defmodule Europa.Server.Planet.Tiles.Object do
 
   typedstruct do
     field :name, String.t(), enforce: true
-    field :high?, boolean(), enforce: true
+    field :high?, boolean(), default: false
+    field :warm?, boolean(), default: false
     field :image_name, String.t(), enforce: true
     field :stand_on, Planet.tile()
   end

@@ -66,6 +66,7 @@ defmodule Europa.Server.Planet do
 
   @movable_tiles Tiles.movable_tiles()
   @high_tiles Tiles.high_tiles()
+  @warm_tiles Tiles.warm_tiles()
 
   @move_costs Tiles.move_costs()
 
@@ -217,11 +218,7 @@ defmodule Europa.Server.Planet do
 
   @impl true
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
-    {updated_planet, actions} =
-      planet
-      |> maybe_perfrom_enemies_actions(moves_count)
-
-    {:ok, updated_planet, actions}
+    do_tick(planet, moves_count, [])
   end
 
   def tick(%__MODULE__{} = planet, _) do
@@ -229,6 +226,25 @@ defmodule Europa.Server.Planet do
   end
 
   ### PRIVATE ###
+
+  defp do_tick(%__MODULE__{} = planet, 0, actions) do
+    {:ok, planet, actions}
+  end
+
+  defp do_tick(%__MODULE__{} = planet, moves_count, actions) do
+    ticks = [
+      fn planet -> maybe_perform_enemies_actions(planet) end,
+      fn planet -> maybe_warm_up(planet) end
+    ]
+
+    {updated_planet, actions} =
+      Enum.reduce(ticks, {planet, actions}, fn tick_fn, {planet, actions} ->
+        {updated_planet, new_actions} = tick_fn.(planet)
+        {updated_planet, actions ++ new_actions}
+      end)
+
+    do_tick(updated_planet, moves_count - 1, actions)
+  end
 
   defp do_shoot(_, _, %Loot.Weapon{rounds_loaded: 0}) do
     {:error, :empty_magazine}
@@ -445,25 +461,31 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp maybe_perfrom_enemies_actions(%__MODULE__{} = planet, moves_count) do
-    do_move_enemies(planet, moves_count, [])
+  defp maybe_warm_up(%__MODULE__{} = planet) do
+    if next_to_warm_tile?(planet) do
+      {planet, [Action.new(:player, :warm_up)]}
+    else
+      {planet, []}
+    end
   end
 
-  defp do_move_enemies(planet, 0, actions) do
-    {planet, actions}
+  defp next_to_warm_tile?(%__MODULE__{land: land, current_coord: current_coord}) do
+    land
+    |> get_neighbors(current_coord, 1)
+    |> Enum.any?(fn
+      %Object{warm?: true} -> true
+      tile -> tile in @warm_tiles and tile not in @movable_tiles
+    end)
   end
 
-  defp do_move_enemies(planet, moves_count, actions) do
+  defp maybe_perform_enemies_actions(%__MODULE__{} = planet) do
     enemies = get_visible_enemies(planet)
 
-    {updated_planet, updated_actions} =
-      Enum.reduce(enemies, {planet, actions}, fn enemy_coord, {pl, act} ->
-        enemy = get_tile(pl.land, enemy_coord)
-        {updated_pl, action} = move_enemy(pl, enemy_coord, enemy)
-        {updated_pl, act ++ [action]}
-      end)
-
-    do_move_enemies(updated_planet, moves_count - 1, updated_actions)
+    Enum.reduce(enemies, {planet, []}, fn enemy_coord, {pl, act} ->
+      enemy = get_tile(pl.land, enemy_coord)
+      {updated_pl, action} = move_enemy(pl, enemy_coord, enemy)
+      {updated_pl, act ++ [action]}
+    end)
   end
 
   defp move_enemy(%__MODULE__{current_coord: {px, py}} = planet, {ex, ey} = enemy_coord, enemy) do

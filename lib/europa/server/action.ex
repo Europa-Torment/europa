@@ -4,7 +4,7 @@ defmodule Europa.Server.Action do
   alias Europa.Tools.Types
   alias Europa.Server.Enemy
 
-  @allowed_action_types [:attack, :miss_attack, :chasing, :stay, :get_cold, :frostbite, :dehydration, :hunger]
+  @allowed_action_types [:attack, :miss_attack, :chasing, :stay, :get_cold, :frostbite, :dehydration, :hunger, :warm_up]
 
   @type subject :: Enemy.t() | :player
   @type action_type :: unquote(Types.one_of(@allowed_action_types))

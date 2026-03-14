@@ -22,6 +22,8 @@ defmodule Europa.Server.Player do
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
 
+  @warm_tiles Tiles.warm_tiles()
+
   typedstruct do
     field :view_direction, Planet.direction(), enforce: true
     field :inventory, inventory(), enforce: true
@@ -371,7 +373,8 @@ defmodule Europa.Server.Player do
     ticks = [
       fn player -> get_cold(player) end,
       fn player -> get_thirsty(player) end,
-      fn player -> get_hungry(player) end
+      fn player -> get_hungry(player) end,
+      fn player -> maybe_warm_up(player) end
     ]
 
     {updated_player, actions} =
@@ -381,6 +384,10 @@ defmodule Europa.Server.Player do
       end)
 
     do_tick(updated_player, moves_count - 1, actions)
+  end
+
+  defp get_cold(%__MODULE__{stand_on: stand_on} = player) when stand_on in @warm_tiles do
+    {player, []}
   end
 
   defp get_cold(%__MODULE__{warm: 0} = player) do
@@ -441,6 +448,14 @@ defmodule Europa.Server.Player do
     else
       {struct(player, hunger: hunger + 1), []}
     end
+  end
+
+  defp maybe_warm_up(%__MODULE__{stand_on: stand_on} = player) when stand_on in @warm_tiles do
+    {warm_up(player, 25), []}
+  end
+
+  defp maybe_warm_up(player) do
+    {player, []}
   end
 
   defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do

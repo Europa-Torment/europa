@@ -17,7 +17,7 @@ defmodule Europa.Server.Planet.Predefined do
 
   @categories %{
     building: %{dir: "/buildings", weight: 1.5},
-    situation: %{dir: "/situations", weight: 0.3}
+    situation: %{dir: "/situations", weight: 2.0}
   }
 
   @floor Tiles.tile(:floor).atom_value
@@ -26,6 +26,8 @@ defmodule Europa.Server.Planet.Predefined do
   @wall_right %Object{name: "wall", image_name: "wall_right", high?: true}
   @wall_left %Object{name: "wall", image_name: "wall_left", high?: true}
   @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
+
+  @bonefire %Object{name: "bonefire", image_name: "bonefire", warm?: true}
 
   @type category() :: unquote(@categories |> Map.keys() |> Types.one_of())
   @type template() :: list(Tiles.Tile.t() | :skip)
@@ -72,6 +74,7 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:situation, "c"), do: Loot.generate_item_box(:human_body)
   defp elem_to_tile(:situation, "s"), do: Loot.generate_item_box(:crashed_shuttle)
   defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
+  defp elem_to_tile(:situation, "f"), do: @bonefire
 
   defp parse_random_file(category) do
     priv_dir = :code.priv_dir(:europa)
