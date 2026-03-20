@@ -49,7 +49,7 @@ defmodule Europa.Server.Loot.Supply do
   @spec decrease_count(t(), n :: pos_integer()) :: t()
   def decrease_count(%__MODULE__{} = supply, n \\ 1) when n > 0 do
     updated_value = (supply.count - n) |> max(0)
-    struct(supply, count: updated_value)
+    struct!(supply, count: updated_value)
   end
 end
 

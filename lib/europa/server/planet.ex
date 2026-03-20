@@ -161,17 +161,17 @@ defmodule Europa.Server.Planet do
       |> List.flatten()
 
     new_tiles = Map.take(planet.land.tiles, coords)
-    updated_land = struct(land, tiles: new_tiles, min_x: x_from, max_x: x_to, min_y: y_from, max_y: y_to)
+    updated_land = struct!(land, tiles: new_tiles, min_x: x_from, max_x: x_to, min_y: y_from, max_y: y_to)
 
-    updated_planet = struct(planet, land: updated_land)
+    updated_planet = struct!(planet, land: updated_land)
 
     {:ok, updated_planet}
   end
 
   @impl true
-  def move(%__MODULE__{} = planet, direction, player_stand_on) do
+  def move(%__MODULE__{} = planet, direction, %Player{} = player) do
     target_coord = target_coord(planet, direction)
-    do_move(planet, target_coord, direction, player_stand_on)
+    do_move(planet, target_coord, direction, player)
   end
 
   @impl true
@@ -281,7 +281,7 @@ defmodule Europa.Server.Planet do
       planet.land
       |> change_tile(target_coord, updated_item_box)
 
-    {:ok, struct(planet, land: updated_land), player, updated_item_box, updated_weapon}
+    {:ok, struct!(planet, land: updated_land), player, updated_item_box, updated_weapon}
   end
 
   defp find_targets(planet, player, %Loot.Weapon{shooting_type: st} = weapon) when st in [:bullet, :burst] do
@@ -400,7 +400,7 @@ defmodule Europa.Server.Planet do
           {enemy, updated_land} = shoot_enemy(acc.planet.land, coord, damage)
 
           acc
-          |> Map.put(:planet, struct(planet, land: updated_land))
+          |> Map.put(:planet, struct!(planet, land: updated_land))
           |> Map.put(:shooted_enemies, [{enemy, damage} | acc.shooted_enemies])
         else
           acc
@@ -421,7 +421,10 @@ defmodule Europa.Server.Planet do
 
   defp shoot_enemy(land, coord, damage) do
     enemy = get_tile(land, coord)
+    damage_enemy(land, coord, enemy, damage)
+  end
 
+  defp damage_enemy(land, coord, enemy, damage) do
     updated_enemy =
       enemy
       |> Enemy.take_damage(damage)
@@ -436,7 +439,7 @@ defmodule Europa.Server.Planet do
 
   defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items}} = enemy) do
     monster_body = Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
-    struct(monster_body, items: items ++ monster_body.items)
+    struct!(monster_body, items: items ++ monster_body.items)
   end
 
   defp generate_monster_body(%Enemy{} = enemy) do
@@ -515,9 +518,9 @@ defmodule Europa.Server.Planet do
         updated_land =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
-          |> change_tile(new_enemy_coord, struct(enemy, stand_on: target_tile))
+          |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile))
 
-        updated_planet = struct(planet, land: updated_land)
+        updated_planet = struct!(planet, land: updated_land)
         {updated_planet, Action.new(enemy, :chasing)}
     end
   end
@@ -633,7 +636,7 @@ defmodule Europa.Server.Planet do
          %Loot.ItemBox{} = updated_item_box,
          %Player{stand_on: %Loot.ItemBox{}} = updated_player
        ) do
-    {:ok, planet, struct(updated_player, stand_on: maybe_delete_empty_item_box(updated_item_box)), updated_item_box}
+    {:ok, planet, struct!(updated_player, stand_on: maybe_delete_empty_item_box(updated_item_box)), updated_item_box}
   end
 
   defp do_take_loot(
@@ -647,16 +650,16 @@ defmodule Europa.Server.Planet do
       planet.land
       |> change_tile(target_coord, maybe_delete_empty_item_box(updated_item_box))
 
-    {:ok, struct(planet, land: updated_land), updated_player, updated_item_box}
+    {:ok, struct!(planet, land: updated_land), updated_player, updated_item_box}
   end
 
-  defp do_move(planet, target_coord, direction, player_stand_on) do
+  defp do_move(planet, target_coord, direction, player) do
     tile = get_tile(planet.land, target_coord)
 
     if movable_tile?(planet.land, target_coord) do
-      do_move(planet, tile, target_coord, direction, player_stand_on)
+      do_move(planet, tile, target_coord, direction, player.stand_on)
     else
-      stay(tile)
+      attack_with_melee_weapon_or_stay(planet, player, target_coord, tile)
     end
   end
 
@@ -671,7 +674,7 @@ defmodule Europa.Server.Planet do
 
     updated_planet =
       planet
-      |> struct(land: updated_land, current_coord: target_coord)
+      |> struct!(land: updated_land, current_coord: target_coord)
       |> maybe_generate_tiles(direction)
 
     move_cost = move_cost(tile)
@@ -679,7 +682,22 @@ defmodule Europa.Server.Planet do
     {:moved, updated_planet, move_cost, tile}
   end
 
-  defp stay(tile) do
+  defp attack_with_melee_weapon_or_stay(planet, player, target_coord, %Enemy{} = enemy) do
+    {damage, move_cost} =
+      case PlayerManager.get_equiped_melee_weapon(player) do
+        {:ok, %Loot.MeleeWeapon{damage: damage, hit_cost: hit_cost}} -> {damage, hit_cost}
+        _ -> {1, 1}
+      end
+
+    if player.accuracy >= @max_accuracy || m_to_n?(player.accuracy, @max_accuracy) do
+      {enemy, updated_land} = damage_enemy(planet.land, target_coord, enemy, damage)
+      {:attack, struct!(planet, land: updated_land), [{enemy, damage}], move_cost}
+    else
+      {:attack, planet, [], move_cost}
+    end
+  end
+
+  defp attack_with_melee_weapon_or_stay(_planet, _player, _target_coord, tile) do
     {:stay, tile}
   end
 
@@ -697,7 +715,7 @@ defmodule Europa.Server.Planet do
 
   defp change_tile(land, {_x, _y} = coord, new_tile) do
     tiles = Map.put(land.tiles, coord, new_tile)
-    struct(land, tiles: tiles)
+    struct!(land, tiles: tiles)
   end
 
   defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in [:monster_body, :bunch] do
@@ -853,7 +871,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {x, _y}} = planet, :right) do
     if (planet.land.max_x - x) in 1..@generate_distance do
-      struct(planet, land: add_right_column(planet))
+      struct!(planet, land: add_right_column(planet))
     else
       planet
     end
@@ -861,7 +879,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {x, _y}} = planet, :left) do
     if x in planet.land.min_x..@generate_distance do
-      struct(planet, land: add_left_column(planet))
+      struct!(planet, land: add_left_column(planet))
     else
       planet
     end
@@ -869,7 +887,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {_x, y}} = planet, :up) do
     if y in planet.land.min_y..@generate_distance do
-      struct(planet, land: add_top_row(planet))
+      struct!(planet, land: add_top_row(planet))
     else
       planet
     end
@@ -877,7 +895,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {_x, y}} = planet, :down) do
     if (planet.land.max_y - y) in 1..@generate_distance do
-      struct(planet, land: add_bottom_row(planet))
+      struct!(planet, land: add_bottom_row(planet))
     else
       planet
     end
@@ -894,7 +912,7 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
+    struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
     |> maybe_generate_predefined(:right)
   end
 
@@ -907,7 +925,7 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
+    struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
     |> maybe_generate_predefined(:left)
   end
 
@@ -920,7 +938,7 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
+    struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
     |> maybe_generate_predefined(:up)
   end
 
@@ -933,7 +951,7 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
+    struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
     |> maybe_generate_predefined(:down)
   end
 
@@ -959,7 +977,7 @@ defmodule Europa.Server.Planet do
         end)
 
       if is_all_tiles_movable do
-        struct(land, tiles: Map.merge(land.tiles, new_tiles))
+        struct!(land, tiles: Map.merge(land.tiles, new_tiles))
       else
         land
       end

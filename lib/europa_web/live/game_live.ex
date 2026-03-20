@@ -47,6 +47,7 @@ defmodule EuropaWeb.GameLive do
 
       {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
 
+      melee_weapon = get_current_melee_weapon(player)
       helmet = get_current_helmet(player)
       suit = get_current_suit(player)
       boots = get_current_boots(player)
@@ -60,6 +61,7 @@ defmodule EuropaWeb.GameLive do
           chat: Server.get_chat(server),
           player: player,
           weapon: weapon,
+          melee_weapon: melee_weapon,
           helmet: helmet,
           suit: suit,
           boots: boots,
@@ -124,6 +126,23 @@ defmodule EuropaWeb.GameLive do
           |> step_sound(player.stand_on)
           |> damaged_sound(player_before.health, player.health)
           |> overloaded_sound(move_status)
+          |> low_health_sound(player)
+
+        {:noreply, socket}
+
+      {:attack, status} ->
+        player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
+            player: player,
+            chat: Server.get_chat(socket.assigns.server),
+            player_stats: get_player_stats(player)
+          )
+          |> punch_sound(status)
+          |> damaged_sound(player_before.health, player.health)
           |> low_health_sound(player)
 
         {:noreply, socket}
@@ -261,6 +280,7 @@ defmodule EuropaWeb.GameLive do
     case Server.equip_item(socket.assigns.server, item_uuid) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
+        melee_weapon = get_current_melee_weapon(updated_player)
         helmet = get_current_helmet(updated_player)
         suit = get_current_suit(updated_player)
         boots = get_current_boots(updated_player)
@@ -270,6 +290,7 @@ defmodule EuropaWeb.GameLive do
           |> assign(
             player: updated_player,
             weapon: weapon,
+            melee_weapon: melee_weapon,
             helmet: helmet,
             suit: suit,
             boots: boots,
@@ -290,6 +311,7 @@ defmodule EuropaWeb.GameLive do
     case Server.unequip_item(socket.assigns.server, item_uuid) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
+        melee_weapon = get_current_melee_weapon(updated_player)
         helmet = get_current_helmet(updated_player)
         suit = get_current_suit(updated_player)
         boots = get_current_boots(updated_player)
@@ -299,6 +321,7 @@ defmodule EuropaWeb.GameLive do
           |> assign(
             player: updated_player,
             weapon: weapon,
+            melee_weapon: melee_weapon,
             helmet: helmet,
             suit: suit,
             boots: boots,
@@ -319,6 +342,7 @@ defmodule EuropaWeb.GameLive do
     case Server.drop_item(socket.assigns.server, item_uuid, socket.assigns.item_drop_count) do
       {:ok, updated_player} ->
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
+        melee_weapon = get_current_melee_weapon(updated_player)
         helmet = get_current_helmet(updated_player)
         suit = get_current_suit(updated_player)
         boots = get_current_boots(updated_player)
@@ -328,6 +352,7 @@ defmodule EuropaWeb.GameLive do
           |> assign(
             player: updated_player,
             weapon: weapon,
+            melee_weapon: melee_weapon,
             helmet: helmet,
             suit: suit,
             boots: boots,
@@ -509,6 +534,7 @@ defmodule EuropaWeb.GameLive do
         shotgun: %{name: ~p"/sounds/shotgun.mp3", volume: 0.2},
         pistol: %{name: ~p"/sounds/pistol.mp3", volume: 0.4},
         rifle: %{name: ~p"/sounds/rifle.mp3", volume: 0.2},
+        punch: %{name: ~p"/sounds/punch.mp3", volume: 0.2},
         empty_magazine: %{name: ~p"/sounds/empty_magazine.mp3", volume: 1.0},
         reload: %{name: ~p"/sounds/reload.mp3", volume: 0.2},
         unload: %{name: ~p"/sounds/unload.mp3", volume: 0.2},
@@ -590,6 +616,25 @@ defmodule EuropaWeb.GameLive do
       play_sound(socket, "injured")
     else
       socket
+    end
+  end
+
+  defp punch_sound(socket, result) do
+    punch_sound =
+      if socket.assigns.melee_weapon do
+        socket.assigns.melee_weapon.sound_name
+      else
+        "punch"
+      end
+
+    case result do
+      :miss ->
+        play_sound(socket, punch_sound)
+
+      :hitted ->
+        socket
+        |> play_sound(punch_sound)
+        |> play_sound_with_delay("impact")
     end
   end
 
@@ -678,6 +723,13 @@ defmodule EuropaWeb.GameLive do
     case PlayerManager.find_weapon_ammo(player, weapon) do
       {:ok, ammo} -> ammo.count
       _ -> 0
+    end
+  end
+
+  defp get_current_melee_weapon(player) do
+    case PlayerManager.get_equiped_melee_weapon(player) do
+      {:ok, melee_weapon} -> melee_weapon
+      _ -> nil
     end
   end
 

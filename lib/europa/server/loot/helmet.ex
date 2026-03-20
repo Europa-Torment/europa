@@ -69,12 +69,12 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   @spec equip(Helmet.t()) :: {:ok, Helmet.t()}
   def equip(%Helmet{} = helmet) do
-    {:ok, struct(helmet, equiped: true)}
+    {:ok, struct!(helmet, equiped: true)}
   end
 
   @spec unequip(Helmet.t()) :: {:ok, Helmet.t()}
   def unequip(%Helmet{} = helmet) do
-    {:ok, struct(helmet, equiped: false)}
+    {:ok, struct!(helmet, equiped: false)}
   end
 
   @spec equipable?(Helmet.t()) :: true

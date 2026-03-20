@@ -108,7 +108,7 @@ defmodule Europa.Server do
     GenServer.call(server, :get_visible_planet)
   end
 
-  @spec move(pid(), Planet.direction()) :: {:moved, :normal | :overloaded} | :stay
+  @spec move(pid(), Planet.direction()) :: {:moved, :normal | :overloaded} | :stay | {:attack, Loot.Item.item()}
   def move(server, direction) do
     GenServer.call(server, {:move, direction})
   end
@@ -250,7 +250,7 @@ defmodule Europa.Server do
         state.player
         |> PlayerManager.change_view_direction(direction)
 
-      {:reply, :stay, struct(state, player: updated_player, chat: Chat.add_message(state.chat, message))}
+      {:reply, :stay, struct!(state, player: updated_player, chat: Chat.add_message(state.chat, message))}
     else
       do_move(direction, state, caller_pid)
     end
@@ -263,14 +263,14 @@ defmodule Europa.Server do
 
       {:error, :nothing} = error ->
         message = nothing_to_loot_message()
-        {:reply, error, struct(state, chat: Chat.add_message(state.chat, message))}
+        {:reply, error, struct!(state, chat: Chat.add_message(state.chat, message))}
     end
   end
 
   def handle_call({:take_loot, item_uuid}, _from, state) do
     case PlanetManager.take_loot(state.planet, state.player, item_uuid) do
       {:ok, updated_planet, updated_player, updated_item_box} ->
-        {:reply, {:ok, updated_item_box}, struct(state, planet: updated_planet, player: updated_player)}
+        {:reply, {:ok, updated_item_box}, struct!(state, planet: updated_planet, player: updated_player)}
 
       _ ->
         {:reply, {:error, :nothing}, state}
@@ -280,7 +280,7 @@ defmodule Europa.Server do
   def handle_call({:equip_item, item_uuid}, _from, state) do
     case PlayerManager.equip_item(state.player, item_uuid) do
       {:ok, updated_player} ->
-        {:reply, {:ok, updated_player}, struct(state, player: updated_player)}
+        {:reply, {:ok, updated_player}, struct!(state, player: updated_player)}
 
       error ->
         {:reply, error, state}
@@ -290,7 +290,7 @@ defmodule Europa.Server do
   def handle_call({:unequip_item, item_uuid}, _from, state) do
     case PlayerManager.unequip_item(state.player, item_uuid) do
       {:ok, updated_player} ->
-        {:reply, {:ok, updated_player}, struct(state, player: updated_player)}
+        {:reply, {:ok, updated_player}, struct!(state, player: updated_player)}
 
       error ->
         {:reply, error, state}
@@ -305,7 +305,7 @@ defmodule Europa.Server do
   def handle_call({:drop_item, item_uuid, count}, _from, state) do
     case PlayerManager.drop_item(state.player, item_uuid, count) do
       {:ok, updated_player, _item} ->
-        {:reply, {:ok, updated_player}, struct(state, player: updated_player)}
+        {:reply, {:ok, updated_player}, struct!(state, player: updated_player)}
 
       error ->
         {:reply, error, state}
@@ -326,7 +326,7 @@ defmodule Europa.Server do
         killed_enemies_count = killed_enemies_count(damaged_enemies)
 
         {:reply, {:ok, :shot},
-         struct(state,
+         struct!(state,
            planet: updated_planet,
            player: updated_player,
            chat: updated_chat,
@@ -343,18 +343,18 @@ defmodule Europa.Server do
           |> Chat.add_message(shoot_message)
           |> Chat.add_message(miss_message)
 
-        {:reply, {:ok, :miss}, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, :miss}, struct!(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
         updated_chat = Chat.add_message(state.chat, no_weapon_message)
-        {:reply, {:error, :no_weapon}, struct(state, chat: updated_chat)}
+        {:reply, {:error, :no_weapon}, struct!(state, chat: updated_chat)}
 
       {:error, :empty_magazine} ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, {:error, :empty_magazine}, struct(state, chat: updated_chat)}
+        {:reply, {:error, :empty_magazine}, struct!(state, chat: updated_chat)}
     end
   end
 
@@ -368,23 +368,23 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(reloaded_message)
 
-        {:reply, :ok, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, :ok, struct!(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
         updated_chat = Chat.add_message(state.chat, no_weapon_message)
-        {:reply, {:error, :no_weapon}, struct(state, chat: updated_chat)}
+        {:reply, {:error, :no_weapon}, struct!(state, chat: updated_chat)}
 
       {:error, :no_ammo} ->
         no_ammo_message = no_ammo_message()
         updated_chat = Chat.add_message(state.chat, no_ammo_message)
-        {:reply, {:error, :no_ammo}, struct(state, chat: updated_chat)}
+        {:reply, {:error, :no_ammo}, struct!(state, chat: updated_chat)}
 
       {:error, :full_magazine} ->
         full_magazine_message = full_magazine_message()
         updated_chat = Chat.add_message(state.chat, full_magazine_message)
-        {:reply, {:error, :full_magazine}, struct(state, chat: updated_chat)}
+        {:reply, {:error, :full_magazine}, struct!(state, chat: updated_chat)}
     end
   end
 
@@ -398,13 +398,13 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(unloaded_message)
 
-        {:reply, :ok, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, :ok, struct!(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :empty_magazine} = error ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, error, struct(state, chat: updated_chat)}
+        {:reply, error, struct!(state, chat: updated_chat)}
 
       error ->
         {:reply, error, state}
@@ -422,13 +422,13 @@ defmodule Europa.Server do
           |> Chat.add_message(unloaded_message)
 
         {:reply, {:ok, updated_item_box},
-         struct(state, planet: updated_planet, player: updated_player, chat: updated_chat),
+         struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :empty_magazine} = error ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, error, struct(state, chat: updated_chat)}
+        {:reply, error, struct!(state, chat: updated_chat)}
 
       error ->
         {:reply, error, state}
@@ -445,7 +445,7 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(consumed_supply_message)
 
-        {:reply, {:ok, supply}, struct(state, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, supply}, struct!(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       error ->
@@ -466,7 +466,7 @@ defmodule Europa.Server do
       message = crop_planet_land_message()
 
       {:noreply,
-       struct(state,
+       struct!(state,
          planet: updated_planet,
          chat: Chat.add_message(state.chat, message),
          great_red_spots: state.great_red_spots + 1
@@ -514,7 +514,7 @@ defmodule Europa.Server do
       |> add_action_messages_to_chat(actions)
 
     {:noreply,
-     struct(state,
+     struct!(state,
        planet: updated_planet,
        player: updated_player,
        chat: updated_chat,
@@ -535,7 +535,7 @@ defmodule Europa.Server do
   end
 
   defp do_move(direction, state, caller_pid) do
-    case PlanetManager.move(state.planet, direction, state.player.stand_on) do
+    case PlanetManager.move(state.planet, direction, state.player) do
       {:moved, updated_planet, moves_count, step_on_tile} ->
         weight_ratio = PlayerManager.weight_ratio(state.player)
         status = if weight_ratio < 1.0, do: :normal, else: :overloaded
@@ -563,11 +563,50 @@ defmodule Europa.Server do
            chat: updated_chat
          ), {:continue, {:tick, moves_count, caller_pid}}}
 
+      {:attack, updated_planet, damaged_enemies, moves_count} ->
+        weight_ratio = PlayerManager.weight_ratio(state.player)
+
+        {status, updated_chat} =
+          if Enum.empty?(damaged_enemies) do
+            miss_message = miss_message()
+
+            updated_chat =
+              state.chat
+              |> Chat.add_message(miss_message)
+
+            {:miss, updated_chat}
+          else
+            updated_chat =
+              state.chat
+              |> add_damage_messages_to_chat(damaged_enemies)
+
+            {:hitted, updated_chat}
+          end
+
+        moves_count =
+          moves_count
+          |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
+          |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
+
+        killed_enemies_count = killed_enemies_count(damaged_enemies)
+
+        updated_player =
+          state.player
+          |> PlayerManager.change_view_direction(direction)
+
+        {:reply, {:attack, status},
+         struct!(state,
+           planet: updated_planet,
+           player: updated_player,
+           chat: updated_chat,
+           killed_enemies: state.killed_enemies + killed_enemies_count
+         ), {:continue, {:tick, moves_count, caller_pid}}}
+
       {:stay, tile} ->
         message = cant_move_message(tile)
 
         {:reply, :stay,
-         struct(state,
+         struct!(state,
            player: PlayerManager.change_view_direction(state.player, direction),
            chat: Chat.add_message(state.chat, message)
          )}
@@ -801,7 +840,7 @@ defmodule Europa.Server do
     Enum.reduce(damaged_enemies, chat, fn {enemy, damage}, chat ->
       msg =
         if enemy.health > 0 do
-          Gettext.gettext(Europa.Gettext, "You shot #{enemy.name} and dealt #{damage} damage to it!")
+          Gettext.gettext(Europa.Gettext, "You hit #{enemy.name} and dealt #{damage} damage to it!")
         else
           Gettext.gettext(Europa.Gettext, "You killed #{enemy.name}!")
         end

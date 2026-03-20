@@ -24,7 +24,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   @spec decrease_count(t(), n :: pos_integer()) :: t()
   def decrease_count(%__MODULE__{} = ammo, n) when n > 0 do
     updated_value = (ammo.count - n) |> max(0)
-    struct(ammo, count: updated_value)
+    struct!(ammo, count: updated_value)
   end
 
   @spec weight(Weapon.caliber()) :: Loot.Item.weight()

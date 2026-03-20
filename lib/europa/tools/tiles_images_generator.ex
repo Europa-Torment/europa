@@ -3,7 +3,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
   Tiles images generator.
   Makes artists' work easier: automates the creation of tiles images by overlaying them on top of each other.
 
-  There are 4 types of liles:
+  There are 4 types of tiles:
 
   `landscape` - ladndscape tiles such as snow, water, ice, etc
 

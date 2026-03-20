@@ -80,6 +80,11 @@ defmodule Europa.Server.PlayerManager do
   @callback get_equiped_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_weapon}
 
   @doc """
+  Finds current equiped melee weapon or returns error if no melee weapon is equiped.
+  """
+  @callback get_equiped_melee_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_melee_weapon}
+
+  @doc """
   Finds current equiped helmet or returns error if no helmet is equiped.
   """
   @callback get_equiped_helmet(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_helmet}
@@ -169,6 +174,8 @@ defmodule Europa.Server.PlayerManager do
   def delete_item(player, item), do: manager_impl().delete_item(player, item)
 
   def get_equiped_weapon(player), do: manager_impl().get_equiped_weapon(player)
+
+  def get_equiped_melee_weapon(player), do: manager_impl().get_equiped_melee_weapon(player)
 
   def get_equiped_helmet(player), do: manager_impl().get_equiped_helmet(player)
 

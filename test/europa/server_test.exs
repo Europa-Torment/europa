@@ -93,7 +93,7 @@ defmodule Europa.ServerTest do
       action2 = build(:action, subject: :player, action_type: :get_cold)
 
       PlanetManagerMock
-      |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:moved, planet, moves_count, @snow} end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
       |> expect(:tick, fn %Planet{}, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
@@ -103,10 +103,10 @@ defmodule Europa.ServerTest do
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
-        struct(player, view_direction: @direction)
+        struct!(player, view_direction: @direction)
       end)
       |> expect(:stand_on, fn %Player{} = player, @snow ->
-        struct(player, stand_on: @snow)
+        struct!(player, stand_on: @snow)
       end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
         assert damage == action.subject.damage
@@ -122,6 +122,58 @@ defmodule Europa.ServerTest do
       assert_chat_message(server, :danger, "#{action.subject.name} is attacking you!")
     end
 
+    test "returns success response (attack)", %{server: server, planet: planet} do
+      moves_count = 2
+
+      enemy = build(:enemy)
+      damage = 5
+      damaged_enemies = [{enemy, damage}]
+
+      PlanetManagerMock
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:attack, planet, damaged_enemies, moves_count} end)
+      |> expect(:tick, fn %Planet{}, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      PlayerManagerMock
+      |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
+      |> expect(:change_view_direction, fn %Player{} = player, @direction ->
+        struct!(player, view_direction: @direction)
+      end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      assert {:attack, :hitted} = Server.move(server, @direction)
+      assert_chat_message(server, :regular, "You hit #{enemy.name} and dealt #{damage} damage to it!")
+    end
+
+    test "returns success response (attack with no damaged enemies)", %{server: server, planet: planet} do
+      moves_count = 2
+
+      PlanetManagerMock
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:attack, planet, [], moves_count} end)
+      |> expect(:tick, fn %Planet{}, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      PlayerManagerMock
+      |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
+      |> expect(:change_view_direction, fn %Player{} = player, @direction ->
+        struct!(player, view_direction: @direction)
+      end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      assert {:attack, :miss} = Server.move(server, @direction)
+      assert_chat_message(server, :warning, "You didn't hit anyone")
+    end
+
     test "increases moves_count when player overloaded", %{server: server, planet: planet} do
       test_overloaded_move(server, planet, _weight_ratio = 1.1, _additional_moves = 1)
       test_overloaded_move(server, planet, _weight_ratio = 1.2, _additional_moves = 2)
@@ -131,13 +183,13 @@ defmodule Europa.ServerTest do
 
     test "returns success response (stay)", %{server: server} do
       PlanetManagerMock
-      |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:stay, @water} end)
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:stay, @water} end)
       |> expect(:readable_tile_name, fn _tile -> "water" end)
 
       PlayerManagerMock
       |> expect(:weight_ratio, fn %Player{} -> 0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
-        struct(player, view_direction: @direction)
+        struct!(player, view_direction: @direction)
       end)
 
       assert :stay = Server.move(server, @direction)
@@ -148,7 +200,7 @@ defmodule Europa.ServerTest do
       PlayerManagerMock
       |> expect(:weight_ratio, fn %Player{} -> 2.0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
-        struct(player, view_direction: @direction)
+        struct!(player, view_direction: @direction)
       end)
 
       assert :stay = Server.move(server, @direction)
@@ -164,7 +216,7 @@ defmodule Europa.ServerTest do
       action2 = build(:action, action_type: :get_cold, subject: :player)
 
       PlanetManagerMock
-      |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:moved, planet, moves_count, @snow} end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
       |> expect(:tick, fn %Planet{}, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
@@ -174,14 +226,14 @@ defmodule Europa.ServerTest do
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
-        struct(player, view_direction: @direction)
+        struct!(player, view_direction: @direction)
       end)
       |> expect(:stand_on, fn %Player{} = player, @snow ->
-        struct(player, stand_on: @snow)
+        struct!(player, stand_on: @snow)
       end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
         assert damage == action.subject.damage
-        struct(player, health: 0)
+        struct!(player, health: 0)
       end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
@@ -199,7 +251,7 @@ defmodule Europa.ServerTest do
       moves_count = 10
 
       PlanetManagerMock
-      |> expect(:move, fn _planet, @direction, @player_stand_on_tile -> {:moved, planet, moves_count, @snow} end)
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:moved, planet, moves_count, @snow} end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
       |> expect(:tick, fn %Planet{}, tick_moves_count ->
         assert_moves_count(moves_count + expected_additional_moves, tick_moves_count)
@@ -209,10 +261,10 @@ defmodule Europa.ServerTest do
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> weight_ratio end)
       |> expect(:change_view_direction, fn %Player{} = player, @direction ->
-        struct(player, view_direction: @direction)
+        struct!(player, view_direction: @direction)
       end)
       |> expect(:stand_on, fn %Player{} = player, @snow ->
-        struct(player, stand_on: @snow)
+        struct!(player, stand_on: @snow)
       end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
         assert_moves_count(moves_count + expected_additional_moves, tick_moves_count)

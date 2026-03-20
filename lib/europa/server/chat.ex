@@ -71,7 +71,7 @@ defmodule Europa.Server.Chat do
   @spec add_message(t(), Message.t()) :: t()
   def add_message(%__MODULE__{messages: messages} = chat, %Message{} = message) do
     message_id = chat.last_id + 1
-    message = struct(message, id: message_id)
+    message = struct!(message, id: message_id)
 
     updated_messages =
       if Enum.count(messages) == fetch_config!([__MODULE__, :messages_limit]) do
@@ -80,6 +80,6 @@ defmodule Europa.Server.Chat do
         messages ++ [message]
       end
 
-    struct(chat, messages: updated_messages, last_id: message_id)
+    struct!(chat, messages: updated_messages, last_id: message_id)
   end
 end

@@ -13,6 +13,6 @@ defmodule Europa.Server.Planet.Tiles.Object do
 
   @spec stand_on(t(), Planet.tile()) :: t()
   def stand_on(%__MODULE__{} = object, tile) do
-    struct(object, stand_on: tile)
+    struct!(object, stand_on: tile)
   end
 end

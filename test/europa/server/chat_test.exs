@@ -31,13 +31,13 @@ defmodule Europa.Server.ChatTest do
 
   describe "new/1" do
     test "builds chat with initial message", %{message: message} do
-      assert Chat.new(message) == %Chat{messages: [struct(message, id: 1)], last_id: 1}
+      assert Chat.new(message) == %Chat{messages: [struct!(message, id: 1)], last_id: 1}
     end
   end
 
   describe "add_message/2" do
     test "adds given message to chat", %{chat: chat, message: message} do
-      assert Chat.add_message(chat, message) == %Chat{messages: [struct(message, id: 1)], last_id: chat.last_id + 1}
+      assert Chat.add_message(chat, message) == %Chat{messages: [struct!(message, id: 1)], last_id: chat.last_id + 1}
     end
 
     test "replaces oldest message with new message when messages limit reached", %{

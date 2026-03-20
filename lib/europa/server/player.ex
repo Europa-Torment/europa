@@ -39,6 +39,7 @@ defmodule Europa.Server.Player do
     field :thirst, non_neg_integer(), enforce: true
     field :stand_on, Planet.tile(), enforce: true
     field :weapon_uuid, Loot.uuid()
+    field :melee_weapon_uuid, Loot.uuid()
     field :helmet_uuid, Loot.uuid()
     field :suit_uuid, Loot.uuid()
     field :boots_uuid, Loot.uuid()
@@ -73,6 +74,12 @@ defmodule Europa.Server.Player do
         _ -> gettext("No")
       end
 
+    equiped_melee_weapon =
+      case get_equiped_melee_weapon(player) do
+        {:ok, melee_weapon} -> melee_weapon.name
+        _ -> gettext("No")
+      end
+
     equiped_helmet =
       case get_equiped_helmet(player) do
         {:ok, helmet} -> helmet.name
@@ -100,6 +107,7 @@ defmodule Europa.Server.Player do
       {gettext("Accuracy"), player.accuracy},
       {gettext("Efficiency"), player.efficiency},
       {gettext("Weapon"), equiped_weapon},
+      {gettext("Melee weapon"), equiped_melee_weapon},
       {gettext("Helmet"), equiped_helmet},
       {gettext("Suit"), equiped_suit},
       {gettext("Boots"), equiped_boots}
@@ -109,7 +117,7 @@ defmodule Europa.Server.Player do
   @impl true
   def change_view_direction(%__MODULE__{} = player, new_direction) do
     if new_direction in Planet.allowed_directions() do
-      struct(player, view_direction: new_direction)
+      struct!(player, view_direction: new_direction)
     else
       player
     end
@@ -118,7 +126,7 @@ defmodule Europa.Server.Player do
   @impl true
   def stand_on(%__MODULE__{} = player, tile) do
     player
-    |> struct(stand_on: tile)
+    |> struct!(stand_on: tile)
   end
 
   @impl true
@@ -186,13 +194,13 @@ defmodule Europa.Server.Player do
         end
       end)
 
-    struct(player, inventory: updated_inventory)
+    struct!(player, inventory: updated_inventory)
   end
 
   @impl true
   def delete_item(%__MODULE__{inventory: inventory} = player, item_to_delete) do
     updated_inventory = Enum.reject(inventory, fn item -> item.uuid == item_to_delete.uuid end)
-    struct(player, inventory: updated_inventory)
+    struct!(player, inventory: updated_inventory)
   end
 
   @impl true
@@ -203,6 +211,17 @@ defmodule Europa.Server.Player do
   def get_equiped_weapon(%__MODULE__{weapon_uuid: weapon_uuid} = player) do
     with {:error, :not_found} <- get_item(player, weapon_uuid) do
       {:error, :no_weapon}
+    end
+  end
+
+  @impl true
+  def get_equiped_melee_weapon(%__MODULE__{melee_weapon_uuid: nil}) do
+    {:error, :no_melee_weapon}
+  end
+
+  def get_equiped_melee_weapon(%__MODULE__{melee_weapon_uuid: melee_weapon_uuid} = player) do
+    with {:error, :not_found} <- get_item(player, melee_weapon_uuid) do
+      {:error, :no_melee_weapon}
     end
   end
 
@@ -259,7 +278,7 @@ defmodule Europa.Server.Player do
   @impl true
   def take_damage(%__MODULE__{} = player, damage) when is_integer(damage) and damage > 0 do
     updated_health = max(0, player.health - damage)
-    struct(player, health: updated_health)
+    struct!(player, health: updated_health)
   end
 
   @impl true
@@ -319,7 +338,7 @@ defmodule Europa.Server.Player do
   defp maybe_unequip_item(%__MODULE__{} = player, item) do
     if Loot.Item.equipable?(item) && item.equiped do
       {:ok, updated_player} = unequip_item(player, item.uuid)
-      {updated_player, struct(item, equiped: false)}
+      {updated_player, struct!(item, equiped: false)}
     else
       {player, item}
     end
@@ -335,8 +354,8 @@ defmodule Europa.Server.Player do
   end
 
   defp drop_stackable_item(player, item, count) do
-    dropped_item = struct(item, uuid: Ecto.UUID.generate(), count: count)
-    updated_item = struct(item, count: item.count - count)
+    dropped_item = struct!(item, uuid: Ecto.UUID.generate(), count: count)
+    updated_item = struct!(item, count: item.count - count)
 
     updated_player =
       player
@@ -413,7 +432,7 @@ defmodule Europa.Server.Player do
       end
 
     if is_get_colder do
-      {struct(player, warm: max(player.warm - 1, 0)), [Action.new(:player, :get_cold)]}
+      {struct!(player, warm: max(player.warm - 1, 0)), [Action.new(:player, :get_cold)]}
     else
       {player, []}
     end
@@ -431,7 +450,7 @@ defmodule Europa.Server.Player do
     if m_to_n?(900, 1000) do
       {player, []}
     else
-      {struct(player, thirst: thirst + 1), []}
+      {struct!(player, thirst: thirst + 1), []}
     end
   end
 
@@ -447,7 +466,7 @@ defmodule Europa.Server.Player do
     if m_to_n?(900, 1000) do
       {player, []}
     else
-      {struct(player, hunger: hunger + 1), []}
+      {struct!(player, hunger: hunger + 1), []}
     end
   end
 
@@ -481,7 +500,7 @@ defmodule Europa.Server.Player do
   defp do_consume_supply(_player, _supply), do: {:error, %Errors.NotApplicableError{}}
 
   defp do_add_item(player, item) do
-    {:ok, struct(player, inventory: [item | player.inventory])}
+    {:ok, struct!(player, inventory: [item | player.inventory])}
   end
 
   defp do_reload_weapon(player, weapon, ammo) do
@@ -530,16 +549,16 @@ defmodule Europa.Server.Player do
     updated_inventory =
       Enum.map(player.inventory, fn
         %Weapon.Ammo{caliber: caliber} = inventory_ammo when caliber == item.caliber ->
-          struct(inventory_ammo, count: inventory_ammo.count + item.count)
+          struct!(inventory_ammo, count: inventory_ammo.count + item.count)
 
         %Supply{name: name} = inventory_supply when name == item.name ->
-          struct(inventory_supply, count: inventory_supply.count + item.count)
+          struct!(inventory_supply, count: inventory_supply.count + item.count)
 
         item ->
           item
       end)
 
-    {:ok, struct(player, inventory: updated_inventory)}
+    {:ok, struct!(player, inventory: updated_inventory)}
   end
 
   defp do_equip_or_unequip_item(player, updated_item) do
@@ -570,6 +589,7 @@ defmodule Europa.Server.Player do
     changed_params =
       case updated_item do
         %Loot.Weapon{equiped: true} -> [weapon_uuid: updated_item.uuid]
+        %Loot.MeleeWeapon{equiped: true} -> [melee_weapon_uuid: updated_item.uuid]
         %Loot.Helmet{equiped: true} -> [helmet_uuid: updated_item.uuid]
         %Loot.Suit{equiped: true} -> [suit_uuid: updated_item.uuid]
         %Loot.Boots{equiped: true} -> [boots_uuid: updated_item.uuid]
@@ -580,7 +600,7 @@ defmodule Europa.Server.Player do
       end
 
     {:ok,
-     struct(player, [inventory: updated_inventory] ++ changed_params)
+     struct!(player, [inventory: updated_inventory] ++ changed_params)
      |> update_player_attrs(current_item_attrs, stats_changes)}
   end
 
@@ -594,21 +614,21 @@ defmodule Europa.Server.Player do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
         :max_weight ->
-          struct(player, max_weight: player.max_weight - attr_value)
+          struct!(player, max_weight: player.max_weight - attr_value)
 
         :accuracy ->
-          struct(player, accuracy: player.accuracy - attr_value)
+          struct!(player, accuracy: player.accuracy - attr_value)
 
         :efficiency ->
-          struct(player, efficiency: player.efficiency - attr_value)
+          struct!(player, efficiency: player.efficiency - attr_value)
 
         :max_health ->
           max_health = player.max_health - attr_value
-          struct(player, max_health: max_health, health: min(player.health, max_health))
+          struct!(player, max_health: max_health, health: min(player.health, max_health))
 
         :max_warm ->
           max_warm = player.max_warm - attr_value
-          struct(player, max_warm: max_warm, warm: min(player.warm, max_warm))
+          struct!(player, max_warm: max_warm, warm: min(player.warm, max_warm))
 
         _ ->
           player
@@ -619,15 +639,15 @@ defmodule Europa.Server.Player do
   defp increase_attrs(player, attrs) do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
-        :max_weight -> struct(player, max_weight: player.max_weight + attr_value)
-        :accuracy -> struct(player, accuracy: player.accuracy + attr_value)
-        :efficiency -> struct(player, efficiency: player.efficiency + attr_value)
-        :max_health -> struct(player, max_health: player.max_health + attr_value)
-        :health -> struct(player, health: min(player.max_health, player.health + attr_value))
-        :max_warm -> struct(player, max_warm: player.max_warm + attr_value)
-        :warm -> struct(player, warm: min(player.max_warm, player.warm + attr_value))
-        :hunger -> struct(player, hunger: max(0, player.hunger + attr_value) |> min(@max_hunger))
-        :thirst -> struct(player, thirst: max(0, player.thirst + attr_value) |> min(@max_thirst))
+        :max_weight -> struct!(player, max_weight: player.max_weight + attr_value)
+        :accuracy -> struct!(player, accuracy: player.accuracy + attr_value)
+        :efficiency -> struct!(player, efficiency: player.efficiency + attr_value)
+        :max_health -> struct!(player, max_health: player.max_health + attr_value)
+        :health -> struct!(player, health: min(player.max_health, player.health + attr_value))
+        :max_warm -> struct!(player, max_warm: player.max_warm + attr_value)
+        :warm -> struct!(player, warm: min(player.max_warm, player.warm + attr_value))
+        :hunger -> struct!(player, hunger: max(0, player.hunger + attr_value) |> min(@max_hunger))
+        :thirst -> struct!(player, thirst: max(0, player.thirst + attr_value) |> min(@max_thirst))
         _ -> player
       end
     end)
@@ -637,6 +657,7 @@ defmodule Europa.Server.Player do
     uuid =
       case new_item do
         %Loot.Weapon{} -> player.weapon_uuid
+        %Loot.MeleeWeapon{} -> player.melee_weapon_uuid
         %Loot.Helmet{} -> player.helmet_uuid
         %Loot.Suit{} -> player.suit_uuid
         %Loot.Boots{} -> player.boots_uuid

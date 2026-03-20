@@ -57,7 +57,7 @@ defmodule Europa.Server.PlanetManager do
   @callback get_visible_land(Planet.t()) :: Planet.land()
 
   @doc """
-  Move player in given direction.
+  Move player in given direction or attack enemy with melee weapon.
   If move succeded response is:
   ```
   {:moved, updated_planet, move_cost, tile}
@@ -67,13 +67,22 @@ defmodule Europa.Server.PlanetManager do
 
   If move not allowed response is:
   ```
-  {:stay, tile}
+  {:stay, tile, [{enemy, damage}], move_cost}
   ```
 
   where `tile` is tile player can't step on.
+
+  If player attacked enemy with melee weapon response is:
+  ```
+  {:attack, updated_planet, [{enemy, damage}], move_cost}
+  ```
+
+  where `[{enemy, damage}]` - list of damaged enemies.
   """
-  @callback move(Planet.t(), Planet.direction(), player_stand_on :: Planet.tile()) ::
-              {:moved, Planet.t(), Server.move_cost(), Planet.tile()} | {:stay, Planet.tile()}
+  @callback move(Planet.t(), Planet.direction(), Player.t()) ::
+              {:moved, Planet.t(), Server.move_cost(), Planet.tile()}
+              | {:stay, Planet.tile()}
+              | {:attack, Planet.t(), list({Enemy.t(), damage :: pos_integer()}), Server.move_cost()}
 
   @doc """
   Checks if there is `ItemBox` at next tile by current `view_direction` and returns the `ItemBox` if so.
@@ -144,7 +153,7 @@ defmodule Europa.Server.PlanetManager do
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
   def get_visible_land(planet), do: manager_impl().get_visible_land(planet)
   def land_size(planet), do: manager_impl().land_size(planet)
-  def move(planet, direction, stand_on_tile), do: manager_impl().move(planet, direction, stand_on_tile)
+  def move(planet, direction, player), do: manager_impl().move(planet, direction, player)
   def loot(planet, direction), do: manager_impl().loot(planet, direction)
   def take_loot(planet, player, item_uuid), do: manager_impl().take_loot(planet, player, item_uuid)
 

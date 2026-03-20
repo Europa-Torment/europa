@@ -8,7 +8,15 @@ defmodule Europa.Server.Loot.ItemTest do
 
   describe "composed_name/1" do
     test "returns string with item name" do
-      for item <- [build(:weapon), build(:ammo), build(:helmet), build(:suit), build(:boots), build(:supply)] do
+      for item <- [
+            build(:weapon),
+            build(:ammo),
+            build(:melee_weapon),
+            build(:helmet),
+            build(:suit),
+            build(:boots),
+            build(:supply)
+          ] do
         assert Item.composed_name(item) |> is_binary()
       end
     end
@@ -16,7 +24,15 @@ defmodule Europa.Server.Loot.ItemTest do
 
   describe "negative_attrs/1" do
     test "returns list of atoms" do
-      for item <- [build(:weapon), build(:ammo), build(:helmet), build(:suit), build(:boots), build(:supply)] do
+      for item <- [
+            build(:weapon),
+            build(:ammo),
+            build(:melee_weapon),
+            build(:helmet),
+            build(:suit),
+            build(:boots),
+            build(:supply)
+          ] do
         assert Item.negative_attrs(item) |> Enum.all?(&is_atom/1)
       end
     end
@@ -53,6 +69,19 @@ defmodule Europa.Server.Loot.ItemTest do
       ]
 
       assert Item.readable_attrs(ammo) == expected_attrs
+    end
+
+    test "returns attrs for melee weapon" do
+      melee_weapon = build(:melee_weapon)
+
+      expected_attrs = [
+        {:name, "Name", melee_weapon.name},
+        {:damage, "Damage", melee_weapon.damage},
+        {:hit_cost, "Hit cost", melee_weapon.hit_cost},
+        {:weight, "Weight", melee_weapon.weight}
+      ]
+
+      assert Item.readable_attrs(melee_weapon) == expected_attrs
     end
 
     test "returns attrs for helmet" do
@@ -123,6 +152,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.consumable?(ammo) == false
     end
 
+    test "returns false for melee weapon" do
+      melee_weapon = build(:melee_weapon)
+      assert Item.consumable?(melee_weapon) == false
+    end
+
     test "returns false for helmet" do
       helmet = build(:helmet)
       assert Item.consumable?(helmet) == false
@@ -153,6 +187,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns false for ammo" do
       ammo = build(:ammo)
       assert Item.equipable?(ammo) == false
+    end
+
+    test "returns true for melee weapon" do
+      melee_weapon = build(:melee_weapon)
+      assert Item.equipable?(melee_weapon) == true
     end
 
     test "returns true for helmet" do
@@ -187,6 +226,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.stackable?(ammo) == true
     end
 
+    test "returns false for melee weapon" do
+      melee_weapon = build(:melee_weapon)
+      assert Item.stackable?(melee_weapon) == false
+    end
+
     test "returns false for helmet" do
       helmet = build(:helmet)
       assert Item.stackable?(helmet) == false
@@ -217,6 +261,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns ammo weight" do
       ammo = build(:ammo, count: 100)
       assert Item.weight(ammo) == ammo.count * ammo.weight
+    end
+
+    test "returns melee weapon weight" do
+      melee_weapon = build(:melee_weapon)
+      assert Item.weight(melee_weapon) == melee_weapon.weight
     end
 
     test "returns helmet weight" do
@@ -346,6 +395,7 @@ defmodule Europa.Server.LootTest do
   alias Europa.Server.Loot.Item
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Loot.MeleeWeapon
   alias Europa.Server.Loot.Helmet
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
@@ -371,6 +421,7 @@ defmodule Europa.Server.LootTest do
   defp item?(%Suit{}), do: true
   defp item?(%Boots{}), do: true
   defp item?(%Weapon{}), do: true
+  defp item?(%MeleeWeapon{}), do: true
   defp item?(%Ammo{}), do: true
   defp item?(%Supply{}), do: true
   defp item?(_), do: false

@@ -57,12 +57,12 @@ defmodule Europa.Server.Loot.Weapon do
   @spec decrease_rounds_loaded(t(), n :: pos_integer()) :: t()
   def decrease_rounds_loaded(%__MODULE__{} = weapon, n \\ 1) when n > 0 do
     updated_value = (weapon.rounds_loaded - n) |> max(0)
-    struct(weapon, rounds_loaded: updated_value)
+    struct!(weapon, rounds_loaded: updated_value)
   end
 
   @spec add_rounds(t(), rounds_count :: pos_integer()) :: t()
   def add_rounds(%__MODULE__{} = weapon, rounds_count) when rounds_count > 0 do
-    struct(weapon, rounds_loaded: weapon.rounds_loaded + rounds_count)
+    struct!(weapon, rounds_loaded: weapon.rounds_loaded + rounds_count)
   end
 
   @spec rounds_per_shot(t()) :: pos_integer()
@@ -154,12 +154,12 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   @spec equip(Weapon.t()) :: {:ok, Weapon.t()}
   def equip(%Weapon{} = weapon) do
-    {:ok, struct(weapon, equiped: true)}
+    {:ok, struct!(weapon, equiped: true)}
   end
 
   @spec unequip(Weapon.t()) :: {:ok, Weapon.t()}
   def unequip(%Weapon{} = weapon) do
-    {:ok, struct(weapon, equiped: false)}
+    {:ok, struct!(weapon, equiped: false)}
   end
 
   @spec equipable?(Weapon.t()) :: true

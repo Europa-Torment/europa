@@ -454,7 +454,11 @@ defmodule Europa.Server.PlanetTest do
       planet =
         %Planet{current_coord: {x, y}} = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _} = Planet.move(planet, :right, @i)
+      player = build_player_stand_on(@i)
+
+      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _} =
+               Planet.move(planet, :right, player)
+
       assert x2 == x + 1
       assert move_cost == Map.fetch!(@move_costs, @i)
 
@@ -474,7 +478,11 @@ defmodule Europa.Server.PlanetTest do
       planet =
         %Planet{current_coord: {x, y}} = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _} = Planet.move(planet, :left, @s)
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _} =
+               Planet.move(planet, :left, player)
+
       assert x2 == x - 1
       assert move_cost == Map.fetch!(@move_costs, @s)
 
@@ -494,7 +502,11 @@ defmodule Europa.Server.PlanetTest do
       planet =
         %Planet{current_coord: {x, y}} = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
 
-      assert {:moved, %Planet{current_coord: {^x, y2}} = updated_planet, move_cost, _} = Planet.move(planet, :up, @s)
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{current_coord: {^x, y2}} = updated_planet, move_cost, _} =
+               Planet.move(planet, :up, player)
+
       assert y2 == y - 1
       assert move_cost == Map.fetch!(@move_costs, @s)
 
@@ -512,15 +524,16 @@ defmodule Europa.Server.PlanetTest do
 
     test "moves at monster body" do
       planet = build(:planet, land: @land_player_look_right_at_monster_body, current_coord: {4, 4})
-
-      assert {:moved, %Planet{}, move_cost, stand_on_tile} = Planet.move(planet, :right, @s)
+      player = build_player_stand_on(@s)
+      assert {:moved, %Planet{}, move_cost, stand_on_tile} = Planet.move(planet, :right, player)
       assert stand_on_tile == @ib2
       assert move_cost == Map.fetch!(@move_costs, @ib2.stand_on)
     end
 
     test "not moves in not movable tile" do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
-      assert {:stay, @ib} = Planet.move(planet, :right, @s)
+      player = build_player_stand_on(@s)
+      assert {:stay, @ib} = Planet.move(planet, :right, player)
     end
 
     test "generates left column" do
@@ -528,7 +541,9 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_left_border, current_coord: {2, 4})
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _} = Planet.move(planet, :left, @s)
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _} = Planet.move(planet, :left, player)
 
       assert x - x2 == 1
       assert updated_land.min_x == land.min_x - 1
@@ -539,7 +554,9 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_right_border, current_coord: {7, 4})
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _} = Planet.move(planet, :right, @s)
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _} = Planet.move(planet, :right, player)
       assert x2 == x + 1
 
       assert updated_land.max_x - land.max_x == 1
@@ -550,7 +567,9 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_top_border, current_coord: {4, 2})
 
-      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _} = Planet.move(planet, :up, @s)
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _} = Planet.move(planet, :up, player)
       assert y2 == y - 1
 
       assert updated_land.min_y == land.min_y - 1
@@ -561,10 +580,89 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_down_border, current_coord: {4, 7})
 
-      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _} = Planet.move(planet, :down, @s)
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _} = Planet.move(planet, :down, player)
       assert y2 == y + 1
 
       assert updated_land.max_y == land.max_y + 1
+    end
+
+    test "damages top enemy" do
+      planet = build(:planet, land: @land_player_up_close_to_enemy, current_coord: {4, 7})
+      player = build(:player, accuracy: @max_accuracy)
+      melee_weapon = build(:melee_weapon)
+
+      test_damage_enemy(planet, player, :up, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
+    end
+
+    test "damages top enemy (no melee weapon equiped)" do
+      planet = build(:planet, land: @land_player_up_close_to_enemy, current_coord: {4, 7})
+      player = build(:player, accuracy: @max_accuracy)
+
+      test_damage_enemy(planet, player, :up, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+    end
+
+    test "damages bottom enemy" do
+      planet = build(:planet, land: @land_player_down_close_to_enemy, current_coord: {4, 1})
+      player = build(:player, accuracy: @max_accuracy)
+      melee_weapon = build(:melee_weapon)
+
+      test_damage_enemy(planet, player, :down, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
+    end
+
+    test "damages bottom enemy (no melee weapon equiped)" do
+      planet = build(:planet, land: @land_player_down_close_to_enemy, current_coord: {4, 1})
+      player = build(:player, accuracy: @max_accuracy)
+
+      test_damage_enemy(planet, player, :down, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+    end
+
+    test "damages right enemy" do
+      planet = build(:planet, land: @land_player_left_close_to_enemy, current_coord: {4, 1})
+      player = build(:player, accuracy: @max_accuracy)
+      melee_weapon = build(:melee_weapon)
+
+      test_damage_enemy(planet, player, :right, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
+    end
+
+    test "damages right enemy (no melee weapon equiped)" do
+      planet = build(:planet, land: @land_player_left_close_to_enemy, current_coord: {4, 1})
+      player = build(:player, accuracy: @max_accuracy)
+
+      test_damage_enemy(planet, player, :right, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+    end
+
+    test "damages left enemy" do
+      planet = build(:planet, land: @land_player_right_close_to_enemy, current_coord: {4, 1})
+      player = build(:player, accuracy: @max_accuracy)
+      melee_weapon = build(:melee_weapon)
+
+      test_damage_enemy(planet, player, :left, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
+    end
+
+    test "damages left enemy (no melee weapon equiped)" do
+      planet = build(:planet, land: @land_player_right_close_to_enemy, current_coord: {4, 1})
+      player = build(:player, accuracy: @max_accuracy)
+
+      test_damage_enemy(planet, player, :left, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+    end
+
+    defp test_damage_enemy(planet, player, direction, expected_damage, expected_move_cost, melee_weapon) do
+      PlayerManagerMock
+      |> expect(:get_equiped_melee_weapon, fn %Player{} ->
+        if melee_weapon do
+          {:ok, melee_weapon}
+        else
+          {:error, :no_melee_weapon}
+        end
+      end)
+
+      assert {:attack, %Planet{} = updated_planet, damaged_enemies, ^expected_move_cost} =
+               Planet.move(planet, direction, player)
+
+      assert Enum.count(damaged_enemies) == 1
+      assert_damaged_enemies(updated_planet, damaged_enemies, expected_damage)
     end
   end
 
@@ -1348,4 +1446,6 @@ defmodule Europa.Server.PlanetTest do
   defp change_tile(land, {x, y}, new_tile) do
     List.replace_at(land, x, List.replace_at(Enum.at(land, x), y, new_tile))
   end
+
+  defp build_player_stand_on(tile), do: build(:player, stand_on: tile)
 end

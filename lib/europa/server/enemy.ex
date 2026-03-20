@@ -63,12 +63,12 @@ defmodule Europa.Server.Enemy do
   @spec take_damage(t(), damage :: pos_integer) :: t()
   def take_damage(%__MODULE__{} = enemy, damage) when is_integer(damage) and damage > 0 do
     updated_health = max(0, enemy.health - damage)
-    struct(enemy, health: updated_health)
+    struct!(enemy, health: updated_health)
   end
 
   @spec stand_on(t(), Planet.tile()) :: t()
   def stand_on(%__MODULE__{} = enemy, tile) do
-    struct(enemy, stand_on: tile)
+    struct!(enemy, stand_on: tile)
   end
 
   defp parse_file do

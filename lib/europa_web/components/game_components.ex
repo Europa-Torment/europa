@@ -508,6 +508,7 @@ defmodule EuropaWeb.GameCompotents do
     current_item =
       case Item.item_type(item) do
         :weapon -> get_player_weapon(player)
+        :melee_weapon -> get_player_melee_weapon(player)
         :helmet -> get_player_helmet(player)
         :suit -> get_player_suit(player)
         :boots -> get_player_boots(player)
@@ -567,6 +568,14 @@ defmodule EuropaWeb.GameCompotents do
     "crashed_shuttle_#{landscape_name(stand_on)}.png"
   end
 
+  defp get_image_name(%ItemBox{type: :drawler, stand_on: stand_on}, _) do
+    "drawler_#{landscape_name(stand_on)}.png"
+  end
+
+  defp get_image_name(%ItemBox{type: :refrigerator, stand_on: stand_on}, _) do
+    "refrigerator_#{landscape_name(stand_on)}.png"
+  end
+
   defp get_image_name(%ItemBox{stand_on: stand_on}, _) do
     "factory_box_#{landscape_name(stand_on)}.png"
   end
@@ -601,6 +610,13 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
+  defp get_player_melee_weapon(player) do
+    case Player.get_equiped_melee_weapon(player) do
+      {:ok, melee_weapon} -> melee_weapon
+      _ -> nil
+    end
+  end
+
   defp get_player_helmet(player) do
     case Player.get_equiped_helmet(player) do
       {:ok, helmet} -> helmet
@@ -624,10 +640,10 @@ defmodule EuropaWeb.GameCompotents do
 
   defp control_hints do
     [
-      control_hint(gettext("Move up"), @move_up_keys),
-      control_hint(gettext("Move down"), @move_down_keys),
-      control_hint(gettext("Move left"), @move_left_keys),
-      control_hint(gettext("Move right"), @move_right_keys),
+      control_hint(gettext("Move/punch up"), @move_up_keys),
+      control_hint(gettext("Move/punch down"), @move_down_keys),
+      control_hint(gettext("Move/punch left"), @move_left_keys),
+      control_hint(gettext("Move/punch right"), @move_right_keys),
       control_hint(gettext("Reload weapon"), @reload_keys),
       control_hint(gettext("Loot"), @loot_keys),
       control_hint(gettext("Inventory"), @inventory_keys),

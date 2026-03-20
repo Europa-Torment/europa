@@ -12,6 +12,7 @@ defmodule Europa.Server.Loot do
 
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Loot.MeleeWeapon
   alias Europa.Server.Loot.Helmet
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
@@ -26,6 +27,7 @@ defmodule Europa.Server.Loot do
   @weighted_item_types [
     {:weapon, gettext("Weapons"), 0.4},
     {:ammo, gettext("Ammo"), 0.7},
+    {:melee_weapon, gettext("Melee weapons"), 0.4},
     {:supply, gettext("Supplies"), 1.0},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},
@@ -36,13 +38,16 @@ defmodule Europa.Server.Loot do
 
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
-  @allowed_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle, :bunch]
+  @outdoor_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle, :bunch]
+  @furniture_item_box_types [:drawler, :refrigerator]
+  @allowed_item_box_types @outdoor_item_box_types ++ @furniture_item_box_types
 
   @templates_path "/items/"
 
   @filenames %{
     weapon: "weapons.json",
     ammo: "ammo.json",
+    melee_weapon: "melee_weapons.json",
     helmet: "helmets.json",
     suit: "suits.json",
     boots: "boots.json",
@@ -61,12 +66,13 @@ defmodule Europa.Server.Loot do
     alias Europa.Server.Loot
     alias Europa.Server.Loot.Weapon
     alias Europa.Server.Loot.Weapon.Ammo
+    alias Europa.Server.Loot.MeleeWeapon
     alias Europa.Server.Loot.Helmet
     alias Europa.Server.Loot.Suit
     alias Europa.Server.Loot.Boots
     alias Europa.Server.Loot.Supply
 
-    @type item() :: Weapon.t() | Ammo.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t()
+    @type item() :: Weapon.t() | Ammo.t() | MeleeWeapon.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t()
     @type weight() :: number()
 
     @spec item_type(item()) :: Loot.item_type()
@@ -122,19 +128,21 @@ defmodule Europa.Server.Loot do
         :human_body -> gettext("Human body")
         :crashed_shuttle -> gettext("Crashed shuttle")
         :bunch -> gettext("Bunch of items")
+        :drawler -> gettext("Drawler")
+        :refrigerator -> gettext("Refrigerator")
       end
     end
 
     @spec add_item(ItemBox.t(), Item.item()) :: ItemBox.t()
     def add_item(%ItemBox{} = item_box, new_item) do
-      struct(item_box, items: [new_item | item_box.items])
+      struct!(item_box, items: [new_item | item_box.items])
     end
 
     @spec take_item(ItemBox.t(), Loot.uuid()) :: {:ok, Item.t(), ItemBox.t()} | {:error, :no_item}
     def take_item(%ItemBox{} = item_box, item_uuid) do
       with {:ok, item} <- find_item(item_box, item_uuid) do
         updated_items = List.delete(item_box.items, item)
-        {:ok, item, struct(item_box, items: updated_items)}
+        {:ok, item, struct!(item_box, items: updated_items)}
       end
     end
 
@@ -158,7 +166,7 @@ defmodule Europa.Server.Loot do
 
     @spec stand_on(t(), Planet.tile()) :: t()
     def stand_on(%__MODULE__{} = item_box, tile) do
-      struct(item_box, stand_on: tile)
+      struct!(item_box, stand_on: tile)
     end
 
     defp find_item(%ItemBox{} = item_box, item_uuid) do
@@ -185,7 +193,7 @@ defmodule Europa.Server.Loot do
           end
         end)
 
-      struct(item_box, items: updated_items)
+      struct!(item_box, items: updated_items)
     end
 
     defp check_weapon(%Weapon{}), do: :ok
@@ -198,11 +206,17 @@ defmodule Europa.Server.Loot do
   @spec allowed_item_box_types() :: [item_box_type(), ...]
   def allowed_item_box_types, do: @allowed_item_box_types
 
+  @spec furniture_item_box_types() :: [item_box_type(), ...]
+  def furniture_item_box_types do
+    @furniture_item_box_types
+  end
+
   @spec new_item(item_type(), attrs()) :: Item.t()
   def new_item(item_type, attrs) when item_type in @allowed_item_types and is_map(attrs) do
     case item_type do
       :weapon -> Weapon.new(attrs)
       :ammo -> Ammo.new(attrs)
+      :melee_weapon -> MeleeWeapon.new(attrs)
       :helmet -> Helmet.new(attrs)
       :suit -> Suit.new(attrs)
       :boots -> Boots.new(attrs)
@@ -247,7 +261,7 @@ defmodule Europa.Server.Loot do
 
   @spec generate_item_box() :: ItemBox.t()
   def generate_item_box do
-    @allowed_item_box_types
+    @outdoor_item_box_types
     |> Enum.random()
     |> generate_item_box()
   end

@@ -89,6 +89,20 @@ defmodule Europa.Support.Factory do
     }
   end
 
+  @spec melee_weapon_factory() :: Loot.MeleeWeapon.t()
+  def melee_weapon_factory do
+    %Loot.MeleeWeapon{
+      uuid: Ecto.UUID.generate(),
+      equiped: false,
+      name: sequence(:name, &"melee weapon #{&1 + 1}"),
+      hit_cost: 1,
+      damage: 1,
+      weight: 1.0,
+      image_name: "default_pistol",
+      sound_name: "sword"
+    }
+  end
+
   @spec helmet_factory() :: Loot.Helmet.t()
   def helmet_factory do
     %Loot.Helmet{

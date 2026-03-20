@@ -21,6 +21,8 @@ defmodule Europa.Server.Planet.Predefined do
     situation: %{dir: "/situations", weight: 0.7}
   }
 
+  @futniture_item_box_types Loot.furniture_item_box_types()
+
   @floor Tiles.tile(:floor).atom_value
 
   @wall_horizontal %Object{name: "wall", image_name: "wall_horizontal", high?: true}
@@ -77,7 +79,8 @@ defmodule Europa.Server.Planet.Predefined do
   end
 
   defp elem_to_tile(:building, "L") do
-    item_box = Loot.generate_item_box(:box, @floor)
+    type = Enum.random(@futniture_item_box_types)
+    item_box = Loot.generate_item_box(type, @floor)
 
     if m_to_n?(1, @building_loot_generate_possibility) do
       item_box

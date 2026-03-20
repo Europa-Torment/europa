@@ -46,6 +46,7 @@ defmodule Europa.Server.PlayerTest do
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
         {"Weapon", "No"},
+        {"Melee weapon", "No"},
         {"Helmet", "No"},
         {"Suit", "No"},
         {"Boots", "No"}
@@ -56,6 +57,7 @@ defmodule Europa.Server.PlayerTest do
 
     test "returns stats (with full equipment)" do
       weapon = build(:weapon)
+      melee_weapon = build(:melee_weapon)
       helmet = build(:helmet)
       suit = build(:suit)
       boots = build(:boots)
@@ -63,10 +65,11 @@ defmodule Europa.Server.PlayerTest do
       player =
         build(:player,
           weapon_uuid: weapon.uuid,
+          melee_weapon_uuid: melee_weapon.uuid,
           helmet_uuid: helmet.uuid,
           suit_uuid: suit.uuid,
           boots_uuid: boots.uuid,
-          inventory: [weapon, helmet, suit, boots]
+          inventory: [weapon, melee_weapon, helmet, suit, boots]
         )
 
       expected_stats = [
@@ -78,6 +81,7 @@ defmodule Europa.Server.PlayerTest do
         {"Accuracy", player.accuracy},
         {"Efficiency", player.efficiency},
         {"Weapon", weapon.name},
+        {"Melee weapon", melee_weapon.name},
         {"Helmet", helmet.name},
         {"Suit", suit.name},
         {"Boots", boots.name}
@@ -150,7 +154,7 @@ defmodule Europa.Server.PlayerTest do
       for item_type <- [:ammo, :supply] do
         player = build(:player, inventory: [])
         item = build(item_type)
-        item2 = struct(item, count: 100)
+        item2 = struct!(item, count: 100)
 
         expected_count = item.count + item2.count
 
@@ -288,18 +292,27 @@ defmodule Europa.Server.PlayerTest do
   describe "unequip_item/2" do
     setup do
       weapon = build(:weapon, equiped: true)
+      melee_weapon = build(:weapon, equiped: true)
       ammo = build(:ammo)
       helmet = build(:helmet, equiped: true)
       suit = build(:suit, equiped: true)
       boots = build(:boots, equiped: true)
 
-      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots])
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, melee_weapon, ammo, helmet, suit, boots])
 
-      {:ok, player: player, weapon: weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
+      {:ok,
+       player: player, weapon: weapon, melee_weapon: melee_weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
     end
 
-    test "unequips items", %{player: player, weapon: weapon, helmet: helmet, suit: suit, boots: boots} do
-      for item <- [weapon, helmet, suit, boots] do
+    test "unequips items", %{
+      player: player,
+      weapon: weapon,
+      melee_weapon: melee_weapon,
+      helmet: helmet,
+      suit: suit,
+      boots: boots
+    } do
+      for item <- [weapon, melee_weapon, helmet, suit, boots] do
         assert {:ok, updated_player} = Player.unequip_item(player, item.uuid)
         updated_item = Enum.find(updated_player.inventory, fn i -> i.uuid == item.uuid end)
 
@@ -356,7 +369,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "updates given item", %{player: player, ammo: ammo, weapon: weapon} do
-      updated_ammo = struct(ammo, count: 1000)
+      updated_ammo = struct!(ammo, count: 1000)
       assert %Player{inventory: [^weapon, ^updated_ammo]} = Player.update_item(player, updated_ammo)
     end
   end
@@ -388,7 +401,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "returns error when no equiped weapon", %{player: player} do
-      player = struct(player, weapon_uuid: nil)
+      player = struct!(player, weapon_uuid: nil)
       assert Player.get_equiped_weapon(player) == {:error, :no_weapon}
     end
   end
@@ -406,7 +419,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "returns error when no equiped helmet", %{player: player} do
-      player = struct(player, helmet_uuid: nil)
+      player = struct!(player, helmet_uuid: nil)
       assert Player.get_equiped_helmet(player) == {:error, :no_helmet}
     end
   end
@@ -482,26 +495,26 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "reloads weapon (enough ammo for full magazine)", %{player: player, weapon: weapon, ammo: ammo} do
-      expected_weapon = struct(weapon, rounds_loaded: weapon.magazine_size)
+      expected_weapon = struct!(weapon, rounds_loaded: weapon.magazine_size)
 
-      expected_ammo = struct(ammo, count: ammo.count - (weapon.magazine_size - weapon.rounds_loaded))
+      expected_ammo = struct!(ammo, count: ammo.count - (weapon.magazine_size - weapon.rounds_loaded))
 
       assert {:ok, %Player{inventory: [^expected_weapon, ^expected_ammo]}, ^expected_weapon} =
                Player.reload_weapon(player)
     end
 
     test "reloads weapon (not enough ammo for full magazine)", %{player: player, weapon: weapon, ammo: ammo} do
-      ammo = struct(ammo, count: 1)
+      ammo = struct!(ammo, count: 1)
 
-      player = struct(player, inventory: [weapon, ammo])
-      expected_weapon = struct(weapon, rounds_loaded: weapon.rounds_loaded + 1)
+      player = struct!(player, inventory: [weapon, ammo])
+      expected_weapon = struct!(weapon, rounds_loaded: weapon.rounds_loaded + 1)
 
       assert {:ok, %Player{inventory: [^expected_weapon]}, ^expected_weapon} =
                Player.reload_weapon(player)
     end
 
     test "returns no_weapon error", %{player: player} do
-      player = struct(player, weapon_uuid: nil)
+      player = struct!(player, weapon_uuid: nil)
       assert Player.reload_weapon(player) == {:error, :no_weapon}
     end
 
@@ -511,7 +524,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "returns full_magazine error", %{player: player, weapon: weapon} do
-      weapon = struct(weapon, rounds_loaded: weapon.magazine_size)
+      weapon = struct!(weapon, rounds_loaded: weapon.magazine_size)
       player = Player.update_item(player, weapon)
 
       assert Player.reload_weapon(player) == {:error, :full_magazine}
@@ -773,6 +786,7 @@ defmodule Europa.Server.PlayerTest do
   defp assert_changed_player_item_uuid(player, updated_item, expected_value) do
     case updated_item do
       %Loot.Weapon{} -> assert player.weapon_uuid == expected_value
+      %Loot.MeleeWeapon{} -> assert player.melee_weapon_uuid == expected_value
       %Loot.Helmet{} -> assert player.helmet_uuid == expected_value
       %Loot.Suit{} -> assert player.suit_uuid == expected_value
       %Loot.Boots{} -> assert player.boots_uuid == expected_value
