@@ -594,6 +594,7 @@ defmodule Europa.Server.Player do
         %Loot.Suit{equiped: true} -> [suit_uuid: updated_item.uuid]
         %Loot.Boots{equiped: true} -> [boots_uuid: updated_item.uuid]
         %Loot.Weapon{equiped: false} -> [weapon_uuid: nil]
+        %Loot.MeleeWeapon{equiped: false} -> [melee_weapon_uuid: nil]
         %Loot.Helmet{equiped: false} -> [helmet_uuid: nil]
         %Loot.Suit{equiped: false} -> [suit_uuid: nil]
         %Loot.Boots{equiped: false} -> [boots_uuid: nil]
