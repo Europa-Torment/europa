@@ -46,5 +46,21 @@
         "image_name": "default_pistol",
         "sound_name": "rifle",
         "random_weight": 0.4
+    },
+    {
+        "name": "Atom splitter",
+        "shot_cost": {"from": 4, "to": 5},
+        "reload_cost": {"from": 3, "to": 5},
+        "magazine_size": {"from": 3, "to": 5},
+        "accuracy": {"from": 20, "to": 40},
+        "caliber": "neutron cartridges",
+        "rounds_loaded": {"from": 1, "to": {"attr": "magazine_size"}},
+        "shooting_type": "bullet",
+        "damage": {"from": 50, "to": 100},
+        "shooting_distance": {"from": 10, "to": 15},
+        "weight": 15.0,
+        "image_name": "default_pistol",
+        "sound_name": "laser",
+        "random_weight": 0.05
     }
 ]

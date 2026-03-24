@@ -534,6 +534,7 @@ defmodule EuropaWeb.GameLive do
         shotgun: %{name: ~p"/sounds/shotgun.mp3", volume: 0.2},
         pistol: %{name: ~p"/sounds/pistol.mp3", volume: 0.4},
         rifle: %{name: ~p"/sounds/rifle.mp3", volume: 0.2},
+        laser: %{name: ~p"/sounds/laser.mp3", volume: 0.2},
         punch: %{name: ~p"/sounds/punch.mp3", volume: 0.2},
         empty_magazine: %{name: ~p"/sounds/empty_magazine.mp3", volume: 1.0},
         reload: %{name: ~p"/sounds/reload.mp3", volume: 0.2},

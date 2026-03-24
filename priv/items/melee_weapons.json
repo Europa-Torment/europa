@@ -6,6 +6,24 @@
         "weight": 1.5,
         "image_name": "default_pistol",
         "sound_name": "punch",
-        "random_weight": 2.0
+        "random_weight": 0.1
+    },
+    {
+        "name": "Kitchen knife",
+        "hit_cost": {"from": 1, "to": 2},
+        "damage": {"from": 2, "to": 3},
+        "weight": 0.2,
+        "image_name": "default_pistol",
+        "sound_name": "punch",
+        "random_weight": 0.5
+    },
+    {
+        "name": "Baton",
+        "hit_cost": 1,
+        "damage": {"from": 1, "to": 3},
+        "weight": 0.1,
+        "image_name": "default_pistol",
+        "sound_name": "punch",
+        "random_weight": 0.2
     }
 ]

@@ -81,5 +81,45 @@
         },
         "weight": 2.0,
         "random_weight": 0.1
+    },
+    {
+        "name": "Vodka", 
+        "count": {"from": 1, "to": 2},
+        "consume_cost": 2,
+        "sound_name": "drink",
+        "properties": {
+            "hunger": 5,
+            "health": -5,
+            "thirst": -10,
+            "warm": 50
+        },
+        "weight": 0.5,
+        "random_weight": 0.4
+    },
+    {
+        "name": "Canned beef stew", 
+        "count": {"from": 1, "to": 4},
+        "consume_cost": 2,
+        "sound_name": "eat",
+        "properties": {
+            "hunger": -40,
+            "health": 15,
+            "warm": 10
+        },
+        "weight": 0.5,
+        "random_weight": 0.2
+    },
+    {
+        "name": "Expired canned beef stew", 
+        "count": {"from": 1, "to": 4},
+        "consume_cost": 2,
+        "sound_name": "eat",
+        "properties": {
+            "hunger": -20,
+            "health": -15,
+            "warm": 5
+        },
+        "weight": 0.5,
+        "random_weight": 0.4
     }
 ]
