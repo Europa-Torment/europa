@@ -20,5 +20,8 @@ config :europa, EuropaWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
-# Runtime production configuration, including reading
-# of environment variables, is done on config/runtime.exs.
+config :phoenix_copy,
+  default: [
+    source: Path.expand("../priv/tile_images/tmp/ready", __DIR__),
+    destination: Path.expand("../priv/static/images/tiles", __DIR__)
+  ]
