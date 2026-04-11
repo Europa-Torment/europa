@@ -106,7 +106,9 @@ defmodule Europa.Tools.TilesImagesGenerator do
   end
 
   defp prepare_tmp_dirs!(root_dir) do
-    File.mkdir!([root_dir, @base_dir, @tmp_base])
+    base_tmp_path = Path.join([root_dir, @base_dir, @tmp_base])
+    File.rm_rf(base_tmp_path)
+    File.mkdir!(base_tmp_path)
 
     for dir_to_create <- @tmp_dirs_to_create do
       path = Path.join([root_dir, @base_dir, @tmp_base, dir_to_create])
