@@ -66,6 +66,7 @@ defmodule Europa.MixProject do
       {:jason, "~> 1.4"},
       {:cachex, "~> 4.0"},
       {:better_weighted_random, "~> 0.1.0"},
+      {:image, "~> 0.63.0"},
       {:phoenix_copy, "~> 0.1.4", only: [:dev, :prod]},
       {:hammox, "~> 0.7", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
@@ -76,8 +77,7 @@ defmodule Europa.MixProject do
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:lazy_html, ">= 0.1.0", only: :test},
-      {:image, "~> 0.63.0", only: [:dev, :test]}
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 

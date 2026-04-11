@@ -21,7 +21,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
   """
   require Logger
 
-  @priv_dir :code.priv_dir(:europa)
+  @priv_dir Path.join([File.cwd!(), "priv"])
 
   @base_dir "/tile_images"
 
@@ -106,6 +106,8 @@ defmodule Europa.Tools.TilesImagesGenerator do
   end
 
   defp prepare_tmp_dirs!(root_dir) do
+    File.mkdir!([root_dir, @base_dir, @tmp_base])
+
     for dir_to_create <- @tmp_dirs_to_create do
       path = Path.join([root_dir, @base_dir, @tmp_base, dir_to_create])
       File.rm_rf(path)

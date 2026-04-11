@@ -26,3 +26,14 @@ coverage-lint:
 check-all:
 	MIX_ENV=test make coverage-lint
 	make analyze-code
+
+.PHONY: release
+release:
+	mix local.hex --force
+	mix local.rebar --force
+	mix deps.get --only prod
+	npm ci --prefix assets
+	MIX_ENV=prod mix prepare_tiles
+	MIX_ENV=prod mix assets.deploy
+	MIX_ENV=prod mix compile
+	MIX_ENV=prod mix release --overwrite
