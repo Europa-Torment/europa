@@ -37,6 +37,7 @@ release:
 	mix deps.get --only prod
 	npm ci --prefix assets
 	MIX_ENV=prod mix prepare_tiles
+	MIX_ENV=prod mix phx.copy default
 	MIX_ENV=prod mix assets.deploy
 	MIX_ENV=prod mix compile
 	MIX_ENV=prod mix release --overwrite
