@@ -1,3 +1,6 @@
+SHELL := /bin/bash
+export PATH := $(HOME)/.asdf/shims:$(PATH)
+
 .PHONY: test
 test:
 	MIX_ENV=test mix test --exclude slow:true --exclude perfomance:true
