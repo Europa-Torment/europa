@@ -2,6 +2,7 @@ export const hooks = {
   Tooltip: {
     mounted() {
       this.el.addEventListener('mouseenter', e => {
+        document.querySelectorAll('.phx-tooltip').forEach(t => t.remove());
         const tooltip = document.createElement('div');
         
         tooltip.className = 'fixed bg-neutral text-white p-2 rounded shadow-lg text-xs z-1000 phx-tooltip';
