@@ -11,7 +11,7 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
   </head>
-  <body>
+  <body class={if assigns[:game_page], do: "h-screen overflow-hidden", else: ""}>
     <div class="navbar bg-base-100 shadow-sm font-mono">
       <div class="flex-1">
         <.link navigate="/" class="btn btn-ghost text-xl">Europa Torment</.link>

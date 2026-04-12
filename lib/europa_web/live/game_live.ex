@@ -75,7 +75,8 @@ defmodule EuropaWeb.GameLive do
           game_started: false,
           item_to_drop: nil,
           item_drop_count: 1,
-          game_over: false
+          game_over: false,
+          game_page: true
         )
 
       {:ok, socket}
