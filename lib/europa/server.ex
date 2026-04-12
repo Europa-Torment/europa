@@ -26,6 +26,7 @@ defmodule Europa.Server do
   @type move_cost :: pos_integer()
 
   @finish_game_on_exit fetch_config!([__MODULE__, :finish_game_on_server_exit])
+  @inactivity_timeout_ms fetch_config!([__MODULE__, :inactivity_timeout_ms])
 
   @crop_period_ms fetch_config!([__MODULE__, :crop_land_period_ms])
   @crop_size fetch_config!([Planet, :crop_land_size])
@@ -222,24 +223,24 @@ defmodule Europa.Server do
 
     schedule_planet_land_crop()
 
-    {:ok, state}
+    {:ok, state, @inactivity_timeout_ms}
   end
 
   @impl true
   def handle_call(:get_planet, _from, state) do
-    {:reply, state.planet, state}
+    {:reply, state.planet, state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_visible_planet, _from, state) do
-    {:reply, PlanetManager.get_visible_land(state.planet), state}
+    {:reply, PlanetManager.get_visible_land(state.planet), state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_player, _from, state) do
-    {:reply, state.player, state}
+    {:reply, state.player, state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_chat, _from, state) do
-    {:reply, state.chat, state}
+    {:reply, state.chat, state, @inactivity_timeout_ms}
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do
@@ -250,7 +251,8 @@ defmodule Europa.Server do
         state.player
         |> PlayerManager.change_view_direction(direction)
 
-      {:reply, :stay, struct!(state, player: updated_player, chat: Chat.add_message(state.chat, message))}
+      {:reply, :stay, struct!(state, player: updated_player, chat: Chat.add_message(state.chat, message)),
+       @inactivity_timeout_ms}
     else
       do_move(direction, state, caller_pid)
     end
@@ -259,56 +261,57 @@ defmodule Europa.Server do
   def handle_call(:loot, _from, state) do
     case PlanetManager.loot(state.planet, state.player) do
       {:open_item_box, _item_box} = result ->
-        {:reply, result, state}
+        {:reply, result, state, @inactivity_timeout_ms}
 
       {:error, :nothing} = error ->
         message = nothing_to_loot_message()
-        {:reply, error, struct!(state, chat: Chat.add_message(state.chat, message))}
+        {:reply, error, struct!(state, chat: Chat.add_message(state.chat, message)), @inactivity_timeout_ms}
     end
   end
 
   def handle_call({:take_loot, item_uuid}, _from, state) do
     case PlanetManager.take_loot(state.planet, state.player, item_uuid) do
       {:ok, updated_planet, updated_player, updated_item_box} ->
-        {:reply, {:ok, updated_item_box}, struct!(state, planet: updated_planet, player: updated_player)}
+        {:reply, {:ok, updated_item_box}, struct!(state, planet: updated_planet, player: updated_player),
+         @inactivity_timeout_ms}
 
       _ ->
-        {:reply, {:error, :nothing}, state}
+        {:reply, {:error, :nothing}, state, @inactivity_timeout_ms}
     end
   end
 
   def handle_call({:equip_item, item_uuid}, _from, state) do
     case PlayerManager.equip_item(state.player, item_uuid) do
       {:ok, updated_player} ->
-        {:reply, {:ok, updated_player}, struct!(state, player: updated_player)}
+        {:reply, {:ok, updated_player}, struct!(state, player: updated_player), @inactivity_timeout_ms}
 
       error ->
-        {:reply, error, state}
+        {:reply, error, state, @inactivity_timeout_ms}
     end
   end
 
   def handle_call({:unequip_item, item_uuid}, _from, state) do
     case PlayerManager.unequip_item(state.player, item_uuid) do
       {:ok, updated_player} ->
-        {:reply, {:ok, updated_player}, struct!(state, player: updated_player)}
+        {:reply, {:ok, updated_player}, struct!(state, player: updated_player), @inactivity_timeout_ms}
 
       error ->
-        {:reply, error, state}
+        {:reply, error, state, @inactivity_timeout_ms}
     end
   end
 
   def handle_call({:get_item, item_uuid}, _from, state) do
     result = PlayerManager.get_item(state.player, item_uuid)
-    {:reply, result, state}
+    {:reply, result, state, @inactivity_timeout_ms}
   end
 
   def handle_call({:drop_item, item_uuid, count}, _from, state) do
     case PlayerManager.drop_item(state.player, item_uuid, count) do
       {:ok, updated_player, _item} ->
-        {:reply, {:ok, updated_player}, struct!(state, player: updated_player)}
+        {:reply, {:ok, updated_player}, struct!(state, player: updated_player), @inactivity_timeout_ms}
 
       error ->
-        {:reply, error, state}
+        {:reply, error, state, @inactivity_timeout_ms}
     end
   end
 
@@ -349,12 +352,12 @@ defmodule Europa.Server do
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
         updated_chat = Chat.add_message(state.chat, no_weapon_message)
-        {:reply, {:error, :no_weapon}, struct!(state, chat: updated_chat)}
+        {:reply, {:error, :no_weapon}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
 
       {:error, :empty_magazine} ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, {:error, :empty_magazine}, struct!(state, chat: updated_chat)}
+        {:reply, {:error, :empty_magazine}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
     end
   end
 
@@ -374,17 +377,17 @@ defmodule Europa.Server do
       {:error, :no_weapon} ->
         no_weapon_message = no_weapon_message()
         updated_chat = Chat.add_message(state.chat, no_weapon_message)
-        {:reply, {:error, :no_weapon}, struct!(state, chat: updated_chat)}
+        {:reply, {:error, :no_weapon}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
 
       {:error, :no_ammo} ->
         no_ammo_message = no_ammo_message()
         updated_chat = Chat.add_message(state.chat, no_ammo_message)
-        {:reply, {:error, :no_ammo}, struct!(state, chat: updated_chat)}
+        {:reply, {:error, :no_ammo}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
 
       {:error, :full_magazine} ->
         full_magazine_message = full_magazine_message()
         updated_chat = Chat.add_message(state.chat, full_magazine_message)
-        {:reply, {:error, :full_magazine}, struct!(state, chat: updated_chat)}
+        {:reply, {:error, :full_magazine}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
     end
   end
 
@@ -404,10 +407,10 @@ defmodule Europa.Server do
       {:error, :empty_magazine} = error ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, error, struct!(state, chat: updated_chat)}
+        {:reply, error, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
 
       error ->
-        {:reply, error, state}
+        {:reply, error, state, @inactivity_timeout_ms}
     end
   end
 
@@ -428,10 +431,10 @@ defmodule Europa.Server do
       {:error, :empty_magazine} = error ->
         empty_magazine_message = empty_magazine_message()
         updated_chat = Chat.add_message(state.chat, empty_magazine_message)
-        {:reply, error, struct!(state, chat: updated_chat)}
+        {:reply, error, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
 
       error ->
-        {:reply, error, state}
+        {:reply, error, state, @inactivity_timeout_ms}
     end
   end
 
@@ -449,12 +452,12 @@ defmodule Europa.Server do
          {:continue, {:tick, moves_count, caller_pid}}}
 
       error ->
-        {:reply, error, state}
+        {:reply, error, state, @inactivity_timeout_ms}
     end
   end
 
   def handle_call({:get_inventory, type}, _from, state) do
-    {:reply, PlayerManager.get_inventory(state.player, type), state}
+    {:reply, PlayerManager.get_inventory(state.player, type), state, @inactivity_timeout_ms}
   end
 
   @impl true
@@ -470,9 +473,9 @@ defmodule Europa.Server do
          planet: updated_planet,
          chat: Chat.add_message(state.chat, message),
          great_red_spots: state.great_red_spots + 1
-       )}
+       ), @inactivity_timeout_ms}
     else
-      {:noreply, state}
+      {:noreply, state, @inactivity_timeout_ms}
     end
   end
 
@@ -496,8 +499,13 @@ defmodule Europa.Server do
     {:stop, reason, state}
   end
 
-  def handle_info(_, state) do
+  def handle_info(:timeout, state) do
+    self() |> send(:game_over)
     {:noreply, state}
+  end
+
+  def handle_info(_, state) do
+    {:noreply, state, @inactivity_timeout_ms}
   end
 
   @impl true
@@ -519,7 +527,7 @@ defmodule Europa.Server do
        player: updated_player,
        chat: updated_chat,
        moves_count: state.moves_count + moves_count
-     )}
+     ), @inactivity_timeout_ms}
   end
 
   @impl true

@@ -11,14 +11,11 @@ export const hooks = {
             const distanceToLeft = rect.left;
             const distanceToRight = windowWidth - rect.right;
 
-            // Удаляем оба класса направления
             this.el.classList.remove('dropdown-left', 'dropdown-right');
 
             if (distanceToLeft > distanceToRight) {
-                // Кнопка ближе к правому краю → меню слева
                 this.el.classList.add('dropdown-left');
             } else {
-                // Кнопка ближе к левому краю или равноудалена → меню справа
                 this.el.classList.add('dropdown-right');
             }
         };

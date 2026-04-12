@@ -30,7 +30,9 @@ config :europa, Europa.Server.PlayerManager, implementation: Europa.Server.Playe
 config :europa, Europa.Server,
   finish_game_on_server_exit: true,
   crop_land_period_ms: 10_000,
-  max_efficiency: 50
+  max_efficiency: 50,
+  # 20 minutes,
+  inactivity_timeout_ms: 20 * 60 * 1000
 
 config :europa, Europa.Server.Planet,
   initial_game_field: [width: 32, height: 32],

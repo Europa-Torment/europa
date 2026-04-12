@@ -1,4 +1,5 @@
 defmodule Europa.Release do
+  # coveralls-ignore-start
   @app :europa
 
   def migrate do
@@ -22,4 +23,5 @@ defmodule Europa.Release do
     Application.ensure_all_started(:ssl)
     Application.ensure_loaded(@app)
   end
+  # coveralls-ignore-stop
 end
