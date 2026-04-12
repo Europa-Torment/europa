@@ -39,8 +39,7 @@ config :europa, Europa.Server.Planet,
   # Keep 100% possibility to tests consistency
   enemy_move_possibility: [from: 10, to: 10]
 
-config :europa, Europa.Server,
-  finish_game_on_server_exit: false
+config :europa, Europa.Server, finish_game_on_server_exit: false
 
 # Print only warnings and errors during test
 config :logger, level: :warning

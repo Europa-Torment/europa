@@ -81,7 +81,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def player_stats(assigns) do
     ~H"""
-    <div class="bg-base-200 p-5 rounded-box shadow-md text-sm">
+    <div class={"bg-base-200 p-5 rounded-box shadow-md text-#{@text_size}"}>
       <ul class="grid grid-cols-2 grid-rows-3 gap-3">
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Health")}>
@@ -283,6 +283,9 @@ defmodule EuropaWeb.GameCompotents do
           <h3 class="text-lg font-bold">
             {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
           </h3>
+          <div class="p-2">
+            <.player_stats player_stats={@player_stats} text_size="xs" />
+          </div>
           <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
             <a
               role="tab"
