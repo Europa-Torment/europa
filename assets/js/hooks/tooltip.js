@@ -40,6 +40,7 @@ export const hooks = {
       document.addEventListener('keydown', this.onDocumentKeydown);
 
       ['mouseleave', 'click'].forEach(event => {
+        document.querySelectorAll('.phx-tooltip').forEach(t => t.remove());
         this.el.addEventListener(event, () => {
           if (this.tooltip) {
             this.tooltip.remove();
