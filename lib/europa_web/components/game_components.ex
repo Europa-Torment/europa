@@ -49,7 +49,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def game_field(assigns) do
     ~H"""
-    <div class="w-3/6 h-fit bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
+    <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
@@ -58,8 +58,7 @@ defmodule EuropaWeb.GameCompotents do
               phx-hook="Tooltip"
               data-tooltip={tile_tooltip(tile, @player)}
               src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-              height="30"
-              width="30"
+              class="w-full h-full max-w-[30px] max-h-[30px] object-contain"
             />
           <% end %>
         </div>
