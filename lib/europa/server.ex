@@ -473,9 +473,9 @@ defmodule Europa.Server do
          planet: updated_planet,
          chat: Chat.add_message(state.chat, message),
          great_red_spots: state.great_red_spots + 1
-       ), @inactivity_timeout_ms}
+       )}
     else
-      {:noreply, state, @inactivity_timeout_ms}
+      {:noreply, state}
     end
   end
 
