@@ -59,7 +59,7 @@ defmodule EuropaWeb.ConnCase do
 
       def assert_redirect_if_unauthorized(conn) do
         assert conn.halted
-        assert redirected_to(conn) == ~p"/users/login"
+        assert redirected_to(conn) == ~p"/users/register"
       end
     end
   end

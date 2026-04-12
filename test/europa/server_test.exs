@@ -21,7 +21,6 @@ defmodule Europa.ServerTest do
 
   @direction :up
 
-  @crop_period_ms fetch_config!([Server, :crop_land_period_ms])
   @crop_size fetch_config!([Planet, :crop_land_size])
 
   setup :verify_on_exit!
@@ -31,6 +30,7 @@ defmodule Europa.ServerTest do
     PlanetManagerMock
     |> stub(:new, fn -> build(:planet) end)
     |> stub(:player_initial_stand_on_tile, fn _ -> @snow end)
+    |> stub(:land_size, fn _ -> 1 end)
 
     PlayerManagerMock
     |> stub(:new, fn -> build(:player, stand_on: @player_stand_on_tile, max_weight: 20.0) end)
@@ -245,6 +245,31 @@ defmodule Europa.ServerTest do
       assert {:ok, %Games.Game{state: :finished, finish_reason: :died}} = Games.get_by_uuid(game_uuid)
 
       assert_received :game_over
+    end
+
+    test "crops land", %{server: server, planet: planet} do
+      moves_count = 10
+
+      PlanetManagerMock
+      |> expect(:move, fn _planet, @direction, %Player{} -> {:moved, planet, moves_count, @snow} end)
+      |> expect(:readable_tile_name, fn _tile -> "snow" end)
+      |> expect(:tick, fn %Planet{}, _tick_moves_count ->
+        {:ok, planet, []}
+      end)
+      |> expect(:land_size, fn _ -> @crop_size end)
+      |> expect(:crop_land, fn %Planet{} = planet -> {:ok, planet} end)
+
+      PlayerManagerMock
+      |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
+      |> expect(:change_view_direction, fn %Player{} = player, @direction ->
+        struct!(player, view_direction: @direction)
+      end)
+      |> expect(:tick, fn %Player{} = player, _tick_moves_count ->
+        {:ok, player, []}
+      end)
+
+      assert {:moved, :normal} = Server.move(server, @direction)
+      :timer.sleep(100)
     end
 
     defp test_overloaded_move(server, planet, weight_ratio, expected_additional_moves) do
@@ -710,19 +735,6 @@ defmodule Europa.ServerTest do
 
       assert Server.consume_supply(server, supply.uuid) == error
     end
-  end
-
-  test "calls planet land crop after timeout", %{server: server} do
-    planet = Server.get_planet(server)
-
-    PlanetManagerMock
-    |> expect(:land_size, fn ^planet -> @crop_size end)
-    |> expect(:crop_land, fn ^planet ->
-      {:ok, planet}
-    end)
-
-    :timer.sleep(@crop_period_ms + 100)
-    assert %Server{great_red_spots: 1} = :sys.get_state(server)
   end
 
   defp assert_chat_message(server, category, text) do

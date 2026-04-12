@@ -11,7 +11,7 @@ defmodule EuropaWeb.AuthorizedOnlyTest do
 
     test "redirects and halts", %{conn_without_auth: conn} do
       conn = AuthorizedOnly.call(conn)
-      assert redirected_to(conn) == ~p"/users/login"
+      assert redirected_to(conn) == ~p"/users/register"
       assert conn.halted
     end
   end

@@ -28,7 +28,6 @@ defmodule Europa.Server do
   @finish_game_on_exit fetch_config!([__MODULE__, :finish_game_on_server_exit])
   @inactivity_timeout_ms fetch_config!([__MODULE__, :inactivity_timeout_ms])
 
-  @crop_period_ms fetch_config!([__MODULE__, :crop_land_period_ms])
   @crop_size fetch_config!([Planet, :crop_land_size])
 
   @max_efficiency fetch_config!([__MODULE__, :max_efficiency])
@@ -220,8 +219,6 @@ defmodule Europa.Server do
       great_red_spots: 0,
       killed_enemies: 0
     }
-
-    schedule_planet_land_crop()
 
     {:ok, state, @inactivity_timeout_ms}
   end
@@ -461,24 +458,6 @@ defmodule Europa.Server do
   end
 
   @impl true
-  def handle_info(:crop_planet_land, state) do
-    schedule_planet_land_crop()
-
-    if PlanetManager.land_size(state.planet) >= @crop_size do
-      {:ok, updated_planet} = PlanetManager.crop_land(state.planet)
-      message = crop_planet_land_message()
-
-      {:noreply,
-       struct!(state,
-         planet: updated_planet,
-         chat: Chat.add_message(state.chat, message),
-         great_red_spots: state.great_red_spots + 1
-       )}
-    else
-      {:noreply, state}
-    end
-  end
-
   def handle_info(:game_over, state) do
     stats = %{
       moves_count: state.moves_count,
@@ -527,7 +506,8 @@ defmodule Europa.Server do
        player: updated_player,
        chat: updated_chat,
        moves_count: state.moves_count + moves_count
-     ), @inactivity_timeout_ms}
+     )
+     |> maybe_crop_land(), @inactivity_timeout_ms}
   end
 
   @impl true
@@ -537,6 +517,21 @@ defmodule Europa.Server do
   end
 
   ### PRIVATE ###
+
+  defp maybe_crop_land(state) do
+    if PlanetManager.land_size(state.planet) >= @crop_size do
+      {:ok, updated_planet} = PlanetManager.crop_land(state.planet)
+      message = crop_planet_land_message()
+
+      struct!(state,
+        planet: updated_planet,
+        chat: Chat.add_message(state.chat, message),
+        great_red_spots: state.great_red_spots + 1
+      )
+    else
+      state
+    end
+  end
 
   defp killed_enemies_count(damaged_enemies) do
     Enum.count(damaged_enemies, fn {enemy, _} -> enemy.health == 0 end)
@@ -856,9 +851,5 @@ defmodule Europa.Server do
       message = Chat.Message.new(msg, :regular)
       Chat.add_message(chat, message)
     end)
-  end
-
-  defp schedule_planet_land_crop do
-    self() |> Process.send_after(:crop_planet_land, @crop_period_ms)
   end
 end

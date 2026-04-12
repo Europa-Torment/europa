@@ -40,7 +40,6 @@ config :europa, Europa.Server.Planet,
   enemy_move_possibility: [from: 10, to: 10]
 
 config :europa, Europa.Server,
-  crop_land_period_ms: 2000,
   finish_game_on_server_exit: false
 
 # Print only warnings and errors during test

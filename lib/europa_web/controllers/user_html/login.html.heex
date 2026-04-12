@@ -8,3 +8,13 @@
 
   <.button>{gettext("Login")}</.button>
 </.form>
+
+<div class="p-10 text-center text-m font-bold">
+  {gettext("Don't have an account yet?")}
+
+  <div class="p-3">
+    <.button class="btn btn-sm btn-accent" navigate={~p"/users/register"}>
+      {gettext("Register")}
+    </.button>
+  </div>
+</div>

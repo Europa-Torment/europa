@@ -19,7 +19,7 @@ defmodule EuropaWeb.AuthorizedOnly do
       conn
     else
       conn
-      |> Phoenix.Controller.redirect(to: ~p"/users/login")
+      |> Phoenix.Controller.redirect(to: ~p"/users/register")
       |> halt()
     end
   end
