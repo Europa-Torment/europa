@@ -17,7 +17,7 @@ defmodule Europa.Server.Planet.Predefined do
   @default_templates_path "/planet"
 
   @categories %{
-    building: %{dir: "/buildings", weight: 0.3},
+    building: %{dir: "/buildings", weight: 0.4},
     situation: %{dir: "/situations", weight: 0.7}
   }
 
@@ -25,9 +25,14 @@ defmodule Europa.Server.Planet.Predefined do
 
   @floor Tiles.tile(:floor).atom_value
 
-  @wall_horizontal %Object{name: "wall", image_name: "wall_horizontal", high?: true}
+  @wall_up %Object{name: "wall", image_name: "wall_up", high?: true}
+  @wall_down %Object{name: "wall", image_name: "wall_down", high?: true}
   @wall_right %Object{name: "wall", image_name: "wall_right", high?: true}
+  @wall_right_up %Object{name: "wall", image_name: "wall_right_up", high?: true}
+  @wall_right_down %Object{name: "wall", image_name: "wall_right_down", high?: true}
   @wall_left %Object{name: "wall", image_name: "wall_left", high?: true}
+  @wall_left_up %Object{name: "wall", image_name: "wall_left_up", high?: true}
+  @wall_left_down %Object{name: "wall", image_name: "wall_left_down", high?: true}
   @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
 
   @bonefire %Object{name: "bonefire", image_name: "bonefire", warm?: true}
@@ -67,8 +72,13 @@ defmodule Europa.Server.Planet.Predefined do
   # buildings
   defp elem_to_tile(:building, "l"), do: @wall_left
   defp elem_to_tile(:building, "r"), do: @wall_right
-  defp elem_to_tile(:building, "h"), do: @wall_horizontal
-  defp elem_to_tile(:building, "i"), do: @wall_vertical_inside
+  defp elem_to_tile(:building, "u"), do: @wall_up
+  defp elem_to_tile(:building, "d"), do: @wall_down
+  defp elem_to_tile(:building, "I"), do: @wall_vertical_inside
+  defp elem_to_tile(:building, "i"), do: @wall_left_up
+  defp elem_to_tile(:building, "!"), do: @wall_left_down
+  defp elem_to_tile(:building, "^"), do: @wall_right_up
+  defp elem_to_tile(:building, "v"), do: @wall_right_down
 
   defp elem_to_tile(:building, "f") do
     if m_to_n?(1, @building_enemy_generate_possibility) do
