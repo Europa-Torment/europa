@@ -586,6 +586,10 @@ defmodule EuropaWeb.GameCompotents do
     "#{image_name}_#{landscape_name(stand_on)}.png"
   end
 
+  defp get_image_name(%Object{gif_tile?: true, image_name: image_name, stand_on: stand_on}, _) do
+    "#{image_name}_#{landscape_name(stand_on)}.gif"
+  end
+
   defp get_image_name(%Object{image_name: image_name, stand_on: stand_on}, _) do
     "#{image_name}_#{landscape_name(stand_on)}.png"
   end

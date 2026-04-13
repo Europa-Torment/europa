@@ -14,6 +14,8 @@ defmodule Europa.Server.Planet.PredefinedTest do
   @wall_left %Object{name: "wall", image_name: "wall_left", high?: true}
   @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
 
+  @fire_shuttle %Object{name: "fire shuttle", image_name: "fire_shuttle", gif_tile?: true, warm?: true}
+
   describe "generate/1" do
     property "generates building" do
       check all(_n <- StreamData.integer(1..100)) do
@@ -47,8 +49,16 @@ defmodule Europa.Server.Planet.PredefinedTest do
     end
 
     test "generates situation" do
-      assert [[%Enemy{}, %ItemBox{type: :human_body}, %Enemy{}, %ItemBox{type: :box}, %ItemBox{type: :crashed_shuttle}]] =
+      assert [[%Enemy{}, %ItemBox{type: :human_body}, %Enemy{}, %ItemBox{type: :box}, shuttle]] =
                Predefined.generate(:situation)
+
+      is_shuttle =
+        case shuttle do
+          %ItemBox{type: :crashed_shuttle} -> true
+          @fire_shuttle -> true
+        end
+
+      assert is_shuttle
     end
   end
 

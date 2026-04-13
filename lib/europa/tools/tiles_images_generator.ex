@@ -85,19 +85,44 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
     for object <- objects do
       for landscape <- tmp_landscapes do
-        object_filename = get_filename_without_ext(object)
-        landscape_filename = get_filename_without_ext(landscape)
-        filename = "#{object_filename}_#{landscape_filename}.png"
-
-        {:ok, object_img} = Image.open(object)
-        {:ok, landscape_img} = Image.open(landscape)
-
-        path = Path.join([root_dir, @base_dir, @tmp_base, @ready, filename])
-
-        Image.compose!(landscape_img, object_img, x: :middle, y: :middle)
-        |> write_image!(path)
+        do_generate_object(root_dir, landscape, object)
       end
     end
+  end
+
+  defp do_generate_object(root_dir, landscape, object) do
+    object_filename = get_filename_without_ext(object)
+    landscape_filename = get_filename_without_ext(landscape)
+    ext = ext_for_list([object, landscape])
+    filename = "#{object_filename}_#{landscape_filename}.#{ext}"
+
+    path = Path.join([root_dir, @base_dir, @tmp_base, @ready, filename])
+
+    if get_ext(object) == "gif" do
+      write_gif(landscape, object, path)
+    else
+      write_png(landscape, object, path)
+    end
+  end
+
+  defp write_gif(landscape, object, path) do
+    {:ok, landscape_img} = Image.open(landscape)
+    {:ok, object_img} = Image.open(object, pages: :all)
+
+    {:ok, result} =
+      Image.map_join_pages(object_img, fn frame ->
+        Image.compose(landscape_img, frame, mode: :over)
+      end)
+
+    Image.write(result, path)
+  end
+
+  defp write_png(landscape, object, path) do
+    {:ok, object_img} = Image.open(object)
+    {:ok, landscape_img} = Image.open(landscape)
+
+    Image.compose!(landscape_img, object_img, x: :middle, y: :middle)
+    |> write_image!(path)
   end
 
   defp write_image!(image, path) do
@@ -145,8 +170,22 @@ defmodule Europa.Tools.TilesImagesGenerator do
   end
 
   defp allowed_ext(filename) do
-    [_, ext] = String.split(filename, ".")
+    ext = get_ext(filename)
     ext in @allowed_extensions
+  end
+
+  defp get_ext(filename) do
+    filename
+    |> String.split(".")
+    |> List.last()
+  end
+
+  defp ext_for_list(filenames) when is_list(filenames) do
+    if Enum.any?(filenames, fn filename -> get_ext(filename) == "gif" end) do
+      "gif"
+    else
+      "png"
+    end
   end
 
   defp get_filename(path) do

@@ -31,6 +31,7 @@ defmodule Europa.Server.Planet.Predefined do
   @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
 
   @bonefire %Object{name: "bonefire", image_name: "bonefire", warm?: true}
+  @fire_shuttle %Object{name: "fire shuttle", image_name: "fire_shuttle", gif_tile?: true, warm?: true}
 
   @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
   @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
@@ -92,9 +93,13 @@ defmodule Europa.Server.Planet.Predefined do
   # situations
   defp elem_to_tile(:situation, "e"), do: Enemy.generate_enemy()
   defp elem_to_tile(:situation, "c"), do: Loot.generate_item_box(:human_body)
-  defp elem_to_tile(:situation, "s"), do: Loot.generate_item_box(:crashed_shuttle)
   defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
   defp elem_to_tile(:situation, "f"), do: @bonefire
+
+  defp elem_to_tile(:situation, "s") do
+    crashed_shuttle = Loot.generate_item_box(:crashed_shuttle)
+    Enum.random([crashed_shuttle, @fire_shuttle])
+  end
 
   defp parse_random_file(category) do
     priv_dir = :code.priv_dir(:europa)
