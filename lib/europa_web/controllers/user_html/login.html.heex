@@ -6,7 +6,9 @@
   <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
   <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
 
-  <.button>{gettext("Login")}</.button>
+  <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
+    {gettext("Login")}
+  </.button>
 </.form>
 
 <div class="p-10 text-center text-m font-bold">

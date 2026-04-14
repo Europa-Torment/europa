@@ -1,4 +1,9 @@
-<.button navigate={~p"/games/new"}>{gettext("New game")}</.button>
+<.button
+  class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full"
+  navigate={~p"/games/new"}
+>
+  {gettext("New game")}
+</.button>
 
 <ul class="list bg-base-100 rounded-box shadow-md">
   <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{gettext("Recent games")}</li>
