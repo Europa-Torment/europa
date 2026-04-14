@@ -11,9 +11,10 @@ defmodule Europa.Application do
   def start(_type, _args) do
     children = [
       EuropaWeb.Telemetry,
-      FilesCache.child(),
+      FilesCache,
       Europa.Repo,
       Europa.Server.Sup,
+      Europa.Games.LeadersCache,
       {DNSCluster, query: Application.get_env(:europa, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Europa.PubSub},
       # Start a worker by calling: Europa.Worker.start_link(arg)

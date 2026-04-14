@@ -53,6 +53,8 @@ config :europa, Europa.Server.Planet.Predefined,
   ]
 
 config :europa, Europa.Games, leaders_limit: 50
+# 5 minutes
+config :europa, Europa.Games.LeadersCache, ttl_ms: 5 * 60 * 1000
 
 config :europa, :weapons,
   shotgun_radius: 2,

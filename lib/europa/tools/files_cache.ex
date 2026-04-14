@@ -3,9 +3,9 @@ defmodule Europa.Tools.FilesCache do
 
   @type file_content :: map() | list()
 
-  @spec child() :: {Cachex, [:text_generator]}
-  def child do
-    {Cachex, [@cache_name]}
+  @spec child_spec(keyword()) :: Supervisor.child_spec()
+  def child_spec(_args \\ []) do
+    Supervisor.child_spec({Cachex, @cache_name}, id: @cache_name)
   end
 
   @spec get(path :: String.t()) :: {:ok, file_content()} | {:error, :no_cache}

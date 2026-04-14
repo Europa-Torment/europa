@@ -3,6 +3,7 @@ defmodule Europa.Games do
 
   alias Europa.Repo
   alias Europa.Games.Game
+  alias Europa.Games.LeadersCache
   alias Europa.Users
   alias Europa.Users.User
   alias Europa.Server
@@ -90,15 +91,24 @@ defmodule Europa.Games do
         _ -> @default_leaders_category
       end
 
+    case LeadersCache.get(category) do
+      {:ok, leaders} -> {category, leaders}
+      _ -> do_get_leaders(category)
+    end
+  end
+
+  defp do_get_leaders(category) do
     leaders =
       category
-      |> do_get_leaders()
+      |> find_leaders()
       |> Enum.with_index(1)
+
+    {:ok, true} = LeadersCache.put(category, leaders)
 
     {category, leaders}
   end
 
-  defp do_get_leaders(:days) do
+  defp find_leaders(:days) do
     from(g in Game,
       join: u in User,
       on: u.id == g.user_id,
@@ -110,7 +120,7 @@ defmodule Europa.Games do
     |> Repo.all()
   end
 
-  defp do_get_leaders(:great_red_spots) do
+  defp find_leaders(:great_red_spots) do
     from(g in Game,
       join: u in User,
       on: u.id == g.user_id,
@@ -122,7 +132,7 @@ defmodule Europa.Games do
     |> Repo.all()
   end
 
-  defp do_get_leaders(:kills) do
+  defp find_leaders(:kills) do
     from(g in Game,
       join: u in User,
       on: u.id == g.user_id,
@@ -134,7 +144,7 @@ defmodule Europa.Games do
     |> Repo.all()
   end
 
-  defp do_get_leaders(:moves) do
+  defp find_leaders(:moves) do
     from(g in Game,
       join: u in User,
       on: u.id == g.user_id,
@@ -146,7 +156,7 @@ defmodule Europa.Games do
     |> Repo.all()
   end
 
-  defp do_get_leaders(:games_played) do
+  defp find_leaders(:games_played) do
     from(g in Game,
       join: u in User,
       on: u.id == g.user_id,
