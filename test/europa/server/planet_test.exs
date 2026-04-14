@@ -867,11 +867,10 @@ defmodule Europa.Server.PlanetTest do
 
   describe "crop_land/1" do
     test "crops planet land to size of visible land" do
-      current_datetime = Timex.now()
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
 
       %Planet.Land{tiles: expected_tiles} =
-        Planet.get_visible_land(planet, current_datetime) |> PlanetLandConverter.from_matrix()
+        Planet.get_visible_land(planet, @midday) |> PlanetLandConverter.from_matrix()
 
       assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {4, 4}}} = Planet.crop_land(planet)
       assert Enum.count(tiles) == Enum.count(expected_tiles)

@@ -448,6 +448,22 @@ defmodule EuropaWeb.CoreComponents do
     """
   end
 
+  def background(assigns) do
+    ~H"""
+    <div class="fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-[#0a0f1e] via-[#0b1a2e] to-[#010101]"></div>
+      <div class="absolute top-0 left-0 w-full h-full opacity-30 bg-[url('/images/stardust.png')]"></div>
+      <div class="stars"></div>
+    </div>
+    """
+  end
+
+  def title(assigns) do
+    ~H"""
+    <p class="text-2xl font-display font-bold text-cyan-300 tracking-wide">{@text}</p>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do

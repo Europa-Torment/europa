@@ -8,6 +8,10 @@ defmodule Europa.GamesTest do
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
 
+  import Europa.Tools.Conf
+
+  @leaders_limit fetch_config!([Games, :leaders_limit])
+
   setup :verify_on_exit!
 
   setup do
@@ -107,6 +111,35 @@ defmodule Europa.GamesTest do
     test "returns error if game not found" do
       params = %{moves_count: 10, great_red_spots: 2, killed_enemies: 10}
       assert Games.update_stats("fake", params) == {:error, :not_found}
+    end
+  end
+
+  describe "get_leaders/1" do
+    setup do
+      users = insert_list(@leaders_limit + 1, :user) |> Enum.sort_by(& &1.id, :asc)
+
+      users
+      |> Enum.with_index(1)
+      |> Enum.map(fn {user, i} ->
+        {user.id, insert_list(i, :game, moves_count: i, days: i, great_red_spots: i, killed_enemies: i, user: user)}
+      end)
+
+      {:ok, users: Enum.sort_by(users, & &1.id, :desc)}
+    end
+
+    test "returns leaders list", %{users: users} do
+      for {category, _} <- Games.leader_categories() do
+        assert {^category, leaders} = Games.get_leaders(%{"category" => "#{category}"})
+        assert Enum.count(leaders) == @leaders_limit
+
+        leaders
+        |> Enum.with_index(1)
+        |> Enum.each(fn {{{username, result}, index}, expected_index} ->
+          assert index == expected_index
+          assert username == Enum.at(users, expected_index - 1).username
+          assert is_integer(result)
+        end)
+      end
     end
   end
 

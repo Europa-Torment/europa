@@ -36,6 +36,7 @@ defmodule EuropaWeb.Router do
 
     get "/", GameController, :index
     get "/new", GameController, :create
+    get "/leaderboard", GameController, :leaderboard
 
     live "/:uuid", GameLive
 

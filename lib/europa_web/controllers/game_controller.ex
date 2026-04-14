@@ -11,14 +11,14 @@ defmodule EuropaWeb.GameController do
     end
   end
 
-  @spec create(any(), map()) :: {:error, Ecto.Changeset.t()} | Plug.Conn.t()
+  @spec create(Plug.Conn.t(), map()) :: {:error, Ecto.Changeset.t()} | Plug.Conn.t()
   def create(conn, _params) do
     with {:ok, game} <- Games.create(conn.assigns.current_user) do
       redirect(conn, to: ~p"/games/#{game.uuid}")
     end
   end
 
-  @spec game_over(any(), map()) :: Plug.Conn.t()
+  @spec game_over(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def game_over(conn, %{"uuid" => uuid}) do
     current_user = conn.assigns.current_user
 
@@ -29,5 +29,11 @@ defmodule EuropaWeb.GameController do
       _ ->
         redirect(conn, to: ~p"/games")
     end
+  end
+
+  @spec leaderboard(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def leaderboard(conn, params) do
+    {category, leaders} = Games.get_leaders(params)
+    render(conn, :leaderboard, category: category, leaders: leaders)
   end
 end

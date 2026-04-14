@@ -50,6 +50,7 @@ defmodule EuropaWeb.ConnCase do
       def auth_conn(user) do
         Phoenix.ConnTest.build_conn()
         |> Plug.Conn.assign(:current_user, user.id)
+        |> Plug.Conn.assign(:current_user_username, user.username)
       end
 
       def assert_redirect_if_authorized(conn) do
@@ -81,6 +82,7 @@ defmodule EuropaWeb.ConnCase do
     conn_with_auth =
       conn_with_session
       |> Plug.Conn.assign(:current_user, user.id)
+      |> Plug.Conn.assign(:current_user_username, user.username)
 
     {:ok, conn: conn_with_auth, conn_with_session: conn_with_session, conn_without_auth: conn, current_user: user}
   end

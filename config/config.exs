@@ -52,6 +52,8 @@ config :europa, Europa.Server.Planet.Predefined,
     loot_generate_possibility: 5
   ]
 
+config :europa, Europa.Games, leaders_limit: 50
+
 config :europa, :weapons,
   shotgun_radius: 2,
   burst_bullets_per_shot: 3,

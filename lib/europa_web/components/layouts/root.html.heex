@@ -23,7 +23,9 @@
       <div class="flex-none">
         <ul class="menu menu-horizontal px-1">
           <%= if assigns[:current_user] do %>
+            <li class="text-secondary"><.link navigate="#">{gettext("Logged as")} {@current_user_username}</.link></li>
             <li><.link navigate={~p"/games"}>{gettext("Games")}</.link></li>
+            <li><.link navigate={~p"/games/leaderboard"}>{gettext("Leaderboard")}</.link></li>
             <li><.link navigate={~p"/users/logout"}>{gettext("Sign out")}</.link></li>
           <% else %>
             <li><.link navigate={~p"/users/register"}>{gettext("Sign up")}</.link></li>

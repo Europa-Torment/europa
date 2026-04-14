@@ -1,11 +1,31 @@
 defmodule Europa.Games do
+  use Gettext, backend: Europa.Gettext
+
   alias Europa.Repo
   alias Europa.Games.Game
   alias Europa.Users
+  alias Europa.Users.User
   alias Europa.Server
   alias Europa.Server.Sup, as: ServerSup
+  alias Europa.Tools.Types
 
   import Ecto.Query
+  import Europa.Tools.Conf
+
+  @allowed_leaders_categories [
+    days: gettext("Days survived"),
+    great_red_spots: gettext("Great Red Spots survived"),
+    kills: gettext("Killed enemies"),
+    moves: gettext("Total moves"),
+    games_played: gettext("Games played")
+  ]
+
+  @default_leaders_category :days
+
+  @leaders_limit fetch_config!([__MODULE__, :leaders_limit])
+
+  @type leaders_category :: unquote(Types.one_of(Map.keys(Enum.into(@allowed_leaders_categories, %{}))))
+  @type leaders :: {leaders_category(), list({{username :: String.t(), result :: integer()}, index :: pos_integer()})}
 
   @spec get_recent_for_user(Users.id()) :: list(Game.t())
   def get_recent_for_user(user_id) when is_integer(user_id) do
@@ -51,6 +71,91 @@ defmodule Europa.Games do
       |> Game.update_stats_changeset(params)
       |> Repo.update()
     end
+  end
+
+  @spec leader_categories() :: list({leaders_category(), readable_category_name :: String.t()})
+  def leader_categories do
+    @allowed_leaders_categories
+  end
+
+  @spec get_leaders(map()) :: leaders()
+  def get_leaders(params) do
+    category =
+      case Map.get(params, "category") do
+        "kills" -> :kills
+        "days" -> :days
+        "great_red_spots" -> :great_red_spots
+        "moves" -> :moves
+        "games_played" -> :games_played
+        _ -> @default_leaders_category
+      end
+
+    leaders =
+      category
+      |> do_get_leaders()
+      |> Enum.with_index(1)
+
+    {category, leaders}
+  end
+
+  defp do_get_leaders(:days) do
+    from(g in Game,
+      join: u in User,
+      on: u.id == g.user_id,
+      group_by: u.username,
+      select: {u.username, sum(g.days)},
+      order_by: [desc: sum(g.days)],
+      limit: @leaders_limit
+    )
+    |> Repo.all()
+  end
+
+  defp do_get_leaders(:great_red_spots) do
+    from(g in Game,
+      join: u in User,
+      on: u.id == g.user_id,
+      group_by: u.username,
+      select: {u.username, sum(g.great_red_spots)},
+      order_by: [desc: sum(g.great_red_spots)],
+      limit: @leaders_limit
+    )
+    |> Repo.all()
+  end
+
+  defp do_get_leaders(:kills) do
+    from(g in Game,
+      join: u in User,
+      on: u.id == g.user_id,
+      group_by: u.username,
+      select: {u.username, sum(g.killed_enemies)},
+      order_by: [desc: sum(g.killed_enemies)],
+      limit: @leaders_limit
+    )
+    |> Repo.all()
+  end
+
+  defp do_get_leaders(:moves) do
+    from(g in Game,
+      join: u in User,
+      on: u.id == g.user_id,
+      group_by: u.username,
+      select: {u.username, sum(g.moves_count)},
+      order_by: [desc: sum(g.moves_count)],
+      limit: @leaders_limit
+    )
+    |> Repo.all()
+  end
+
+  defp do_get_leaders(:games_played) do
+    from(g in Game,
+      join: u in User,
+      on: u.id == g.user_id,
+      group_by: u.username,
+      select: {u.username, count(g.id)},
+      order_by: [desc: count(g.id)],
+      limit: @leaders_limit
+    )
+    |> Repo.all()
   end
 
   defp build_create_params(user_id) do

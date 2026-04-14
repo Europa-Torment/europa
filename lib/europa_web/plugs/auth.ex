@@ -27,7 +27,9 @@ defmodule EuropaWeb.Auth do
   defp do_auth_user(conn, current_user) do
     case Users.get_by_id(current_user) do
       {:ok, user} ->
-        assign(conn, :current_user, user.id)
+        conn
+        |> assign(:current_user, user.id)
+        |> assign(:current_user_username, user.username)
 
       _ ->
         conn

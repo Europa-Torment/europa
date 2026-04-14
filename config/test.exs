@@ -42,6 +42,8 @@ config :europa, Europa.Server.Planet,
 
 config :europa, Europa.Server, finish_game_on_server_exit: false
 
+config :europa, Europa.Games, leaders_limit: 5
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

@@ -1,0 +1,42 @@
+<.background />
+
+<div class="max-w-6xl mx-auto px-4 py-6 relative">
+  <.title text={gettext("Leaderboard")} />
+
+  <div role="tablist" class="tabs tabs-border mt-3">
+    <%= for {cat, readable_cat} <- Europa.Games.leader_categories() do %>
+      <a
+        href={~p"/games/leaderboard?category=#{cat}"}
+        role="tab"
+        class={if to_string(@category) == to_string(cat), do: "tab tab-active", else: "tab"}
+      >
+        {readable_cat}
+      </a>
+    <% end %>
+  </div>
+
+  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 mt-10">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>{gettext("Username")}</th>
+          <th>{gettext("Result")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= for {{username, result}, index} <- @leaders do %>
+          <tr>
+            <th>{index}</th>
+            <%= if username == @current_user_username do %>
+              <th class="font-bold text-primary">{username}</th>
+            <% else %>
+              <th>{username}</th>
+            <% end %>
+            <th>{result}</th>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

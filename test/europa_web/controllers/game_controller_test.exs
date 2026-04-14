@@ -103,6 +103,31 @@ defmodule EuropaWeb.GameControllerTest do
     end
   end
 
+  describe "GET /games/leaderboard" do
+    setup do
+      path = ~p"/games/leaderboard"
+      {:ok, path: path}
+    end
+
+    test "renders leaderboard template (with default catgory)", %{conn: conn, path: path} do
+      conn = get(conn, path)
+      assert render_template(conn) == "leaderboard.html"
+    end
+
+    test "renders leaderboard template (with category)", %{conn: conn, path: path} do
+      for [{category, _}] <- Games.leader_categories() do
+        conn = get(conn, path, category: "#{category}")
+        assert render_template(conn) == "leaderboard.html"
+      end
+    end
+
+    test "redirect if unauthorized", %{conn_without_auth: conn, path: path} do
+      conn
+      |> get(path)
+      |> assert_redirect_if_unauthorized()
+    end
+  end
+
   defp stop_server(game) do
     server_pid = game.uuid |> Server.server_name() |> Process.whereis()
     GenServer.stop(server_pid, :normal)
