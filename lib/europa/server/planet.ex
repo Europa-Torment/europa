@@ -132,7 +132,7 @@ defmodule Europa.Server.Planet do
   @impl true
   def readable_tile_name(%Loot.ItemBox{} = item_box), do: Loot.ItemBox.readable_name(item_box)
   def readable_tile_name(%Enemy{name: name}), do: Gettext.gettext(Europa.Gettext, name)
-  def readable_tile_name(%Object{name: name}), do: Gettext.gettext(Europa.Gettext, name)
+  def readable_tile_name(%Object{name: name}), do: name
   def readable_tile_name(tile), do: Map.get(@tiles_readable_names, tile)
 
   @impl true

@@ -19,7 +19,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
   @wall_left_down %Object{name: "wall", image_name: "wall_left_down", high?: true}
   @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
 
-  @fire_shuttle %Object{name: "fire shuttle", image_name: "fire_shuttle", gif_tile?: true, warm?: true}
+  @fire_shuttle %Object{name: "burning shuttle", image_name: "fire_shuttle", gif_tile?: true, warm?: true}
 
   describe "generate/1" do
     property "generates building" do

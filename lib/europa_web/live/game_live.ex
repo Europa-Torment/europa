@@ -2,6 +2,7 @@ defmodule EuropaWeb.GameLive do
   # TODO: write tests
   # coveralls-ignore-start
   use EuropaWeb, :live_view
+  use Gettext, backend: Europa.Gettext
 
   import EuropaWeb.GameCompotents
 
@@ -234,6 +235,13 @@ defmodule EuropaWeb.GameLive do
       )
       |> reload_sound(result)
       |> damaged_sound(player_before.health, player.health)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("key_pressed", _params, socket) do
+    message = gettext("This button doesn't do anything. Perhaps you forgot to switch the keyboard layout to English?")
+    socket = put_flash(socket, :error, message)
 
     {:noreply, socket}
   end

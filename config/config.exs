@@ -38,13 +38,13 @@ config :europa, Europa.Server.Planet,
   view_distance: 16,
   min_view_distance: 3,
   generate_distance: 10,
-  crop_land_size: 1_000_000,
+  crop_land_size: 500_000,
   year: [from: 10, to: 1000],
   base_loot_generate_possibility: 5000,
   # should be greater than year's :to value
   base_enemy_generate_possibility: 4000,
   enemy_view_distance: 6,
-  enemy_move_possibility: [from: 95, to: 100]
+  enemy_move_possibility: [from: 85, to: 100]
 
 config :europa, Europa.Server.Planet.Predefined,
   building: [
