@@ -8,7 +8,7 @@ defmodule Europa.Games.Game do
 
   @required_create_params [:user_id, :uuid, :state]
   @required_finish_params [:state, :finish_reason]
-  @required_update_stats_params [:moves_count, :great_red_spots, :killed_enemies]
+  @required_update_stats_params [:moves_count, :great_red_spots, :killed_enemies, :days]
 
   @states [:active, :finished]
 
@@ -25,6 +25,7 @@ defmodule Europa.Games.Game do
     field :moves_count, :integer, default: 0
     field :great_red_spots, :integer, default: 0
     field :killed_enemies, :integer, default: 0
+    field :days, :integer, default: 0
 
     timestamps()
   end
@@ -53,5 +54,6 @@ defmodule Europa.Games.Game do
     |> validate_number(:moves_count, greater_than_or_equal_to: 0)
     |> validate_number(:great_red_spots, greater_than_or_equal_to: 0)
     |> validate_number(:killed_enemies, greater_than_or_equal_to: 0)
+    |> validate_number(:days, greater_than_or_equal_to: 0)
   end
 end

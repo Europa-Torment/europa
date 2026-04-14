@@ -25,6 +25,7 @@ defmodule Europa.Server.Planet do
   @initial_game_field_height fetch_config!([__MODULE__, :initial_game_field, :height])
 
   @view_distance fetch_config!([__MODULE__, :view_distance])
+  @min_view_distance fetch_config!([__MODULE__, :min_view_distance])
   @generate_distance fetch_config!([__MODULE__, :generate_distance])
 
   @year_from fetch_config!([__MODULE__, :year, :from])
@@ -63,6 +64,8 @@ defmodule Europa.Server.Planet do
   @path Tiles.tile(:path).atom_value
   @snow_blood Tiles.tile(:snow).blood_version
   @path_blood Tiles.tile(:path).blood_version
+
+  @darkness Tiles.tile(:darkness).atom_value
 
   @movable_tiles Tiles.movable_tiles()
   @high_tiles Tiles.high_tiles()
@@ -133,12 +136,13 @@ defmodule Europa.Server.Planet do
   def readable_tile_name(tile), do: Map.get(@tiles_readable_names, tile)
 
   @impl true
-  def get_visible_land(%__MODULE__{land: land} = planet) do
+  def get_visible_land(%__MODULE__{land: land, current_coord: current_coord} = planet, %DateTime{} = current_datetime) do
+    current_hour = current_datetime.hour
     {{x_from, x_to}, {y_from, y_to}} = visible_land_intervals(planet)
 
     for y <- y_from..y_to do
       for x <- x_from..x_to do
-        get_tile(land, {x, y})
+        get_tile(land, {x, y}) |> tile_or_darkness(current_coord, {x, y}, current_hour)
       end
     end
   end
@@ -959,6 +963,32 @@ defmodule Europa.Server.Planet do
     tiles
     |> Enum.filter(fn {coord, _} -> get_tile(land, coord) |> is_nil() end)
     |> Enum.into(%{})
+  end
+
+  defp tile_or_darkness(tile, {cx, cy}, {x, y}, current_hour) do
+    max_view_distance = div(@view_distance, 2)
+
+    view_distance =
+      cond do
+        current_hour in 0..6 ->
+          min(@min_view_distance + current_hour, max_view_distance)
+
+        current_hour <= 18 ->
+          max_view_distance
+
+        true ->
+          max(max_view_distance - (current_hour - 18), @min_view_distance)
+      end
+
+    if out_of_view_distance?(cx - x, view_distance) || out_of_view_distance?(cy - y, view_distance) do
+      @darkness
+    else
+      tile
+    end
+  end
+
+  defp out_of_view_distance?(distance, view_distance) do
+    abs(distance) > view_distance
   end
 
   # TODO: figure out how to test this

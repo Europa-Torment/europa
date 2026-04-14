@@ -52,9 +52,9 @@ defmodule Europa.Server.PlanetManager do
 
   @doc """
   Reutrns visible part of planet's land.
-  Size of visible land depencs on `@view_distance`.
+  Size of visible land depencs on `view_distance` config param and current datetime (server one, not real).
   """
-  @callback get_visible_land(Planet.t()) :: Planet.land()
+  @callback get_visible_land(Planet.t(), DateTime.t()) :: Planet.land()
 
   @doc """
   Move player in given direction or attack enemy with melee weapon.
@@ -151,7 +151,7 @@ defmodule Europa.Server.PlanetManager do
   def view_distance, do: manager_impl().view_distance()
   def allowed_directions, do: manager_impl().allowed_directions()
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
-  def get_visible_land(planet), do: manager_impl().get_visible_land(planet)
+  def get_visible_land(planet, current_datetime), do: manager_impl().get_visible_land(planet, current_datetime)
   def land_size(planet), do: manager_impl().land_size(planet)
   def move(planet, direction, player), do: manager_impl().move(planet, direction, player)
   def loot(planet, direction), do: manager_impl().loot(planet, direction)

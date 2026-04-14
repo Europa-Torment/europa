@@ -59,6 +59,7 @@ defmodule EuropaWeb.GameLive do
           server: server,
           visible_planet: visible_land,
           chat: Server.get_chat(server),
+          current_time: get_current_time(server),
           player: player,
           weapon: weapon,
           melee_weapon: melee_weapon,
@@ -122,7 +123,8 @@ defmodule EuropaWeb.GameLive do
             visible_planet: Server.get_visible_planet(socket.assigns.server),
             player: player,
             chat: Server.get_chat(socket.assigns.server),
-            player_stats: get_player_stats(player)
+            player_stats: get_player_stats(player),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> step_sound(player.stand_on)
           |> damaged_sound(player_before.health, player.health)
@@ -140,7 +142,8 @@ defmodule EuropaWeb.GameLive do
             visible_planet: Server.get_visible_planet(socket.assigns.server),
             player: player,
             chat: Server.get_chat(socket.assigns.server),
-            player_stats: get_player_stats(player)
+            player_stats: get_player_stats(player),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> punch_sound(status)
           |> damaged_sound(player_before.health, player.health)
@@ -153,7 +156,8 @@ defmodule EuropaWeb.GameLive do
          assign(socket,
            visible_planet: Server.get_visible_planet(socket.assigns.server),
            player: Server.get_player(socket.assigns.server),
-           chat: Server.get_chat(socket.assigns.server)
+           chat: Server.get_chat(socket.assigns.server),
+           current_time: get_current_time(socket.assigns.server)
          )}
     end
   end
@@ -201,7 +205,8 @@ defmodule EuropaWeb.GameLive do
         weapon: weapon,
         ammo_count: ammo_count,
         chat: Server.get_chat(socket.assigns.server),
-        player_stats: get_player_stats(player)
+        player_stats: get_player_stats(player),
+        current_time: get_current_time(socket.assigns.server)
       )
       |> shoot_sound(shoot_result, weapon)
       |> damaged_sound(player_before.health, player.health)
@@ -224,7 +229,8 @@ defmodule EuropaWeb.GameLive do
         weapon: weapon,
         ammo_count: ammo_count,
         chat: Server.get_chat(socket.assigns.server),
-        player_stats: get_player_stats(player)
+        player_stats: get_player_stats(player),
+        current_time: get_current_time(socket.assigns.server)
       )
       |> reload_sound(result)
       |> damaged_sound(player_before.health, player.health)
@@ -412,7 +418,8 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server)
+            chat: Server.get_chat(socket.assigns.server),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound("unload")
           |> damaged_sound(player_before.health, updated_player.health)
@@ -438,7 +445,8 @@ defmodule EuropaWeb.GameLive do
             item_box: updated_item_box,
             player: updated_player,
             player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server)
+            chat: Server.get_chat(socket.assigns.server),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound("unload")
           |> damaged_sound(player_before.health, updated_player.health)
@@ -474,7 +482,8 @@ defmodule EuropaWeb.GameLive do
             player: updated_player,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server)
+            chat: Server.get_chat(socket.assigns.server),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound(supply.sound_name)
           |> damaged_sound(player_before.health, now_health)
@@ -754,6 +763,11 @@ defmodule EuropaWeb.GameLive do
       {:ok, boots} -> boots
       _ -> nil
     end
+  end
+
+  defp get_current_time(server) do
+    {day, time} = Server.get_current_time(server)
+    %{day: day, time: time}
   end
 
   defp move_key_to_direction(key) when key in @move_up_keys, do: :up

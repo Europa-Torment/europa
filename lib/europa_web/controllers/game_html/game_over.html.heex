@@ -23,7 +23,7 @@
   </div>
   <div class="p-2 text-center text-sm font-bold">
     <div class="inline-block text-accent opacity-0 animate-fade-in" style="animation-delay: 3.9s;">
-      {gettext("Survived")} {@game.great_red_spots} {ngettext(
+      {gettext("Survived")} {@game.days} {ngettext("day", "days", @game.days)}, {@game.great_red_spots} {ngettext(
         "Great Red Spot",
         "Great Red Spots",
         @game.great_red_spots

@@ -46,6 +46,15 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: true,
       warm?: true,
       image_name: "floor"
+    },
+    darkness: %Tile{
+      atom_value: :d,
+      blood_version: nil,
+      readable_name: gettext("darkness"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "darkness",
+      gif_tile?: false
     }
   }
 

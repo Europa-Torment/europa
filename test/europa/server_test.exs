@@ -80,9 +80,19 @@ defmodule Europa.ServerTest do
       land = PlanetLandConverter.to_matrix(planet.land)
 
       PlanetManagerMock
-      |> expect(:get_visible_land, fn _planet -> land end)
+      |> expect(:get_visible_land, fn _planet, _current_time ->
+        land
+      end)
 
       assert Server.get_visible_planet(server) == land
+    end
+  end
+
+  describe "get_current_time/1" do
+    test "returns current time", %{server: server} do
+      assert {days, time} = Server.get_current_time(server)
+      assert is_integer(days)
+      assert [_, _] = String.split(time, ":")
     end
   end
 

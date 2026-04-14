@@ -79,6 +79,14 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def current_time(assigns) do
+    ~H"""
+    <div class="bg-base-200 p-3 rounded-box shadow-md text-sm">
+      ⌚ {@current_time.time}, {gettext("day")} {@current_time.day}
+    </div>
+    """
+  end
+
   def player_stats(assigns) do
     ~H"""
     <div class={"bg-base-200 p-5 rounded-box shadow-md text-#{@text_size}"}>

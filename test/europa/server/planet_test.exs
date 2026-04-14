@@ -25,6 +25,7 @@ defmodule Europa.Server.PlanetTest do
   @i Tiles.tile(:ice).atom_value
   @p Tiles.tile(:path).atom_value
   @w Tiles.tile(:water).atom_value
+  @d Tiles.tile(:darkness).atom_value
   @pl Planet.player()
 
   @wl build(:object, high?: true)
@@ -52,6 +53,8 @@ defmodule Europa.Server.PlanetTest do
     @p,
     @ib
   ]
+
+  @midday Timex.parse!("2016-02-29T12:00:00-06:00", "{ISO:Extended}")
 
   @land_player_look_up_at_loot [
                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -429,13 +432,13 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
-  describe "get_visible_land/1" do
+  describe "get_visible_land/2" do
     setup do
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
       {:ok, planet: planet}
     end
 
-    test "returns visible part of land (depends on view_distance config)", %{planet: planet} do
+    test "returns visible part of land (full view distance)", %{planet: planet} do
       expected_visible_land =
         [
           [@s, @s, @s, @s, @s],
@@ -445,7 +448,21 @@ defmodule Europa.Server.PlanetTest do
           [@s, @s, @s, @s, @s]
         ]
 
-      assert Planet.get_visible_land(planet) == expected_visible_land
+      assert Planet.get_visible_land(planet, @midday) == expected_visible_land
+    end
+
+    test "returns visible part of land (with darkness)", %{planet: planet} do
+      expected_visible_land =
+        [
+          [@d, @d, @d, @d, @d],
+          [@d, @s, @ib, @s, @d],
+          [@d, @s, @pl, @i, @d],
+          [@d, @s, @s, @s, @d],
+          [@d, @d, @d, @d, @d]
+        ]
+
+      evening = Timex.parse!("2016-02-29T19:00:00-06:00", "{ISO:Extended}")
+      assert Planet.get_visible_land(planet, evening) == expected_visible_land
     end
   end
 
@@ -471,7 +488,7 @@ defmodule Europa.Server.PlanetTest do
           [@s, @s, @s, @s, @s]
         ]
 
-      assert Planet.get_visible_land(updated_planet) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
     end
 
     test "moves player left" do
@@ -495,7 +512,7 @@ defmodule Europa.Server.PlanetTest do
           [@s, @s, @s, @s, @s]
         ]
 
-      assert Planet.get_visible_land(updated_planet) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
     end
 
     test "moves player up" do
@@ -519,7 +536,7 @@ defmodule Europa.Server.PlanetTest do
           [@s, @s, @s, @s, @s]
         ]
 
-      assert Planet.get_visible_land(updated_planet) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
     end
 
     test "moves at monster body" do
@@ -850,8 +867,11 @@ defmodule Europa.Server.PlanetTest do
 
   describe "crop_land/1" do
     test "crops planet land to size of visible land" do
+      current_datetime = Timex.now()
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
-      %Planet.Land{tiles: expected_tiles} = Planet.get_visible_land(planet) |> PlanetLandConverter.from_matrix()
+
+      %Planet.Land{tiles: expected_tiles} =
+        Planet.get_visible_land(planet, current_datetime) |> PlanetLandConverter.from_matrix()
 
       assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {4, 4}}} = Planet.crop_land(planet)
       assert Enum.count(tiles) == Enum.count(expected_tiles)

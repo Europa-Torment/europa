@@ -42,6 +42,8 @@ defmodule Europa.Server do
     field :moves_count, non_neg_integer()
     field :great_red_spots, non_neg_integer()
     field :killed_enemies, non_neg_integer()
+    field :start_datetime, DateTime.t()
+    field :current_datetime, DateTime.t()
   end
 
   ### PUBLIC INTERFACE ###
@@ -106,6 +108,11 @@ defmodule Europa.Server do
   @spec get_visible_planet(pid()) :: Planet.land()
   def get_visible_planet(server) do
     GenServer.call(server, :get_visible_planet)
+  end
+
+  @spec get_current_time(pid()) :: {day :: pos_integer(), time :: String.t()}
+  def get_current_time(server) do
+    GenServer.call(server, :get_current_time)
   end
 
   @spec move(pid(), Planet.direction()) :: {:moved, :normal | :overloaded} | :stay | {:attack, Loot.Item.item()}
@@ -210,6 +217,8 @@ defmodule Europa.Server do
 
     chat = Chat.new(init_message)
 
+    initial_datetime = initial_datetime()
+
     state = %__MODULE__{
       game_uuid: uuid,
       planet: planet,
@@ -217,7 +226,9 @@ defmodule Europa.Server do
       player: player,
       moves_count: 0,
       great_red_spots: 0,
-      killed_enemies: 0
+      killed_enemies: 0,
+      start_datetime: initial_datetime,
+      current_datetime: initial_datetime
     }
 
     {:ok, state, @inactivity_timeout_ms}
@@ -229,7 +240,7 @@ defmodule Europa.Server do
   end
 
   def handle_call(:get_visible_planet, _from, state) do
-    {:reply, PlanetManager.get_visible_land(state.planet), state, @inactivity_timeout_ms}
+    {:reply, PlanetManager.get_visible_land(state.planet, state.current_datetime), state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_player, _from, state) do
@@ -238,6 +249,10 @@ defmodule Europa.Server do
 
   def handle_call(:get_chat, _from, state) do
     {:reply, state.chat, state, @inactivity_timeout_ms}
+  end
+
+  def handle_call(:get_current_time, _from, state) do
+    {:reply, do_get_current_time(state), state, @inactivity_timeout_ms}
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do
@@ -459,10 +474,13 @@ defmodule Europa.Server do
 
   @impl true
   def handle_info(:game_over, state) do
+    {days, _} = do_get_current_time(state)
+
     stats = %{
       moves_count: state.moves_count,
       great_red_spots: state.great_red_spots,
-      killed_enemies: state.killed_enemies
+      killed_enemies: state.killed_enemies,
+      days: days - 1
     }
 
     Games.update_stats(state.game_uuid, stats)
@@ -505,7 +523,8 @@ defmodule Europa.Server do
        planet: updated_planet,
        player: updated_player,
        chat: updated_chat,
-       moves_count: state.moves_count + moves_count
+       moves_count: state.moves_count + moves_count,
+       current_datetime: shift_datetime(state.current_datetime, moves_count)
      )
      |> maybe_crop_land(), @inactivity_timeout_ms}
   end
@@ -517,6 +536,23 @@ defmodule Europa.Server do
   end
 
   ### PRIVATE ###
+
+  defp do_get_current_time(state) do
+    current_date = Timex.to_date(state.current_datetime)
+    start_date = Timex.to_date(state.start_datetime)
+
+    days_diff = Timex.diff(current_date, start_date, :days)
+
+    day =
+      if days_diff == 0 do
+        1
+      else
+        days_diff + 1
+      end
+
+    current_time = Timex.format!(state.current_datetime, "{h24}:{m}")
+    {day, current_time}
+  end
 
   defp maybe_crop_land(state) do
     if PlanetManager.land_size(state.planet) >= @crop_size do
@@ -851,5 +887,14 @@ defmodule Europa.Server do
       message = Chat.Message.new(msg, :regular)
       Chat.add_message(chat, message)
     end)
+  end
+
+  defp initial_datetime do
+    shift = random_number(50)
+    Timex.now() |> Timex.shift(hours: shift)
+  end
+
+  defp shift_datetime(current_datetime, shift_in_minutes) do
+    Timex.shift(current_datetime, minutes: shift_in_minutes)
   end
 end
