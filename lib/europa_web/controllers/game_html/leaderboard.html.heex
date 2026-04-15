@@ -3,7 +3,7 @@
 <div class="max-w-6xl mx-auto px-4 py-6 relative">
   <.title text={gettext("Leaderboard")} />
 
-  <div role="tablist" class="tabs tabs-border mt-3">
+  <div role="tablist" class="tabs tabs-border">
     <%= for {cat, readable_cat} <- Europa.Games.leader_categories() do %>
       <a
         href={~p"/games/leaderboard?category=#{cat}"}

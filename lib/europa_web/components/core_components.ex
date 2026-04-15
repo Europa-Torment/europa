@@ -460,7 +460,7 @@ defmodule EuropaWeb.CoreComponents do
 
   def title(assigns) do
     ~H"""
-    <p class="text-2xl font-display font-bold text-cyan-300 tracking-wide">{@text}</p>
+    <p class="text-2xl font-display font-bold text-cyan-300 tracking-wide mb-5">{@text}</p>
     """
   end
 

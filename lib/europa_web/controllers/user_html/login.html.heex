@@ -1,22 +1,24 @@
-<.header>{gettext("Login")}</.header>
-
 <Layouts.flash_group flash={@flash} />
 
-<.form :let={f} for={@changeset} id="register-form" action={~p"/users/login"}>
-  <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
-  <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
+<div class="max-w-6xl mx-auto px-4 py-6 relative z-10">
+  <.title text={gettext("Login")} />
 
-  <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
-    {gettext("Login")}
-  </.button>
-</.form>
+  <.form :let={f} for={@changeset} id="register-form" action={~p"/users/login"}>
+    <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
+    <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
 
-<div class="p-10 text-center text-m font-bold">
-  {gettext("Don't have an account yet?")}
-
-  <div class="p-3">
-    <.button class="btn btn-sm btn-accent" navigate={~p"/users/register"}>
-      {gettext("Register")}
+    <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
+      {gettext("Login")}
     </.button>
+  </.form>
+
+  <div class="p-10 text-center text-m font-bold">
+    {gettext("Don't have an account yet?")}
+
+    <div class="p-3">
+      <.button class="btn btn-sm btn-accent" navigate={~p"/users/register"}>
+        {gettext("Register")}
+      </.button>
+    </div>
   </div>
 </div>
