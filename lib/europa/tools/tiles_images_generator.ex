@@ -114,7 +114,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
         Image.compose(landscape_img, frame, mode: :over)
       end)
 
-    Image.write(result, path)
+    write_image!(result, path)
   end
 
   defp write_png(landscape, object, path) do
