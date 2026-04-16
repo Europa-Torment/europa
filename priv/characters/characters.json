@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Li Zhang",
+        "gender": "male",
+        "age_at_disaster": 1,
+        "years": {"from": 15, "to": 50},
+        "stories": [
+          "My parents spent almost their entire lives trying to develop a working tokamak.\nAfter their first major success, they were immediately recruited to Europa to build a terraforming center.\nA few years later, I was born. So, it turns out I'm as much of a native European as these monsters..."
+        ]
+    },
+    {
+        "name": "Li Tian",
+        "gender": "male",
+        "age_at_disaster": 50,
+        "years": {"from": 1, "to": 16},
+        "stories": [
+            "My wife and I developed the first tokamak prototype, capable of producing hydrogen from water and triggering a nuclear fusion reaction.\nAfter successful tests and the launch of mass production, we were called upon to lead the terraforming of Europa.\nWork progressed rapidly until an explosion occurred, releasing enormous amounts of energy...\nMy wife died immediately, but I managed to survive, escaping with severe burns.\nIs our son alive?.."
+        ]
+    }
+]

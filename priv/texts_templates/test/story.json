@@ -1,23 +1,9 @@
 {
-    "intro": {
-        "type": "random",
-        "vars": ["year"],
-        "texts": [
-            "Now is <%= year %> year",
-            "It was <%= year %>"
-        ]
-    },
-    "who_are_you": {
+    "great_red_spot": {
         "type": "random",
         "texts": [
             "first",
             "second"
-        ]
-    },
-    "great_red_spot": {
-        "type": "random",
-        "texts": [
-            "some"
         ]
     }
 }

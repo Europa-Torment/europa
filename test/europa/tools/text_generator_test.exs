@@ -6,31 +6,29 @@ defmodule Europa.Tools.TextGeneratorTest do
 
   describe "generate_text/2" do
     @tag slow: true
-    property "returns random text (ititial_story)" do
+    property "returns random text (great_red_spot)" do
       check all(m <- StreamData.integer(1..20)) do
         num_runs = 20
         generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
 
         check all(_ <- generator) do
-          results = Enum.map(1..num_runs, fn _n -> TextGenerator.generate_text(:initial_story, year: m) end)
+          results = Enum.map(1..num_runs, fn _n -> TextGenerator.generate_text(:great_red_spot, year: m) end)
 
-          first_intro_count =
+          first_text_count =
             Enum.count(results, fn text ->
-              [intro, _] = String.split(text, "\n")
-              intro == "Now is #{m} year"
+              text == "first"
             end)
 
-          second_who_are_you_count =
+          second_text_count =
             Enum.count(results, fn text ->
-              [_, who_are_you] = String.split(text, "\n")
-              who_are_you == "second"
+              text == "second"
             end)
 
-          first_intro_proportion = first_intro_count / num_runs
-          second_who_are_you_proportion = second_who_are_you_count / num_runs
+          first_text_proportion = first_text_count / num_runs
+          second_text_proportion = second_text_count / num_runs
 
-          assert first_intro_proportion >= 0.01
-          assert second_who_are_you_proportion >= 0.01
+          assert first_text_proportion >= 0.01
+          assert second_text_proportion >= 0.01
         end
       end
     end

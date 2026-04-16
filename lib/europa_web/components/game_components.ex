@@ -88,7 +88,7 @@ defmodule EuropaWeb.GameCompotents do
   def current_time(assigns) do
     ~H"""
     <div class="bg-base-200 p-3 rounded-box shadow-md text-sm">
-      ⌚ {@current_time.time}, {gettext("day")} {@current_time.day}
+      ⌚ {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext("year AD")}
     </div>
     """
   end

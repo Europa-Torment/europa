@@ -28,9 +28,6 @@ defmodule Europa.Server.Planet do
   @min_view_distance fetch_config!([__MODULE__, :min_view_distance])
   @generate_distance fetch_config!([__MODULE__, :generate_distance])
 
-  @year_from fetch_config!([__MODULE__, :year, :from])
-  @year_to fetch_config!([__MODULE__, :year, :to])
-
   @base_enemy_generate_possibility fetch_config!([__MODULE__, :base_enemy_generate_possibility])
   @enemy_view_distance fetch_config!([__MODULE__, :enemy_view_distance])
 
@@ -93,9 +90,7 @@ defmodule Europa.Server.Planet do
   ### PUBLIC INTERFACE ###
 
   @impl true
-  def new do
-    year = m_to_n(@year_from, @year_to)
-
+  def new(year) do
     planet =
       %__MODULE__{
         land: generate_land(),
@@ -107,7 +102,7 @@ defmodule Europa.Server.Planet do
     if player_initial_stand_on_tile(planet) in @movable_tiles do
       planet
     else
-      new()
+      new(year)
     end
   end
 

@@ -774,8 +774,8 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp get_current_time(server) do
-    {day, time} = Server.get_current_time(server)
-    %{day: day, time: time}
+    {year, day, time} = Server.get_current_time(server)
+    %{year: year, day: day, time: time}
   end
 
   defp move_key_to_direction(key) when key in @move_up_keys, do: :up

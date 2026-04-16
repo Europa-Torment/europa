@@ -50,7 +50,7 @@ defmodule EuropaWeb.GameControllerTest do
 
       PlanetManagerMock
       |> allow_server_mock(user.id)
-      |> expect(:new, fn -> build(:planet) end)
+      |> expect(:new, fn _year -> build(:planet) end)
       |> expect(:player_initial_stand_on_tile, fn _planet -> tile end)
 
       conn = get(conn, path)

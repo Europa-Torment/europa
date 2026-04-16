@@ -28,7 +28,7 @@ defmodule Europa.ServerTest do
 
   setup do
     PlanetManagerMock
-    |> stub(:new, fn -> build(:planet) end)
+    |> stub(:new, fn _year -> build(:planet) end)
     |> stub(:player_initial_stand_on_tile, fn _ -> @snow end)
     |> stub(:land_size, fn _ -> 1 end)
 
@@ -90,7 +90,8 @@ defmodule Europa.ServerTest do
 
   describe "get_current_time/1" do
     test "returns current time", %{server: server} do
-      assert {days, time} = Server.get_current_time(server)
+      assert {year, days, time} = Server.get_current_time(server)
+      assert is_integer(year)
       assert is_integer(days)
       assert [_, _] = String.split(time, ":")
     end

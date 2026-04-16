@@ -8,7 +8,6 @@ defmodule Europa.Tools.TextGenerator do
   @default_texts_path "/texts_templates/"
 
   @filenames %{
-    initial_story: "story.json",
     great_red_spot: "story.json"
   }
 
@@ -24,22 +23,9 @@ defmodule Europa.Tools.TextGenerator do
     generate_for_category(category, vars)
   end
 
-  defp generate_for_category(:initial_story, vars) do
-    template = parse_file(:initial_story)
-
-    intro = get_text(template, "intro", vars)
-    who_you_are = get_text(template, "who_are_you", vars)
-
-    compose_texts([intro, who_you_are])
-  end
-
   defp generate_for_category(:great_red_spot, vars) do
     template = parse_file(:great_red_spot)
     get_text(template, "great_red_spot", vars)
-  end
-
-  defp compose_texts(texts) when is_list(texts) do
-    Enum.join(texts, "\n")
   end
 
   defp get_text(template, text_name, vars) do

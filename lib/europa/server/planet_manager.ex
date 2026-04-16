@@ -18,7 +18,7 @@ defmodule Europa.Server.PlanetManager do
   @doc """
   Generates new Planet.
   """
-  @callback new() :: Planet.t()
+  @callback new(year :: pos_integer()) :: Planet.t()
 
   @doc """
   Returns tile player initially stand on.
@@ -144,7 +144,7 @@ defmodule Europa.Server.PlanetManager do
 
   ### Implementation callers ###
 
-  def new, do: manager_impl().new()
+  def new(year), do: manager_impl().new(year)
   def player_initial_stand_on_tile(planet), do: manager_impl().player_initial_stand_on_tile(planet)
   def player, do: manager_impl().player()
   def blood_tile(tile), do: manager_impl().blood_tile(tile)

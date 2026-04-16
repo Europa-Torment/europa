@@ -15,6 +15,7 @@ defmodule Europa.Server do
   alias Europa.Server.Action
   alias Europa.Server.Errors
   alias Europa.Tools.TextGenerator
+  alias Europa.Server.Characters
 
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
@@ -34,6 +35,8 @@ defmodule Europa.Server do
 
   @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
 
+  @disaster_year fetch_config!([:game_params, :disaster_year])
+
   typedstruct enforce: true do
     field :game_uuid, Ecto.UUID.t()
     field :planet, Planet.t()
@@ -43,7 +46,10 @@ defmodule Europa.Server do
     field :great_red_spots, non_neg_integer()
     field :killed_enemies, non_neg_integer()
     field :start_datetime, DateTime.t()
+    field :current_year_after_disaster, pos_integer()
     field :current_datetime, DateTime.t()
+    field :characters_pid, pid()
+    field :current_character, Characters.Character.t()
   end
 
   ### PUBLIC INTERFACE ###
@@ -110,7 +116,7 @@ defmodule Europa.Server do
     GenServer.call(server, :get_visible_planet)
   end
 
-  @spec get_current_time(pid()) :: {day :: pos_integer(), time :: String.t()}
+  @spec get_current_time(pid()) :: {year :: pos_integer(), day :: pos_integer(), time :: String.t()}
   def get_current_time(server) do
     GenServer.call(server, :get_current_time)
   end
@@ -194,7 +200,11 @@ defmodule Europa.Server do
   def init(uuid) do
     Process.flag(:trap_exit, true)
 
-    planet = PlanetManager.new()
+    {:ok, characters_pid} = Characters.start_link()
+    {:ok, current_character} = Characters.pick_main(characters_pid)
+    current_year_after_disaster = current_character.current_age - current_character.age_at_disaster
+    current_year = @disaster_year + current_year_after_disaster
+    planet = PlanetManager.new(current_year)
     player_initial_stand_on_tile = PlanetManager.player_initial_stand_on_tile(planet)
 
     weapon = Loot.generate_item(:weapon)
@@ -210,12 +220,12 @@ defmodule Europa.Server do
       |> add_player_items(items)
       |> equip_player_items(items)
 
-    init_message =
-      :initial_story
-      |> TextGenerator.generate_text(year: planet.year)
-      |> Chat.Message.new(:story)
+    [bio_message, story_message] = initial_messages(current_year_after_disaster, current_character)
 
-    chat = Chat.new(init_message)
+    chat =
+      bio_message
+      |> Chat.new()
+      |> Chat.add_message(story_message)
 
     initial_datetime = initial_datetime()
 
@@ -228,7 +238,10 @@ defmodule Europa.Server do
       great_red_spots: 0,
       killed_enemies: 0,
       start_datetime: initial_datetime,
-      current_datetime: initial_datetime
+      current_year_after_disaster: current_year_after_disaster,
+      current_datetime: initial_datetime,
+      current_character: current_character,
+      characters_pid: characters_pid
     }
 
     {:ok, state, @inactivity_timeout_ms}
@@ -474,7 +487,7 @@ defmodule Europa.Server do
 
   @impl true
   def handle_info(:game_over, state) do
-    {days, _} = do_get_current_time(state)
+    {_year, days, _} = do_get_current_time(state)
 
     stats = %{
       moves_count: state.moves_count,
@@ -538,6 +551,8 @@ defmodule Europa.Server do
   ### PRIVATE ###
 
   defp do_get_current_time(state) do
+    current_year = @disaster_year + (state.current_character.current_age - state.current_character.age_at_disaster)
+
     current_date = Timex.to_date(state.current_datetime)
     start_date = Timex.to_date(state.start_datetime)
 
@@ -551,7 +566,7 @@ defmodule Europa.Server do
       end
 
     current_time = Timex.format!(state.current_datetime, "{h24}:{m}")
-    {day, current_time}
+    {current_year, day, current_time}
   end
 
   defp maybe_crop_land(state) do
@@ -734,6 +749,39 @@ defmodule Europa.Server do
         Games.finish_game(game_uuid, :server_error)
       end
     end
+  end
+
+  defp initial_messages(year, %Characters.Character{} = character) do
+    gender =
+      case character.gender do
+        :male -> gettext("male")
+        :female -> gettext("female")
+      end
+
+    bio_msg =
+      [
+        "#{year} ",
+        ngettext("year", "years", year),
+        " after disaster.",
+        "\n",
+        gettext("My name is"),
+        " #{character.name}.",
+        "\n",
+        gettext("I'm"),
+        " ",
+        "#{character.current_age} ",
+        gettext("years old"),
+        " ",
+        gender,
+        "."
+      ]
+      |> Enum.join()
+
+    story_msg = Enum.random(character.stories)
+
+    bio = Chat.Message.new(bio_msg, :story)
+    story = Chat.Message.new(story_msg, :story)
+    [bio, story]
   end
 
   defp moved_message(moves_count, step_on_tile) do

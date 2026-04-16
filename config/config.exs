@@ -39,9 +39,7 @@ config :europa, Europa.Server.Planet,
   min_view_distance: 3,
   generate_distance: 10,
   crop_land_size: 500_000,
-  year: [from: 10, to: 1000],
   base_loot_generate_possibility: 5000,
-  # should be greater than year's :to value
   base_enemy_generate_possibility: 4000,
   enemy_view_distance: 6,
   enemy_move_possibility: [from: 85, to: 100]
@@ -62,6 +60,7 @@ config :europa, :weapons,
   max_accuracy: 40
 
 config :europa, :game_params,
+  disaster_year: 2152,
   player: [
     warm_up_quantity: 25,
     max_weight: [

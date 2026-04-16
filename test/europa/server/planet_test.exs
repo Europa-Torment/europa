@@ -16,6 +16,8 @@ defmodule Europa.Server.PlanetTest do
 
   import Europa.Tools.Conf
 
+  @year 100
+
   @max_accuracy fetch_config!([:weapons, :max_accuracy])
   @burst_bullets_per_shot fetch_config!([:weapons, :burst_bullets_per_shot])
 
@@ -40,9 +42,6 @@ defmodule Europa.Server.PlanetTest do
   @en5 build(:enemy, name: "E5", move_distance: 2, health: @initial_enemy_health)
   @en6 build(:enemy, name: "E6", move_distance: 2, health: @initial_enemy_health)
   @en7 build(:enemy, name: "E7", move_distance: 2, health: @initial_enemy_health)
-
-  @year_from fetch_config!([Planet, :year, :from])
-  @year_to fetch_config!([Planet, :year, :to])
 
   @move_costs Tiles.move_costs()
 
@@ -407,19 +406,19 @@ defmodule Europa.Server.PlanetTest do
                                                 |> PlanetLandConverter.from_matrix()
 
   setup do
-    planet = Planet.new()
+    planet = Planet.new(@year)
     {:ok, planet: planet}
   end
 
-  describe "new/0" do
+  describe "new/1" do
     property "creates planet" do
       check all(_n <- StreamData.integer(1..10)) do
-        assert %Planet{land: land, current_coord: {x, y}, year: year} = Planet.new()
+        assert %Planet{land: land, current_coord: {x, y}, year: year} = Planet.new(@year)
         assert %Planet.Land{tiles: %{}} = land
         assert is_integer(x)
         assert is_integer(y)
 
-        assert year in @year_from..@year_to
+        assert year == @year
       end
     end
   end
