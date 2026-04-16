@@ -3,9 +3,12 @@
         "name": "Li Zhang",
         "gender": "male",
         "age_at_disaster": 1,
-        "years": {"from": 15, "to": 50},
+        "years": {"from": 15, "to": 48},
         "stories": [
-            "My parents spent almost their entire lives trying to develop a working tokamak. After their first major success, they were immediately recruited to Europa to build a terraforming center. A few years later, I was born. So, it turns out I'm as much of a native European as these monsters..."
+            "My parents spent almost their entire lives trying to develop a working tokamak. After their first major success, they were immediately recruited to Europa to build a terraforming center. A few years later, I was born. So, it turns out I'm as much of a native European as these monsters...",
+            "My mother used to say that people like me, those born here, are something... Something that shouldn't have been. How did they get so far from home? Science drives progress, and the fear of being vaporized by a nuclear explosion pushes science at the speed of light.",
+            "They say the explosion was so powerful that the ice on which the generators were standing melted 30 kilometers deep, and all that water instantly boiled. Not a single neuron in the heads of my mother and her colleagues even had time to move to realize what was about to happen to them...",
+            "At the time of the disaster, my father was on the other side of the globe. They were exploring the possibility of building a second set of reactors on the opposite side, because they could evaporate water much more efficiently there than on the busy half of Europa. Is he still alive? If he understands what happened..."
         ]
     },
     {
@@ -14,7 +17,9 @@
         "age_at_disaster": 50,
         "years": {"from": 1, "to": 16},
         "stories": [
-            "My wife and I developed the first tokamak prototype, capable of producing hydrogen from water and triggering a nuclear fusion reaction. After successful tests and the launch of mass production, we were called upon to lead the terraforming of Europa. Work progressed rapidly until an explosion occurred, releasing enormous amounts of energy... My wife died immediately, but I managed to survive, escaping with severe burns. Is our son alive?.."
+            "My wife and I developed the first tokamak prototype, capable of producing hydrogen from water and triggering a nuclear fusion reaction. After successful tests and the launch of mass production, we were called upon to lead the terraforming of Europa. Work progressed rapidly until an explosion occurred, releasing enormous amounts of energy... My wife died immediately, but I managed to survive by a lucky coincidence.. Is our son alive?..",
+            "I was testing the ice strength on the uninhabited side of the satellite. As soon as I felt the jolt, I immediately realized what had happened. But what the hell? The reactors had been operating for almost 20 years without a single breakdown, without a single minute of downtime.",
+            "All the documentation was stored in the office next to the reactors. I'm sure there wasn't a single intact transistor from the hard drives, not a single intact molecule of paper... Future generations, if any survived, simply won't be able to catch up with this entire scientific base; they'll never have a single new reactor."
         ]
     },
     {
@@ -23,7 +28,10 @@
         "age_at_disaster": 30,
         "years": {"from": 1, "to": 30},
         "stories": [
-            "People call me a terrorist, but my true goal is to overthrow the European regime and hand over power to those who deserve it. I am ready to sacrifice everything, including my life, to achieve this goal. If that means teaming up with underwater creatures, I'm in."
+            "People call me a terrorist, but my true goal is to overthrow the European regime and hand over power to those who deserve it. I am ready to sacrifice everything, including my life, to achieve this goal. If that means teaming up with underwater creatures, I'm in.",
+            "Members of the SSB, especially me, weren't welcome in respectable circles before. But now I feel like I'm being looked at askance even within the SSB itself. Maybe it's paranoia? I haven't slept for three days...",
+            "We've been keeping a low profile most of the time, but now, after the disaster, it's time to act. Those idiots at the WCC, with their negligence, have done all the work for us; all we have to do is take matters into our own hands. All doors are open.",
+            "Even before the disaster, this so-called 'president of humanity' deserved to be deported to Earth to rot alive from radiation. Now he deserves to become breakfast for one of these creatures. I'm ready to lie down on the next plate just to see it with my own eyes."
         ]
     },
     {
@@ -32,7 +40,22 @@
         "age_at_disaster": 50,
         "years": {"from": 1, "to": 30},
         "stories": [
-            "I was chosen to rule Europa, and I'd rather freeze 100 meters into the ice than fly away from here. And where would I fly to? The world is ending. I choose to sink along with 'my ship.'"
+            "I was chosen to rule Europa, and I'd rather freeze 100 meters into the ice than fly away from here. And where would I fly to? The world is ending. I choose to sink along with 'my ship.'",
+            "Am I personally to blame for the disaster? On the one hand, I have nothing to do with the reactors' operation. But on the other hand, my politics... Who cares now? Is there anyone here besides me?",
+            "Power will corrupt anyone. You can maintain control when you've gained power over hundreds, thousands, millions of people... But when you have the highest rank in the solar system... Is disaster the punishment for that? Now I'm an ordinary person and I'm as afraid as everyone else.",
+            "A few years ago, anyone would have sold their own mother to be in my shoes. Now I'm ready to eat rotten canned food and drink water from a puddle. Now even I would prefer to be a worm in someone's ass than myself.",
+            "Would all this have happened if the SSB terrorists had killed me that time? Just a couple of inches..."
+        ]
+    },
+    {
+        "name": "Phill McLee",
+        "gender": "male",
+        "age_at_disaster": 20,
+        "years": {"from": 1, "to": 20},
+        "stories": [
+            "My parents remained on Earth and, like everyone else, perished in a nuclear war. I flew to Europa with the military, serving in the Canadian Army. There was no one to fight with in the peaceful, newly established Europa, so our unit was disbanded, and after wandering around, I ended up in the SSB, which became my second family.",
+            "Stanislav once mentioned that after his death I would take his place. This information haunts me. I never wanted to take on such a burden before, but now I find myself terrified, thinking I'm ready to hasten his death to bring that moment closer.",
+            "I'd served in the air force for over five years; if only there was even one surviving ship here... But where would I go? All the generation ships are already somewhere at the edge of the solar system, and a regular wreck could only get me to Io at best."
         ]
     }
 ]

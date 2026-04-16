@@ -18,7 +18,7 @@ If you're interested in creating narrative game content, you need to follow thes
 
 * **Chen Yan**. Nuclear physicist. Wife of Li Tian. She was his deputy and co-author of the fusion reactor. She died in the disaster because she was close to the epicenter of the explosion at the time.
 
-* **Li Zhang**. Son of Li Tian and Chen Yan. The first person born on Europa.
+* **Li Zhang**. Son of Li Tian and Chen Yan. The first person born on Europa. The last person died in entire solar system.
 
 * **Stanislav Mishchenko**. Creator of the SSB. Rebel leader. The first known space terrorist. Believed to be responsible for the destruction of the Martian colony.
 
