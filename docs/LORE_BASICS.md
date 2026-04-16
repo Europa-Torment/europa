@@ -10,7 +10,7 @@ If you're interested in creating narrative game content, you need to follow thes
 
 * **Western Colonisation Community (WCC)** - a political regulatory structure composed primarily of former Western leaders on Earth. It is widely believed that the leadership of this organization is to blame for the disaster. Instead of starting a new life, taking into account all their previous earthly mistakes, they continued to wield power and money for their own benefit.
 
-* **Solar System Brotherhood (SSB)** - an opposition rebel group. The main opponents of the WCC. Disparate armed terrorist groups whose goal is to disband the VSS and transfer control of Europa to its people.
+* **Solar System Brotherhood (SSB)** - an opposition rebel group. The main opponents of the WCC. Disparate armed terrorist groups whose goal is to disband the WCC and transfer control of Europa to its people.
 
 ## Key characters
 
