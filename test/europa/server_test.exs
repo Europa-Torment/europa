@@ -7,6 +7,7 @@ defmodule Europa.ServerTest do
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Chat
+  alias Europa.Server.Characters.Character
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Errors
@@ -94,6 +95,12 @@ defmodule Europa.ServerTest do
       assert is_integer(year)
       assert is_integer(days)
       assert [_, _] = String.split(time, ":")
+    end
+  end
+
+  describe "get_current_character/1" do
+    test "returns current character", %{server: server} do
+      assert %Character{} = Server.get_current_character(server)
     end
   end
 

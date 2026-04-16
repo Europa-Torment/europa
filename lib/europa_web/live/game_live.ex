@@ -45,6 +45,7 @@ defmodule EuropaWeb.GameLive do
          {:ok, server} <- Server.get_pid(uuid) do
       visible_land = Server.get_visible_planet(server)
       player = Server.get_player(server)
+      current_character = Server.get_current_character(server)
 
       {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
 
@@ -62,6 +63,7 @@ defmodule EuropaWeb.GameLive do
           chat: Server.get_chat(server),
           current_time: get_current_time(server),
           player: player,
+          current_character: current_character,
           weapon: weapon,
           melee_weapon: melee_weapon,
           helmet: helmet,

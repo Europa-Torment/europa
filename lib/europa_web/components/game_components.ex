@@ -62,7 +62,7 @@ defmodule EuropaWeb.GameCompotents do
             <img
               id={"tile_#{x}_#{y}"}
               phx-hook="Tooltip"
-              data-tooltip={tile_tooltip(tile, @player)}
+              data-tooltip={tile_tooltip(tile, @player, @current_character)}
               src={~p"/images/tiles/#{render_tile(tile, @player)}"}
               class="w-full h-full max-w-[30px] max-h-[30px] object-contain"
             />
@@ -536,11 +536,10 @@ defmodule EuropaWeb.GameCompotents do
     |> to_ul()
   end
 
-  defp tile_tooltip(tile, player) do
+  defp tile_tooltip(tile, player, current_character) do
     case tile do
       @player ->
-        player
-        |> Player.readable_stats()
+        ([{gettext("Name"), current_character.name}] ++ Player.readable_stats(player))
         |> to_ul()
 
       %Enemy{} = enemy ->

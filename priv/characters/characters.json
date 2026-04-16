@@ -5,7 +5,7 @@
         "age_at_disaster": 1,
         "years": {"from": 15, "to": 50},
         "stories": [
-          "My parents spent almost their entire lives trying to develop a working tokamak.\nAfter their first major success, they were immediately recruited to Europa to build a terraforming center.\nA few years later, I was born. So, it turns out I'm as much of a native European as these monsters..."
+            "My parents spent almost their entire lives trying to develop a working tokamak. After their first major success, they were immediately recruited to Europa to build a terraforming center. A few years later, I was born. So, it turns out I'm as much of a native European as these monsters..."
         ]
     },
     {
@@ -14,7 +14,25 @@
         "age_at_disaster": 50,
         "years": {"from": 1, "to": 16},
         "stories": [
-            "My wife and I developed the first tokamak prototype, capable of producing hydrogen from water and triggering a nuclear fusion reaction.\nAfter successful tests and the launch of mass production, we were called upon to lead the terraforming of Europa.\nWork progressed rapidly until an explosion occurred, releasing enormous amounts of energy...\nMy wife died immediately, but I managed to survive, escaping with severe burns.\nIs our son alive?.."
+            "My wife and I developed the first tokamak prototype, capable of producing hydrogen from water and triggering a nuclear fusion reaction. After successful tests and the launch of mass production, we were called upon to lead the terraforming of Europa. Work progressed rapidly until an explosion occurred, releasing enormous amounts of energy... My wife died immediately, but I managed to survive, escaping with severe burns. Is our son alive?.."
+        ]
+    },
+    {
+        "name": "Stanislav Mishchenko",
+        "gender": "male",
+        "age_at_disaster": 30,
+        "years": {"from": 1, "to": 30},
+        "stories": [
+            "People call me a terrorist, but my true goal is to overthrow the European regime and hand over power to those who deserve it. I am ready to sacrifice everything, including my life, to achieve this goal. If that means teaming up with underwater creatures, I'm in."
+        ]
+    },
+    {
+        "name": "Henry Davies",
+        "gender": "male",
+        "age_at_disaster": 50,
+        "years": {"from": 1, "to": 30},
+        "stories": [
+            "I was chosen to rule Europa, and I'd rather freeze 100 meters into the ice than fly away from here. And where would I fly to? The world is ending. I choose to sink along with 'my ship.'"
         ]
     }
 ]

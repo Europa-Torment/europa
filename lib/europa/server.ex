@@ -101,6 +101,11 @@ defmodule Europa.Server do
     GenServer.call(server, :get_player)
   end
 
+  @spec get_current_character(pid()) :: Player.t()
+  def get_current_character(server) do
+    GenServer.call(server, :get_current_character)
+  end
+
   @spec get_planet(pid()) :: Planet.t()
   def get_planet(server) do
     GenServer.call(server, :get_planet)
@@ -258,6 +263,10 @@ defmodule Europa.Server do
 
   def handle_call(:get_player, _from, state) do
     {:reply, state.player, state, @inactivity_timeout_ms}
+  end
+
+  def handle_call(:get_current_character, _from, state) do
+    {:reply, state.current_character, state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_chat, _from, state) do
