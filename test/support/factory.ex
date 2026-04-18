@@ -9,7 +9,10 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Enemy
+  alias Europa.Server.Npc
   alias Europa.Server.Action
+  alias Europa.Server.Characters
+  alias Europa.Server.Characters.Character
   alias Europa.Users.User
   alias Europa.Games.Game
   alias Europa.Support.PlanetLandConverter
@@ -166,6 +169,7 @@ defmodule Europa.Support.Factory do
   @spec player_factory() :: Player.t()
   def player_factory do
     %Player{
+      character: build(:character),
       view_direction: :up,
       inventory: [],
       max_weight: 10.0,
@@ -183,10 +187,13 @@ defmodule Europa.Support.Factory do
 
   @spec planet_factory(map()) :: Planet.t()
   def planet_factory(opts \\ %{}) do
+    {:ok, characters_pid} = Characters.start_link()
+
     %Planet{
       year: Map.get(opts, :year, 1000),
       current_coord: Map.get(opts, :current_coord, {4, 5}),
-      land: Map.get(opts, :land, default_land())
+      land: Map.get(opts, :land, default_land()),
+      characters_pid: characters_pid
     }
   end
 
@@ -218,6 +225,32 @@ defmodule Europa.Support.Factory do
       accuracy: 5,
       stand_on: Tiles.tile(:snow).atom_value,
       image_name: "monster_semiworm"
+    }
+  end
+
+  @spec character_factory() :: Character.t()
+  def character_factory do
+    %Character{
+      name: sequence(:name, &"Character #{&1 + 1}"),
+      gender: :male,
+      profession: "Game developer",
+      age_at_disaster: 20,
+      years: 1..48,
+      stories: ["Story 1", "Story 2"],
+      special_stories: %{},
+      short_phrases: [],
+      current_age: 30
+    }
+  end
+
+  @spec npc_factory() :: Npc.t()
+  def npc_factory do
+    character = build(:character)
+
+    %Npc{
+      character: character,
+      story: Character.random_story(character),
+      stand_on: Tiles.tile(:snow).atom_value
     }
   end
 

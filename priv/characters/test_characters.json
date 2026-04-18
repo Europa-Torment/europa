@@ -2,15 +2,21 @@
     {
         "name": "name1",
         "gender": "male",
+        "profession": "profession1",
         "age_at_disaster": 60,
         "years": {"from": 1, "to": 20},
         "stories": [
             "story1"
-        ]
+        ],
+        "special_stories": {
+            "name2": ["special story 1", "special story 2"]
+        },
+        "short_phrases": ["phrase1", "phrase2"]
     },
     {
         "name": "name2",
         "gender": "female",
+        "profession": "profession2",
         "age_at_disaster": 25,
         "years": {"from": 15, "to": 50},
         "stories": [

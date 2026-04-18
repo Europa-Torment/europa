@@ -15,7 +15,7 @@
       <.control_hints_link />
     </div>
 
-    <.game_field visible_planet={@visible_planet} player={@player} current_character={@current_character} />
+    <.game_field visible_planet={@visible_planet} player={@player} />
 
     <div class="w-2/6 flex flex-col gap-4 m-5">
       <.chat chat={@chat} />
@@ -28,6 +28,7 @@
   <.inventory inventory={@inventory} inventory_type={@inventory_type} player_stats={@player_stats} player={@player} />
   <.item_drop_menu item_to_drop={@item_to_drop} item_drop_count={@item_drop_count} />
   <.control_hints show_control_hints={@show_control_hints} />
+  <.dialog dialog={@dialog} player={@player} />
 <% else %>
   <.start_screen />
 <% end %>

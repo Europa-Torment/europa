@@ -45,7 +45,7 @@ defmodule EuropaWeb.GameControllerTest do
 
       PlayerManagerMock
       |> allow_server_mock(user.id)
-      |> expect(:new, fn -> build(:player) end)
+      |> expect(:new, fn character -> build(:player, character: character) end)
       |> expect(:stand_on, fn player, ^tile -> player end)
 
       PlanetManagerMock

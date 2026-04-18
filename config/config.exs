@@ -42,7 +42,8 @@ config :europa, Europa.Server.Planet,
   base_loot_generate_possibility: 5000,
   base_enemy_generate_possibility: 4000,
   enemy_view_distance: 6,
-  enemy_move_possibility: [from: 85, to: 100]
+  enemy_move_possibility: [from: 85, to: 100],
+  npc_generate_possibility: 7000
 
 config :europa, Europa.Server.Planet.Predefined,
   building: [
@@ -104,6 +105,7 @@ config :europa, :control_bindings,
   move_down: ["ArrowDown", "S", "s"],
   move_left: ["ArrowLeft", "A", "a"],
   move_right: ["ArrowRight", "D", "d"],
+  interact: ["E", "e"],
   loot: ["L", "l"],
   inventory: ["I", "i"],
   control_hints: ["H", "h"],

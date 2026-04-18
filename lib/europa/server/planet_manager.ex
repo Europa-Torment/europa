@@ -18,7 +18,7 @@ defmodule Europa.Server.PlanetManager do
   @doc """
   Generates new Planet.
   """
-  @callback new(year :: pos_integer()) :: Planet.t()
+  @callback new(keyword()) :: Planet.t()
 
   @doc """
   Returns tile player initially stand on.
@@ -129,6 +129,8 @@ defmodule Europa.Server.PlanetManager do
               | {:error, :nothing}
               | {:error, Errors.NotApplicableError.t()}
 
+  @callback interact(Planet.t(), Player.t()) :: {:ok, Planet.t(), Planet.interaction()} | {:error, :nothing}
+
   @doc """
   Runs planet activities such as enemies moving and attacking. Takes current `planet` and `moves_count`.
   Returns updated planet and list of performed actions.
@@ -144,7 +146,7 @@ defmodule Europa.Server.PlanetManager do
 
   ### Implementation callers ###
 
-  def new(year), do: manager_impl().new(year)
+  def new(options), do: manager_impl().new(options)
   def player_initial_stand_on_tile(planet), do: manager_impl().player_initial_stand_on_tile(planet)
   def player, do: manager_impl().player()
   def blood_tile(tile), do: manager_impl().blood_tile(tile)
@@ -165,6 +167,8 @@ defmodule Europa.Server.PlanetManager do
     do: manager_impl().unload_item_box_weapon(planet, player, item_uuid)
 
   def crop_land(planet), do: manager_impl().crop_land(planet)
+
+  def interact(planet, player), do: manager_impl().interact(planet, player)
 
   ### PRIVATE ###
 

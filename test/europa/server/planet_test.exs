@@ -8,6 +8,7 @@ defmodule Europa.Server.PlanetTest do
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Enemy
   alias Europa.Server.Action
+  alias Europa.Server.Characters
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Loot.Weapon
@@ -42,6 +43,8 @@ defmodule Europa.Server.PlanetTest do
   @en5 build(:enemy, name: "E5", move_distance: 2, health: @initial_enemy_health)
   @en6 build(:enemy, name: "E6", move_distance: 2, health: @initial_enemy_health)
   @en7 build(:enemy, name: "E7", move_distance: 2, health: @initial_enemy_health)
+
+  @n build(:npc)
 
   @move_costs Tiles.move_costs()
 
@@ -405,21 +408,92 @@ defmodule Europa.Server.PlanetTest do
                                                 ]
                                                 |> PlanetLandConverter.from_matrix()
 
+  @land_player_up_close_to_npc [
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @n, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                               ]
+                               |> PlanetLandConverter.from_matrix()
+
+  @land_player_down_close_to_npc [
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @n, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 ]
+                                 |> PlanetLandConverter.from_matrix()
+
+  @land_player_left_close_to_npc [
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @pl, @n, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 ]
+                                 |> PlanetLandConverter.from_matrix()
+
+  @land_player_right_close_to_npc [
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @n, @pl, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  ]
+                                  |> PlanetLandConverter.from_matrix()
+
+  @land_enemy_right_close_to_npc [
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @en, @n, @pl, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 ]
+                                 |> PlanetLandConverter.from_matrix()
+
   setup do
-    planet = Planet.new(@year)
-    {:ok, planet: planet}
+    {:ok, characters_pid} = Characters.start_link()
+    planet = Planet.new(year: @year, characters_pid: characters_pid)
+    {:ok, planet: planet, characters_pid: characters_pid}
   end
 
   describe "new/1" do
-    property "creates planet" do
-      check all(_n <- StreamData.integer(1..10)) do
-        assert %Planet{land: land, current_coord: {x, y}, year: year} = Planet.new(@year)
-        assert %Planet.Land{tiles: %{}} = land
-        assert is_integer(x)
-        assert is_integer(y)
+    test "creates planet", %{characters_pid: characters_pid} do
+      assert %Planet{land: land, current_coord: {x, y}, year: year} =
+               Planet.new(year: @year, characters_pid: characters_pid)
 
-        assert year == @year
-      end
+      assert %Planet.Land{tiles: %{}} = land
+      assert is_integer(x)
+      assert is_integer(y)
+
+      assert year == @year
     end
   end
 
@@ -719,6 +793,15 @@ defmodule Europa.Server.PlanetTest do
       assert updated_land == @land_player_right_close_to_enemy
     end
 
+    test "enemy kills npc" do
+      planet = build(:planet, land: @land_enemy_right_close_to_npc, current_coord: {4, 1})
+
+      assert {:ok, %Planet{} = updated_planet, [%Action{subject: {@en, @n}, action_type: :enemy_killed_npc}]} =
+               Planet.tick(planet, 1)
+
+      assert_human_bodies(updated_planet, _human_bodies_count = 1)
+    end
+
     @tag perfomance: true
     test "tick is fast enough" do
       acceptable_time_ms = 200
@@ -884,6 +967,38 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
+  describe "interact/2" do
+    test "returns talk with up npc" do
+      player = build(:player, view_direction: :up)
+      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+    end
+
+    test "returns talk with down npc" do
+      player = build(:player, view_direction: :down)
+      planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+    end
+
+    test "returns talk with left npc" do
+      player = build(:player, view_direction: :left)
+      planet = build(:planet, land: @land_player_right_close_to_npc, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+    end
+
+    test "returns talk with right npc" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+    end
+
+    test "returns error when there is nothing to interact with" do
+      player = build(:player, view_direction: :down)
+      planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
+      assert {:error, :nothing} = Planet.interact(planet, player)
+    end
+  end
+
   describe "shoot/2" do
     test "damages top enemy (bullet)" do
       weapon =
@@ -959,6 +1074,81 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
       test_shoot(planet, player, weapon, 1)
+    end
+
+    test "damages top npc (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages bottom npc (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages right npc (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages left npc (bullet)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :bullet,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_right_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
     end
 
     test "damages top enemy (burst)" do
@@ -1037,6 +1227,81 @@ defmodule Europa.Server.PlanetTest do
       test_shoot(planet, player, weapon, 1)
     end
 
+    test "damages top npc (burst)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :burst,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages bottom npc (burst)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :burst,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages right npc (burst)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :burst,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages left npc (burst)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :burst,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_right_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
     test "damages top enemies (shot)" do
       weapon =
         build(:weapon,
@@ -1113,6 +1378,81 @@ defmodule Europa.Server.PlanetTest do
       test_shoot(planet, player, weapon, 5)
     end
 
+    test "damages top npc (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages bottom npc (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :down, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages right npc (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :right, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
+    test "damages left npc (shot)" do
+      weapon =
+        build(:weapon,
+          damage: 5,
+          shooting_distance: 5,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_right_close_to_npc, current_coord: {4, 1})
+
+      test_shoot(planet, player, weapon, 1, false)
+    end
+
     test "changes killed enemies on monster_body item boxes" do
       weapon =
         build(:weapon,
@@ -1131,6 +1471,26 @@ defmodule Europa.Server.PlanetTest do
 
       {:ok, updated_planet} = test_shoot(planet, player, weapon, 5, _check_damage = false)
       assert_monster_bodies(updated_planet, _monster_bodies_count = 5)
+    end
+
+    test "changes killed npc on human_body item boxes" do
+      weapon =
+        build(:weapon,
+          damage: 500,
+          shooting_distance: 10,
+          shooting_type: :shot,
+          rounds_loaded: 15,
+          magazine_size: 15,
+          accuracy: 30
+        )
+
+      player =
+        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+
+      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {7, 4})
+
+      {:ok, updated_planet} = test_shoot(planet, player, weapon, 1, _check_damage = false)
+      assert_human_bodies(updated_planet, _human_bodies_count = 1)
     end
 
     test "returns miss error" do
@@ -1447,6 +1807,17 @@ defmodule Europa.Server.PlanetTest do
       end)
 
     assert Enum.count(monster_bodies) == expected_monster_bodies_count
+  end
+
+  defp assert_human_bodies(planet, expected_human_bodies_count) do
+    human_bodies =
+      planet.land.tiles
+      |> Enum.filter(fn
+        {_, %ItemBox{type: :human_body}} -> true
+        _ -> false
+      end)
+
+    assert Enum.count(human_bodies) == expected_human_bodies_count
   end
 
   defp find_enemy(planet, enemy) do

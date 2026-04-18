@@ -12,6 +12,7 @@ defmodule Europa.Server do
   alias Europa.Server.Chat
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
+  alias Europa.Server.Npc
   alias Europa.Server.Action
   alias Europa.Server.Errors
   alias Europa.Tools.TextGenerator
@@ -48,8 +49,6 @@ defmodule Europa.Server do
     field :start_datetime, DateTime.t()
     field :current_year_after_disaster, pos_integer()
     field :current_datetime, DateTime.t()
-    field :characters_pid, pid()
-    field :current_character, Characters.Character.t()
   end
 
   ### PUBLIC INTERFACE ###
@@ -99,11 +98,6 @@ defmodule Europa.Server do
   @spec get_player(pid()) :: Player.t()
   def get_player(server) do
     GenServer.call(server, :get_player)
-  end
-
-  @spec get_current_character(pid()) :: Player.t()
-  def get_current_character(server) do
-    GenServer.call(server, :get_current_character)
   end
 
   @spec get_planet(pid()) :: Planet.t()
@@ -196,6 +190,11 @@ defmodule Europa.Server do
     GenServer.call(server, {:consume_supply, item_uuid})
   end
 
+  @spec interact(pid()) :: {:ok, Planet.interaction()} | {:error, :nothing}
+  def interact(server) do
+    GenServer.call(server, :interact)
+  end
+
   ### CALLBACKS ###
 
   # NOTICE: Do not return updated planet or player structs if callback calls :tick
@@ -209,7 +208,7 @@ defmodule Europa.Server do
     {:ok, current_character} = Characters.pick_main(characters_pid)
     current_year_after_disaster = current_character.current_age - current_character.age_at_disaster
     current_year = @disaster_year + current_year_after_disaster
-    planet = PlanetManager.new(current_year)
+    planet = PlanetManager.new(year: current_year, characters_pid: characters_pid)
     player_initial_stand_on_tile = PlanetManager.player_initial_stand_on_tile(planet)
 
     weapon = Loot.generate_item(:weapon)
@@ -220,7 +219,7 @@ defmodule Europa.Server do
     items = [weapon, helmet, suit, boots]
 
     player =
-      PlayerManager.new()
+      PlayerManager.new(current_character)
       |> PlayerManager.stand_on(player_initial_stand_on_tile)
       |> add_player_items(items)
       |> equip_player_items(items)
@@ -244,9 +243,7 @@ defmodule Europa.Server do
       killed_enemies: 0,
       start_datetime: initial_datetime,
       current_year_after_disaster: current_year_after_disaster,
-      current_datetime: initial_datetime,
-      current_character: current_character,
-      characters_pid: characters_pid
+      current_datetime: initial_datetime
     }
 
     {:ok, state, @inactivity_timeout_ms}
@@ -263,10 +260,6 @@ defmodule Europa.Server do
 
   def handle_call(:get_player, _from, state) do
     {:reply, state.player, state, @inactivity_timeout_ms}
-  end
-
-  def handle_call(:get_current_character, _from, state) do
-    {:reply, state.current_character, state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_chat, _from, state) do
@@ -494,6 +487,22 @@ defmodule Europa.Server do
     {:reply, PlayerManager.get_inventory(state.player, type), state, @inactivity_timeout_ms}
   end
 
+  def handle_call(:interact, _from, state) do
+    case PlanetManager.interact(state.planet, state.player) do
+      {:ok, updated_planet, interaction} ->
+        {:reply, {:ok, interaction}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
+
+      _ ->
+        nothing_to_interact_message = nothing_to_interact_message()
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(nothing_to_interact_message)
+
+        {:reply, {:error, :nothing}, struct!(state, chat: updated_chat)}
+    end
+  end
+
   @impl true
   def handle_info(:game_over, state) do
     {_year, days, _} = do_get_current_time(state)
@@ -560,7 +569,7 @@ defmodule Europa.Server do
   ### PRIVATE ###
 
   defp do_get_current_time(state) do
-    current_year = @disaster_year + (state.current_character.current_age - state.current_character.age_at_disaster)
+    current_year = @disaster_year + (state.player.character.current_age - state.player.character.age_at_disaster)
 
     current_date = Timex.to_date(state.current_datetime)
     start_date = Timex.to_date(state.start_datetime)
@@ -594,7 +603,10 @@ defmodule Europa.Server do
   end
 
   defp killed_enemies_count(damaged_enemies) do
-    Enum.count(damaged_enemies, fn {enemy, _} -> enemy.health == 0 end)
+    Enum.count(damaged_enemies, fn
+      {%Enemy{} = enemy, _} -> enemy.health == 0
+      {_, _} -> false
+    end)
   end
 
   defp do_move(direction, state, caller_pid) do
@@ -761,11 +773,7 @@ defmodule Europa.Server do
   end
 
   defp initial_messages(year, %Characters.Character{} = character) do
-    gender =
-      case character.gender do
-        :male -> gettext("male")
-        :female -> gettext("female")
-      end
+    gender = Characters.Character.readable_gender(character)
 
     bio_msg =
       [
@@ -786,7 +794,7 @@ defmodule Europa.Server do
       ]
       |> Enum.join()
 
-    story_msg = Enum.random(character.stories)
+    story_msg = Characters.Character.random_story(character)
 
     bio = Chat.Message.new(bio_msg, :story)
     story = Chat.Message.new(story_msg, :story)
@@ -818,6 +826,11 @@ defmodule Europa.Server do
 
   defp nothing_to_loot_message do
     msg = gettext("There is nothing to loot")
+    Chat.Message.new(msg, :warning)
+  end
+
+  defp nothing_to_interact_message do
+    msg = gettext("There is nothing to interact with")
     Chat.Message.new(msg, :warning)
   end
 
@@ -921,6 +934,11 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :warning)
   end
 
+  defp action_message(%Action{subject: {%Enemy{} = enemy, %Npc{} = npc}, action_type: :enemy_killed_npc}) do
+    msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} killed #{npc.character.name}")
+    Chat.Message.new(msg, :danger)
+  end
+
   defp action_message(_), do: nil
 
   defp add_action_messages_to_chat(%Chat{} = chat, actions) do
@@ -933,16 +951,22 @@ defmodule Europa.Server do
   end
 
   defp add_damage_messages_to_chat(%Chat{} = chat, damaged_enemies) do
-    Enum.reduce(damaged_enemies, chat, fn {enemy, damage}, chat ->
-      msg =
-        if enemy.health > 0 do
-          Gettext.gettext(Europa.Gettext, "You hit #{enemy.name} and dealt #{damage} damage to it!")
-        else
-          Gettext.gettext(Europa.Gettext, "You killed #{enemy.name}!")
-        end
+    Enum.reduce(damaged_enemies, chat, fn
+      {%Enemy{} = enemy, damage}, chat ->
+        msg =
+          if enemy.health > 0 do
+            Gettext.gettext(Europa.Gettext, "You hit #{enemy.name} and dealt #{damage} damage to it!")
+          else
+            Gettext.gettext(Europa.Gettext, "You killed #{enemy.name}!")
+          end
 
-      message = Chat.Message.new(msg, :regular)
-      Chat.add_message(chat, message)
+        message = Chat.Message.new(msg, :regular)
+        Chat.add_message(chat, message)
+
+      {%Npc{} = npc, _}, chat ->
+        msg = Gettext.gettext(Europa.Gettext, "You killed #{npc.character.name}")
+        message = Chat.Message.new(msg, :regular)
+        Chat.add_message(chat, message)
     end)
   end
 

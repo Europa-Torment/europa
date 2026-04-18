@@ -8,12 +8,15 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Player
   alias Europa.Server.Enemy
+  alias Europa.Server.Npc
+  alias Europa.Server.Characters.Character
   alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Chat
 
   import Europa.Tools.Conf
+  import Europa.Tools.Randomizer
 
   @player Planet.player()
 
@@ -24,6 +27,7 @@ defmodule EuropaWeb.GameCompotents do
   @move_left_keys fetch_config!([:control_bindings, :move_left])
   @move_right_keys fetch_config!([:control_bindings, :move_right])
 
+  @interact_keys fetch_config!([:control_bindings, :interact])
   @loot_keys fetch_config!([:control_bindings, :loot])
   @inventory_keys fetch_config!([:control_bindings, :inventory])
   @reload_keys fetch_config!([:control_bindings, :reload])
@@ -38,6 +42,8 @@ defmodule EuropaWeb.GameCompotents do
   @tiles_image_names Tiles.image_names()
 
   @gif_tiles Tiles.gif_tiles()
+
+  @open_tooltip_class "tooltip tooltip-open"
 
   def start_screen(assigns) do
     ~H"""
@@ -59,13 +65,15 @@ defmodule EuropaWeb.GameCompotents do
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
-            <img
-              id={"tile_#{x}_#{y}"}
-              phx-hook="Tooltip"
-              data-tooltip={tile_tooltip(tile, @player, @current_character)}
-              src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-              class="w-full h-full max-w-[30px] max-h-[30px] object-contain"
-            />
+            <div class={speech_class(tile)} data-tip={speech(tile)}>
+              <img
+                id={"tile_#{x}_#{y}"}
+                phx-hook="Tooltip"
+                data-tooltip={tile_tooltip(tile, @player)}
+                src={~p"/images/tiles/#{render_tile(tile, @player)}"}
+                class="w-full h-full max-w-[30px] max-h-[30px] object-contain"
+              />
+            </div>
           <% end %>
         </div>
       <% end %>
@@ -421,6 +429,34 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def dialog(assigns) do
+    ~H"""
+    <%= if @dialog do %>
+      <input type="checkbox" id="dialog" class="modal-toggle" checked={true} phx-change="close_dialog" />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
+          <h3 class="text-lg font-bold pb-3">{@dialog.npc.character.name}</h3>
+
+          <ul class="list-disc list-inside space-y-2 text-sm mb-5">
+            <li><b>{gettext("Age")}:</b> {@dialog.npc.character.current_age}</li>
+            <li><b>{gettext("Gender")}:</b> {Character.readable_gender(@dialog.npc.character)}</li>
+            <li><b>{gettext("Profession")}:</b> {@dialog.npc.character.profession}</li>
+            <li><b>{gettext("Age at disaster")}:</b> {@dialog.npc.character.age_at_disaster}</li>
+          </ul>
+
+          <blockquote class="italic text-sm border-l-2 border-secondary p-2">
+            {npc_story(@dialog.npc, @player)}
+          </blockquote>
+
+          <div class="modal-action">
+            <label phx-click="close_dialog" for="dialog" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
   def item_drop_menu(assigns) do
     ~H"""
     <%= if @item_to_drop do %>
@@ -536,16 +572,20 @@ defmodule EuropaWeb.GameCompotents do
     |> to_ul()
   end
 
-  defp tile_tooltip(tile, player, current_character) do
+  defp tile_tooltip(tile, player) do
     case tile do
       @player ->
-        ([{gettext("Name"), current_character.name}] ++ Player.readable_stats(player))
+        player
+        |> Player.readable_stats()
         |> to_ul()
 
       %Enemy{} = enemy ->
         enemy
         |> Enemy.readable_stats()
         |> to_ul()
+
+      %Npc{} = npc ->
+        Npc.readable_stats(npc) |> to_ul()
 
       tile ->
         Planet.readable_tile_name(tile)
@@ -576,7 +616,7 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_image_name(%ItemBox{type: :human_body, stand_on: stand_on}, _) do
-    "monster_corpse_#{landscape_name(stand_on)}.png"
+    "human_corpse_#{landscape_name(stand_on)}.png"
   end
 
   defp get_image_name(%ItemBox{type: :crashed_shuttle, stand_on: stand_on}, _) do
@@ -597,6 +637,10 @@ defmodule EuropaWeb.GameCompotents do
 
   defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on}, _) do
     "#{image_name}_#{landscape_name(stand_on)}.png"
+  end
+
+  defp get_image_name(%Npc{stand_on: stand_on}, _) do
+    "player_down_#{landscape_name(stand_on)}.png"
   end
 
   defp get_image_name(%Object{gif_tile?: true, image_name: image_name, stand_on: stand_on}, _) do
@@ -663,11 +707,12 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Move/punch down"), @move_down_keys),
       control_hint(gettext("Move/punch left"), @move_left_keys),
       control_hint(gettext("Move/punch right"), @move_right_keys),
-      control_hint(gettext("Reload weapon"), @reload_keys),
+      control_hint(gettext("Interact"), @interact_keys),
       control_hint(gettext("Loot"), @loot_keys),
       control_hint(gettext("Inventory"), @inventory_keys),
       control_hint(gettext("Control hints"), @control_hints_keys),
       control_hint(gettext("Shoot"), @shoot_keys),
+      control_hint(gettext("Reload weapon"), @reload_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
   end
@@ -755,6 +800,50 @@ defmodule EuropaWeb.GameCompotents do
       ""
     end
   end
+
+  defp npc_story(%Npc{character: %Character{} = character} = npc, player) do
+    case Character.random_special_story(character, player.character) do
+      nil -> npc.story
+      special_story -> special_story
+    end
+  end
+
+  defp speech_class(%Npc{character: %Character{short_phrases: []}}), do: ""
+
+  defp speech_class(%Npc{}) do
+    if m_to_n?(1, 3) do
+      @open_tooltip_class
+    else
+      ""
+    end
+  end
+
+  defp speech_class(%Enemy{}) do
+    if m_to_n?(1, 10) do
+      @open_tooltip_class
+    else
+      ""
+    end
+  end
+
+  defp speech_class(_), do: ""
+
+  defp speech(%Npc{character: character}) do
+    Character.short_phrase(character)
+  end
+
+  defp speech(%Enemy{}) do
+    monster_sounds = [
+      gettext("Raaaar!"),
+      gettext("Grrr!"),
+      gettext("Grrraaah!"),
+      gettext("#&^!&#")
+    ]
+
+    Enum.random(monster_sounds)
+  end
+
+  defp speech(_), do: ""
 
   # coveralls-ignore-stop
 end

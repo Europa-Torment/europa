@@ -38,7 +38,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
               {1, 1} -> assert e == @floor || loot?(e)
               {1, 2} -> assert e == @wall_vertical_inside
               {1, 3} -> assert e == @floor || enemy?(e)
-              {1, 4} -> assert e == @floor || enemy?(e)
+              {1, 4} -> assert e == @floor || enemy?(e) || {:npc, @floor}
               {1, 5} -> assert e == @wall_right
               {2, 0} -> assert e == @wall_left_down
               {2, 1} -> assert e == @wall_down
@@ -54,7 +54,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
     end
 
     test "generates situation" do
-      assert [[%Enemy{}, %ItemBox{type: :human_body}, %Enemy{}, %ItemBox{type: :box}, shuttle]] =
+      assert [[%Enemy{}, %ItemBox{type: :human_body}, %Enemy{}, %ItemBox{type: :box}, shuttle, {:npc, nil}]] =
                Predefined.generate(:situation)
 
       is_shuttle =

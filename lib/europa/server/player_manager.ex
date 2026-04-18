@@ -9,6 +9,7 @@ defmodule Europa.Server.PlayerManager do
   alias Europa.Server.Player
   alias Europa.Server.Planet
   alias Europa.Server.Loot
+  alias Europa.Server.Characters.Character
   alias Europa.Server.Errors
 
   import Europa.Tools.Conf
@@ -16,7 +17,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Creates new player.
   """
-  @callback new() :: Player.t()
+  @callback new(Character.t()) :: Player.t()
 
   @doc """
   Returns list of readable player stats in format:
@@ -153,7 +154,7 @@ defmodule Europa.Server.PlayerManager do
 
   ### Implementation callers ###
 
-  def new, do: manager_impl().new()
+  def new(character), do: manager_impl().new(character)
 
   def change_view_direction(player, view_direction), do: manager_impl().change_view_direction(player, view_direction)
 

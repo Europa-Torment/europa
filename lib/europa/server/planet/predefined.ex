@@ -5,6 +5,7 @@ defmodule Europa.Server.Planet.Predefined do
 
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Object
   alias Europa.Server.Enemy
@@ -47,9 +48,11 @@ defmodule Europa.Server.Planet.Predefined do
 
   @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
   @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
+  @npc_generate_possibility fetch_config!([Planet, :npc_generate_possibility])
 
   @type category() :: unquote(@categories |> Map.keys() |> Types.one_of())
-  @type template() :: list(Tiles.Tile.t() | :skip)
+  @type npc :: {:npc, Tiles.Tile.t() | nil}
+  @type template() :: list(Tiles.Tile.t() | :skip | npc())
 
   @spec generate_random() :: template()
   def generate_random do
@@ -96,6 +99,14 @@ defmodule Europa.Server.Planet.Predefined do
     end
   end
 
+  defp elem_to_tile(:building, "N") do
+    if m_to_n?(1, @npc_generate_possibility) do
+      {:npc, @floor}
+    else
+      @floor
+    end
+  end
+
   defp elem_to_tile(:building, "L") do
     type = Enum.random(@futniture_item_box_types)
     item_box = Loot.generate_item_box(type, @floor)
@@ -112,6 +123,7 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:situation, "c"), do: Loot.generate_item_box(:human_body)
   defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
   defp elem_to_tile(:situation, "f"), do: @bonefire
+  defp elem_to_tile(:situation, "N"), do: {:npc, nil}
 
   defp elem_to_tile(:situation, "s") do
     crashed_shuttle = Loot.generate_item_box(:crashed_shuttle)

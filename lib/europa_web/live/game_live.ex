@@ -23,6 +23,7 @@ defmodule EuropaWeb.GameLive do
 
   @move_keys @move_up_keys ++ @move_down_keys ++ @move_left_keys ++ @move_right_keys
 
+  @interact_keys fetch_config!([:control_bindings, :interact])
   @loot_keys fetch_config!([:control_bindings, :loot])
   @inventory_keys fetch_config!([:control_bindings, :inventory])
   @reload_keys fetch_config!([:control_bindings, :reload])
@@ -45,7 +46,6 @@ defmodule EuropaWeb.GameLive do
          {:ok, server} <- Server.get_pid(uuid) do
       visible_land = Server.get_visible_planet(server)
       player = Server.get_player(server)
-      current_character = Server.get_current_character(server)
 
       {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
 
@@ -63,7 +63,6 @@ defmodule EuropaWeb.GameLive do
           chat: Server.get_chat(server),
           current_time: get_current_time(server),
           player: player,
-          current_character: current_character,
           weapon: weapon,
           melee_weapon: melee_weapon,
           helmet: helmet,
@@ -80,7 +79,8 @@ defmodule EuropaWeb.GameLive do
           item_to_drop: nil,
           item_drop_count: 1,
           game_over: false,
-          game_page: true
+          game_page: true,
+          dialog: nil
         )
 
       {:ok, socket}
@@ -165,6 +165,23 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
+  def handle_event("key_pressed", %{"key" => key}, socket) when key in @interact_keys do
+    case Server.interact(socket.assigns.server) do
+      {:ok, {:talk, npc}} ->
+        {:noreply,
+         assign(socket,
+           dialog: %{npc: npc},
+           chat: Server.get_chat(socket.assigns.server),
+           show_control_hints: false,
+           inventory: nil,
+           item_box: nil
+         )}
+
+      _ ->
+        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
+    end
+  end
+
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @loot_keys do
     if socket.assigns.item_box do
       close_item_box(socket)
@@ -190,7 +207,14 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @close_keys do
     {:noreply,
-     assign(socket, inventory: nil, item_box: nil, show_control_hints: false, item_drop_menu: false, item_to_drop: nil)}
+     assign(socket,
+       inventory: nil,
+       item_box: nil,
+       show_control_hints: false,
+       item_drop_menu: false,
+       item_to_drop: nil,
+       dialog: nil
+     )}
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @shoot_keys do
@@ -266,6 +290,10 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_control_hints", _, socket) do
     {:noreply, assign(socket, show_control_hints: false)}
+  end
+
+  def handle_event("close_dialog", _, socket) do
+    {:noreply, assign(socket, dialog: nil)}
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -678,7 +706,7 @@ defmodule EuropaWeb.GameLive do
 
   defp open_inventory(socket) do
     inventory = get_player_inventory(socket)
-    {:noreply, assign(socket, inventory: inventory, item_box: nil)}
+    {:noreply, assign(socket, inventory: inventory, item_box: nil, show_control_hints: false, dialog: nil)}
   end
 
   defp close_inventory(socket) do
@@ -688,7 +716,7 @@ defmodule EuropaWeb.GameLive do
   defp open_item_box(socket) do
     case Server.loot(socket.assigns.server) do
       {:open_item_box, item_box} ->
-        {:noreply, assign(socket, item_box: item_box, inventory: nil)}
+        {:noreply, assign(socket, item_box: item_box, inventory: nil, show_control_hints: false, dialog: nil)}
 
       _ ->
         {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}

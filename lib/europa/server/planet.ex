@@ -3,6 +3,7 @@ defmodule Europa.Server.Planet do
   @behaviour Europa.Server.PlanetManager
 
   use TypedStruct
+  use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Tile
@@ -17,6 +18,8 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
   alias Europa.Server.Action
+  alias Europa.Server.Characters
+  alias Europa.Server.Npc
 
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
@@ -40,6 +43,10 @@ defmodule Europa.Server.Planet do
 
   @base_loot_generate_possibility fetch_config!([__MODULE__, :base_loot_generate_possibility])
 
+  @npc_generate_possibility fetch_config!([__MODULE__, :npc_generate_possibility])
+
+  @disaster_year fetch_config!([:game_params, :disaster_year])
+
   @player :player
 
   @type player() :: :player
@@ -54,6 +61,8 @@ defmodule Europa.Server.Planet do
   @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t() | Object.t()
 
   @type land :: list(list(tile()))
+
+  @type interaction :: {:talk, Npc.t()}
 
   @ice Tiles.tile(:ice).atom_value
   @water Tiles.tile(:water).atom_value
@@ -85,24 +94,29 @@ defmodule Europa.Server.Planet do
     field :land, Land.t()
     field :current_coord, coord()
     field :year, pos_integer()
+    field :characters_pid, pid()
   end
 
   ### PUBLIC INTERFACE ###
 
   @impl true
-  def new(year) do
+  def new(options) do
+    year = Keyword.fetch!(options, :year)
+    characters_pid = Keyword.fetch!(options, :characters_pid)
+
     planet =
       %__MODULE__{
         land: generate_land(),
         current_coord: initial_coord(),
-        year: year
+        year: year,
+        characters_pid: characters_pid
       }
 
     # Re-generate planet if player spawned on non movable tile
     if player_initial_stand_on_tile(planet) in @movable_tiles do
       planet
     else
-      new(year)
+      new(options)
     end
   end
 
@@ -128,6 +142,7 @@ defmodule Europa.Server.Planet do
   def readable_tile_name(%Loot.ItemBox{} = item_box), do: Loot.ItemBox.readable_name(item_box)
   def readable_tile_name(%Enemy{name: name}), do: Gettext.gettext(Europa.Gettext, name)
   def readable_tile_name(%Object{name: name}), do: name
+  def readable_tile_name(%Npc{}), do: gettext("person")
   def readable_tile_name(tile), do: Map.get(@tiles_readable_names, tile)
 
   @impl true
@@ -216,6 +231,14 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
+  def interact(%__MODULE__{land: land} = planet, %Player{view_direction: view_direction} = player) do
+    target_coord = target_coord(planet, view_direction)
+    target_tile = get_tile(land, target_coord)
+
+    do_interact(target_tile, planet, player)
+  end
+
+  @impl true
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
     do_tick(planet, moves_count, [])
   end
@@ -225,6 +248,14 @@ defmodule Europa.Server.Planet do
   end
 
   ### PRIVATE ###
+
+  defp do_interact(%Npc{} = npc, planet, _player) do
+    {:ok, planet, {:talk, npc}}
+  end
+
+  defp do_interact(_, _, _) do
+    {:error, :nothing}
+  end
 
   defp do_tick(%__MODULE__{} = planet, 0, actions) do
     {:ok, planet, actions}
@@ -309,6 +340,7 @@ defmodule Europa.Server.Planet do
       |> Enum.find(fn coord ->
         case get_tile(land, coord) do
           %Enemy{} -> true
+          %Npc{} -> true
           _ -> false
         end
       end)
@@ -341,6 +373,7 @@ defmodule Europa.Server.Planet do
     |> Enum.filter(fn coord ->
       case get_tile(land, coord) do
         %Enemy{} -> true
+        %Npc{} -> true
         _ -> false
       end
     end)
@@ -376,6 +409,7 @@ defmodule Europa.Server.Planet do
         case get_tile(land, coord) do
           nil -> false
           %Enemy{} -> true
+          %Npc{} -> true
           %Object{high?: true} -> true
           tile -> tile in @high_tiles
         end
@@ -423,7 +457,7 @@ defmodule Europa.Server.Planet do
     damage_enemy(land, coord, enemy, damage)
   end
 
-  defp damage_enemy(land, coord, enemy, damage) do
+  defp damage_enemy(land, coord, %Enemy{} = enemy, damage) do
     updated_enemy =
       enemy
       |> Enemy.take_damage(damage)
@@ -436,6 +470,10 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp damage_enemy(land, coord, %Npc{} = npc, _damage) do
+    {npc, change_tile(land, coord, generate_human_body(npc))}
+  end
+
   defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items}} = enemy) do
     monster_body = Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
     struct!(monster_body, items: items ++ monster_body.items)
@@ -443,6 +481,10 @@ defmodule Europa.Server.Planet do
 
   defp generate_monster_body(%Enemy{} = enemy) do
     Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
+  end
+
+  defp generate_human_body(%Npc{} = npc) do
+    Loot.generate_item_box(:human_body, tile_without_blood(npc.stand_on))
   end
 
   defp blood_tile(tile) do
@@ -485,8 +527,8 @@ defmodule Europa.Server.Planet do
 
     Enum.reduce(enemies, {planet, []}, fn enemy_coord, {pl, act} ->
       enemy = get_tile(pl.land, enemy_coord)
-      {updated_pl, action} = move_enemy(pl, enemy_coord, enemy)
-      {updated_pl, act ++ [action]}
+      {updated_pl, actions} = move_enemy(pl, enemy_coord, enemy)
+      {updated_pl, act ++ actions}
     end)
   end
 
@@ -501,7 +543,7 @@ defmodule Europa.Server.Planet do
       if m_to_n?(@enemy_move_possibility_from, @enemy_move_possibility_to) do
         do_move_enemy(planet, enemy_coord, enemy)
       else
-        {planet, Action.new(enemy, :stay)}
+        {planet, [Action.new(enemy, :stay)]}
       end
     end
   end
@@ -509,18 +551,42 @@ defmodule Europa.Server.Planet do
   defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy) do
     case calculate_enemy_move_coord(planet, enemy_coord, enemy) do
       :stay ->
-        {planet, Action.new(enemy, :stay)}
+        {planet, [Action.new(enemy, :stay)]}
 
       new_enemy_coord ->
         target_tile = get_tile(planet.land, new_enemy_coord)
+
+        neighbor_npc =
+          planet.land
+          |> get_neighbors(enemy_coord, 1, _with_coord? = true)
+          |> Enum.filter(fn
+            {_coord, %Npc{}} -> true
+            _ -> false
+          end)
 
         updated_land =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
           |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile))
 
+        updated_land =
+          Enum.reduce(neighbor_npc, updated_land, fn {npc_coord, npc}, land ->
+            land
+            |> change_tile(npc_coord, generate_human_body(npc))
+          end)
+
+        actions = move_enemy_actions(enemy, neighbor_npc)
+
         updated_planet = struct!(planet, land: updated_land)
-        {updated_planet, Action.new(enemy, :chasing)}
+        {updated_planet, actions}
+    end
+  end
+
+  defp move_enemy_actions(enemy, neighbor_npc) do
+    if Enum.empty?(neighbor_npc) do
+      [Action.new(enemy, :chasing)]
+    else
+      Enum.map(neighbor_npc, fn {_coord, npc} -> Action.new({enemy, npc}, :enemy_killed_npc) end)
     end
   end
 
@@ -593,9 +659,9 @@ defmodule Europa.Server.Planet do
 
   defp attack_or_miss(%Enemy{} = enemy) do
     if m_to_n?(enemy.accuracy, @max_accuracy) do
-      Action.new(enemy, :attack)
+      [Action.new(enemy, :attack)]
     else
-      Action.new(enemy, :miss_attack)
+      [Action.new(enemy, :miss_attack)]
     end
   end
 
@@ -808,9 +874,10 @@ defmodule Europa.Server.Planet do
     tile_by_perlin_noise(x, y, planet.land.noise_coef)
     |> tile_or_enemy(planet, coord)
     |> tile_or_loot()
+    |> tile_or_npc(planet)
   end
 
-  defp get_neighbors(land, {x, y}, count) do
+  defp get_neighbors(land, {x, y}, count, with_coord? \\ false) do
     Enum.map(1..count, fn n ->
       [
         {x - n, y - n},
@@ -824,7 +891,15 @@ defmodule Europa.Server.Planet do
       ]
     end)
     |> List.flatten()
-    |> Enum.map(fn coord -> get_tile(land, coord) end)
+    |> Enum.map(fn coord ->
+      tile = get_tile(land, coord)
+
+      if with_coord? do
+        {coord, tile}
+      else
+        tile
+      end
+    end)
   end
 
   defp tile_or_loot(tile) do
@@ -847,6 +922,21 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp tile_or_npc(tile, planet) do
+    if m_to_n?(1, @npc_generate_possibility) && tile in @movable_tiles do
+      maybe_generate_npc(tile, planet)
+    else
+      tile
+    end
+  end
+
+  defp maybe_generate_npc(tile, planet) do
+    case Characters.pick(planet.characters_pid, planet.year - @disaster_year) do
+      {:ok, character} -> Npc.new(character, tile)
+      _ -> tile
+    end
+  end
+
   defp generate_enemy_possibility(%__MODULE__{} = planet, {_x, _y} = coord) do
     around_water_count =
       planet.land
@@ -854,7 +944,7 @@ defmodule Europa.Server.Planet do
       |> Enum.count(fn tile -> tile == @water end)
 
     if around_water_count > 0 do
-      {around_water_count, div(@base_enemy_generate_possibility - planet.year, around_water_count * 4)}
+      {around_water_count, div(@base_enemy_generate_possibility - planet.year, around_water_count * 2)}
     else
       {1, @base_enemy_generate_possibility}
     end
@@ -912,7 +1002,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
-    |> maybe_generate_predefined(:right)
+    |> maybe_generate_predefined(:right, planet.characters_pid, planet.year)
   end
 
   defp add_left_column(%__MODULE__{land: land} = planet) do
@@ -925,7 +1015,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
-    |> maybe_generate_predefined(:left)
+    |> maybe_generate_predefined(:left, planet.characters_pid, planet.year)
   end
 
   defp add_top_row(%__MODULE__{land: land} = planet) do
@@ -938,7 +1028,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
-    |> maybe_generate_predefined(:up)
+    |> maybe_generate_predefined(:up, planet.characters_pid, planet.year)
   end
 
   defp add_bottom_row(%__MODULE__{land: land} = planet) do
@@ -951,7 +1041,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
-    |> maybe_generate_predefined(:down)
+    |> maybe_generate_predefined(:down, planet.characters_pid, planet.year)
   end
 
   defp filter_exist_tiles(tiles, land) do
@@ -989,12 +1079,12 @@ defmodule Europa.Server.Planet do
   # TODO: figure out how to test this
   # coveralls-ignore-start
 
-  defp maybe_generate_predefined(land, direction) do
+  defp maybe_generate_predefined(land, direction, characters_pid, year) do
     if m_to_n?(5, 100) do
       template = Predefined.generate_random()
 
       coord_fun = generate_template_coord_fun(land, direction)
-      new_tiles = generate_tiles_for_template(template, coord_fun, land)
+      new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, year)
 
       is_all_tiles_movable =
         Enum.all?(new_tiles, fn {{x, y}, _} ->
@@ -1023,11 +1113,11 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp generate_tiles_for_template(template, coord_fun, land) do
+  defp generate_tiles_for_template(template, coord_fun, land, characters_pid, year) do
     Enum.with_index(template, fn row, y ->
       Enum.with_index(row, fn tile, x ->
         coord = coord_fun.(x, y)
-        {coord, prepare_predefined_tile(tile, land, coord)}
+        {coord, prepare_predefined_tile(tile, land, coord, characters_pid, year)}
       end)
     end)
     |> List.flatten()
@@ -1035,22 +1125,34 @@ defmodule Europa.Server.Planet do
     |> Enum.into(%{})
   end
 
-  defp prepare_predefined_tile(%Enemy{stand_on: nil} = enemy, land, coord) do
+  defp prepare_predefined_tile(%Enemy{stand_on: nil} = enemy, land, coord, _, _) do
     stand_on = predefined_stand_on_tile(land, coord)
     Enemy.stand_on(enemy, stand_on)
   end
 
-  defp prepare_predefined_tile(%Loot.ItemBox{stand_on: nil} = item_box, land, coord) do
+  defp prepare_predefined_tile(%Loot.ItemBox{stand_on: nil} = item_box, land, coord, _, _) do
     stand_on = predefined_stand_on_tile(land, coord)
     Loot.ItemBox.stand_on(item_box, stand_on)
   end
 
-  defp prepare_predefined_tile(%Object{stand_on: nil} = object, land, coord) do
+  defp prepare_predefined_tile(%Object{stand_on: nil} = object, land, coord, _, _) do
     stand_on = predefined_stand_on_tile(land, coord)
     Object.stand_on(object, stand_on)
   end
 
-  defp prepare_predefined_tile(tile, _, _), do: tile
+  defp prepare_predefined_tile({:npc, stand_on}, land, coord, characters_pid, year) do
+    stand_on = stand_on || predefined_stand_on_tile(land, coord)
+
+    case Characters.pick(characters_pid, year - @disaster_year) do
+      {:ok, character} ->
+        Npc.new(character, stand_on)
+
+      _ ->
+        stand_on
+    end
+  end
+
+  defp prepare_predefined_tile(tile, _, _, _, _), do: tile
 
   defp predefined_stand_on_tile(land, {x, y}) do
     tile_by_perlin_noise(x, y, land.noise_coef)

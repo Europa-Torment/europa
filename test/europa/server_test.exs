@@ -7,7 +7,6 @@ defmodule Europa.ServerTest do
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Chat
-  alias Europa.Server.Characters.Character
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Errors
@@ -34,7 +33,9 @@ defmodule Europa.ServerTest do
     |> stub(:land_size, fn _ -> 1 end)
 
     PlayerManagerMock
-    |> stub(:new, fn -> build(:player, stand_on: @player_stand_on_tile, max_weight: 20.0) end)
+    |> stub(:new, fn character ->
+      build(:player, character: character, stand_on: @player_stand_on_tile, max_weight: 20.0)
+    end)
     |> stub(:stand_on, fn player, @snow -> player end)
 
     {:ok, server} = Server.start_link(Ecto.UUID.generate())
@@ -98,9 +99,27 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "get_current_character/1" do
-    test "returns current character", %{server: server} do
-      assert %Character{} = Server.get_current_character(server)
+  describe "interact/1" do
+    test "returns interaction", %{server: server} do
+      interaction = {:talk, build(:npc)}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, %Player{} ->
+        {:ok, planet, interaction}
+      end)
+
+      assert Server.interact(server) == {:ok, interaction}
+    end
+
+    test "returns nothing error", %{server: server} do
+      error = {:error, :nothing}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{}, %Player{} ->
+        error
+      end)
+
+      assert Server.interact(server) == error
     end
   end
 

@@ -3,10 +3,22 @@ defmodule Europa.Server.Action do
 
   alias Europa.Tools.Types
   alias Europa.Server.Enemy
+  alias Europa.Server.Npc
 
-  @allowed_action_types [:attack, :miss_attack, :chasing, :stay, :get_cold, :frostbite, :dehydration, :hunger, :warm_up]
+  @allowed_action_types [
+    :attack,
+    :miss_attack,
+    :chasing,
+    :stay,
+    :get_cold,
+    :frostbite,
+    :dehydration,
+    :hunger,
+    :warm_up,
+    :enemy_killed_npc
+  ]
 
-  @type subject :: Enemy.t() | :player
+  @type subject :: Enemy.t() | :player | {Enemy.t(), Npc.t()}
   @type action_type :: unquote(Types.one_of(@allowed_action_types))
 
   typedstruct enforce: true do

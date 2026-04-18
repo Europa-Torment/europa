@@ -4,6 +4,7 @@ defmodule Europa.Server.Player do
   use TypedStruct
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Characters.Character
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Action
@@ -26,6 +27,7 @@ defmodule Europa.Server.Player do
   @warm_tiles Tiles.warm_tiles()
 
   typedstruct do
+    field :character, Character.t(), enforce: true
     field :view_direction, Planet.direction(), enforce: true
     field :inventory, inventory(), enforce: true
     field :max_weight, number(), enforce: true
@@ -46,11 +48,12 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def new do
+  def new(character) do
     max_health = max_health()
     max_warm = max_warm()
 
     %__MODULE__{
+      character: character,
       view_direction: Planet.allowed_directions() |> Enum.random(),
       inventory: [],
       max_weight: max_weight(),
@@ -99,13 +102,10 @@ defmodule Europa.Server.Player do
       end
 
     [
+      {gettext("Name"), player.character.name},
+      {gettext("Age"), player.character.current_age},
+      {gettext("Gender"), Character.readable_gender(player.character)},
       {gettext("Health"), "#{player.health}/#{player.max_health}"},
-      {gettext("Warm"), "#{player.warm}/#{player.max_warm}"},
-      {gettext("Hunger"), player.hunger},
-      {gettext("Thirst"), player.thirst},
-      {gettext("Inventory"), "#{inventory_weight(player)}/#{player.max_weight}" <> gettext("kg")},
-      {gettext("Accuracy"), player.accuracy},
-      {gettext("Efficiency"), player.efficiency},
       {gettext("Weapon"), equiped_weapon},
       {gettext("Melee weapon"), equiped_melee_weapon},
       {gettext("Helmet"), equiped_helmet},

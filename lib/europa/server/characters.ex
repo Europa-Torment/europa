@@ -7,15 +7,27 @@ defmodule Europa.Server.Characters do
   @default_filename "characters.json"
 
   defmodule Character do
+    use Gettext, backend: Europa.Gettext
+
     @type gender :: :male | :female
+
+    @type story :: String.t()
+    @type stories :: list(story())
+    @type special_stories :: %{optional(String.t()) => stories()}
+
+    @type short_phrase :: String.t()
+    @type short_phrases :: list(short_phrase())
 
     typedstruct do
       field :name, String.t(), enforce: true
       field :gender, gender(), enforce: true
+      field :profession, String.t(), enforce: true
       field :age_at_disaster, integer(), enforce: true
       field :current_age, integer()
-      field :years, list(integer()), enforce: true
-      field :stories, list(String.t()), enforce: true
+      field :years, Range.t(), enforce: true
+      field :stories, stories(), enforce: true
+      field :special_stories, special_stories(), enforce: true
+      field :short_phrases, short_phrases(), enforce: true
     end
 
     @spec from_map!(map()) :: t()
@@ -23,9 +35,12 @@ defmodule Europa.Server.Characters do
       %Character{
         name: Map.fetch!(raw_character, "name"),
         gender: Map.fetch!(raw_character, "gender") |> gender_to_atom(),
+        profession: Map.fetch!(raw_character, "profession"),
         age_at_disaster: Map.fetch!(raw_character, "age_at_disaster"),
         years: Map.fetch!(raw_character, "years") |> parse_years(),
         stories: Map.fetch!(raw_character, "stories"),
+        special_stories: Map.get(raw_character, "special_stories", %{}),
+        short_phrases: Map.get(raw_character, "short_phrases", []),
         # will be determined later
         current_age: 0
       }
@@ -34,6 +49,35 @@ defmodule Europa.Server.Characters do
     @spec determine_current_age(t(), current_year_after_disaster :: pos_integer()) :: t()
     def determine_current_age(%__MODULE__{} = character, current_year_after_disaster) do
       struct!(character, current_age: character.age_at_disaster + current_year_after_disaster)
+    end
+
+    @spec readable_gender(t()) :: String.t()
+    def readable_gender(%__MODULE__{gender: gender}) do
+      case gender do
+        :male -> gettext("Male")
+        :female -> gettext("Female")
+      end
+    end
+
+    @spec random_story(t()) :: story()
+    def random_story(%__MODULE__{stories: stories}) do
+      Enum.random(stories)
+    end
+
+    @spec random_special_story(character :: t(), main_character :: t()) :: story() | nil
+    def random_special_story(character, main_character) do
+      case Map.get(character.special_stories, main_character.name) do
+        [] -> nil
+        special_stories when is_list(special_stories) -> Enum.random(special_stories)
+        _ -> nil
+      end
+    end
+
+    @spec short_phrase(t()) :: short_phrase() | nil
+    def short_phrase(%__MODULE__{short_phrases: []}), do: nil
+
+    def short_phrase(%__MODULE__{short_phrases: phrases}) do
+      Enum.random(phrases)
     end
 
     defp parse_years(%{"from" => from, "to" => to}) when is_integer(from) and is_integer(to) and from < to do
@@ -81,15 +125,14 @@ defmodule Europa.Server.Characters do
 
   def handle_call(:pick_main, _from, %State{characters: characters} = state) do
     main_character = Enum.random(characters)
-
     current_year_after_disaster = Enum.random(main_character.years)
-    main_character = Character.determine_current_age(main_character, current_year_after_disaster)
 
     filtered_characters =
       characters
       |> List.delete(main_character)
       |> contemporaries(main_character, current_year_after_disaster)
 
+    main_character = Character.determine_current_age(main_character, current_year_after_disaster)
     {:reply, {:ok, main_character}, struct!(state, characters: filtered_characters, main_character_picked?: true)}
   end
 

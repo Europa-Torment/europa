@@ -4,6 +4,7 @@ defmodule Europa.Server.PlayerTest do
 
   alias Europa.Server.Player
   alias Europa.Server.Planet
+  alias Europa.Server.Characters.Character
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon.Ammo
@@ -15,20 +16,25 @@ defmodule Europa.Server.PlayerTest do
   @snow_blood Tiles.tile(:snow).blood_version
 
   describe "new/0" do
-    test "builds player" do
-      assert %Player{} = Player.new()
+    setup do
+      character = build(:character)
+      {:ok, character: character}
     end
 
-    property "sets random max_weight" do
+    test "builds player", %{character: character} do
+      assert %Player{} = Player.new(character)
+    end
+
+    property "sets random max_weight", %{character: character} do
       check all(_ <- StreamData.integer(1..100)) do
-        max_weight = Player.new().max_weight |> round()
+        max_weight = Player.new(character).max_weight |> round()
         assert max_weight in max_weight_range()
       end
     end
 
-    property "sets random view_direction" do
+    property "sets random view_direction", %{character: character} do
       check all(_ <- StreamData.integer(1..100)) do
-        assert Player.new().view_direction in Planet.allowed_directions()
+        assert Player.new(character).view_direction in Planet.allowed_directions()
       end
     end
   end
@@ -38,13 +44,10 @@ defmodule Europa.Server.PlayerTest do
       player = build(:player, weapon_uuid: nil)
 
       expected_stats = [
+        {"Name", player.character.name},
+        {"Age", player.character.current_age},
+        {"Gender", Character.readable_gender(player.character)},
         {"Health", "#{player.health}/#{player.max_health}"},
-        {"Warm", "#{player.warm}/#{player.max_warm}"},
-        {"Hunger", player.hunger},
-        {"Thirst", player.thirst},
-        {"Inventory", "#{Player.inventory_weight(player)}/#{player.max_weight}kg"},
-        {"Accuracy", player.accuracy},
-        {"Efficiency", player.efficiency},
         {"Weapon", "No"},
         {"Melee weapon", "No"},
         {"Helmet", "No"},
@@ -73,13 +76,10 @@ defmodule Europa.Server.PlayerTest do
         )
 
       expected_stats = [
+        {"Name", player.character.name},
+        {"Age", player.character.current_age},
+        {"Gender", Character.readable_gender(player.character)},
         {"Health", "#{player.health}/#{player.max_health}"},
-        {"Warm", "#{player.warm}/#{player.max_warm}"},
-        {"Hunger", player.hunger},
-        {"Thirst", player.thirst},
-        {"Inventory", "#{Player.inventory_weight(player)}/#{player.max_weight}kg"},
-        {"Accuracy", player.accuracy},
-        {"Efficiency", player.efficiency},
         {"Weapon", weapon.name},
         {"Melee weapon", melee_weapon.name},
         {"Helmet", helmet.name},
