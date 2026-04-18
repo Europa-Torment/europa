@@ -40,7 +40,7 @@ config :europa, Europa.Server.Planet,
   generate_distance: 10,
   crop_land_size: 500_000,
   base_loot_generate_possibility: 5000,
-  base_enemy_generate_possibility: 4000,
+  base_enemy_generate_possibility: 5000,
   enemy_view_distance: 6,
   enemy_move_possibility: [from: 85, to: 100],
   npc_generate_possibility: 7000
