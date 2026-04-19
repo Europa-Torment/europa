@@ -139,6 +139,11 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
+  def increase_thirst(%__MODULE__{} = player, thirst_units) when is_integer(thirst_units) do
+    increase_attrs(player, %{thirst: thirst_units})
+  end
+
+  @impl true
   def add_item(%__MODULE__{} = player, item) do
     if Loot.Item.stackable?(item) && already_have_such_item?(player.inventory, item) do
       stack_items(player, item)

@@ -16,6 +16,7 @@ defmodule Europa.Server.PlayerTest do
   @snow_blood Tiles.tile(:snow).blood_version
 
   @max_radiation fetch_config!([:game_params, :player, :max_radiation])
+  @max_thirst fetch_config!([:game_params, :player, :max_thirst])
 
   describe "new/0" do
     setup do
@@ -136,6 +137,23 @@ defmodule Europa.Server.PlayerTest do
     test "doensn't exceed max_warm", %{player: player} do
       expected_warm = player.max_warm
       assert %Player{warm: ^expected_warm} = Player.warm_up(player, player.max_warm + 100)
+    end
+  end
+
+  describe "increase_thirst/2" do
+    setup do
+      player = build(:player, thirst: 0)
+      {:ok, player: player}
+    end
+
+    test "increases thirst", %{player: player} do
+      thirst_units = 20
+      expected_thirst = player.thirst + thirst_units
+      assert %Player{thirst: ^expected_thirst} = Player.increase_thirst(player, thirst_units)
+    end
+
+    test "doensn't exceed max thirst", %{player: player} do
+      assert %Player{thirst: @max_thirst} = Player.increase_thirst(player, @max_thirst + 100)
     end
   end
 

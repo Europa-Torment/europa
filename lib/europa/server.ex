@@ -489,6 +489,23 @@ defmodule Europa.Server do
 
   def handle_call(:interact, _from, state) do
     case PlanetManager.interact(state.planet, state.player) do
+      {:ok, updated_planet, {:drink, :radioactive_water} = interaction} ->
+        updated_player =
+          state.player
+          |> PlayerManager.increase_thirst(-10)
+          |> PlayerManager.add_radiation(10)
+
+        drink_radioactive_water_message = drink_radioactive_water_message()
+        radiation_message = radiation_contamination_message()
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(drink_radioactive_water_message)
+          |> Chat.add_message(radiation_message)
+
+        {:reply, {:ok, interaction}, struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
+         @inactivity_timeout_ms}
+
       {:ok, updated_planet, interaction} ->
         {:reply, {:ok, interaction}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
 
@@ -548,6 +565,7 @@ defmodule Europa.Server do
     updated_chat =
       state.chat
       |> add_action_messages_to_chat(actions)
+      |> maybe_add_radiation_contamination_message(state.player, updated_player)
 
     {:noreply,
      struct!(state,
@@ -735,6 +753,7 @@ defmodule Europa.Server do
           player
           |> PlayerManager.take_damage(enemy.damage)
           |> Player.stand_on(blood_tile)
+          |> maybe_add_radiation(enemy)
 
         %Action{action_type: :warm_up, subject: :player} ->
           PlayerManager.warm_up(player, @warm_up_quantity)
@@ -745,6 +764,16 @@ defmodule Europa.Server do
     end)
     |> maybe_finish_game(game_uuid, caller_pid)
   end
+
+  defp maybe_add_radiation(%Player{} = player, %Enemy{radioactive?: true}) do
+    if m_to_n?(1, 10) do
+      PlayerManager.add_radiation(player, 5)
+    else
+      player
+    end
+  end
+
+  defp maybe_add_radiation(player, _), do: player
 
   defp blood_tile(tile) do
     case Tiles.tile_by_atom_value(tile) do
@@ -899,6 +928,16 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :regular)
   end
 
+  defp radiation_contamination_message do
+    msg = gettext("You received a dose of radiation!")
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp drink_radioactive_water_message do
+    msg = gettext("You drank radioactive water!")
+    Chat.Message.new(msg, :warning)
+  end
+
   defp crop_planet_land_message do
     msg = TextGenerator.generate_text(:great_red_spot, [])
     Chat.Message.new(msg, :story)
@@ -920,8 +959,7 @@ defmodule Europa.Server do
   end
 
   defp action_message(%Action{subject: :player, action_type: :radiation_contamination}) do
-    msg = gettext("You received a dose of radiation!")
-    Chat.Message.new(msg, :danger)
+    radiation_contamination_message()
   end
 
   defp action_message(%Action{subject: :player, action_type: :radiation_damage}) do
@@ -978,6 +1016,15 @@ defmodule Europa.Server do
         message = Chat.Message.new(msg, :danger)
         Chat.add_message(chat, message)
     end)
+  end
+
+  defp maybe_add_radiation_contamination_message(%Chat{} = chat, %Player{} = player_before, %Player{} = player_after) do
+    if player_before.radiation < player_after.radiation do
+      message = radiation_contamination_message()
+      Chat.add_message(chat, message)
+    else
+      chat
+    end
   end
 
   defp initial_datetime do

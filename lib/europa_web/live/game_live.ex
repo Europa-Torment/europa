@@ -177,6 +177,23 @@ defmodule EuropaWeb.GameLive do
            item_box: nil
          )}
 
+      {:ok, {:drink, _}} ->
+        player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            chat: Server.get_chat(socket.assigns.server),
+            show_control_hints: false,
+            inventory: nil,
+            item_box: nil,
+            player: player,
+            player_stats: get_player_stats(player)
+          )
+          |> play_sound("drink")
+
+        {:noreply, socket}
+
       _ ->
         {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
     end

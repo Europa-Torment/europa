@@ -235,6 +235,7 @@ defmodule Europa.Support.Factory do
       damage: 5,
       move_distance: 2,
       accuracy: 5,
+      radioactive?: false,
       stand_on: Tiles.tile(:snow).atom_value,
       image_name: "monster_semiworm"
     }

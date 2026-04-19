@@ -62,7 +62,7 @@ defmodule Europa.Server.Planet do
 
   @type land :: list(list(tile()))
 
-  @type interaction :: {:talk, Npc.t()}
+  @type interaction :: {:talk, Npc.t()} | {:drink, :radioactive_water}
 
   @ice Tiles.tile(:ice).atom_value
   @water Tiles.tile(:water).atom_value
@@ -251,6 +251,10 @@ defmodule Europa.Server.Planet do
 
   defp do_interact(%Npc{} = npc, planet, _player) do
     {:ok, planet, {:talk, npc}}
+  end
+
+  defp do_interact(@water, planet, _player) do
+    {:ok, planet, {:drink, :radioactive_water}}
   end
 
   defp do_interact(_, _, _) do

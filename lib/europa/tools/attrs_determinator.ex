@@ -42,7 +42,7 @@ defmodule Europa.Tools.AttrsDeterminator do
     end
   end
 
-  defp determine_attr(_attrs, value) when is_number(value) or is_binary(value) do
+  defp determine_attr(_attrs, value) when is_number(value) or is_binary(value) or is_boolean(value) do
     value
   end
 

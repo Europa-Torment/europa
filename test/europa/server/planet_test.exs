@@ -464,6 +464,62 @@ defmodule Europa.Server.PlanetTest do
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
+  @land_player_up_close_to_water [
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @w, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 ]
+                                 |> PlanetLandConverter.from_matrix()
+
+  @land_player_down_close_to_water [
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @w, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   ]
+                                   |> PlanetLandConverter.from_matrix()
+
+  @land_player_left_close_to_water [
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @pl, @w, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   ]
+                                   |> PlanetLandConverter.from_matrix()
+
+  @land_player_right_close_to_water [
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @w, @pl, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    ]
+                                    |> PlanetLandConverter.from_matrix()
+
   @land_enemy_right_close_to_npc [
                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                    [@s, @s, @en, @n, @pl, @s, @s, @s, @s, @s],
@@ -990,6 +1046,30 @@ defmodule Europa.Server.PlanetTest do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
       assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+    end
+
+    test "returns drink radioactive water (up)" do
+      player = build(:player, view_direction: :up)
+      planet = build(:planet, land: @land_player_up_close_to_water, current_coord: {4, 7})
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+    end
+
+    test "returns drink radioactive water (down)" do
+      player = build(:player, view_direction: :down)
+      planet = build(:planet, land: @land_player_down_close_to_water, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+    end
+
+    test "returns drink radioactive water (left)" do
+      player = build(:player, view_direction: :left)
+      planet = build(:planet, land: @land_player_right_close_to_water, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+    end
+
+    test "returns drink radioactive water (right)" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_water, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
     end
 
     test "returns error when there is nothing to interact with" do

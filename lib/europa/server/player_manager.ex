@@ -134,7 +134,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Increases player's radiation on given `radiation`.
   """
-  @callback add_radiation(Player.t(), radiation :: pos_integer()) :: Player.t()
+  @callback add_radiation(Player.t(), radiation_units :: pos_integer()) :: Player.t()
 
   @callback consume_supply(Player.t(), Loot.uuid()) ::
               {:ok, Player.t(), item :: Loot.Item.item()}
@@ -154,6 +154,11 @@ defmodule Europa.Server.PlayerManager do
   Increases player's `warm`.
   """
   @callback warm_up(Player.t(), warm_units :: pos_integer()) :: Player.t()
+
+  @doc """
+  Increases player's `thirst`.
+  """
+  @callback increase_thirst(Player.t(), thirst_units :: integer()) :: Player.t()
 
   @callback tick(Player.t(), Server.move_cost()) :: {:ok, Player.t(), list(Action.t())}
 
@@ -206,6 +211,10 @@ defmodule Europa.Server.PlayerManager do
   def weight_ratio(player), do: manager_impl().weight_ratio(player)
 
   def warm_up(player, warm_units), do: manager_impl().warm_up(player, warm_units)
+
+  def increase_thirst(player, thirst_units), do: manager_impl().increase_thirst(player, thirst_units)
+
+  def add_radiation(player, radiation_units), do: manager_impl().add_radiation(player, radiation_units)
 
   def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
 

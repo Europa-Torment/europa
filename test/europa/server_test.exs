@@ -100,13 +100,28 @@ defmodule Europa.ServerTest do
   end
 
   describe "interact/1" do
-    test "returns interaction", %{server: server} do
+    test "returns interaction (talk)", %{server: server} do
       interaction = {:talk, build(:npc)}
 
       PlanetManagerMock
       |> expect(:interact, fn %Planet{} = planet, %Player{} ->
         {:ok, planet, interaction}
       end)
+
+      assert Server.interact(server) == {:ok, interaction}
+    end
+
+    test "returns interaction (drink radioactive water)", %{server: server} do
+      interaction = {:drink, :radioactive_water}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, %Player{} ->
+        {:ok, planet, interaction}
+      end)
+
+      PlayerManagerMock
+      |> expect(:increase_thirst, fn %Player{} = player, -10 -> player end)
+      |> expect(:add_radiation, fn %Player{} = player, 10 -> player end)
 
       assert Server.interact(server) == {:ok, interaction}
     end

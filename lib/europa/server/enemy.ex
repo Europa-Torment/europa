@@ -23,6 +23,7 @@ defmodule Europa.Server.Enemy do
     field :damage, pos_integer()
     field :move_distance, pos_integer()
     field :accuracy, pos_integer()
+    field :radioactive?, boolean()
     field :stand_on, Planet.tile()
     field :image_name, String.t()
   end
@@ -36,6 +37,7 @@ defmodule Europa.Server.Enemy do
       damage: Map.fetch!(attrs, :damage),
       move_distance: Map.fetch!(attrs, :move_distance),
       accuracy: Map.fetch!(attrs, :accuracy),
+      radioactive?: Map.get(attrs, :radioactive, false),
       image_name: Map.fetch!(attrs, :image_name),
       stand_on: Tiles.tile(:snow).atom_value
     }
