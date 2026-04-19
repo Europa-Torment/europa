@@ -96,9 +96,6 @@ config :europa, :game_params,
     max_hunger: 100,
     max_radiation: 100,
     low_health_ratio: 0.3
-  ],
-  loot: [
-    max_items_in_item_box: 6
   ]
 
 config :europa, :control_bindings,

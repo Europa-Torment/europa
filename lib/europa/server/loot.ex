@@ -20,9 +20,6 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
-  import Europa.Tools.Conf
-
-  @max_items_in_item_box fetch_config!([:game_params, :loot, :max_items_in_item_box])
 
   @weighted_item_types [
     {:weapon, gettext("Weapons"), 0.4},
@@ -38,9 +35,22 @@ defmodule Europa.Server.Loot do
 
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
-  @outdoor_item_box_types [:box, :monster_body, :human_body, :crashed_shuttle, :bunch]
-  @furniture_item_box_types [:drawler, :refrigerator]
-  @allowed_item_box_types @outdoor_item_box_types ++ @furniture_item_box_types
+  @outdoor_item_boxes %{
+    box: %{max_items: 10, item_types: :all},
+    monster_body: %{max_items: 4, item_types: [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots]},
+    human_body: %{max_items: 5, item_types: :all},
+    crashed_shuttle: %{max_items: 5, item_types: :all},
+    bunch: %{max_items: 3, item_types: :all}
+  }
+
+  @furniture_item_boxes %{
+    drawler: %{max_items: 6, item_types: :all},
+    refrigerator: %{max_items: 6, item_types: [:supply]}
+  }
+
+  @allowed_item_boxes Map.merge(@outdoor_item_boxes, @furniture_item_boxes)
+
+  @allowed_item_box_types Map.keys(@allowed_item_boxes)
 
   @templates_path "/items/"
 
@@ -208,7 +218,7 @@ defmodule Europa.Server.Loot do
 
   @spec furniture_item_box_types() :: [item_box_type(), ...]
   def furniture_item_box_types do
-    @furniture_item_box_types
+    Map.keys(@furniture_item_boxes)
   end
 
   @spec new_item(item_type(), attrs()) :: Item.t()
@@ -240,9 +250,16 @@ defmodule Europa.Server.Loot do
     }
   end
 
-  @spec generate_item() :: Item.t()
-  def generate_item do
-    @weighted_item_types
+  @spec generate_item_for_types(list() | :all) :: Item.t()
+  def generate_item_for_types(allowed_types) when is_list(allowed_types) or allowed_types == :all do
+    case allowed_types do
+      :all ->
+        @weighted_item_types
+
+      allowed_types ->
+        @weighted_item_types
+        |> Enum.filter(fn {type, _, _} -> type in allowed_types end)
+    end
     |> Enum.map(fn {item_type, _, weight} -> {item_type, weight} end)
     |> WeightedRandom.take_one()
     |> generate_item()
@@ -261,17 +278,22 @@ defmodule Europa.Server.Loot do
 
   @spec generate_item_box() :: ItemBox.t()
   def generate_item_box do
-    @outdoor_item_box_types
+    @outdoor_item_boxes
+    |> Map.keys()
     |> Enum.random()
     |> generate_item_box()
   end
 
   @spec generate_item_box(item_box_type(), Planet.tile()) :: ItemBox.t()
   def generate_item_box(item_box_type, stand_on \\ nil) when item_box_type in @allowed_item_box_types do
+    item_box_params = Map.fetch!(@allowed_item_boxes, item_box_type)
+    allowed_item_types = item_box_params.item_types
+    max_items = item_box_params.max_items
+
     items =
-      case random_number(@max_items_in_item_box) do
-        1 -> [generate_item()]
-        n -> Enum.map(1..n, fn _ -> generate_item() end)
+      case random_number(max_items) do
+        1 -> [generate_item_for_types(allowed_item_types)]
+        n -> Enum.map(1..n, fn _ -> generate_item_for_types(allowed_item_types) end)
       end
 
     new_item_box(item_box_type, items, stand_on)

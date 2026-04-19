@@ -21,7 +21,7 @@ defmodule Europa.Server.Planet.Predefined do
 
   @categories %{
     building: %{dir: "/buildings", weight: 0.4},
-    situation: %{dir: "/situations", weight: 0.7}
+    situation: %{dir: "/situations", weight: 0.5}
   }
 
   @futniture_item_box_types Loot.furniture_item_box_types()
