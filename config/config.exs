@@ -17,7 +17,7 @@ config :europa, EuropaWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
     formats: [html: EuropaWeb.ErrorHTML, json: EuropaWeb.ErrorJSON],
-    layout: false
+    root_layout: {EuropaWeb.Layouts, :root}
   ],
   pubsub_server: Europa.PubSub,
   live_view: [signing_salt: "QIKDydtT"]

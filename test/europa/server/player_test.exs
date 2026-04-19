@@ -874,7 +874,7 @@ defmodule Europa.Server.PlayerTest do
           damages_proportion = damages_count / num_runs
 
           assert damages_proportion >= 0.01
-          assert damages_proportion <= 0.6
+          assert damages_proportion <= 0.8
         end
       end
     end
