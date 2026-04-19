@@ -713,7 +713,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Move/punch down"), @move_down_keys),
       control_hint(gettext("Move/punch left"), @move_left_keys),
       control_hint(gettext("Move/punch right"), @move_right_keys),
-      control_hint(gettext("Interact"), @interact_keys),
+      control_hint(gettext("Interact with environment"), @interact_keys),
       control_hint(gettext("Loot"), @loot_keys),
       control_hint(gettext("Inventory"), @inventory_keys),
       control_hint(gettext("Control hints"), @control_hints_keys),

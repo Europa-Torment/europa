@@ -504,7 +504,7 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  describe "add_radiation/2" do
+  describe "increase_radiation/2" do
     setup do
       player = build(:player, radiation: 0)
       {:ok, player: player}
@@ -514,12 +514,17 @@ defmodule Europa.Server.PlayerTest do
       radiation = 20
       expected_radiation = player.radiation + radiation
 
-      assert %Player{radiation: ^expected_radiation} = Player.add_radiation(player, radiation)
+      assert %Player{radiation: ^expected_radiation} = Player.increase_radiation(player, radiation)
     end
 
     test "not increases max radiation", %{player: player} do
       radiation = 100_000
-      assert %Player{radiation: @max_radiation} = Player.add_radiation(player, radiation)
+      assert %Player{radiation: @max_radiation} = Player.increase_radiation(player, radiation)
+    end
+
+    test "no negative radiation", %{player: player} do
+      radiation = -100_000
+      assert %Player{radiation: 0} = Player.increase_radiation(player, radiation)
     end
   end
 
@@ -870,6 +875,29 @@ defmodule Europa.Server.PlayerTest do
 
           assert damages_proportion >= 0.01
           assert damages_proportion <= 0.6
+        end
+      end
+    end
+
+    property "decreases player radiation" do
+      player = build(:player, radiation: 10)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          decreased_radiation_count =
+            Enum.count(results, fn {:ok, updated_player, _actions} ->
+              updated_player.radiation < player.radiation
+            end)
+
+          decreased_radiation_proportion = decreased_radiation_count / num_runs
+
+          assert decreased_radiation_proportion >= 0.0001
+          assert decreased_radiation_proportion <= 1.0
         end
       end
     end

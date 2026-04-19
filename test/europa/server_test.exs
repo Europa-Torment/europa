@@ -121,7 +121,7 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:increase_thirst, fn %Player{} = player, -10 -> player end)
-      |> expect(:add_radiation, fn %Player{} = player, 10 -> player end)
+      |> expect(:increase_radiation, fn %Player{} = player, 10 -> player end)
 
       assert Server.interact(server) == {:ok, interaction}
     end

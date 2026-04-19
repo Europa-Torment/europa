@@ -134,7 +134,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Increases player's radiation on given `radiation`.
   """
-  @callback add_radiation(Player.t(), radiation_units :: pos_integer()) :: Player.t()
+  @callback increase_radiation(Player.t(), radiation_units :: pos_integer()) :: Player.t()
 
   @callback consume_supply(Player.t(), Loot.uuid()) ::
               {:ok, Player.t(), item :: Loot.Item.item()}
@@ -214,7 +214,7 @@ defmodule Europa.Server.PlayerManager do
 
   def increase_thirst(player, thirst_units), do: manager_impl().increase_thirst(player, thirst_units)
 
-  def add_radiation(player, radiation_units), do: manager_impl().add_radiation(player, radiation_units)
+  def increase_radiation(player, radiation_units), do: manager_impl().increase_radiation(player, radiation_units)
 
   def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
 

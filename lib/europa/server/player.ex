@@ -291,8 +291,8 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def add_radiation(%__MODULE__{} = player, radiation) when is_integer(radiation) and radiation > 0 do
-    updated_radiation = min(player.radiation + radiation, @max_radiation)
+  def increase_radiation(%__MODULE__{} = player, radiation) when is_integer(radiation) do
+    updated_radiation = min(player.radiation + radiation, @max_radiation) |> max(0)
     struct!(player, radiation: updated_radiation)
   end
 
@@ -410,7 +410,7 @@ defmodule Europa.Server.Player do
       fn player -> get_thirsty(player) end,
       fn player -> get_hungry(player) end,
       fn player -> maybe_warm_up(player) end,
-      fn player -> maybe_add_radiation(player) end,
+      fn player -> maybe_increase_or_decrease_radiation(player) end,
       fn player -> take_radiation_damage(player) end
     ]
 
@@ -495,7 +495,7 @@ defmodule Europa.Server.Player do
     {player, []}
   end
 
-  defp maybe_add_radiation(player) do
+  defp maybe_increase_or_decrease_radiation(player) do
     radiation_factors = [
       {player.helmet_uuid, _penalty = 1},
       {player.suit_uuid, _penalty = 3},
@@ -508,10 +508,15 @@ defmodule Europa.Server.Player do
         _, acc -> acc
       end)
 
-    if radiation > 0 do
-      {add_radiation(player, radiation), [Action.new(:player, :radiation_contamination)]}
-    else
-      {player, []}
+    cond do
+      radiation > 0 ->
+        {increase_radiation(player, radiation), [Action.new(:player, :radiation_contamination)]}
+
+      radiation == 0 && player.radiation > 0 && m_to_n?(1, 30) ->
+        {increase_radiation(player, -1), []}
+
+      true ->
+        {player, []}
     end
   end
 

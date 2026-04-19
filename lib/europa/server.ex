@@ -493,7 +493,7 @@ defmodule Europa.Server do
         updated_player =
           state.player
           |> PlayerManager.increase_thirst(-10)
-          |> PlayerManager.add_radiation(10)
+          |> PlayerManager.increase_radiation(10)
 
         drink_radioactive_water_message = drink_radioactive_water_message()
         radiation_message = radiation_contamination_message()
@@ -767,7 +767,7 @@ defmodule Europa.Server do
 
   defp maybe_add_radiation(%Player{} = player, %Enemy{radioactive?: true}) do
     if m_to_n?(1, 10) do
-      PlayerManager.add_radiation(player, 5)
+      PlayerManager.increase_radiation(player, 5)
     else
       player
     end
