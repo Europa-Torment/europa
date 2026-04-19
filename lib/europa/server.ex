@@ -965,7 +965,7 @@ defmodule Europa.Server do
 
       {%Npc{} = npc, _}, chat ->
         msg = Gettext.gettext(Europa.Gettext, "You killed #{npc.character.name}")
-        message = Chat.Message.new(msg, :regular)
+        message = Chat.Message.new(msg, :danger)
         Chat.add_message(chat, message)
     end)
   end
