@@ -57,6 +57,20 @@
             "We've been keeping a low profile most of the time, but now, after the disaster, it's time to act. Those idiots at the WCC, with their negligence, have done all the work for us; all we have to do is take matters into our own hands. All doors are open.",
             "Even before the disaster, this so-called 'president of humanity' deserved to be deported to Earth to rot alive from radiation. Now he deserves to become breakfast for one of these creatures. I'm ready to lie down on the next plate just to see it with my own eyes."
         ],
+        "special_stories": {
+            "Henry Davies": [
+                "I can't believe my eyes! Why didn't you fly away, you idiot? Are you couldn't fit into the shuttle with a ton of other people's money?",
+                "Are you so carried away playing the King of Europa that you've decided to lay down your bones on it? I'll help you if you ask nicely.",
+                "Did the mouse come into the cat's mouth on its own?",
+                "This isn't funny anymore, I can't believe we're standing here side by side.",
+                "So that's why it smelled like shit! The wind came before you. Even the spacesuit didn't help."
+            ],
+            "Phil McLee": [
+                "Phil? I'm glad you're alive, but what are you doing here? Where are the others?",
+                "What the hell are you doing here?",
+                "After the explosion, the WSS is weaker than ever. There's no one left to prove anything to, but I want to find Davies, if he's still alive. If not, I'll shoot what's left of him, then build a new reactor on his snowy grave and blow it up again."
+            ]
+        },
         "short_phrases": [
             "Idiots!",
             "It's time to act",
@@ -76,6 +90,12 @@
             "A few years ago, anyone would have sold their own mother to be in my shoes. Now I'm ready to eat rotten canned food and drink water from a puddle. Now even I would prefer to be a worm in someone's ass than myself.",
             "Would all this have happened if the SSB terrorists had killed me that time? Just a couple of inches..."
         ],
+        "special_stories": {
+            "Stanislav Mishchenko": [
+                "You? Hahaha! Are you going to kill me? I'm doomed one way or another. Will you kill me or leave me for dessert for these ghouls?",
+                "This time, hold the gun with both hands and try not to shake, sucker."
+            ]
+        },
         "short_phrases": [
             "I'll fix everything, I guess.",
             "Who is to blame?",
@@ -83,7 +103,7 @@
         ]
     },
     {
-        "name": "Phill McLee",
+        "name": "Phil McLee",
         "gender": "male",
         "profession": "Space criminal, retired soldier.",
         "age_at_disaster": 20,
@@ -93,6 +113,14 @@
             "Stanislav once mentioned that after his death I would take his place. This information haunts me. I never wanted to take on such a burden before, but now I find myself terrified, thinking I'm ready to hasten his death to bring that moment closer.",
             "I'd served in the air force for over five years; if only there was even one surviving ship here... But where would I go? All the generation ships are already somewhere at the edge of the solar system, and a regular wreck could only get me to Io at best."
         ],
+        "special_stories": {
+            "Stanislav Mishchenko": [
+                "Sir, is that you? I thought I was the only one left! After the explosion, the military police from the WCC came running towards us. They started beating the crap out of the guys, I shot two and ran away without looking back. Where are we?",
+                "What's going to happen to us now? We've dreamed of destroying the WSS our whole lives, but what do we do now? Do we have a plan?",
+                "I met one of ours, but at that moment the ghoul was already sucking in his intestines like fucking spaghetti...",
+                "I've killed a hundred people on Europa, two hundred on Earth, without flinching. But when I see these creatures, I want to hide in a corner like a child... What will happen to us now?"
+            ]
+        },
         "short_phrases": [
             "...",
             "Damn it! Damn it!"
