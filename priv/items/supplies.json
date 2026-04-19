@@ -46,6 +46,18 @@
         "random_weight": 0.8
     },
     {
+        "name": "Bottle of water with radiation", 
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "drink",
+        "properties": {
+            "thirst": -10,
+            "radiation": 10
+        },
+        "weight": 0.5,
+        "random_weight": 1.0
+    },
+    {
         "name": "Can of expired Earth beer", 
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -91,6 +103,7 @@
             "hunger": 5,
             "health": -5,
             "thirst": -10,
+            "radiation": -5,
             "warm": 50
         },
         "weight": 0.5,
@@ -120,6 +133,17 @@
             "warm": 5
         },
         "weight": 0.5,
+        "random_weight": 0.4
+    },
+    {
+        "name": "Cystamin",
+        "count": {"from": 1, "to": 10},
+        "consume_cost": 1,
+        "sound_name": "eat",
+        "properties": {
+            "radiation": -50
+        },
+        "weight": 0.1,
         "random_weight": 0.4
     }
 ]

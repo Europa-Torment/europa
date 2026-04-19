@@ -37,6 +37,7 @@ defmodule EuropaWeb.GameCompotents do
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
+
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
   @tiles_image_names Tiles.image_names()
@@ -110,19 +111,14 @@ defmodule EuropaWeb.GameCompotents do
             💙 {@player_stats.health}/{@player_stats.max_health}
           </div>
         </li>
-        <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
-          <div class="tooltip" data-tip={gettext("Inventory")}>
-            💼 {@player_stats.inventory_weight}/{@player_stats.max_weight}
-          </div>
-        </li>
         <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Warm")}>
             ❄️ {@player_stats.warm}/{@player_stats.max_warm}
           </div>
         </li>
-        <li>
-          <div class="tooltip" data-tip={gettext("Accuracy")}>
-            🎯 {@player_stats.accuracy}
+        <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
+          <div class="tooltip" data-tip={gettext("Inventory")}>
+            💼 {@player_stats.inventory_weight}/{@player_stats.max_weight}
           </div>
         </li>
         <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
@@ -131,13 +127,23 @@ defmodule EuropaWeb.GameCompotents do
           </div>
         </li>
         <li>
-          <div class="tooltip" data-tip={gettext("Efficiency")}>
-            🦌 {@player_stats.efficiency}
+          <div class="tooltip" data-tip={gettext("Accuracy")}>
+            🎯 {@player_stats.accuracy}
           </div>
         </li>
         <li class={"#{hunger_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Hunger")}>
             🍗 {@player_stats.hunger}
+          </div>
+        </li>
+        <li>
+          <div class="tooltip" data-tip={gettext("Efficiency")}>
+            🦌 {@player_stats.efficiency}
+          </div>
+        </li>
+        <li class={"#{radiation_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
+          <div class="tooltip" data-tip={gettext("Radiation")}>
+            ☢️ {@player_stats.radiation}
           </div>
         </li>
       </ul>
@@ -787,6 +793,14 @@ defmodule EuropaWeb.GameCompotents do
 
   defp hunger_stats_class(player_stats) do
     if player_stats.hunger > 0 && @max_hunger / player_stats.hunger <= 1.8 do
+      "text-red-500"
+    else
+      ""
+    end
+  end
+
+  defp radiation_stats_class(player_stats) do
+    if player_stats.radiation > 0 do
       "text-red-500"
     else
       ""

@@ -22,6 +22,8 @@ defmodule Europa.Server.Player do
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
+  @max_radiation fetch_config!([:game_params, :player, :max_radiation])
+
   @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
 
   @warm_tiles Tiles.warm_tiles()
@@ -39,6 +41,7 @@ defmodule Europa.Server.Player do
     field :warm, pos_integer(), enforce: true
     field :hunger, non_neg_integer(), enforce: true
     field :thirst, non_neg_integer(), enforce: true
+    field :radiation, non_neg_integer(), enforce: true
     field :stand_on, Planet.tile(), enforce: true
     field :weapon_uuid, Loot.uuid()
     field :melee_weapon_uuid, Loot.uuid()
@@ -65,6 +68,7 @@ defmodule Europa.Server.Player do
       warm: max_warm,
       hunger: hunger(),
       thirst: thirst(),
+      radiation: 0,
       stand_on: Tiles.tile(:snow).atom_value
     }
   end
@@ -282,6 +286,12 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
+  def add_radiation(%__MODULE__{} = player, radiation) when is_integer(radiation) and radiation > 0 do
+    updated_radiation = min(player.radiation + radiation, @max_radiation)
+    struct!(player, radiation: updated_radiation)
+  end
+
+  @impl true
   def reload_weapon(%__MODULE__{} = player) do
     with {:ok, weapon} <- get_equiped_weapon(player),
          :ok <- Weapon.check_reload_needed(weapon),
@@ -394,7 +404,9 @@ defmodule Europa.Server.Player do
       fn player -> get_cold(player) end,
       fn player -> get_thirsty(player) end,
       fn player -> get_hungry(player) end,
-      fn player -> maybe_warm_up(player) end
+      fn player -> maybe_warm_up(player) end,
+      fn player -> maybe_add_radiation(player) end,
+      fn player -> take_radiation_damage(player) end
     ]
 
     {updated_player, actions} =
@@ -476,6 +488,34 @@ defmodule Europa.Server.Player do
 
   defp maybe_warm_up(player) do
     {player, []}
+  end
+
+  defp maybe_add_radiation(player) do
+    radiation_factors = [
+      {player.helmet_uuid, _penalty = 1},
+      {player.suit_uuid, _penalty = 3},
+      {player.boots_uuid, _penalty = 1}
+    ]
+
+    radiation =
+      Enum.reduce(radiation_factors, 0, fn
+        {nil, penalty}, acc -> acc + penalty
+        _, acc -> acc
+      end)
+
+    if radiation > 0 do
+      {add_radiation(player, radiation), [Action.new(:player, :radiation_contamination)]}
+    else
+      {player, []}
+    end
+  end
+
+  defp take_radiation_damage(player) do
+    if player.radiation > 0 && m_to_n?(player.radiation, @max_radiation) do
+      {take_damage(player, 4), [Action.new(:player, :radiation_damage)]}
+    else
+      {player, []}
+    end
   end
 
   defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do
@@ -649,6 +689,7 @@ defmodule Europa.Server.Player do
         :warm -> struct!(player, warm: min(player.max_warm, player.warm + attr_value))
         :hunger -> struct!(player, hunger: max(0, player.hunger + attr_value) |> min(@max_hunger))
         :thirst -> struct!(player, thirst: max(0, player.thirst + attr_value) |> min(@max_thirst))
+        :radiation -> struct!(player, radiation: max(0, player.radiation + attr_value) |> min(@max_radiation))
         _ -> player
       end
     end)

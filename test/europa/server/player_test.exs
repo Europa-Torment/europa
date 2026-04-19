@@ -15,6 +15,8 @@ defmodule Europa.Server.PlayerTest do
   @snow Tiles.tile(:snow).atom_value
   @snow_blood Tiles.tile(:snow).blood_version
 
+  @max_radiation fetch_config!([:game_params, :player, :max_radiation])
+
   describe "new/0" do
     setup do
       character = build(:character)
@@ -484,6 +486,25 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "add_radiation/2" do
+    setup do
+      player = build(:player, radiation: 0)
+      {:ok, player: player}
+    end
+
+    test "increases player radiation", %{player: player} do
+      radiation = 20
+      expected_radiation = player.radiation + radiation
+
+      assert %Player{radiation: ^expected_radiation} = Player.add_radiation(player, radiation)
+    end
+
+    test "not increases max radiation", %{player: player} do
+      radiation = 100_000
+      assert %Player{radiation: @max_radiation} = Player.add_radiation(player, radiation)
+    end
+  end
+
   describe "reload_weapon/1" do
     setup do
       weapon = build(:weapon, rounds_loaded: 10, magazine_size: 20)
@@ -609,6 +630,17 @@ defmodule Europa.Server.PlayerTest do
       player = build(:player, health: 10, inventory: [supply])
 
       assert {:ok, %Player{inventory: []}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
+    end
+
+    test "decreases player radiation" do
+      supply = build(:supply, count: 3, properties: build(:supply_properties, radiation: -10))
+      player = build(:player, radiation: 100, inventory: [supply])
+
+      assert {:ok, %Player{radiation: updated_radiation, inventory: [updated_supply]}, updated_supply} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_radiation == player.radiation + supply.properties.radiation
+      assert updated_supply.count == supply.count - 1
     end
   end
 
@@ -771,6 +803,55 @@ defmodule Europa.Server.PlayerTest do
 
           assert get_hungry_proportion >= 0.01
           assert get_hungry_proportion <= 1.0
+        end
+      end
+    end
+
+    test "adds radiation when player not wear helmet" do
+      player = build(:player, helmet_uuid: nil, radiation: 0)
+      expected_action = build(:action, subject: :player, action_type: :radiation_contamination)
+
+      assert {:ok, %Player{radiation: 1}, actions} = Player.tick(player, 1)
+      assert expected_action in actions
+    end
+
+    test "adds radiation when player not wear suit" do
+      player = build(:player, suit_uuid: nil, radiation: 0)
+      expected_action = build(:action, subject: :player, action_type: :radiation_contamination)
+
+      assert {:ok, %Player{radiation: 3}, actions} = Player.tick(player, 1)
+      assert expected_action in actions
+    end
+
+    test "adds radiation when player not wear boots" do
+      player = build(:player, boots_uuid: nil, radiation: 0)
+      expected_action = build(:action, subject: :player, action_type: :radiation_contamination)
+
+      assert {:ok, %Player{radiation: 1}, actions} = Player.tick(player, 1)
+      assert expected_action in actions
+    end
+
+    property "damages player with radiation" do
+      player =
+        build(:player, health: 100, max_warm: 100, warm: 100, thirst: 0, hunger: 0, radiation: div(@max_radiation, 2))
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          damages_count =
+            Enum.count(results, fn {:ok, updated_player, actions} ->
+              updated_player.health < player.health &&
+                Enum.find(actions, fn action -> action.action_type == :radiation_damage end)
+            end)
+
+          damages_proportion = damages_count / num_runs
+
+          assert damages_proportion >= 0.01
+          assert damages_proportion <= 0.6
         end
       end
     end

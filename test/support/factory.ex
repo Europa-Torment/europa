@@ -162,16 +162,27 @@ defmodule Europa.Support.Factory do
   @spec supply_properties_factory() :: Loot.Supply.Properties.t()
   def supply_properties_factory do
     %Loot.Supply.Properties{
-      health: 10
+      health: 10,
+      thirst: 10,
+      hunger: 10,
+      radiation: 10,
+      warm: 10
     }
   end
 
   @spec player_factory() :: Player.t()
   def player_factory do
+    helmet = build(:helmet)
+    suit = build(:suit)
+    boots = build(:boots)
+
     %Player{
       character: build(:character),
       view_direction: :up,
       inventory: [],
+      helmet_uuid: helmet.uuid,
+      suit_uuid: suit.uuid,
+      boots_uuid: boots.uuid,
       max_weight: 10.0,
       max_health: 100,
       health: 50,
@@ -181,6 +192,7 @@ defmodule Europa.Support.Factory do
       warm: 100,
       hunger: 0,
       thirst: 0,
+      radiation: 0,
       stand_on: Tiles.tile(:snow).atom_value
     }
   end

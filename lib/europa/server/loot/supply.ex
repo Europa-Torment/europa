@@ -10,6 +10,7 @@ defmodule Europa.Server.Loot.Supply do
       field :warm, integer() | nil
       field :hunger, integer() | nil
       field :thirst, integer() | nil
+      field :radiation, integer() | nil
     end
 
     @spec new(map()) :: t()
@@ -18,7 +19,8 @@ defmodule Europa.Server.Loot.Supply do
         health: Map.get(attrs, :health),
         warm: Map.get(attrs, :warm),
         hunger: Map.get(attrs, :hunger),
-        thirst: Map.get(attrs, :thirst)
+        thirst: Map.get(attrs, :thirst),
+        radiation: Map.get(attrs, :radiation)
       }
     end
   end
@@ -87,6 +89,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
     properties_attrs =
       supply.properties
       |> significant_properties()
+      |> Enum.sort()
       |> Enum.map(fn {property, value} ->
         name =
           case property do
@@ -94,6 +97,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
             :warm -> gettext("Warm")
             :hunger -> gettext("Hunger")
             :thirst -> gettext("Thirst")
+            :radiation -> gettext("Radiation")
           end
 
         {property, name, value}
@@ -147,6 +151,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
         :warm -> "W:#{value}"
         :hunger -> "HG:#{value}"
         :thirst -> "TH:#{value}"
+        :radiation -> "RD:#{value}"
       end
     end)
   end

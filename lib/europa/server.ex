@@ -919,6 +919,16 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :danger)
   end
 
+  defp action_message(%Action{subject: :player, action_type: :radiation_contamination}) do
+    msg = gettext("You received a dose of radiation!")
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: :radiation_damage}) do
+    msg = gettext("You are dying of radiation!")
+    Chat.Message.new(msg, :danger)
+  end
+
   defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :chasing}) do
     msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} is chasing you")
     Chat.Message.new(msg, :warning)

@@ -94,6 +94,7 @@ config :europa, :game_params,
     ],
     max_thirst: 100,
     max_hunger: 100,
+    max_radiation: 100,
     low_health_ratio: 0.3
   ],
   loot: [

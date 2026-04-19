@@ -13,6 +13,8 @@ defmodule Europa.Server.Action do
     :get_cold,
     :frostbite,
     :dehydration,
+    :radiation_contamination,
+    :radiation_damage,
     :hunger,
     :warm_up,
     :enemy_killed_npc

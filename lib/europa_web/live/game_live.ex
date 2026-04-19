@@ -745,6 +745,7 @@ defmodule EuropaWeb.GameLive do
       max_warm: player.max_warm,
       hunger: player.hunger,
       thirst: player.thirst,
+      radiation: player.radiation,
       max_weight: player.max_weight,
       inventory_weight: inventory_weight,
       accuracy: player.accuracy,

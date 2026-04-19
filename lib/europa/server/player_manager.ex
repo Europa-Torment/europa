@@ -131,6 +131,11 @@ defmodule Europa.Server.PlayerManager do
   """
   @callback take_damage(Player.t(), damage :: pos_integer()) :: Player.t()
 
+  @doc """
+  Increases player's radiation on given `radiation`.
+  """
+  @callback add_radiation(Player.t(), radiation :: pos_integer()) :: Player.t()
+
   @callback consume_supply(Player.t(), Loot.uuid()) ::
               {:ok, Player.t(), item :: Loot.Item.item()}
               | {:error, :not_found}

@@ -128,10 +128,17 @@ defmodule Europa.Server.Loot.ItemTest do
     end
 
     test "returns attrs for supply" do
-      supply = build(:supply, properties: build(:supply_properties, health: 11))
+      supply =
+        build(:supply,
+          properties: build(:supply_properties, health: 11, thirst: 12, hunger: 13, radiation: 14, warm: 15)
+        )
 
       expected_attrs = [
         {:health, "Health", supply.properties.health},
+        {:hunger, "Hunger", supply.properties.hunger},
+        {:radiation, "Radiation", supply.properties.radiation},
+        {:thirst, "Thirst", supply.properties.thirst},
+        {:warm, "Warm", supply.properties.warm},
         {:count, "Count", supply.count},
         {:consume_cost, "Consume cost", supply.consume_cost},
         {:weight, "Weight", supply.count * supply.weight}
