@@ -22,7 +22,9 @@ defmodule EuropaWeb.Router do
 
   scope "/", EuropaWeb do
     pipe_through [:browser]
+
     get "/", PageController, :home
+    get "/lore", PageController, :lore
   end
 
   scope "/", EuropaWeb do

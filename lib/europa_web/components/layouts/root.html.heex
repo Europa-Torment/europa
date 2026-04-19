@@ -24,6 +24,7 @@
         <ul class="menu menu-horizontal px-1">
           <%= if assigns[:current_user] do %>
             <li><.link navigate={~p"/games"}>🎮 {gettext("Games")}</.link></li>
+            <li><.link navigate={~p"/lore"}>📚 {gettext("Lore")}</.link></li>
             <li><.link navigate={~p"/games/leaderboard"}>🏆 {gettext("Leaderboard")}</.link></li>
             <li>
               <details class="dropdown dropdown-end">

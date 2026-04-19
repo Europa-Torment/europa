@@ -132,6 +132,16 @@
     <p class="text-xs text-white/40 mt-3">{gettext("Play for free right in your browser!")}</p>
   </div>
 
+  <div class="text-center my-12">
+    <p class="text-xs text-white/40 mb-3">{gettext(".. or for starters")}</p>
+    <.button
+      class="btn btn-md bg-gradient-to-r from-green-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow"
+      navigate={~p"/lore"}
+    >
+      📚 {gettext("Read lore")}
+    </.button>
+  </div>
+
   <footer class="footer footer-horizontal footer-center bg-black/50 backdrop-blur-md text-white rounded-2xl p-8 mt-12 border-t border-white/10 shadow-xl">
     <nav class="grid grid-flow-col gap-8">
       <a class="link link-hover text-white/70 hover:text-cyan-300 transition">About game</a>

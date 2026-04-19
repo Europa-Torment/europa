@@ -6,5 +6,7 @@ defmodule EuropaWeb.PageHTML do
   """
   use EuropaWeb, :html
 
+  import EuropaWeb.PageComponents
+
   embed_templates("page_html/*")
 end
