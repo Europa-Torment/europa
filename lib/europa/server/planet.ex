@@ -1106,8 +1106,8 @@ defmodule Europa.Server.Planet do
   end
 
   defp generate_template_coord_fun(land, direction) do
-    x_padding = Enum.random(land.min_x..land.max_x) |> maybe_negative()
-    y_padding = Enum.random(land.min_y..land.max_y) |> maybe_negative()
+    x_padding = (Enum.random(land.min_x..land.max_x) + Enum.random(-50..50)) |> maybe_negative()
+    y_padding = (Enum.random(land.min_y..land.max_y) + Enum.random(-50..50)) |> maybe_negative()
 
     case direction do
       :up -> fn x, y -> {x + x_padding, y - abs(land.min_y - @view_distance)} end

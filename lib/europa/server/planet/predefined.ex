@@ -100,7 +100,7 @@ defmodule Europa.Server.Planet.Predefined do
         Enemy.generate_enemy()
         |> Enemy.stand_on(@floor)
 
-      m_to_n?(1, 30) ->
+      m_to_n?(1, 20) ->
         Enum.random(@dirty_floors)
 
       true ->
@@ -117,11 +117,19 @@ defmodule Europa.Server.Planet.Predefined do
   end
 
   defp elem_to_tile(:building, "L") do
-    type = Enum.random(@futniture_item_box_types)
-    item_box = Loot.generate_item_box(type, @floor)
-
     if m_to_n?(1, @building_loot_generate_possibility) do
+      type = Enum.random(@futniture_item_box_types)
+      item_box = Loot.generate_item_box(type, @floor)
+
       item_box
+    else
+      @floor
+    end
+  end
+
+  defp elem_to_tile(:building, "c") do
+    if m_to_n?(1, 10) do
+      Loot.generate_item_box(:human_body, @floor)
     else
       @floor
     end
@@ -130,6 +138,7 @@ defmodule Europa.Server.Planet.Predefined do
   # situations
   defp elem_to_tile(:situation, "e"), do: Enemy.generate_enemy()
   defp elem_to_tile(:situation, "c"), do: Loot.generate_item_box(:human_body)
+  defp elem_to_tile(:situation, "m"), do: Loot.generate_item_box(:monster_body)
   defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
   defp elem_to_tile(:situation, "f"), do: @bonefire
   defp elem_to_tile(:situation, "N"), do: {:npc, nil}

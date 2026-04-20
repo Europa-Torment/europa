@@ -611,13 +611,13 @@ defmodule EuropaWeb.GameLive do
         drink: %{name: ~p"/sounds/drink.mp3", volume: 0.5},
         injection: %{name: ~p"/sounds/injection.mp3", volume: 0.08},
         click: %{name: ~p"/sounds/click.mp3", volume: 0.6},
-        damage1: %{name: ~p"/sounds/damage1.mp3", volume: 0.1},
-        damage2: %{name: ~p"/sounds/damage2.mp3", volume: 0.1},
-        damage3: %{name: ~p"/sounds/damage3.mp3", volume: 0.1},
+        damage1: %{name: ~p"/sounds/damage1.mp3", volume: 0.05},
+        damage2: %{name: ~p"/sounds/damage2.mp3", volume: 0.05},
+        damage3: %{name: ~p"/sounds/damage3.mp3", volume: 0.05},
         overloaded1: %{name: ~p"/sounds/overloaded1.mp3", volume: 0.08},
         overloaded2: %{name: ~p"/sounds/overloaded2.mp3", volume: 0.08},
         overloaded3: %{name: ~p"/sounds/overloaded3.mp3", volume: 0.08},
-        injured: %{name: ~p"/sounds/injured.mp3", volume: 0.07},
+        injured: %{name: ~p"/sounds/injured.mp3", volume: 0.05},
         dead: %{name: ~p"/sounds/dead.mp3", volume: 0.2},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1}
       })
@@ -678,7 +678,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp low_health_sound(socket, player) do
-    if player.health / player.max_health <= @low_health_ratio && m_to_n?(2, 20) do
+    if player.health / player.max_health <= @low_health_ratio && m_to_n?(1, 25) do
       play_sound(socket, "injured")
     else
       socket
