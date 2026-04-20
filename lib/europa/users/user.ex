@@ -15,6 +15,9 @@ defmodule Europa.Users.User do
     field :password, :string, virtual: true
     field :password_confirmation, :string, virtual: true
 
+    field :captcha, :string, virtual: true
+    field :captcha_confirmation, :string, virtual: true
+
     timestamps()
   end
 
@@ -27,6 +30,7 @@ defmodule Europa.Users.User do
     |> validate_password()
     |> unique_constraint(:username)
     |> validate_confirmation(:password)
+    |> validate_confirmation(:captcha)
   end
 
   @spec login_changeset(map()) :: Ecto.Changeset.t()

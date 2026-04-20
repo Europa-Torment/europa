@@ -68,6 +68,7 @@ defmodule Europa.MixProject do
       {:better_weighted_random, "~> 0.1.0"},
       {:image, "~> 0.63.0"},
       {:timex, "~> 3.7"},
+      {:captcha, git: "https://github.com/davidqhr/elixir-captcha.git", ref: "aac22c1"},
       {:phoenix_copy, "~> 0.1.4", only: [:dev, :prod]},
       {:hammox, "~> 0.7", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

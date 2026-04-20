@@ -1,15 +1,26 @@
+<.background />
+
 <div class="max-w-6xl mx-auto px-4 py-6 relative z-10">
   <.title text={gettext("Register")} />
 
-  <.form :let={f} for={@changeset} id="register-form" action={~p"/users/register"}>
-    <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
-    <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
-    <.input type="password" field={f[:password_confirmation]} label={"#{gettext("Password confirmation")}"} />
+  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 p-5">
+    <.form :let={f} for={@changeset} id="register-form" action={~p"/users/register"}>
+      <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
+      <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
+      <.input type="password" field={f[:password_confirmation]} label={"#{gettext("Password confirmation")}"} />
 
-    <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
-      {gettext("Become European")}
-    </.button>
-  </.form>
+      <img src={"data:image/png;base64,#{@captcha_img}"} class="mt-5 mb-2" />
+      <.input
+        type="text"
+        field={f[:captcha_confirmation]}
+        label={"#{gettext("Prove that you are a human or other life form with vision")}"}
+      />
+
+      <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
+        {gettext("Become European")}
+      </.button>
+    </.form>
+  </div>
 
   <div class="p-10 text-center text-m font-bold">
     {gettext("Already have an account?")}

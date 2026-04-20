@@ -1,16 +1,19 @@
 <Layouts.flash_group flash={@flash} />
+<.background />
 
 <div class="max-w-6xl mx-auto px-4 py-6 relative z-10">
   <.title text={gettext("Login")} />
 
-  <.form :let={f} for={@changeset} id="register-form" action={~p"/users/login"}>
-    <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
-    <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
+  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 p-5">
+    <.form :let={f} for={@changeset} id="register-form" action={~p"/users/login"}>
+      <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
+      <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
 
-    <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
-      {gettext("Login")}
-    </.button>
-  </.form>
+      <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
+        {gettext("Login")}
+      </.button>
+    </.form>
+  </div>
 
   <div class="p-10 text-center text-m font-bold">
     {gettext("Don't have an account yet?")}

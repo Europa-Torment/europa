@@ -27,18 +27,31 @@ defmodule EuropaWeb.UserController do
 
   @spec new(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def new(conn, _params) do
+    {captcha_text, captcha_img} = generate_captcha()
+
     changeset = Users.create_changeset(%{})
-    render(conn, :register, changeset: changeset)
+
+    conn
+    |> put_session(:captcha, captcha_text)
+    |> assign(:captcha_img, captcha_img)
+    |> render(:register, changeset: changeset)
   end
 
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def create(conn, %{"user" => params}) do
+    params = Map.put(params, "captcha", get_session(conn, :captcha))
+
     case Users.create_user(params) do
       {:ok, user} ->
         login_user(conn, user)
 
       {:error, changeset} ->
-        render(conn, :register, changeset: changeset)
+        {captcha_text, captcha_img} = generate_captcha()
+
+        conn
+        |> put_session(:captcha, captcha_text)
+        |> assign(:captcha_img, captcha_img)
+        |> render(:register, changeset: changeset)
     end
   end
 
@@ -54,5 +67,12 @@ defmodule EuropaWeb.UserController do
     |> assign(:current_user, user.id)
     |> put_session(:current_user, user.id)
     |> redirect(to: ~p"/games")
+  end
+
+  defp generate_captcha do
+    {:ok, captcha_text, captcha_img} = Captcha.get()
+    captcha_img = Base.encode64(captcha_img)
+
+    {captcha_text, captcha_img}
   end
 end

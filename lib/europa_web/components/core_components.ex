@@ -279,7 +279,7 @@ defmodule EuropaWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="text-white/80 text-xs font-display tracking-widest">{@label}</span>
         <input
           type={@type}
           name={@name}

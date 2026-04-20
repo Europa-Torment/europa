@@ -1,25 +1,42 @@
 <.background />
 
-<.button
-  class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full mb-5"
-  navigate={~p"/games/new"}
->
-  {gettext("New game")}
-</.button>
+<%= if Enum.empty?(@games) do %>
+  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 p-5 text-md font-display tracking-wide text-center">
+    {gettext("Welcome to Europa. Dress warmly, make sure your spacesuit is airtight, and let's go!")}
 
-<ul class="list bg-base-200 rounded-box shadow-md">
-  <li class="p-4 pb-2 text-sm opacity-60 tracking-wide">{gettext("Recent games")}</li>
+    <div class="flex justify-center items-center mt-5">
+      <img src={~p"/images/walking.gif"} />
+    </div>
+    <div class="text-center items-center my-3">
+      <.button
+        class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full mb-5"
+        navigate={~p"/games/new"}
+      >
+        ❄️ {gettext("Set foot on European soil")}
+      </.button>
+    </div>
+  </div>
+<% else %>
+  <.button
+    class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full mb-5"
+    navigate={~p"/games/new"}
+  >
+    {gettext("New game")}
+  </.button>
+  <ul class="list bg-base-200 rounded-box shadow-md">
+    <li class="p-4 pb-2 text-sm opacity-60 tracking-wide">{gettext("Recent games")}</li>
 
-  <%= for game <- @games do %>
-    <li class="list-row">
-      <div class="text-4xl font-thin opacity-30 tabular-nums">{game.id}</div>
-      <div class="list-col-grow">
-        <%= if game.state == :active do %>
-          <div><.link navigate={~p"/games/#{game.uuid}"}>{gettext("Continue game")} #{game.id}</.link></div>
-        <% else %>
-          <div>{gettext("Game over")}</div>
-        <% end %>
-      </div>
-    </li>
-  <% end %>
-</ul>
+    <%= for game <- @games do %>
+      <li class="list-row">
+        <div class="text-4xl font-thin opacity-30 tabular-nums">{game.id}</div>
+        <div class="list-col-grow">
+          <%= if game.state == :active do %>
+            <div><.link navigate={~p"/games/#{game.uuid}"}>{gettext("Continue game")} #{game.id}</.link></div>
+          <% else %>
+            <div>{gettext("Game over")}</div>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
