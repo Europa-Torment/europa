@@ -58,7 +58,17 @@ defmodule Europa.Server.Planet.PredefinedTest do
     end
 
     test "generates situation" do
-      assert [[%Enemy{}, %ItemBox{type: :human_body}, %Enemy{}, %ItemBox{type: :box}, shuttle, {:npc, nil}]] =
+      assert [
+               [
+                 %Enemy{},
+                 %ItemBox{type: :human_body},
+                 %Enemy{},
+                 %ItemBox{type: :box},
+                 shuttle,
+                 {:npc, nil},
+                 %ItemBox{type: :monster_body}
+               ]
+             ] =
                Predefined.generate(:situation)
 
       is_shuttle =
