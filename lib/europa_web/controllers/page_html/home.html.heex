@@ -143,11 +143,20 @@
   </div>
 
   <footer class="footer footer-horizontal footer-center bg-black/50 backdrop-blur-md text-white rounded-2xl p-8 mt-12 border-t border-white/10 shadow-xl">
-    <nav class="grid grid-flow-col gap-8">
-      <a class="link link-hover text-white/70 hover:text-cyan-300 transition">About game</a>
-      <a class="link link-hover text-white/70 hover:text-cyan-300 transition">Contact us</a>
-      <a class="link link-hover text-white/70 hover:text-cyan-300 transition">Become contributor</a>
-    </nav>
+    <div class="flex flex-wrap justify-center gap-2 text-white/80 text-sm font-display tracking-widest">
+      <span>
+        Developed by
+        <a href="https://github.com/taktes" target="_blank" class="font-display font-bold text-cyan-300 tracking-wide">
+          Daniil Laptev
+        </a>
+      </span>
+      <span>
+        and <a href="#" target="_blank" class="font-display font-bold text-cyan-300 tracking-wide">Ivan Kruglikov</a>
+      </span>
+    </div>
+    <div class="flex flex-wrap justify-center gap-2 text-white/80 text-xs font-display tracking-widest">
+      {gettext("The game is open source")}:
+    </div>
     <nav>
       <div class="grid grid-flow-col gap-4">
         <a

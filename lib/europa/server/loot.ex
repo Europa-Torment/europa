@@ -44,7 +44,7 @@ defmodule Europa.Server.Loot do
   }
 
   @furniture_item_boxes %{
-    drawler: %{max_items: 6, item_types: :all},
+    cupboard: %{max_items: 6, item_types: :all},
     refrigerator: %{max_items: 6, item_types: [:supply]}
   }
 
@@ -138,7 +138,7 @@ defmodule Europa.Server.Loot do
         :human_body -> gettext("Human body")
         :crashed_shuttle -> gettext("Crashed shuttle")
         :bunch -> gettext("Bunch of items")
-        :drawler -> gettext("Drawler")
+        :cupboard -> gettext("Cupboard")
         :refrigerator -> gettext("Refrigerator")
       end
     end

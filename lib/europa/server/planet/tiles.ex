@@ -47,6 +47,24 @@ defmodule Europa.Server.Planet.Tiles do
       warm?: true,
       image_name: "floor"
     },
+    bloody_floor: %Tile{
+      atom_value: :bfl,
+      blood_version: :bflb,
+      readable_name: gettext("bloody floor"),
+      move_cost: 1,
+      movable?: true,
+      warm?: true,
+      image_name: "bloody_floor"
+    },
+    litter_floor: %Tile{
+      atom_value: :lfl,
+      blood_version: :lflb,
+      readable_name: gettext("floor with litter"),
+      move_cost: 1,
+      movable?: true,
+      warm?: true,
+      image_name: "litter_floor"
+    },
     darkness: %Tile{
       atom_value: :d,
       blood_version: nil,

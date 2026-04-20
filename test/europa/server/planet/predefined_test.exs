@@ -9,6 +9,10 @@ defmodule Europa.Server.Planet.PredefinedTest do
   alias Europa.Server.Enemy
 
   @floor Tiles.tile(:floor).atom_value
+  @litter_floor Tiles.tile(:litter_floor).atom_value
+  @bloody_floor Tiles.tile(:bloody_floor).atom_value
+  @floors [@floor, @bloody_floor, @litter_floor]
+
   @wall_up %Object{name: "wall", image_name: "wall_up", high?: true}
   @wall_down %Object{name: "wall", image_name: "wall_down", high?: true}
   @wall_right %Object{name: "wall", image_name: "wall_right", high?: true}
@@ -35,14 +39,14 @@ defmodule Europa.Server.Planet.PredefinedTest do
               {0, 4} -> assert e == @wall_up
               {0, 5} -> assert e == @wall_right_up
               {1, 0} -> assert e == @wall_left
-              {1, 1} -> assert e == @floor || loot?(e)
+              {1, 1} -> assert e in @floors || loot?(e)
               {1, 2} -> assert e == @wall_vertical_inside
-              {1, 3} -> assert e == @floor || enemy?(e)
-              {1, 4} -> assert e == @floor || enemy?(e) || {:npc, @floor}
+              {1, 3} -> assert e in @floors || enemy?(e)
+              {1, 4} -> assert e in @floors || enemy?(e) || {:npc, @floor}
               {1, 5} -> assert e == @wall_right
               {2, 0} -> assert e == @wall_left_down
               {2, 1} -> assert e == @wall_down
-              {2, 2} -> assert e == @floor || enemy?(e)
+              {2, 2} -> assert e in @floors || enemy?(e)
               {2, 3} -> assert e == @wall_down
               {2, 4} -> assert e == @wall_down
               {2, 5} -> assert e == @wall_right_down

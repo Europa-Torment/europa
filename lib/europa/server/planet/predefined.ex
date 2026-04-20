@@ -27,6 +27,10 @@ defmodule Europa.Server.Planet.Predefined do
   @futniture_item_box_types Loot.furniture_item_box_types()
 
   @floor Tiles.tile(:floor).atom_value
+  @litter_floor Tiles.tile(:litter_floor).atom_value
+  @bloody_floor Tiles.tile(:bloody_floor).atom_value
+
+  @dirty_floors [@litter_floor, @bloody_floor]
 
   @wall_up %Object{name: gettext("wall"), image_name: "wall_up", high?: true}
   @wall_down %Object{name: gettext("wall"), image_name: "wall_down", high?: true}
@@ -91,11 +95,16 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:building, "v"), do: @wall_right_down
 
   defp elem_to_tile(:building, "f") do
-    if m_to_n?(1, @building_enemy_generate_possibility) do
-      Enemy.generate_enemy()
-      |> Enemy.stand_on(@floor)
-    else
-      @floor
+    cond do
+      m_to_n?(1, @building_enemy_generate_possibility) ->
+        Enemy.generate_enemy()
+        |> Enemy.stand_on(@floor)
+
+      m_to_n?(1, 30) ->
+        Enum.random(@dirty_floors)
+
+      true ->
+        @floor
     end
   end
 

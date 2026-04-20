@@ -629,8 +629,8 @@ defmodule EuropaWeb.GameCompotents do
     "crashed_shuttle_#{landscape_name(stand_on)}.png"
   end
 
-  defp get_image_name(%ItemBox{type: :drawler, stand_on: stand_on}, _) do
-    "drawler_#{landscape_name(stand_on)}.png"
+  defp get_image_name(%ItemBox{type: :cupboard, stand_on: stand_on}, _) do
+    "cupboard_#{landscape_name(stand_on)}.png"
   end
 
   defp get_image_name(%ItemBox{type: :refrigerator, stand_on: stand_on}, _) do
