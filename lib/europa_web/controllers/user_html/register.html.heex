@@ -22,11 +22,14 @@
     </.form>
   </div>
 
-  <div class="p-10 text-center text-m font-bold">
+  <div class="p-10 text-center text-m font-bold font-display">
     {gettext("Already have an account?")}
 
     <div class="p-3">
-      <.button class="btn btn-sm btn-accent" navigate={~p"/users/login"}>
+      <.button
+        class="btn btn-md bg-gradient-to-r from-green-600 to-blue-700 border-none text-white font-bold px-12 py-4 rounded-full btn-glow"
+        navigate={~p"/users/login"}
+      >
         {gettext("Login")}
       </.button>
     </div>
