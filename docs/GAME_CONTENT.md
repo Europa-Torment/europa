@@ -6,7 +6,7 @@
 
 Writing texts yourself is also preferable to generating them using neural networks.
 
-Due to the lack of other options, AI-generated imagery (large images) is permitted for certain gameplay images. This does not apply to in-game images, but rather to illustrations, such as those on the homepage.
+Due to the lack of other options, AI-generated imagery (large images) is permitted for certain illustrative images. This does not apply to in-game images, but rather to illustrations, such as those on the homepage.
 
 ## Enemies
 
