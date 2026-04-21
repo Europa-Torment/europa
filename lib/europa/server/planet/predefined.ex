@@ -20,7 +20,7 @@ defmodule Europa.Server.Planet.Predefined do
   @default_templates_path "/planet"
 
   @categories %{
-    building: %{dir: "/buildings", weight: 0.4},
+    building: %{dir: "/buildings", weight: 0.5},
     situation: %{dir: "/situations", weight: 0.5}
   }
 

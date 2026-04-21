@@ -15,7 +15,7 @@ defmodule Europa.Tools.AttrsDeterminator do
   ```
   and returns `map` with determined exact values.
 
-  If field already has exact value (string or integer) it keeps as is.
+  If field already has exact value (string, integer or boolean) it keeps as is.
   If field has value `{from: 1, to: 10}` then random number from range `1..10` will taken.
   If field has value `{attr: "attr_name"}` then `attr_name` field value will taken.
   """
