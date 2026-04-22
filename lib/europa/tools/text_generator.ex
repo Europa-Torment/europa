@@ -4,7 +4,7 @@ defmodule Europa.Tools.TextGenerator do
 
   import Europa.Tools.Conf
 
-  @categories [:initial_story, :great_red_spot]
+  @categories [:great_red_spot]
   @default_texts_path "/texts_templates/"
 
   @filenames %{
