@@ -1099,10 +1099,10 @@ defmodule Europa.Server.Planet do
   # coveralls-ignore-start
 
   defp maybe_generate_predefined(land, direction, characters_pid, planet) do
-    if m_to_n?(5, 100) do
+    if m_to_n?(1, 200) do
       template = Predefined.generate_random()
 
-      coord_fun = generate_template_coord_fun(land, direction)
+      coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
       new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
 
       is_all_tiles_movable =
@@ -1120,9 +1120,9 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp generate_template_coord_fun(land, direction) do
-    x_padding = Enum.random(-30..30)
-    y_padding = Enum.random(-30..30)
+  defp generate_template_coord_fun(land, direction, {current_x, current_y}) do
+    x_padding = current_x + Enum.random(-30..30)
+    y_padding = current_y + Enum.random(-30..30)
 
     case direction do
       :up -> fn x, y -> {x + x_padding, y - abs(land.min_y - @view_distance)} end
