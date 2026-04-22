@@ -1,6 +1,10 @@
 [
-    {"caliber": "9mm", "count": {"from": 10, "to": 20}, "weight": 0.02, "random_weight": 2.0},
+    {"caliber": ".40 S&W", "count": {"from": 10, "to": 20}, "weight": 0.02, "random_weight": 2.0},
+    {"caliber": ".45 ACP", "count": {"from": 10, "to": 20}, "weight": 0.02, "random_weight": 1.0},
     {"caliber": "shotgun", "count": {"from": 5, "to": 10}, "weight": 0.05, "random_weight": 0.5},
+    {"caliber": "buckshot", "count": {"from": 2, "to": 5}, "weight": 0.1, "random_weight": 0.1},
     {"caliber": "5.56mm", "count": {"from": 1, "to": 10}, "weight": 0.1, "random_weight": 0.1},
-    {"caliber": "neutron cartridges", "count": {"from": 1, "to": 5}, "weight": 0.5, "random_weight": 0.08}
+    {"caliber": ".50 BMG", "count": {"from": 1, "to": 5}, "weight": 0.4, "random_weight": 0.09},
+    {"caliber": "neutron cartridges", "count": {"from": 1, "to": 5}, "weight": 0.5, "random_weight": 0.08},
+    {"caliber": "hydrogen battery", "count": {"from": 1, "to": 10}, "weight": 0.2, "random_weight": 0.1}
 ]

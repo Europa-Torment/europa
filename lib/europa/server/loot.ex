@@ -24,7 +24,7 @@ defmodule Europa.Server.Loot do
   @weighted_item_types [
     {:weapon, gettext("Weapons"), 0.4},
     {:ammo, gettext("Ammo"), 0.7},
-    {:melee_weapon, gettext("Melee weapons"), 0.4},
+    {:melee_weapon, gettext("Melee weapons"), 0.5},
     {:supply, gettext("Supplies"), 1.0},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},

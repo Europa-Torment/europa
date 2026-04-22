@@ -35,6 +35,19 @@
         "random_weight": 1.0
     },
     {
+        "name": "Freeze-dried berries", 
+        "count": {"from": 1, "to": 5},
+        "consume_cost": 1,
+        "sound_name": "eat",
+        "properties": {
+            "warm": 3,
+            "health": 5,
+            "hunger": -5
+        },
+        "weight": 0.1,
+        "random_weight": 1.0
+    },
+    {
         "name": "Bottle of pure water", 
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -145,5 +158,32 @@
         },
         "weight": 0.1,
         "random_weight": 0.4
+    },
+    {
+        "name": "Tincture of monster bile",
+        "count": 1,
+        "consume_cost": 2,
+        "sound_name": "drink",
+        "properties": {
+            "radiation": -100,
+            "warm": 60,
+            "health": 30,
+            "thirst": -30
+        },
+        "weight": 0.3,
+        "random_weight": 0.05
+    },
+    {
+        "name": "Stroganina",
+        "count": {"from": 1, "to": 4},
+        "consume_cost": 2,
+        "sound_name": "eat",
+        "properties": {
+            "warm": 40,
+            "health": 40,
+            "hunger": -40
+        },
+        "weight": 0.25,
+        "random_weight": 0.04
     }
 ]

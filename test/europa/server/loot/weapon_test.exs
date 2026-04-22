@@ -78,7 +78,7 @@ defmodule Europa.Server.Loot.WeaponTest do
   describe "unload/1" do
     test "returns unloaded weapon and ammo" do
       ammo_count = 25
-      caliber = "9mm"
+      caliber = ".40 S&W"
 
       weapon = build(:weapon, rounds_loaded: ammo_count, magazine_size: 30, caliber: caliber)
 

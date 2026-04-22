@@ -577,7 +577,7 @@ defmodule Europa.Server.PlayerTest do
 
   describe "unload_weapon/2" do
     test "returns updated player and weapon" do
-      caliber = "9mm"
+      caliber = ".40 S&W"
       rounds_loaded = 15
 
       weapon = build(:weapon, caliber: caliber, rounds_loaded: rounds_loaded, magazine_size: rounds_loaded * 2)

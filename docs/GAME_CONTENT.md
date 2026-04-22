@@ -104,7 +104,7 @@ You can add a loot item by [editing the required file in the directory](/priv/it
     "reload_cost": {"from": 1, "to": 2},
     "magazine_size": {"from": 5, "to": 8},
     "accuracy": {"from": 10, "to": 15},
-    "caliber": "9mm",
+    "caliber": ".40 S&W",
     "rounds_loaded": {"from": 1, "to": {"attr": "magazine_size"}},
     "shooting_type": "bullet",
     "damage": {"from": 8, "to": 11},

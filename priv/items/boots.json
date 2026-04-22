@@ -9,7 +9,7 @@
         "random_weight": 2.0
     },
     {
-        "name": "WCC security boots", 
+        "name": "SSB boots", 
         "efficiency": {"from": 2, "to": 4}, 
         "max_health": {"from": 8, "to": 12},
         "max_warm": {"from": 10, "to": 15},

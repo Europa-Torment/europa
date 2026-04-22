@@ -9,7 +9,7 @@
         "random_weight": 2.0
     },
     {
-        "name": "WCC security helmet", 
+        "name": "SSB helmet", 
         "accuracy": {"from": 2, "to": 4}, 
         "max_health": {"from": 10, "to": 15},
         "max_warm": {"from": 4, "to": 15}, 

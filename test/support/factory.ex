@@ -74,7 +74,7 @@ defmodule Europa.Support.Factory do
       rounds_loaded: 10,
       shooting_type: :bullet,
       damage: 10,
-      caliber: "9mm",
+      caliber: ".40 S&W",
       shooting_distance: 5,
       weight: 1.0,
       image_name: "default_pistol",
@@ -86,7 +86,7 @@ defmodule Europa.Support.Factory do
   def ammo_factory do
     %Loot.Weapon.Ammo{
       uuid: Ecto.UUID.generate(),
-      caliber: "9mm",
+      caliber: ".40 S&W",
       weight: 1.0,
       count: 10
     }

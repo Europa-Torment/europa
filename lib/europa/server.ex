@@ -216,7 +216,10 @@ defmodule Europa.Server do
     suit = Loot.generate_item(:suit)
     boots = Loot.generate_item(:boots)
 
-    items = [weapon, helmet, suit, boots]
+    supplies = initial_supplies()
+    ammo = initial_ammo()
+
+    items = [weapon, helmet, suit, boots] ++ supplies ++ ammo
 
     player =
       PlayerManager.new(current_character)
@@ -739,8 +742,12 @@ defmodule Europa.Server do
 
   defp equip_player_items(%Player{} = player, items) when is_list(items) do
     Enum.reduce(items, player, fn item, player ->
-      {:ok, updated_player} = Player.equip_item(player, item.uuid)
-      updated_player
+      if Loot.Item.equipable?(item) do
+        {:ok, updated_player} = Player.equip_item(player, item.uuid)
+        updated_player
+      else
+        player
+      end
     end)
   end
 
@@ -1034,5 +1041,21 @@ defmodule Europa.Server do
 
   defp shift_datetime(current_datetime, shift_in_minutes) do
     Timex.shift(current_datetime, minutes: shift_in_minutes)
+  end
+
+  defp initial_supplies do
+    random_number = random_number(4)
+
+    Enum.map(1..random_number, fn _ ->
+      Loot.generate_item(:supply)
+    end)
+  end
+
+  defp initial_ammo do
+    random_number = random_number(2)
+
+    Enum.map(1..random_number, fn _ ->
+      Loot.generate_item(:ammo)
+    end)
   end
 end

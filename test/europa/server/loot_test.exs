@@ -362,7 +362,7 @@ defmodule Europa.Server.Loot.ItemBoxTest do
   describe "unload_weapon/2" do
     test "unloads weapon" do
       ammo_count = 52
-      caliber = "9mm"
+      caliber = ".40 S&W"
 
       weapon = build(:weapon, rounds_loaded: ammo_count, caliber: caliber)
       item_box = build(:loot_item_box, items: [weapon])

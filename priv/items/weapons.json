@@ -1,14 +1,14 @@
 [
     {
-        "name": "Security guard's pistol",
+        "name": "Guard's pistol",
         "shot_cost": {"from": 1, "to": 2},
         "reload_cost": {"from": 1, "to": 2},
         "magazine_size": {"from": 5, "to": 8},
         "accuracy": {"from": 10, "to": 15},
-        "caliber": "9mm",
+        "caliber": ".40 S&W",
         "rounds_loaded": {"from": 1, "to": {"attr": "magazine_size"}},
         "shooting_type": "bullet",
-        "damage": {"from": 8, "to": 11},
+        "damage": {"from": 5, "to": 9},
         "shooting_distance": {"from": 3, "to": 5},
         "weight": 1.5,
         "image_name": "default_pistol",
@@ -16,7 +16,23 @@
         "random_weight": 2.0
     },
     {
-        "name": "Police shotgun",
+        "name": "The Equalizer",
+        "shot_cost": {"from": 1, "to": 2},
+        "reload_cost": {"from": 1, "to": 2},
+        "magazine_size": {"from": 5, "to": 7},
+        "accuracy": {"from": 12, "to": 17},
+        "caliber": ".45 ACP",
+        "rounds_loaded": {"from": 1, "to": {"attr": "magazine_size"}},
+        "shooting_type": "bullet",
+        "damage": {"from": 9, "to": 12},
+        "shooting_distance": {"from": 4, "to": 6},
+        "weight": 1.8,
+        "image_name": "default_pistol",
+        "sound_name": "pistol",
+        "random_weight": 1.0
+    },
+    {
+        "name": "Shotgun",
         "shot_cost": {"from": 2, "to": 3},
         "reload_cost": {"from": 3, "to": 4},
         "magazine_size": {"from": 6, "to": 10},
@@ -24,7 +40,7 @@
         "caliber": "shotgun",
         "rounds_loaded": {"from": 5, "to": {"attr": "magazine_size"}},
         "shooting_type": "shot",
-        "damage": {"from": 20, "to": 30},
+        "damage": {"from": 10, "to": 20},
         "shooting_distance": {"from": 2, "to": 4},
         "weight": 4.0,
         "image_name": "default_pistol",
@@ -32,7 +48,23 @@
         "random_weight": 1.0
     },
     {
-        "name": "Military automatic rifle",
+        "name": "Beast Slayer",
+        "shot_cost": {"from": 3, "to": 4},
+        "reload_cost": {"from": 4, "to": 5},
+        "magazine_size": {"from": 10, "to": 15},
+        "accuracy": {"from": 10, "to": 12},
+        "caliber": "buckshot",
+        "rounds_loaded": {"from": 2, "to": {"attr": "magazine_size"}},
+        "shooting_type": "shot",
+        "damage": {"from": 25, "to": 40},
+        "shooting_distance": {"from": 3, "to": 6},
+        "weight": 10.0,
+        "image_name": "default_pistol",
+        "sound_name": "shotgun",
+        "random_weight": 0.06
+    },
+    {
+        "name": "Modified SSB rifle",
         "shot_cost": {"from": 1, "to": 4},
         "reload_cost": {"from": 2, "to": 3},
         "magazine_size": {"from": 20, "to": 40},
@@ -46,6 +78,22 @@
         "image_name": "default_pistol",
         "sound_name": "rifle",
         "random_weight": 0.4
+    },
+    {
+        "name": "Hawk's eye",
+        "shot_cost": {"from": 4, "to": 5},
+        "reload_cost": {"from": 3, "to": 5},
+        "magazine_size": 1,
+        "accuracy": {"from": 30, "to": 40},
+        "caliber": ".50 BMG",
+        "rounds_loaded": 1,
+        "shooting_type": "bullet",
+        "damage": {"from": 40, "to": 50},
+        "shooting_distance": {"from": 8, "to": 20},
+        "weight": 15.5,
+        "image_name": "default_pistol",
+        "sound_name": "rifle",
+        "random_weight": 0.25
     },
     {
         "name": "Atom splitter",
@@ -62,5 +110,21 @@
         "image_name": "default_pistol",
         "sound_name": "laser",
         "random_weight": 0.05
+    },
+    {
+        "name": "ETC laser cutter",
+        "shot_cost": {"from": 2, "to": 4},
+        "reload_cost": {"from": 3, "to": 4},
+        "magazine_size": 1,
+        "accuracy": {"from": 15, "to": 25},
+        "caliber": "hydrogen battery",
+        "rounds_loaded": 1,
+        "shooting_type": "bullet",
+        "damage": {"from": 20, "to": 30},
+        "shooting_distance": {"from": 4, "to": 6},
+        "weight": 15.0,
+        "image_name": "default_pistol",
+        "sound_name": "laser",
+        "random_weight": 0.06
     }
 ]
