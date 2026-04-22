@@ -61,7 +61,7 @@
         "weight": 10.0,
         "image_name": "default_pistol",
         "sound_name": "shotgun",
-        "random_weight": 0.06
+        "random_weight": 0.09
     },
     {
         "name": "Modified SSB rifle",

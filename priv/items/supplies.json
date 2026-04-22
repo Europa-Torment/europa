@@ -150,7 +150,7 @@
     },
     {
         "name": "Cystamin",
-        "count": {"from": 1, "to": 10},
+        "count": {"from": 1, "to": 4},
         "consume_cost": 1,
         "sound_name": "eat",
         "properties": {
@@ -184,6 +184,6 @@
             "hunger": -40
         },
         "weight": 0.25,
-        "random_weight": 0.04
+        "random_weight": 0.08
     }
 ]

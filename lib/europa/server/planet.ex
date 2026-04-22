@@ -1021,7 +1021,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
-    |> maybe_generate_predefined(:right, planet.characters_pid, planet.year)
+    |> maybe_generate_predefined(:right, planet.characters_pid, planet)
   end
 
   defp add_left_column(%__MODULE__{land: land} = planet) do
@@ -1034,7 +1034,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
-    |> maybe_generate_predefined(:left, planet.characters_pid, planet.year)
+    |> maybe_generate_predefined(:left, planet.characters_pid, planet)
   end
 
   defp add_top_row(%__MODULE__{land: land} = planet) do
@@ -1047,7 +1047,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
-    |> maybe_generate_predefined(:up, planet.characters_pid, planet.year)
+    |> maybe_generate_predefined(:up, planet.characters_pid, planet)
   end
 
   defp add_bottom_row(%__MODULE__{land: land} = planet) do
@@ -1060,7 +1060,7 @@ defmodule Europa.Server.Planet do
       |> filter_exist_tiles(land)
 
     struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
-    |> maybe_generate_predefined(:down, planet.characters_pid, planet.year)
+    |> maybe_generate_predefined(:down, planet.characters_pid, planet)
   end
 
   defp filter_exist_tiles(tiles, land) do
@@ -1098,12 +1098,12 @@ defmodule Europa.Server.Planet do
   # TODO: figure out how to test this
   # coveralls-ignore-start
 
-  defp maybe_generate_predefined(land, direction, characters_pid, year) do
+  defp maybe_generate_predefined(land, direction, characters_pid, planet) do
     if m_to_n?(5, 100) do
       template = Predefined.generate_random()
 
       coord_fun = generate_template_coord_fun(land, direction)
-      new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, year)
+      new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
 
       is_all_tiles_movable =
         Enum.all?(new_tiles, fn {{x, y}, _} ->
@@ -1121,8 +1121,8 @@ defmodule Europa.Server.Planet do
   end
 
   defp generate_template_coord_fun(land, direction) do
-    x_padding = (Enum.random(land.min_x..land.max_x) + Enum.random(-30..30)) |> maybe_negative()
-    y_padding = (Enum.random(land.min_y..land.max_y) + Enum.random(-30..30)) |> maybe_negative()
+    x_padding = Enum.random(-30..30)
+    y_padding = Enum.random(-30..30)
 
     case direction do
       :up -> fn x, y -> {x + x_padding, y - abs(land.min_y - @view_distance)} end
@@ -1175,14 +1175,6 @@ defmodule Europa.Server.Planet do
 
   defp predefined_stand_on_tile(land, {x, y}) do
     tile_by_perlin_noise(x, y, land.noise_coef)
-  end
-
-  defp maybe_negative(number) do
-    if m_to_n?(1, 2) do
-      number * -1
-    else
-      number
-    end
   end
 
   # coveralls-ignore-stop
