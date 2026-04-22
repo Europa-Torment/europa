@@ -43,6 +43,8 @@ defmodule EuropaWeb.GameLive do
 
   @view_distance fetch_config!([Planet, :view_distance])
 
+  @shotgun_radius fetch_config!([:weapons, :shotgun_radius])
+
   @impl true
   def mount(%{"uuid" => uuid}, session, socket) do
     current_user = Map.fetch!(session, "current_user")
@@ -415,7 +417,7 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            show_scope: socket.assigns.show_scope && weapon,
+            show_scope: socket.assigns.show_scope && not is_nil(weapon),
             scope: get_scope(visible_planet, updated_player, weapon)
           )
           |> play_sound("unequip")
@@ -449,7 +451,7 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            show_scope: socket.assigns.show_scope && weapon,
+            show_scope: socket.assigns.show_scope && not is_nil(weapon),
             scope: get_scope(visible_planet, updated_player, weapon),
             item_to_drop: nil,
             item_drop_count: nil
@@ -858,7 +860,7 @@ defmodule EuropaWeb.GameLive do
 
   defp get_scope(_, _, nil), do: []
 
-  defp get_scope(visible_planet, player, %Weapon{shooting_distance: shooting_distance}) do
+  defp get_scope(visible_planet, player, %Weapon{shooting_distance: shooting_distance} = weapon) do
     planet_view_distance = div(@view_distance, 2)
     distance = min(shooting_distance, planet_view_distance)
 
@@ -878,7 +880,19 @@ defmodule EuropaWeb.GameLive do
       :left -> [{{player_y, player_x}, {player_y, player_x - distance}}]
       :right -> [{{player_y, player_x}, {player_y, player_x + distance}}]
     end
+    |> maybe_add_shotgun_scopes(weapon, player.view_direction)
   end
+
+  defp maybe_add_shotgun_scopes([{{from_y, from_x}, {to_y, to_x}}], %Weapon{shooting_type: :shot}, view_direction) do
+    case view_direction do
+      :up -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y, to_x + m}} end)
+      :down -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y, to_x - m}} end)
+      :left -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y - m, to_x}} end)
+      :right -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y + m, to_x}} end)
+    end
+  end
+
+  defp maybe_add_shotgun_scopes(scopes, _, _), do: scopes
 
   defp move_key_to_direction(key) when key in @move_up_keys, do: :up
   defp move_key_to_direction(key) when key in @move_down_keys, do: :down
