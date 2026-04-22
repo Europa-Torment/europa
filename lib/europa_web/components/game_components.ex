@@ -34,6 +34,7 @@ defmodule EuropaWeb.GameCompotents do
   @control_hints_keys fetch_config!([:control_bindings, :control_hints])
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
+  @scope_keys fetch_config!([:control_bindings, :scope])
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -61,6 +62,13 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def game_field(assigns) do
+    formatted_scope =
+      Enum.map(assigns.scope, fn {{from_y, from_x}, {to_y, to_x}} ->
+        %{from: "#tile_#{from_y}_#{from_x}", to: "#tile_#{to_y}_#{to_x}"}
+      end)
+
+    assigns = assign(assigns, scope: formatted_scope)
+
     ~H"""
     <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
@@ -72,12 +80,22 @@ defmodule EuropaWeb.GameCompotents do
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-                class="w-full h-full max-w-[30px] max-h-[30px] object-contain"
+                class="w-full h-full max-w-[30px] max-h-[30px] object-contain z-50"
               />
             </div>
           <% end %>
         </div>
       <% end %>
+    </div>
+    <div
+      id="scope-data"
+      phx-hook="Scope"
+      data-show_scope={"#{@show_scope}"}
+      data-scopes={Jason.encode!(@scope)}
+      data-stroke-color="black"
+      data-stroke-width="2"
+      data-marker-color="darkred"
+    >
     </div>
     """
   end
@@ -719,6 +737,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Control hints"), @control_hints_keys),
       control_hint(gettext("Shoot"), @shoot_keys),
       control_hint(gettext("Reload weapon"), @reload_keys),
+      control_hint(gettext("Show/hide scope"), @scope_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
   end

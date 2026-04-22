@@ -109,6 +109,7 @@ config :europa, :control_bindings,
   control_hints: ["H", "h"],
   shoot: [" ", "Space"],
   reload: ["R", "r"],
+  scope: ["V", "v"],
   close: ["Escape"]
 
 # Configure esbuild (the version is required)

@@ -29,6 +29,7 @@ import * as Tooltip from "./hooks/tooltip"
 import * as Dropdown from "./hooks/dropdown"
 import * as ItemDropChangeCount from "./hooks/item_drop_change_count"
 import * as AutoClearFlash from "./hooks/auto_clear_flash"
+import * as Scope from "./hooks/scope"
 
 import topbar from "../vendor/topbar"
 
@@ -37,6 +38,7 @@ colocatedHooks.Tooltip = Tooltip.hooks.Tooltip;
 colocatedHooks.Dropdown = Dropdown.hooks.Dropdown;
 colocatedHooks.ItemDropChangeCount = ItemDropChangeCount.hooks.ItemDropChangeCount;
 colocatedHooks.AutoClearFlash = AutoClearFlash.hooks.AutoClearFlash;
+colocatedHooks.Scope = Scope.hooks.Scope;
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {

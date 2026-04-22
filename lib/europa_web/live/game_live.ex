@@ -9,9 +9,11 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Games
   alias Europa.Games.Game
   alias Europa.Server
+  alias Europa.Server.Planet
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Weapon
 
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
@@ -30,6 +32,7 @@ defmodule EuropaWeb.GameLive do
   @control_hints_keys fetch_config!([:control_bindings, :control_hints])
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
+  @scope_keys fetch_config!([:control_bindings, :scope])
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -38,13 +41,15 @@ defmodule EuropaWeb.GameLive do
 
   @game_over_redirect_delay_ms 8950
 
+  @view_distance fetch_config!([Planet, :view_distance])
+
   @impl true
   def mount(%{"uuid" => uuid}, session, socket) do
     current_user = Map.fetch!(session, "current_user")
 
     with {:ok, %Game{state: :active, user_id: ^current_user} = game} <- Games.get_by_uuid(uuid),
          {:ok, server} <- Server.get_pid(uuid) do
-      visible_land = Server.get_visible_planet(server)
+      visible_planet = Server.get_visible_planet(server)
       player = Server.get_player(server)
 
       {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
@@ -59,7 +64,7 @@ defmodule EuropaWeb.GameLive do
         |> assign(
           game: game,
           server: server,
-          visible_planet: visible_land,
+          visible_planet: visible_planet,
           chat: Server.get_chat(server),
           current_time: get_current_time(server),
           player: player,
@@ -70,7 +75,7 @@ defmodule EuropaWeb.GameLive do
           boots: boots,
           ammo_count: ammo_count,
           player_stats: get_player_stats(player),
-          game_field_size: length(visible_land),
+          game_field_size: length(visible_planet),
           item_box: nil,
           inventory: nil,
           inventory_type: nil,
@@ -80,7 +85,9 @@ defmodule EuropaWeb.GameLive do
           item_drop_count: 1,
           game_over: false,
           game_page: true,
-          dialog: nil
+          dialog: nil,
+          show_scope: false,
+          scope: get_scope(visible_planet, player, weapon)
         )
 
       {:ok, socket}
@@ -119,15 +126,18 @@ defmodule EuropaWeb.GameLive do
     case Server.move(socket.assigns.server, direction) do
       {:moved, move_status} ->
         player = Server.get_player(socket.assigns.server)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
+        weapon = get_current_weapon(player)
 
         socket =
           socket
           |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
+            visible_planet: visible_planet,
             player: player,
             chat: Server.get_chat(socket.assigns.server),
             player_stats: get_player_stats(player),
-            current_time: get_current_time(socket.assigns.server)
+            current_time: get_current_time(socket.assigns.server),
+            scope: get_scope(visible_planet, player, weapon)
           )
           |> step_sound(player.stand_on)
           |> damaged_sound(player_before.health, player.health)
@@ -138,6 +148,8 @@ defmodule EuropaWeb.GameLive do
 
       {:attack, status} ->
         player = Server.get_player(socket.assigns.server)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
+        weapon = get_current_weapon(player)
 
         socket =
           socket
@@ -146,7 +158,8 @@ defmodule EuropaWeb.GameLive do
             player: player,
             chat: Server.get_chat(socket.assigns.server),
             player_stats: get_player_stats(player),
-            current_time: get_current_time(socket.assigns.server)
+            current_time: get_current_time(socket.assigns.server),
+            scope: get_scope(visible_planet, player, weapon)
           )
           |> punch_sound(status)
           |> damaged_sound(player_before.health, player.health)
@@ -155,12 +168,17 @@ defmodule EuropaWeb.GameLive do
         {:noreply, socket}
 
       _ ->
+        player = Server.get_player(socket.assigns.server)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
+        weapon = get_current_weapon(player)
+
         {:noreply,
          assign(socket,
-           visible_planet: Server.get_visible_planet(socket.assigns.server),
-           player: Server.get_player(socket.assigns.server),
+           visible_planet: visible_planet,
+           player: player,
            chat: Server.get_chat(socket.assigns.server),
-           current_time: get_current_time(socket.assigns.server)
+           current_time: get_current_time(socket.assigns.server),
+           scope: get_scope(visible_planet, player, weapon)
          )}
     end
   end
@@ -282,6 +300,10 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
+  def handle_event("key_pressed", %{"key" => key}, socket) when key in @scope_keys do
+    {:noreply, assign(socket, :show_scope, !socket.assigns.show_scope)}
+  end
+
   def handle_event("key_pressed", _params, socket) do
     message = gettext("This button doesn't do anything. Perhaps you forgot to switch the keyboard layout to English?")
     socket = put_flash(socket, :error, message)
@@ -346,6 +368,7 @@ defmodule EuropaWeb.GameLive do
         helmet = get_current_helmet(updated_player)
         suit = get_current_suit(updated_player)
         boots = get_current_boots(updated_player)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
 
         socket =
           socket
@@ -358,7 +381,8 @@ defmodule EuropaWeb.GameLive do
             boots: boots,
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player)
+            player_stats: get_player_stats(updated_player),
+            scope: get_scope(visible_planet, updated_player, weapon)
           )
           |> play_sound("equip")
 
@@ -377,6 +401,7 @@ defmodule EuropaWeb.GameLive do
         helmet = get_current_helmet(updated_player)
         suit = get_current_suit(updated_player)
         boots = get_current_boots(updated_player)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
 
         socket =
           socket
@@ -389,7 +414,9 @@ defmodule EuropaWeb.GameLive do
             boots: boots,
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player)
+            player_stats: get_player_stats(updated_player),
+            show_scope: socket.assigns.show_scope && weapon,
+            scope: get_scope(visible_planet, updated_player, weapon)
           )
           |> play_sound("unequip")
 
@@ -408,6 +435,7 @@ defmodule EuropaWeb.GameLive do
         helmet = get_current_helmet(updated_player)
         suit = get_current_suit(updated_player)
         boots = get_current_boots(updated_player)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
 
         socket =
           socket
@@ -421,6 +449,8 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
+            show_scope: socket.assigns.show_scope && weapon,
+            scope: get_scope(visible_planet, updated_player, weapon),
             item_to_drop: nil,
             item_drop_count: nil
           )
@@ -824,6 +854,30 @@ defmodule EuropaWeb.GameLive do
   defp get_current_time(server) do
     {year, day, time} = Server.get_current_time(server)
     %{year: year, day: day, time: time}
+  end
+
+  defp get_scope(_, _, nil), do: []
+
+  defp get_scope(visible_planet, player, %Weapon{shooting_distance: shooting_distance}) do
+    planet_view_distance = div(@view_distance, 2)
+    distance = min(shooting_distance, planet_view_distance)
+
+    {player_y, player_x} =
+      visible_planet
+      |> Enum.with_index()
+      |> Enum.find_value(fn {row, row_id} ->
+        case Enum.find_index(row, &(&1 == :player)) do
+          nil -> nil
+          col_id -> {row_id, col_id}
+        end
+      end)
+
+    case player.view_direction do
+      :up -> [{{player_y, player_x}, {player_y - distance, player_x}}]
+      :down -> [{{player_y, player_x}, {player_y + distance, player_x}}]
+      :left -> [{{player_y, player_x}, {player_y, player_x - distance}}]
+      :right -> [{{player_y, player_x}, {player_y, player_x + distance}}]
+    end
   end
 
   defp move_key_to_direction(key) when key in @move_up_keys, do: :up
