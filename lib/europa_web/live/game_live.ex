@@ -43,8 +43,6 @@ defmodule EuropaWeb.GameLive do
 
   @view_distance fetch_config!([Planet, :view_distance])
 
-  @shotgun_radius fetch_config!([:weapons, :shotgun_radius])
-
   @impl true
   def mount(%{"uuid" => uuid}, session, socket) do
     current_user = Map.fetch!(session, "current_user")
@@ -883,12 +881,18 @@ defmodule EuropaWeb.GameLive do
     |> maybe_add_shotgun_scopes(weapon, player.view_direction)
   end
 
-  defp maybe_add_shotgun_scopes([{{from_y, from_x}, {to_y, to_x}}], %Weapon{shooting_type: :shot}, view_direction) do
+  defp maybe_add_shotgun_scopes(
+         [{{from_y, from_x}, {to_y, to_x}}],
+         %Weapon{shooting_type: :shot} = weapon,
+         view_direction
+       ) do
+    distance = weapon.shooting_distance
+
     case view_direction do
-      :up -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y, to_x + m}} end)
-      :down -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y, to_x - m}} end)
-      :left -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y - m, to_x}} end)
-      :right -> Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m -> {{from_y, from_x}, {to_y + m, to_x}} end)
+      :up -> Enum.map(-distance..distance, fn m -> {{from_y, from_x}, {to_y, to_x + m}} end)
+      :down -> Enum.map(-distance..distance, fn m -> {{from_y, from_x}, {to_y, to_x - m}} end)
+      :left -> Enum.map(-distance..distance, fn m -> {{from_y, from_x}, {to_y - m, to_x}} end)
+      :right -> Enum.map(-distance..distance, fn m -> {{from_y, from_x}, {to_y + m, to_x}} end)
     end
   end
 

@@ -1398,7 +1398,7 @@ defmodule Europa.Server.PlanetTest do
 
       planet = build(:planet, land: @land_player_look_up_at_enemies, current_coord: {4, 7})
 
-      test_shoot(planet, player, weapon, 5)
+      test_shoot(planet, player, weapon, 7)
     end
 
     test "damages bottom enemies (shot)" do
@@ -1417,7 +1417,7 @@ defmodule Europa.Server.PlanetTest do
 
       planet = build(:planet, land: @land_player_look_down_at_enemies, current_coord: {4, 1})
 
-      test_shoot(planet, player, weapon, 5)
+      test_shoot(planet, player, weapon, 7)
     end
 
     test "damages right enemies (shot)" do
@@ -1455,7 +1455,7 @@ defmodule Europa.Server.PlanetTest do
 
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
-      test_shoot(planet, player, weapon, 5)
+      test_shoot(planet, player, weapon, 7)
     end
 
     test "damages top npc (shot)" do
@@ -1549,8 +1549,8 @@ defmodule Europa.Server.PlanetTest do
 
       planet = build(:planet, land: @land_player_look_left_at_enemies, current_coord: {7, 4})
 
-      {:ok, updated_planet} = test_shoot(planet, player, weapon, 5, _check_damage = false)
-      assert_monster_bodies(updated_planet, _monster_bodies_count = 5)
+      {:ok, updated_planet} = test_shoot(planet, player, weapon, 7, _check_damage = false)
+      assert_monster_bodies(updated_planet, _monster_bodies_count = 7)
     end
 
     test "changes killed npc on human_body item boxes" do

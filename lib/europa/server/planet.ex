@@ -37,8 +37,6 @@ defmodule Europa.Server.Planet do
   @enemy_move_possibility_from fetch_config!([__MODULE__, :enemy_move_possibility, :from])
   @enemy_move_possibility_to fetch_config!([__MODULE__, :enemy_move_possibility, :to])
 
-  @shotgun_radius fetch_config!([:weapons, :shotgun_radius])
-
   @max_accuracy fetch_config!([:weapons, :max_accuracy])
 
   @base_loot_generate_possibility fetch_config!([__MODULE__, :base_loot_generate_possibility])
@@ -374,6 +372,7 @@ defmodule Europa.Server.Planet do
         shotgun_targets_down(x, y, shooting_distance, land)
     end
     |> List.flatten()
+    |> Enum.uniq()
     |> Enum.filter(fn coord ->
       case get_tile(land, coord) do
         %Enemy{} -> true
@@ -383,27 +382,43 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp shotgun_targets_right(x, y, shooting_distance, land) do
-    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
-      Enum.map(1..shooting_distance, fn n -> {x + n, y + m} end) |> stop_on_barrier(land)
-    end)
-  end
-
-  defp shotgun_targets_left(x, y, shooting_distance, land) do
-    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
-      Enum.map(1..shooting_distance, fn n -> {x - n, y + m} end) |> stop_on_barrier(land)
-    end)
-  end
-
   defp shotgun_targets_up(x, y, shooting_distance, land) do
-    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
-      Enum.map(1..shooting_distance, fn n -> {x + m, y - n} end) |> stop_on_barrier(land)
+    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
+      Enum.map(1..shooting_distance, fn n ->
+        m = round(m_end * n / shooting_distance)
+        {x + m, y - n}
+      end)
+      |> stop_on_barrier(land)
     end)
   end
 
   defp shotgun_targets_down(x, y, shooting_distance, land) do
-    Enum.map((@shotgun_radius * -1)..@shotgun_radius, fn m ->
-      Enum.map(1..shooting_distance, fn n -> {x + m, y + n} end) |> stop_on_barrier(land)
+    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
+      Enum.map(1..shooting_distance, fn n ->
+        m = round(m_end * n / shooting_distance)
+        {x + m, y + n}
+      end)
+      |> stop_on_barrier(land)
+    end)
+  end
+
+  defp shotgun_targets_left(x, y, shooting_distance, land) do
+    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
+      Enum.map(1..shooting_distance, fn n ->
+        m = round(m_end * n / shooting_distance)
+        {x - n, y + m}
+      end)
+      |> stop_on_barrier(land)
+    end)
+  end
+
+  defp shotgun_targets_right(x, y, shooting_distance, land) do
+    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
+      Enum.map(1..shooting_distance, fn n ->
+        m = round(m_end * n / shooting_distance)
+        {x + n, y + m}
+      end)
+      |> stop_on_barrier(land)
     end)
   end
 
