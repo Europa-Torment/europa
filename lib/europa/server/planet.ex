@@ -1099,7 +1099,7 @@ defmodule Europa.Server.Planet do
   # coveralls-ignore-start
 
   defp maybe_generate_predefined(land, direction, characters_pid, planet) do
-    if m_to_n?(1, 150) do
+    if m_to_n?(1, 50) do
       template = Predefined.generate_random()
 
       coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
