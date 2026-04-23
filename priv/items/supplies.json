@@ -19,7 +19,7 @@
             "health": 100
         },
         "weight": 0.1,
-        "random_weight": 0.08
+        "random_weight": 0.1
     },
     {
         "name": "Self-heating food tube", 
