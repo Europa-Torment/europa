@@ -1,6 +1,6 @@
 [
     {
-        "name": "Mounting mount",
+        "name": "Crowbar",
         "hit_cost": {"from": 2, "to": 3},
         "damage": {"from": 3, "to": 6},
         "weight": 3.5,
