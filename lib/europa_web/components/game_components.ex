@@ -14,6 +14,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Chat
+  alias Europa.Tools.NumberHelpers
 
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
@@ -560,16 +561,16 @@ defmodule EuropaWeb.GameCompotents do
           {name, "#{value} (diff)"}
 
         is_number(value) && value > current_value && attr not in Item.negative_attrs(item) ->
-          {name, "#{value} (+#{value - current_value})", "text-blue-500"}
+          {name, "#{value} (+#{maybe_round_number(value - current_value)})", "text-blue-500"}
 
         is_number(value) && value > current_value && attr in Item.negative_attrs(item) ->
-          {name, "#{value} (+#{value - current_value})", "text-red-500"}
+          {name, "#{value} (+#{maybe_round_number(value - current_value)})", "text-red-500"}
 
         is_number(value) && value < current_value && attr not in Item.negative_attrs(item) ->
-          {name, "#{value} (-#{current_value - value})", "text-red-500"}
+          {name, "#{value} (-#{maybe_round_number(current_value - value)})", "text-red-500"}
 
         is_number(value) && value < current_value && attr in Item.negative_attrs(item) ->
-          {name, "#{value} (-#{current_value - value})", "text-blue-500"}
+          {name, "#{value} (-#{maybe_round_number(current_value - value)})", "text-blue-500"}
 
         true ->
           {name, value}
@@ -877,6 +878,14 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp speech(_), do: ""
+
+  defp maybe_round_number(number) when is_float(number) do
+    NumberHelpers.round(number, 2)
+  end
+
+  defp maybe_round_number(number) do
+    number
+  end
 
   # coveralls-ignore-stop
 end
