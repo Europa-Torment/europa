@@ -26,8 +26,8 @@ defmodule Europa.Server.Planet do
 
   @view_distance fetch_config!([__MODULE__, :view_distance])
 
-  @initial_game_field_width @view_distance
-  @initial_game_field_height @view_distance
+  @initial_game_field_width @view_distance * 2
+  @initial_game_field_height @view_distance * 2
 
   @view_distance fetch_config!([__MODULE__, :view_distance])
   @min_view_distance fetch_config!([__MODULE__, :min_view_distance])
@@ -180,11 +180,12 @@ defmodule Europa.Server.Planet do
       |> List.flatten()
       |> Enum.into(%{})
 
-    max_x = @initial_game_field_height - 1
-    max_y = @initial_game_field_width - 1
+    max_x = @view_distance
+    max_y = @view_distance
 
     updated_land = struct!(land, tiles: new_tiles, min_x: 0, max_x: max_x, min_y: 0, max_y: max_y)
-    updated_planet = struct!(planet, land: updated_land, current_coord: center_coord())
+    current_coord = {div(@view_distance, 2), div(@view_distance, 2)}
+    updated_planet = struct!(planet, land: updated_land, current_coord: current_coord)
 
     {:ok, updated_planet}
   end
