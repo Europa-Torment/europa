@@ -1010,7 +1010,7 @@ defmodule Europa.Server.PlanetTest do
       %Planet.Land{tiles: expected_tiles} =
         Planet.get_visible_land(planet, @midday) |> PlanetLandConverter.from_matrix()
 
-      assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {4, 4}}} = Planet.crop_land(planet)
+      assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {2, 2}}} = Planet.crop_land(planet)
       assert Enum.count(tiles) == Enum.count(expected_tiles)
       assert Map.values(tiles) == Map.values(expected_tiles)
     end

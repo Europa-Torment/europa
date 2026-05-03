@@ -34,7 +34,6 @@ config :europa, Europa.Server,
   inactivity_timeout_ms: 20 * 60 * 1000
 
 config :europa, Europa.Server.Planet,
-  initial_game_field: [width: 32, height: 32],
   view_distance: 16,
   min_view_distance: 3,
   generate_distance: 10,

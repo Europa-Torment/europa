@@ -24,8 +24,10 @@ defmodule Europa.Server.Planet do
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
 
-  @initial_game_field_width fetch_config!([__MODULE__, :initial_game_field, :width])
-  @initial_game_field_height fetch_config!([__MODULE__, :initial_game_field, :height])
+  @view_distance fetch_config!([__MODULE__, :view_distance])
+
+  @initial_game_field_width @view_distance
+  @initial_game_field_height @view_distance
 
   @view_distance fetch_config!([__MODULE__, :view_distance])
   @min_view_distance fetch_config!([__MODULE__, :min_view_distance])
@@ -164,18 +166,25 @@ defmodule Europa.Server.Planet do
   def crop_land(%__MODULE__{land: land} = planet) do
     {{x_from, x_to}, {y_from, y_to}} = visible_land_intervals(planet)
 
-    coords =
+    new_tiles =
       for x <- x_from..x_to do
         for y <- y_from..y_to do
-          {x, y}
+          get_tile(land, {x, y})
         end
       end
+      |> Enum.with_index(fn row, x ->
+        Enum.with_index(row, fn tile, y ->
+          {{x, y}, tile}
+        end)
+      end)
       |> List.flatten()
+      |> Enum.into(%{})
 
-    new_tiles = Map.take(planet.land.tiles, coords)
-    updated_land = struct!(land, tiles: new_tiles, min_x: x_from, max_x: x_to, min_y: y_from, max_y: y_to)
+    max_x = @initial_game_field_height - 1
+    max_y = @initial_game_field_width - 1
 
-    updated_planet = struct!(planet, land: updated_land)
+    updated_land = struct!(land, tiles: new_tiles, min_x: 0, max_x: max_x, min_y: 0, max_y: max_y)
+    updated_planet = struct!(planet, land: updated_land, current_coord: center_coord())
 
     {:ok, updated_planet}
   end

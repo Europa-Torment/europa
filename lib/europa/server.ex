@@ -577,8 +577,7 @@ defmodule Europa.Server do
        chat: updated_chat,
        moves_count: state.moves_count + moves_count,
        current_datetime: shift_datetime(state.current_datetime, moves_count)
-     )
-     |> maybe_crop_land(), @inactivity_timeout_ms}
+     ), @inactivity_timeout_ms}
   end
 
   @impl true
@@ -657,7 +656,8 @@ defmodule Europa.Server do
            planet: updated_planet,
            player: updated_player,
            chat: updated_chat
-         ), {:continue, {:tick, moves_count, caller_pid}}}
+         )
+         |> maybe_crop_land(), {:continue, {:tick, moves_count, caller_pid}}}
 
       {:attack, updated_planet, damaged_enemies, moves_count} ->
         weight_ratio = PlayerManager.weight_ratio(state.player)
