@@ -87,7 +87,9 @@ defmodule EuropaWeb.GameLive do
           game_page: true,
           dialog: nil,
           show_scope: false,
-          scope: get_scope(visible_planet, player, weapon)
+          scope: get_scope(visible_planet, player, weapon),
+          disassemble_item_uuid: nil,
+          disassemble_items: nil
         )
 
       {:ok, socket}
@@ -248,7 +250,8 @@ defmodule EuropaWeb.GameLive do
        show_control_hints: false,
        item_drop_menu: false,
        item_to_drop: nil,
-       dialog: nil
+       dialog: nil,
+       disassemble_items: nil
      )}
   end
 
@@ -335,6 +338,10 @@ defmodule EuropaWeb.GameLive do
     {:noreply, assign(socket, dialog: nil)}
   end
 
+  def handle_event("close_item_disassemble_menu", _, socket) do
+    {:noreply, assign(socket, disassemble_items: nil)}
+  end
+
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
     case Server.take_loot(socket.assigns.server, item_uuid) do
       {:ok, item_box} ->
@@ -419,6 +426,53 @@ defmodule EuropaWeb.GameLive do
             scope: get_scope(visible_planet, updated_player, weapon)
           )
           |> play_sound("unequip")
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("disassemble_item", %{"uuid" => item_uuid}, socket) do
+    with {:ok, item} <- Server.get_item(socket.assigns.server, item_uuid),
+         true <- Loot.Item.disassemblable?(item),
+         {:ok, items} <- Loot.Item.disassemble(item) do
+      {:noreply, assign(socket, disassemble_item_uuid: item_uuid, disassemble_items: items)}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("confirm_item_disassemble", %{"uuid" => item_uuid}, socket) do
+    case Server.disassemble_item(socket.assigns.server, item_uuid) do
+      {:ok, updated_player} ->
+        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
+        melee_weapon = get_current_melee_weapon(updated_player)
+        helmet = get_current_helmet(updated_player)
+        suit = get_current_suit(updated_player)
+        boots = get_current_boots(updated_player)
+        visible_planet = Server.get_visible_planet(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            player: updated_player,
+            weapon: weapon,
+            melee_weapon: melee_weapon,
+            helmet: helmet,
+            suit: suit,
+            boots: boots,
+            ammo_count: ammo_count,
+            inventory: get_player_inventory(socket),
+            player_stats: get_player_stats(updated_player),
+            show_scope: socket.assigns.show_scope && not is_nil(weapon),
+            scope: get_scope(visible_planet, updated_player, weapon),
+            disassemble_item_uuid: nil,
+            disassemble_items: nil,
+            chat: Server.get_chat(socket.assigns.server)
+          )
+          |> play_sound("assemble")
 
         {:noreply, socket}
 
@@ -634,6 +688,7 @@ defmodule EuropaWeb.GameLive do
         empty_magazine: %{name: ~p"/sounds/empty_magazine.mp3", volume: 1.0},
         reload: %{name: ~p"/sounds/reload.mp3", volume: 0.2},
         unload: %{name: ~p"/sounds/unload.mp3", volume: 0.2},
+        assemble: %{name: ~p"/sounds/assemble.mp3", volume: 0.2},
         impact: %{name: ~p"/sounds/impact.mp3", volume: 0.3},
         equip: %{name: ~p"/sounds/equip.mp3", volume: 0.08},
         unequip: %{name: ~p"/sounds/unequip.mp3", volume: 0.08},
@@ -753,7 +808,9 @@ defmodule EuropaWeb.GameLive do
 
   defp open_inventory(socket) do
     inventory = get_player_inventory(socket)
-    {:noreply, assign(socket, inventory: inventory, item_box: nil, show_control_hints: false, dialog: nil)}
+
+    {:noreply,
+     assign(socket, inventory: inventory, item_box: nil, show_control_hints: false, dialog: nil, disassemble_items: nil)}
   end
 
   defp close_inventory(socket) do
@@ -763,7 +820,14 @@ defmodule EuropaWeb.GameLive do
   defp open_item_box(socket) do
     case Server.loot(socket.assigns.server) do
       {:open_item_box, item_box} ->
-        {:noreply, assign(socket, item_box: item_box, inventory: nil, show_control_hints: false, dialog: nil)}
+        {:noreply,
+         assign(socket,
+           item_box: item_box,
+           inventory: nil,
+           show_control_hints: false,
+           dialog: nil,
+           disassemble_items: nil
+         )}
 
       _ ->
         {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}

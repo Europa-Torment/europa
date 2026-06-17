@@ -76,13 +76,15 @@ defmodule Europa.Support.Factory do
       damage: 10,
       caliber: ".40 S&W",
       shooting_distance: 5,
+      level: 1,
+      parts_count: 2,
       weight: 1.0,
       image_name: "default_pistol",
       sound_name: "pistol"
     }
   end
 
-  @spec ammo_factory() :: Loot.Ammo.t()
+  @spec ammo_factory() :: Loot.Weapon.Ammo.t()
   def ammo_factory do
     %Loot.Weapon.Ammo{
       uuid: Ecto.UUID.generate(),
@@ -167,6 +169,27 @@ defmodule Europa.Support.Factory do
       hunger: 10,
       radiation: 10,
       warm: 10
+    }
+  end
+
+  @spec tool_factory() :: Loot.Tool.t()
+  def tool_factory do
+    %Loot.Tool{
+      uuid: Ecto.UUID.generate(),
+      type: :weapon_parts,
+      name: sequence(:name, &"tool #{&1 + 1}"),
+      count: 1,
+      properties: build(:tool_properties),
+      stackable?: true,
+      weight: 1.0,
+      sound_name: "assemble"
+    }
+  end
+
+  @spec tool_properties_factory() :: Loot.Tool.Properties.t()
+  def tool_properties_factory do
+    %Loot.Tool.Properties{
+      level: 1
     }
   end
 

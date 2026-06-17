@@ -130,6 +130,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   @spec stackable?(Supply.t()) :: true
   def stackable?(%Supply{}), do: true
 
+  @spec disassemblable?(Supply.t()) :: false
+  def disassemblable?(%Supply{}), do: false
+
+  @spec disassemble(Supply.t()) :: {:error, Errors.NotApplicableError.t()}
+  def disassemble(%Supply{}) do
+    {:error, %Errors.NotApplicableError{}}
+  end
+
   @spec weight(Supply.t()) :: Loot.Item.weight()
   def weight(%Supply{weight: weight, count: count}) do
     weight * count

@@ -60,6 +60,12 @@ defmodule Europa.Server.PlayerManager do
               {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
+  Disassembles given item.
+  """
+  @callback disassemble_item(Player.t(), Loot.uuid()) ::
+              {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+
+  @doc """
   Unequips given item or returns error if item is not exists or not equipable.
   """
   @callback unequip_item(Player.t(), Loot.uuid()) ::
@@ -175,6 +181,8 @@ defmodule Europa.Server.PlayerManager do
   def get_item(player, item_uuid), do: manager_impl().get_item(player, item_uuid)
 
   def drop_item(player, item_uuid, count), do: manager_impl().drop_item(player, item_uuid, count)
+
+  def disassemble_item(player, item_uuid), do: manager_impl().disassemble_item(player, item_uuid)
 
   def equip_item(player, item_uuid), do: manager_impl().equip_item(player, item_uuid)
 

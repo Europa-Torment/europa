@@ -60,6 +60,7 @@ config :europa, :weapons,
 
 config :europa, :game_params,
   disaster_year: 2152,
+  disassemble_moves_count: 3,
   player: [
     warm_up_quantity: 25,
     max_weight: [

@@ -6,7 +6,6 @@ defmodule Europa.Server.Loot do
 
   alias Europa.Tools.Types
   alias Europa.Tools.AttrsDeterminator
-  alias Europa.Tools.FilesCache
 
   alias Europa.Server.Planet.Tiles
 
@@ -17,6 +16,8 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
+  alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Utils.FilesReader
   alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
@@ -26,6 +27,7 @@ defmodule Europa.Server.Loot do
     {:ammo, gettext("Ammo"), 0.7},
     {:melee_weapon, gettext("Melee weapons"), 0.5},
     {:supply, gettext("Supplies"), 1.0},
+    {:tool, gettext("Tools"), 1.0},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},
     {:boots, gettext("Boots"), 0.4}
@@ -52,8 +54,6 @@ defmodule Europa.Server.Loot do
 
   @allowed_item_box_types Map.keys(@allowed_item_boxes)
 
-  @templates_path "/items/"
-
   @filenames %{
     weapon: "weapons.json",
     ammo: "ammo.json",
@@ -61,8 +61,11 @@ defmodule Europa.Server.Loot do
     helmet: "helmets.json",
     suit: "suits.json",
     boots: "boots.json",
-    supply: "supplies.json"
+    supply: "supplies.json",
+    tool: "tools.json"
   }
+
+  @items_attrs FilesReader.parse_files(@filenames)
 
   @type item_type :: unquote(Types.one_of(@allowed_item_types))
   @type item_box_type :: unquote(Types.one_of(@allowed_item_box_types))
@@ -81,8 +84,9 @@ defmodule Europa.Server.Loot do
     alias Europa.Server.Loot.Suit
     alias Europa.Server.Loot.Boots
     alias Europa.Server.Loot.Supply
+    alias Europa.Server.Loot.Tool
 
-    @type item() :: Weapon.t() | Ammo.t() | MeleeWeapon.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t()
+    @type item() :: Weapon.t() | Ammo.t() | MeleeWeapon.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t() | Tool.t()
     @type weight() :: number()
 
     @spec item_type(item()) :: Loot.item_type()
@@ -102,6 +106,12 @@ defmodule Europa.Server.Loot do
 
     @spec stackable?(item()) :: boolean()
     def stackable?(item)
+
+    @spec disassemblable?(item()) :: boolean()
+    def disassemblable?(item)
+
+    @spec disassemble(item()) :: {:ok, list(item())} | {:error, Errors.NotApplicableError.t()}
+    def disassemble(item)
 
     @spec equip(item()) :: {:ok, item()} | {:error, Errors.NotApplicableError.t()}
     def equip(item)
@@ -231,6 +241,7 @@ defmodule Europa.Server.Loot do
       :suit -> Suit.new(attrs)
       :boots -> Boots.new(attrs)
       :supply -> Supply.new(attrs)
+      :tool -> Tool.new(attrs)
     end
   end
 
@@ -269,7 +280,7 @@ defmodule Europa.Server.Loot do
   def generate_item(item_type) when item_type in @allowed_item_types do
     attrs =
       item_type
-      |> parse_file()
+      |> get_items()
       |> WeightedRandom.take_one()
       |> AttrsDeterminator.determine_attrs()
 
@@ -299,21 +310,8 @@ defmodule Europa.Server.Loot do
     new_item_box(item_box_type, items, stand_on)
   end
 
-  @spec parse_file(item_type()) :: map()
-  def parse_file(category) do
-    priv_dir = :code.priv_dir(:europa)
-    path = Path.join([priv_dir, @templates_path, Map.fetch!(@filenames, category)])
-
-    case FilesCache.get(path) do
-      {:ok, cached_file} ->
-        cached_file
-
-      _ ->
-        path
-        |> File.read!()
-        |> Jason.decode!(keys: :atoms)
-        |> Enum.map(fn attrs -> {attrs, attrs.random_weight} end)
-        |> tap(fn file_content -> FilesCache.put(path, file_content) end)
-    end
+  @spec get_items(item_type()) :: list()
+  def get_items(category) do
+    Map.fetch!(@items_attrs, category)
   end
 end

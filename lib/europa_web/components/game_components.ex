@@ -382,6 +382,11 @@ defmodule EuropaWeb.GameCompotents do
                     <div class="dropdown" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                        <%= if Loot.Item.disassemblable?(item) do %>
+                          <li phx-click="disassemble_item" phx-value-uuid={"#{item.uuid}"}>
+                            <a>{gettext("Disassemble")}</a>
+                          </li>
+                        <% end %>
                         <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Drop")}</a></li>
                         <%= if Loot.Item.stackable?(item) do %>
                           <li phx-click="open_item_drop_menu" phx-value-uuid={"#{item.uuid}"}>
@@ -507,12 +512,57 @@ defmodule EuropaWeb.GameCompotents do
             <p class="validator-hint">
               {gettext("Must be between")} 1-{@item_to_drop.count}
             </p>
-            <button class="btn btn-neutral" phx-click="drop_item" phx-value-uuid={"#{@item_to_drop.uuid}"}>
+            <button class="btn btn-secondary" phx-click="drop_item" phx-value-uuid={"#{@item_to_drop.uuid}"}>
               {gettext("Drop")}
             </button>
           </div>
           <div class="modal-action">
             <label phx-click="close_item_drop_menu" for="item_drop_menu" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def item_disassemble_menu(assigns) do
+    ~H"""
+    <%= if @disassemble_items do %>
+      <input
+        type="checkbox"
+        id="item_disassemble_menu"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_item_disassemble_menu"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+          <h3 class="text-lg font-bold pb-3">{gettext("After disassembling you will receive following items:")}</h3>
+          <div>
+            <ul class="list-disc list-inside space-y-2 text-sm">
+              <%= for item <- @disassemble_items do %>
+                <li
+                  id={"disassemble_item_#{item.uuid}"}
+                  phx-hook="Tooltip"
+                  data-tooltip={item_tooltip(item, @player)}
+                >
+                  {Loot.Item.composed_name(item)}
+                </li>
+              <% end %>
+            </ul>
+          </div>
+          <div class="modal-action">
+            <label
+              phx-click="confirm_item_disassemble"
+              phx-value-uuid={"#{@disassemble_item_uuid}"}
+              for="item_disassemble_menu"
+              class="btn btn-secondary"
+            >
+              {gettext("Confirm")}
+            </label>
+            <label phx-click="close_item_disassemble_menu" for="item_disassemble_menu" class="btn">
+              {gettext("Close")}
+            </label>
           </div>
         </div>
       </div>

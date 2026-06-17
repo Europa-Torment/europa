@@ -36,6 +36,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Suit
+  alias Europa.Server.Errors
 
   @spec item_type(Suit.t()) :: :suit
   def item_type(%Suit{}), do: :suit
@@ -89,6 +90,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
 
   @spec stackable?(Suit.t()) :: false
   def stackable?(%Suit{}), do: false
+
+  @spec disassemblable?(Suit.t()) :: false
+  def disassemblable?(%Suit{}), do: false
+
+  @spec disassemble(Suit.t()) :: {:error, Errors.NotApplicableError.t()}
+  def disassemble(%Suit{}) do
+    {:error, %Errors.NotApplicableError{}}
+  end
 
   @spec weight(Suit.t()) :: Loot.Item.weight()
   def weight(%Suit{weight: weight}) do

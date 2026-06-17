@@ -12,6 +12,7 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Loot.Supply
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
 
@@ -173,6 +174,14 @@ defmodule Europa.Server.Player do
         end
 
       {:ok, updated_player, dropped_item}
+    end
+  end
+
+  @impl true
+  def disassemble_item(%__MODULE__{} = player, item_uuid) do
+    with {:ok, item} <- get_item(player, item_uuid) do
+      {player, item} = maybe_unequip_item(player, item)
+      do_disassemble_item(player, item)
     end
   end
 
@@ -349,6 +358,24 @@ defmodule Europa.Server.Player do
   def tick(player, _), do: {:ok, player, []}
 
   ### PRIVATE ###
+
+  defp add_items(%__MODULE__{} = player, items) when is_list(items) do
+    Enum.reduce(items, player, fn item, player ->
+      {:ok, updated_player} = add_item(player, item)
+      updated_player
+    end)
+  end
+
+  defp do_disassemble_item(%__MODULE__{} = player, item) do
+    with {:ok, new_items} <- Loot.Item.disassemble(item) do
+      updated_player =
+        player
+        |> delete_item(item)
+        |> add_items(new_items)
+
+      {:ok, updated_player, item}
+    end
+  end
 
   defp maybe_unequip_item(%__MODULE__{} = player, item) do
     if Loot.Item.equipable?(item) && item.equiped do
@@ -591,6 +618,7 @@ defmodule Europa.Server.Player do
       case Loot.Item.item_type(inventory_item) do
         :ammo -> inventory_item.caliber == item.caliber
         :supply -> inventory_item.name == item.name && inventory_item.properties == item.properties
+        :tool -> inventory_item.name == item.name && inventory_item.properties == item.properties
       end
     end)
   end
@@ -603,6 +631,9 @@ defmodule Europa.Server.Player do
 
         %Supply{name: name} = inventory_supply when name == item.name ->
           struct!(inventory_supply, count: inventory_supply.count + item.count)
+
+        %Tool{name: name} = inventory_tool when name == item.name ->
+          struct!(inventory_tool, count: inventory_tool.count + item.count)
 
         item ->
           item

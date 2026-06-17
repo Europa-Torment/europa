@@ -35,6 +35,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.MeleeWeapon
+  alias Europa.Server.Errors
 
   @spec item_type(MeleeWeapon.t()) :: :melee_weapon
   def item_type(%MeleeWeapon{}), do: :melee_weapon
@@ -83,6 +84,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
 
   @spec stackable?(MeleeWeapon.t()) :: false
   def stackable?(%MeleeWeapon{}), do: false
+
+  @spec disassemblable?(MeleeWeapon.t()) :: false
+  def disassemblable?(%MeleeWeapon{}), do: false
+
+  @spec disassemble(MeleeWeapon.t()) :: {:error, Errors.NotApplicableError.t()}
+  def disassemble(%MeleeWeapon{}) do
+    {:error, %Errors.NotApplicableError{}}
+  end
 
   @spec weight(MeleeWeapon.t()) :: Loot.Item.weight()
   def weight(%MeleeWeapon{weight: weight}) do

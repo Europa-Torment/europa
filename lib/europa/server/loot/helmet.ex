@@ -34,6 +34,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Helmet
+  alias Europa.Server.Errors
 
   @spec item_type(Helmet.t()) :: :helmet
   def item_type(%Helmet{}), do: :helmet
@@ -85,6 +86,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   @spec stackable?(Helmet.t()) :: false
   def stackable?(%Helmet{}), do: false
+
+  @spec disassemblable?(Helmet.t()) :: false
+  def disassemblable?(%Helmet{}), do: false
+
+  @spec disassemble(Helmet.t()) :: {:error, Errors.NotApplicableError.t()}
+  def disassemble(%Helmet{}) do
+    {:error, %Errors.NotApplicableError{}}
+  end
 
   @spec weight(Helmet.t()) :: Loot.Item.weight()
   def weight(%Helmet{weight: weight}) do

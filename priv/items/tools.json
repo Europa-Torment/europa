@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Weapon parts 1", 
+        "type": "weapon_parts",
+        "count": {"from": 1, "to": 4}, 
+        "sound_name": "assemble",
+        "properties": {
+            "level": 1
+        },
+        "stackable": true,
+        "weight": 0.1, 
+        "random_weight": 1.0
+    },
+    {
+        "name": "Weapon parts 2", 
+        "type": "weapon_parts",
+        "count": {"from": 1, "to": 3}, 
+        "sound_name": "assemble",
+        "properties": {
+            "level": 2
+        },
+        "stackable": true,
+        "weight": 0.2, 
+        "random_weight": 1.5
+    },
+    {
+        "name": "Weapon parts 3", 
+        "type": "weapon_parts",
+        "count": {"from": 1, "to": 2}, 
+        "sound_name": "assemble",
+        "properties": {
+            "level": 3
+        },
+        "stackable": true,
+        "weight": 0.3, 
+        "random_weight": 2.0
+    },
+    {
+        "name": "Weapon parts 4", 
+        "type": "weapon_parts",
+        "count": 1, 
+        "sound_name": "assemble",
+        "properties": {
+            "level": 4
+        },
+        "stackable": true,
+        "weight": 0.4, 
+        "random_weight": 2.5
+    }
+]

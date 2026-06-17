@@ -8,6 +8,7 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
 
   import Europa.Tools.Conf
@@ -171,7 +172,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "stacks same stackable items" do
-      for item_type <- [:ammo, :supply] do
+      for item_type <- [:ammo, :supply, :tool] do
         player = build(:player, inventory: [])
         item = build(item_type)
         item2 = struct!(item, count: 100)
@@ -192,6 +193,15 @@ defmodule Europa.Server.PlayerTest do
 
       assert {:ok, updated_player} = Player.add_item(player, supply1)
       assert {:ok, %Player{inventory: [^supply2, ^supply1]}} = Player.add_item(updated_player, supply2)
+    end
+
+    test "not stacks tools with different properties" do
+      player = build(:player, inventory: [])
+      tool1 = build(:tool, properties: build(:tool_properties, level: 1))
+      tool2 = build(:tool, properties: build(:tool_properties, level: 2))
+
+      assert {:ok, updated_player} = Player.add_item(player, tool1)
+      assert {:ok, %Player{inventory: [^tool2, ^tool1]}} = Player.add_item(updated_player, tool2)
     end
   end
 
@@ -263,6 +273,20 @@ defmodule Europa.Server.PlayerTest do
     test "retunrs error when item not found", %{player: player} do
       uuid = Ecto.UUID.generate()
       assert Player.drop_item(player, uuid) == {:error, :not_found}
+    end
+  end
+
+  describe "disassemble_item/2" do
+    setup do
+      weapon = build(:weapon)
+      ammo = build(:ammo, count: 20)
+      player = build(:player, inventory: [weapon, ammo])
+
+      {:ok, player: player, weapon: weapon, ammo: ammo}
+    end
+
+    test "deletes given item and adds result of disassembly", %{player: player, weapon: weapon, ammo: ammo} do
+      assert {:ok, %Player{inventory: [%Tool{}, ^ammo]}, ^weapon} = Player.disassemble_item(player, weapon.uuid)
     end
   end
 

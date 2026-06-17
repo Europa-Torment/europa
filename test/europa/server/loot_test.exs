@@ -4,6 +4,7 @@ defmodule Europa.Server.Loot.ItemTest do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Item
   alias Europa.Server.Loot.Weapon
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
 
   describe "composed_name/1" do
@@ -11,6 +12,7 @@ defmodule Europa.Server.Loot.ItemTest do
       for item <- [
             build(:weapon),
             build(:ammo),
+            build(:tool),
             build(:melee_weapon),
             build(:helmet),
             build(:suit),
@@ -27,6 +29,7 @@ defmodule Europa.Server.Loot.ItemTest do
       for item <- [
             build(:weapon),
             build(:ammo),
+            build(:tool),
             build(:melee_weapon),
             build(:helmet),
             build(:suit),
@@ -69,6 +72,18 @@ defmodule Europa.Server.Loot.ItemTest do
       ]
 
       assert Item.readable_attrs(ammo) == expected_attrs
+    end
+
+    test "returns attrs for tool" do
+      tool = build(:tool)
+
+      expected_attrs = [
+        {:level, "Level", tool.properties.level},
+        {:count, "Count", tool.count},
+        {:weight, "Weight", tool.count * tool.weight}
+      ]
+
+      assert Item.readable_attrs(tool) == expected_attrs
     end
 
     test "returns attrs for melee weapon" do
@@ -159,6 +174,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.consumable?(ammo) == false
     end
 
+    test "returns false for tool" do
+      tool = build(:tool)
+      assert Item.consumable?(tool) == false
+    end
+
     test "returns false for melee weapon" do
       melee_weapon = build(:melee_weapon)
       assert Item.consumable?(melee_weapon) == false
@@ -194,6 +214,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns false for ammo" do
       ammo = build(:ammo)
       assert Item.equipable?(ammo) == false
+    end
+
+    test "returns false for tool" do
+      tool = build(:tool)
+      assert Item.equipable?(tool) == false
     end
 
     test "returns true for melee weapon" do
@@ -233,6 +258,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.stackable?(ammo) == true
     end
 
+    test "returns true for tool" do
+      tool = build(:tool)
+      assert Item.stackable?(tool) == true
+    end
+
     test "returns false for melee weapon" do
       melee_weapon = build(:melee_weapon)
       assert Item.stackable?(melee_weapon) == false
@@ -259,6 +289,48 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "disassemblable?/1" do
+    test "returns true for weapon" do
+      weapon = build(:weapon)
+      assert Item.disassemblable?(weapon) == true
+    end
+
+    test "returns false for ammo" do
+      ammo = build(:ammo)
+      assert Item.disassemblable?(ammo) == false
+    end
+
+    test "returns false for tool" do
+      tool = build(:tool)
+      assert Item.disassemblable?(tool) == false
+    end
+
+    test "returns false for melee weapon" do
+      melee_weapon = build(:melee_weapon)
+      assert Item.disassemblable?(melee_weapon) == false
+    end
+
+    test "returns false for helmet" do
+      helmet = build(:helmet)
+      assert Item.disassemblable?(helmet) == false
+    end
+
+    test "returns false for suit" do
+      suit = build(:suit)
+      assert Item.disassemblable?(suit) == false
+    end
+
+    test "returns false for boots" do
+      boots = build(:boots)
+      assert Item.disassemblable?(boots) == false
+    end
+
+    test "returns false for supply" do
+      supply = build(:supply)
+      assert Item.disassemblable?(supply) == false
+    end
+  end
+
   describe "weight/1" do
     test "returns weapon weight" do
       weapon = build(:weapon)
@@ -268,6 +340,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns ammo weight" do
       ammo = build(:ammo, count: 100)
       assert Item.weight(ammo) == ammo.count * ammo.weight
+    end
+
+    test "returns tool weight" do
+      tool = build(:tool, count: 100)
+      assert Item.weight(tool) == tool.count * tool.weight
     end
 
     test "returns melee weapon weight" do
@@ -305,6 +382,18 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns not_applicable error" do
       ammo = build(:ammo)
       assert Item.equip(ammo) == {:error, %Errors.NotApplicableError{}}
+    end
+  end
+
+  describe "disassemble/1" do
+    test "returns list of tools for weapon" do
+      weapon = build(:weapon)
+      assert {:ok, [%Tool{}]} = Item.disassemble(weapon)
+    end
+
+    test "returns not_applicable error" do
+      ammo = build(:ammo)
+      assert Item.disassemble(ammo) == {:error, %Errors.NotApplicableError{}}
     end
   end
 end
@@ -407,6 +496,7 @@ defmodule Europa.Server.LootTest do
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
+  alias Europa.Server.Loot.Tool
 
   describe "generate_item/1" do
     test "generates item of given type" do
@@ -430,6 +520,7 @@ defmodule Europa.Server.LootTest do
   defp item?(%Weapon{}), do: true
   defp item?(%MeleeWeapon{}), do: true
   defp item?(%Ammo{}), do: true
+  defp item?(%Tool{}), do: true
   defp item?(%Supply{}), do: true
   defp item?(_), do: false
 end

@@ -22,6 +22,7 @@ defmodule Europa.ServerTest do
   @direction :up
 
   @crop_size fetch_config!([Planet, :crop_land_size])
+  @disassemble_moves_count fetch_config!([:game_params, :disassemble_moves_count])
 
   setup :verify_on_exit!
   setup :set_mox_global
@@ -786,6 +787,57 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.consume_supply(server, supply.uuid) == error
+    end
+  end
+
+  describe "disassemble_item/2" do
+    test "handles success response", %{server: server} do
+      weapon = build(:weapon)
+      weapon_uuid = weapon.uuid
+
+      PlayerManagerMock
+      |> expect(:disassemble_item, fn %Player{} = player, ^weapon_uuid ->
+        {:ok, player, weapon}
+      end)
+
+      PlanetManagerMock
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(@disassemble_moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(@disassemble_moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      assert {:ok, %Player{}} = Server.disassemble_item(server, weapon_uuid)
+      :timer.sleep(100)
+    end
+
+    test "handles not_found response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, :not_found}
+
+      PlayerManagerMock
+      |> expect(:disassemble_item, fn _player, _weapon_uuid ->
+        error
+      end)
+
+      assert Server.disassemble_item(server, weapon.uuid) == error
+    end
+
+    test "handles NotApplicable response", %{server: server} do
+      weapon = build(:weapon)
+      error = {:error, %Errors.NotApplicableError{}}
+
+      PlayerManagerMock
+      |> expect(:disassemble_item, fn _player, _weapon_uuid ->
+        error
+      end)
+
+      assert Server.disassemble_item(server, weapon.uuid) == error
     end
   end
 

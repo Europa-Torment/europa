@@ -34,7 +34,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   end
 
   defp get_weights do
-    Loot.parse_file(:ammo)
+    Loot.get_items(:ammo)
     |> Enum.map(fn {%{caliber: caliber, weight: weight}, _} -> {caliber, weight} end)
     |> Enum.into(%{})
   end
@@ -88,6 +88,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
 
   @spec stackable?(Ammo.t()) :: true
   def stackable?(%Ammo{}), do: true
+
+  @spec disassemblable?(Ammo.t()) :: false
+  def disassemblable?(%Ammo{}), do: false
+
+  @spec disassemble(Ammo.t()) :: {:error, Errors.NotApplicableError.t()}
+  def disassemble(%Ammo{}) do
+    {:error, %Errors.NotApplicableError{}}
+  end
 
   @spec player_stats_changes(Ammo.t()) :: map()
   def player_stats_changes(%Ammo{}), do: %{}

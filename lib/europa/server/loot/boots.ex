@@ -34,6 +34,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Boots
+  alias Europa.Server.Errors
 
   @spec item_type(Boots.t()) :: :boots
   def item_type(%Boots{}), do: :boots
@@ -85,6 +86,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
 
   @spec stackable?(Boots.t()) :: false
   def stackable?(%Boots{}), do: false
+
+  @spec disassemblable?(Boots.t()) :: false
+  def disassemblable?(%Boots{}), do: false
+
+  @spec disassemble(Boots.t()) :: {:error, Errors.NotApplicableError.t()}
+  def disassemble(%Boots{}) do
+    {:error, %Errors.NotApplicableError{}}
+  end
 
   @spec weight(Boot.t()) :: Loot.Item.weight()
   def weight(%Boots{weight: weight}) do
