@@ -57,7 +57,7 @@ defmodule Europa.Server.Loot.Tool do
   def from_weapon(%Weapon{} = weapon) do
     weapon_parts =
       Loot.get_items(:tool)
-      |> Enum.find(fn {tool, _} -> tool.type == "weapon_parts" && tool.name == "Weapon parts #{weapon.level}" end)
+      |> Enum.find(fn {tool, _} -> tool.type == "weapon_parts" && tool.properties.level == weapon.level end)
       |> elem(0)
       |> Map.put(:count, weapon.parts_count - 1)
       |> new()

@@ -23,8 +23,9 @@ defmodule Europa.Server.Loot.Weapon.ToolTest do
       parts_count = 5
       weapon = build(:weapon, level: level, parts_count: parts_count)
 
-      assert [%Tool{type: :weapon_parts, name: name, count: count}] = Tool.from_weapon(weapon)
-      assert name == "Weapon parts #{level}"
+      assert [%Tool{type: :weapon_parts, count: count, properties: %Tool.Properties{level: ^level}}] =
+               Tool.from_weapon(weapon)
+
       assert count == parts_count - 1
     end
   end
