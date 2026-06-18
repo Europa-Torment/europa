@@ -89,7 +89,8 @@ defmodule EuropaWeb.GameLive do
           show_scope: false,
           scope: get_scope(visible_planet, player, weapon),
           disassemble_item_uuid: nil,
-          disassemble_items: nil
+          disassemble_items: nil,
+          blueprints: nil
         )
 
       {:ok, socket}
@@ -251,7 +252,8 @@ defmodule EuropaWeb.GameLive do
        item_drop_menu: false,
        item_to_drop: nil,
        dialog: nil,
-       disassemble_items: nil
+       disassemble_items: nil,
+       blueprints: nil
      )}
   end
 
@@ -325,6 +327,11 @@ defmodule EuropaWeb.GameLive do
     |> open_inventory()
   end
 
+  def handle_event("open_craft_menu", _, socket) do
+    socket
+    |> open_craft_menu()
+  end
+
   def handle_event("show_control_hints", _, socket) do
     socket
     |> toggle_control_hints()
@@ -340,6 +347,10 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_item_disassemble_menu", _, socket) do
     {:noreply, assign(socket, disassemble_items: nil)}
+  end
+
+  def handle_event("close_craft_menu", _, socket) do
+    close_craft_menu(socket)
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -445,8 +456,11 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("confirm_item_disassemble", %{"uuid" => item_uuid}, socket) do
+    player_before = socket.assigns.player
+
     case Server.disassemble_item(socket.assigns.server, item_uuid) do
-      {:ok, updated_player} ->
+      :ok ->
+        updated_player = Server.get_player(socket.assigns.server)
         {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
         melee_weapon = get_current_melee_weapon(updated_player)
         helmet = get_current_helmet(updated_player)
@@ -473,6 +487,7 @@ defmodule EuropaWeb.GameLive do
             chat: Server.get_chat(socket.assigns.server)
           )
           |> play_sound("assemble")
+          |> damaged_sound(player_before.health, updated_player.health)
 
         {:noreply, socket}
 
@@ -631,6 +646,13 @@ defmodule EuropaWeb.GameLive do
 
       _ ->
         {:noreply, socket}
+    end
+  end
+
+  def handle_event("craft_item", %{"uuid" => item_uuid}, socket) do
+    case socket.assigns.blueprints do
+      nil -> {:noreply, socket}
+      blueprints -> craft_item(item_uuid, blueprints, socket)
     end
   end
 
@@ -810,11 +832,36 @@ defmodule EuropaWeb.GameLive do
     inventory = get_player_inventory(socket)
 
     {:noreply,
-     assign(socket, inventory: inventory, item_box: nil, show_control_hints: false, dialog: nil, disassemble_items: nil)}
+     assign(socket,
+       inventory: inventory,
+       item_box: nil,
+       show_control_hints: false,
+       dialog: nil,
+       disassemble_items: nil,
+       blueprints: nil
+     )}
   end
 
   defp close_inventory(socket) do
     {:noreply, assign(socket, inventory: nil, inventory_type: nil)}
+  end
+
+  defp open_craft_menu(socket) do
+    blueprints = Loot.blueprints()
+
+    {:noreply,
+     assign(socket,
+       inventory: nil,
+       item_box: nil,
+       show_control_hints: false,
+       dialog: nil,
+       disassemble_items: nil,
+       blueprints: blueprints
+     )}
+  end
+
+  defp close_craft_menu(socket) do
+    {:noreply, assign(socket, blueprints: nil)}
   end
 
   defp open_item_box(socket) do
@@ -826,7 +873,8 @@ defmodule EuropaWeb.GameLive do
            inventory: nil,
            show_control_hints: false,
            dialog: nil,
-           disassemble_items: nil
+           disassemble_items: nil,
+           blueprints: nil
          )}
 
       _ ->
@@ -840,6 +888,41 @@ defmodule EuropaWeb.GameLive do
 
   defp toggle_control_hints(socket) do
     {:noreply, assign(socket, show_control_hints: !socket.assigns.show_control_hints)}
+  end
+
+  defp craft_item(item_uuid, blueprints, socket) do
+    case Enum.find(blueprints, fn bp -> bp.item.uuid == item_uuid end) do
+      nil -> {:noreply, socket}
+      blueprint -> do_craft_item(blueprint, socket)
+    end
+  end
+
+  defp do_craft_item(blueprint, socket) do
+    player_before = socket.assigns.player
+
+    case Server.craft_item(socket.assigns.server, blueprint) do
+      :ok ->
+        updated_player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
+            player: updated_player,
+            inventory: get_player_inventory(socket),
+            player_stats: get_player_stats(updated_player),
+            chat: Server.get_chat(socket.assigns.server),
+            current_time: get_current_time(socket.assigns.server),
+            blueprints: Loot.blueprints()
+          )
+          |> play_sound("assemble")
+          |> damaged_sound(player_before.health, updated_player.health)
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   defp get_player_inventory(socket) do

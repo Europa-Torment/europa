@@ -37,7 +37,7 @@ defmodule Europa.Server do
   @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
 
   @disaster_year fetch_config!([:game_params, :disaster_year])
-  @disassemble_moves_count fetch_config!([:game_params, :disassemble_moves_count])
+  @craft_moves_count fetch_config!([:game_params, :craft_moves_count])
 
   typedstruct enforce: true do
     field :game_uuid, Ecto.UUID.t()
@@ -186,9 +186,14 @@ defmodule Europa.Server do
   end
 
   @spec disassemble_item(pid(), Loot.uuid()) ::
-          {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+          :ok | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def disassemble_item(server, item_uuid) do
     GenServer.call(server, {:disassemble_item, item_uuid})
+  end
+
+  @spec craft_item(pid(), Loot.Blueprint.t()) :: :ok | {:error, Errors.NotApplicableError.t()}
+  def craft_item(server, blueprint) do
+    GenServer.call(server, {:craft_item, blueprint})
   end
 
   @spec consume_supply(pid(), Loot.uuid()) ::
@@ -355,14 +360,31 @@ defmodule Europa.Server do
   def handle_call({:disassemble_item, item_uuid}, caller_pid, state) do
     case PlayerManager.disassemble_item(state.player, item_uuid) do
       {:ok, updated_player, item} ->
-        disassembled_message = disassembled_message(item, @disassemble_moves_count)
+        disassembled_message = disassembled_message(item, @craft_moves_count)
 
         updated_chat =
           state.chat
           |> Chat.add_message(disassembled_message)
 
-        {:reply, {:ok, updated_player}, struct!(state, player: updated_player, chat: updated_chat),
-         {:continue, {:tick, @disassemble_moves_count, caller_pid}}}
+        {:reply, :ok, struct!(state, player: updated_player, chat: updated_chat),
+         {:continue, {:tick, @craft_moves_count, caller_pid}}}
+
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call({:craft_item, blueprint}, caller_pid, state) do
+    case PlayerManager.craft_item(state.player, %Loot.Blueprint{} = blueprint) do
+      {:ok, updated_player} ->
+        crafted_message = crafted_message(blueprint.item, @craft_moves_count)
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(crafted_message)
+
+        {:reply, :ok, struct!(state, player: updated_player, chat: updated_chat),
+         {:continue, {:tick, @craft_moves_count, caller_pid}}}
 
       error ->
         {:reply, error, state, @inactivity_timeout_ms}
@@ -954,6 +976,16 @@ defmodule Europa.Server do
       Gettext.gettext(
         Europa.Gettext,
         "You have disassembled #{Loot.Item.composed_name(item)}, it took #{moves_count} step(s)"
+      )
+
+    Chat.Message.new(msg, :regular)
+  end
+
+  defp crafted_message(item, moves_count) do
+    msg =
+      Gettext.gettext(
+        Europa.Gettext,
+        "You have crafted #{Loot.Item.composed_name(item)}, it took #{moves_count} step(s)"
       )
 
     Chat.Message.new(msg, :regular)

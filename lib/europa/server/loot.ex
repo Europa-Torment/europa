@@ -220,6 +220,25 @@ defmodule Europa.Server.Loot do
     defp check_weapon(_), do: {:error, %Errors.NotApplicableError{}}
   end
 
+  defmodule Blueprint do
+    alias Europa.Server.Loot
+
+    @type tools :: list(Loot.Tool.t())
+
+    typedstruct enforce: true do
+      field :item, Loot.Item.item()
+      field :tools, tools()
+    end
+
+    @spec new(Loot.Item.item(), tools()) :: t()
+    def new(item, tools) when is_list(tools) do
+      %__MODULE__{
+        item: item,
+        tools: tools
+      }
+    end
+  end
+
   @spec allowed_item_types() :: list()
   def allowed_item_types, do: @item_types
 
@@ -313,5 +332,28 @@ defmodule Europa.Server.Loot do
   @spec get_items(item_type()) :: list()
   def get_items(category) do
     Map.fetch!(@items_attrs, category)
+  end
+
+  @spec blueprints() :: list(Blueprint.t())
+  def blueprints do
+    weapon_blueprints()
+  end
+
+  defp weapon_blueprints do
+    get_items(:weapon)
+    |> Enum.map(fn {attrs, _} ->
+      weapon =
+        attrs
+        |> AttrsDeterminator.determine_attrs()
+        |> Weapon.new()
+
+      tools =
+        weapon
+        |> Tool.from_weapon()
+        |> Enum.map(&struct!(&1, count: weapon.parts_count))
+
+      Blueprint.new(weapon, tools)
+    end)
+    |> Enum.sort(fn %Blueprint{item: w1}, %Blueprint{item: w2} -> w1.level < w2.level end)
   end
 end

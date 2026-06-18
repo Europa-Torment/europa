@@ -193,6 +193,14 @@ defmodule Europa.Support.Factory do
     }
   end
 
+  @spec blueprint_factory() :: Loot.Blueprint.t()
+  def blueprint_factory do
+    %Loot.Blueprint{
+      item: build(:weapon),
+      tools: [build(:tool)]
+    }
+  end
+
   @spec player_factory() :: Player.t()
   def player_factory do
     helmet = build(:helmet)

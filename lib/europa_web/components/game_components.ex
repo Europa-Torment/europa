@@ -331,6 +331,11 @@ defmodule EuropaWeb.GameCompotents do
             {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
           </h3>
           <div class="p-2">
+            <button class="btn btn-neutral" phx-click="open_craft_menu">
+              🛠️ {gettext("Craft items")}
+            </button>
+          </div>
+          <div class="p-2">
             <.player_stats player_stats={@player_stats} text_size="xs" />
           </div>
           <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
@@ -570,7 +575,70 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def craft_menu(assigns) do
+    ~H"""
+    <%= if @blueprints do %>
+      <input
+        type="checkbox"
+        id="craft_menu"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_craft_menu"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+          <h3 class="text-lg font-bold pb-3">{gettext("Crafting items")}</h3>
+          <div>
+            <ul class="list-disc list-inside space-y-2 text-sm">
+              <%= for %Loot.Blueprint{item: item, tools: required_tools} <- @blueprints do %>
+                <li
+                  id={"craft_item_#{item.uuid}"}
+                  phx-hook="Tooltip"
+                  data-tooltip={"<span class=\"font-semibold pb-10\">#{gettext("Required items")}:</span>#{craft_tools_requirements(required_tools, @player)}"}
+                >
+                  {craft_item_name(item)}
+                  <%= if Player.enough_tools?(@player, required_tools) do %>
+                    <div class="tooltip" data-tip={"#{gettext("Create")}"}>
+                      <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>🛠️</.link>
+                    </div>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+          <div class="modal-action">
+            <label phx-click="close_craft_menu" for="craft_menu" class="btn">
+              {gettext("Close")}
+            </label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
   ### Helpers ###
+
+  defp craft_item_name(%Loot.Weapon{name: name}), do: name
+  defp craft_item_name(%Loot.Tool{} = tool), do: "#{tool.name}"
+
+  defp craft_tools_requirements(tools, %Player{} = player) when is_list(tools) do
+    tools
+    |> Enum.map(fn required_tool ->
+      player_tools_count = Player.tools_amount(player, required_tool)
+      count = "#{player_tools_count}/#{required_tool.count}"
+
+      count_class =
+        if player_tools_count >= required_tool.count do
+          "text-blue-500"
+        else
+          "text-red-500"
+        end
+
+      {craft_item_name(required_tool), count, count_class}
+    end)
+    |> to_ul()
+  end
 
   defp chat_color(%Chat.Message{category: category}) do
     case category do

@@ -4,6 +4,7 @@ defmodule Europa.Server.Loot.Tool do
   alias Europa.Tools.Types
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
+  alias Europa.Tools.AttrsDeterminator
 
   @allowed_tool_types [:weapon_parts]
 
@@ -59,6 +60,7 @@ defmodule Europa.Server.Loot.Tool do
       Loot.get_items(:tool)
       |> Enum.find(fn {tool, _} -> tool.type == "weapon_parts" && tool.properties.level == weapon.level end)
       |> elem(0)
+      |> AttrsDeterminator.determine_attrs()
       |> Map.put(:count, weapon.parts_count - 1)
       |> new()
 

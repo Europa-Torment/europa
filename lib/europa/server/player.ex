@@ -19,7 +19,7 @@ defmodule Europa.Server.Player do
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
 
-  @type inventory :: list(Loot.Item.t())
+  @type inventory :: list(Loot.Item.item())
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -219,6 +219,31 @@ defmodule Europa.Server.Player do
   def delete_item(%__MODULE__{inventory: inventory} = player, item_to_delete) do
     updated_inventory = Enum.reject(inventory, fn item -> item.uuid == item_to_delete.uuid end)
     struct!(player, inventory: updated_inventory)
+  end
+
+  @impl true
+  def tools_amount(%__MODULE__{} = player, %Loot.Tool{} = tool) do
+    inventory_tool = find_tool(player, tool)
+
+    if inventory_tool do
+      inventory_tool.count
+    else
+      0
+    end
+  end
+
+  @impl true
+  def enough_tools?(%__MODULE__{} = player, tools) when is_list(tools) do
+    Enum.all?(tools, fn tool -> tools_amount(player, tool) >= tool.count end)
+  end
+
+  @impl true
+  def craft_item(%__MODULE__{} = player, %Loot.Blueprint{} = blueprint) do
+    if enough_tools?(player, blueprint.tools) do
+      do_craft_item(player, blueprint)
+    else
+      {:error, %Errors.NotApplicableError{}}
+    end
   end
 
   @impl true
@@ -575,6 +600,29 @@ defmodule Europa.Server.Player do
   end
 
   defp do_consume_supply(_player, _supply), do: {:error, %Errors.NotApplicableError{}}
+
+  defp do_craft_item(%__MODULE__{} = player, %Loot.Blueprint{} = blueprint) do
+    Enum.reduce(blueprint.tools, player, fn tool, player ->
+      updated_tool =
+        player
+        |> find_tool(tool)
+        |> Loot.Tool.decrease_count(tool.count)
+
+      if updated_tool.count > 0 do
+        update_item(player, updated_tool)
+      else
+        delete_item(player, updated_tool)
+      end
+    end)
+    |> add_item(blueprint.item)
+  end
+
+  defp find_tool(%__MODULE__{} = player, %Loot.Tool{} = tool) do
+    Enum.find(player.inventory, fn
+      %Loot.Tool{} = item -> tool.type == item.type && tool.name == item.name && tool.properties == item.properties
+      _ -> false
+    end)
+  end
 
   defp do_add_item(player, item) do
     {:ok, struct!(player, inventory: [item | player.inventory])}

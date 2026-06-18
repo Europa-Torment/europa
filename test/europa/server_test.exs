@@ -22,7 +22,7 @@ defmodule Europa.ServerTest do
   @direction :up
 
   @crop_size fetch_config!([Planet, :crop_land_size])
-  @disassemble_moves_count fetch_config!([:game_params, :disassemble_moves_count])
+  @craft_moves_count fetch_config!([:game_params, :craft_moves_count])
 
   setup :verify_on_exit!
   setup :set_mox_global
@@ -802,17 +802,17 @@ defmodule Europa.ServerTest do
 
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
-        assert_moves_count(@disassemble_moves_count, tick_moves_count)
+        assert_moves_count(@craft_moves_count, tick_moves_count)
         {:ok, planet, []}
       end)
 
       PlayerManagerMock
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
-        assert_moves_count(@disassemble_moves_count, tick_moves_count)
+        assert_moves_count(@craft_moves_count, tick_moves_count)
         {:ok, player, []}
       end)
 
-      assert {:ok, %Player{}} = Server.disassemble_item(server, weapon_uuid)
+      assert Server.disassemble_item(server, weapon_uuid) == :ok
       :timer.sleep(100)
     end
 
@@ -838,6 +838,44 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.disassemble_item(server, weapon.uuid) == error
+    end
+  end
+
+  describe "craft_item/2" do
+    test "handles success response", %{server: server} do
+      blueprint = build(:blueprint)
+
+      PlayerManagerMock
+      |> expect(:craft_item, fn %Player{} = player, ^blueprint ->
+        {:ok, player}
+      end)
+
+      PlanetManagerMock
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(@craft_moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(@craft_moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      assert Server.craft_item(server, blueprint) == :ok
+      :timer.sleep(100)
+    end
+
+    test "handles NotApplicable response", %{server: server} do
+      blueprint = build(:blueprint)
+      error = {:error, %Errors.NotApplicableError{}}
+
+      PlayerManagerMock
+      |> expect(:craft_item, fn _player, _blueprint ->
+        error
+      end)
+
+      assert Server.craft_item(server, blueprint) == error
     end
   end
 
