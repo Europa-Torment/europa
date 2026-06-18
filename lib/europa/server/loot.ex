@@ -27,7 +27,7 @@ defmodule Europa.Server.Loot do
     {:ammo, gettext("Ammo"), 0.7},
     {:melee_weapon, gettext("Melee weapons"), 0.5},
     {:supply, gettext("Supplies"), 1.0},
-    {:tool, gettext("Tools"), 1.0},
+    {:tool, gettext("Tools"), 0.2},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},
     {:boots, gettext("Boots"), 0.4}

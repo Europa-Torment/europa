@@ -9,7 +9,7 @@
         },
         "stackable": true,
         "weight": 0.1, 
-        "random_weight": 1.0
+        "random_weight": 2.5
     },
     {
         "name": "Weapon parts 2", 
@@ -21,7 +21,7 @@
         },
         "stackable": true,
         "weight": 0.2, 
-        "random_weight": 1.5
+        "random_weight": 1.0
     },
     {
         "name": "Weapon parts 3", 
@@ -33,7 +33,7 @@
         },
         "stackable": true,
         "weight": 0.3, 
-        "random_weight": 2.0
+        "random_weight": 0.5
     },
     {
         "name": "Weapon parts 4", 
@@ -45,6 +45,6 @@
         },
         "stackable": true,
         "weight": 0.4, 
-        "random_weight": 2.5
+        "random_weight": 0.05
     }
 ]
