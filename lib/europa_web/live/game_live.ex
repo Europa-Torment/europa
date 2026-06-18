@@ -909,7 +909,6 @@ defmodule EuropaWeb.GameLive do
           |> assign(
             visible_planet: Server.get_visible_planet(socket.assigns.server),
             player: updated_player,
-            inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
             chat: Server.get_chat(socket.assigns.server),
             current_time: get_current_time(socket.assigns.server),
