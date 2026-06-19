@@ -387,6 +387,9 @@ defmodule EuropaWeb.GameCompotents do
                     <div class="dropdown" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                        <%= if weapon?(item) && item.rounds_loaded > 0 do %>
+                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Unload")}</a></li>
+                        <% end %>
                         <%= if Loot.Item.disassemblable?(item) do %>
                           <li phx-click="disassemble_item" phx-value-uuid={"#{item.uuid}"}>
                             <a>{gettext("Disassemble")}</a>
@@ -397,9 +400,6 @@ defmodule EuropaWeb.GameCompotents do
                           <li phx-click="open_item_drop_menu" phx-value-uuid={"#{item.uuid}"}>
                             <a>{gettext("Drop partly")}</a>
                           </li>
-                        <% end %>
-                        <%= if weapon?(item) && item.rounds_loaded > 0 do %>
-                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Unload")}</a></li>
                         <% end %>
                       </ul>
                     </div>
