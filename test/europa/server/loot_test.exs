@@ -497,6 +497,7 @@ defmodule Europa.Server.LootTest do
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Blueprint
 
   describe "generate_item/1" do
     test "generates item of given type" do
@@ -514,6 +515,16 @@ defmodule Europa.Server.LootTest do
     end
   end
 
+  describe "blueprints/0" do
+    test "returns list of blueprints" do
+      blueprints = Loot.blueprints()
+
+      assert Enum.all?(blueprints, fn %Blueprint{item: item, tools: tools} ->
+               item?(item) && Enum.all?(tools, &tool?/1)
+             end)
+    end
+  end
+
   defp item?(%Helmet{}), do: true
   defp item?(%Suit{}), do: true
   defp item?(%Boots{}), do: true
@@ -523,4 +534,7 @@ defmodule Europa.Server.LootTest do
   defp item?(%Tool{}), do: true
   defp item?(%Supply{}), do: true
   defp item?(_), do: false
+
+  defp tool?(%Tool{}), do: true
+  defp tool?(_), do: false
 end

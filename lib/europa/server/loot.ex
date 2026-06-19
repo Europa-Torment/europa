@@ -336,7 +336,7 @@ defmodule Europa.Server.Loot do
 
   @spec blueprints() :: list(Blueprint.t())
   def blueprints do
-    weapon_blueprints()
+    weapon_blueprints() ++ tool_blueprints()
   end
 
   defp weapon_blueprints do
@@ -355,5 +355,36 @@ defmodule Europa.Server.Loot do
       Blueprint.new(weapon, tools)
     end)
     |> Enum.sort(fn %Blueprint{item: w1}, %Blueprint{item: w2} -> w1.level < w2.level end)
+  end
+
+  defp tool_blueprints do
+    weapon_parts_blueprints()
+  end
+
+  defp weapon_parts_blueprints do
+    weapon_parts =
+      get_items(:tool)
+      |> Enum.map(fn {attrs, _} ->
+        attrs
+        |> AttrsDeterminator.determine_attrs()
+        |> Tool.new()
+        |> struct!(count: 1)
+      end)
+      |> Enum.filter(&(&1.type == :weapon_parts))
+      |> Enum.map(fn wp -> {wp.properties.level, wp} end)
+      |> Enum.into(%{})
+
+    Enum.reduce(weapon_parts, [], fn {level, wp}, acc ->
+      if level > 1 do
+        prev_level_wp =
+          weapon_parts
+          |> Map.fetch!(level - 1)
+          |> struct!(count: level)
+
+        acc ++ [Blueprint.new(wp, [prev_level_wp])]
+      else
+        acc
+      end
+    end)
   end
 end
