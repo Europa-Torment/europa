@@ -329,12 +329,10 @@ defmodule EuropaWeb.GameCompotents do
         <div class="modal-box overflow-visible overflow-y-auto max-w-2xl">
           <h3 class="text-lg font-bold">
             {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
-          </h3>
-          <div class="p-2">
-            <button class="btn btn-neutral" phx-click="open_craft_menu">
+            <button class="btn btn-primary btn-sm" phx-click="open_craft_menu">
               🛠️ {gettext("Craft items")}
             </button>
-          </div>
+          </h3>
           <div class="p-2">
             <.player_stats player_stats={@player_stats} text_size="xs" />
           </div>
