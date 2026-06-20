@@ -17,7 +17,7 @@ export const hooks = {
         const tooltipHeight = tooltip.offsetHeight;
         const viewportHeight = window.innerHeight;
         const distanceToBottom = viewportHeight - e.clientY;
-        const BOTTOM_THRESHOLD = 200;
+        const BOTTOM_THRESHOLD = 250;
         let top;
         if (distanceToBottom <= BOTTOM_THRESHOLD) {
           top = e.clientY - tooltipHeight - 5;
