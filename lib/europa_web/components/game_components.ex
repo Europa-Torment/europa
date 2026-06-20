@@ -329,7 +329,7 @@ defmodule EuropaWeb.GameCompotents do
         <div class="modal-box overflow-visible overflow-y-auto max-w-2xl">
           <h3 class="text-lg font-bold">
             {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
-            <button class="btn btn-primary btn-sm" phx-click="open_craft_menu">
+            <button class="btn btn-primary btn-sm" {open_craft_menu_attrs()}>
               🛠️ {gettext("Craft items")}
             </button>
           </h3>
@@ -406,7 +406,7 @@ defmodule EuropaWeb.GameCompotents do
               <% end %>
             </ul>
           <% else %>
-            <p class="py-4 text-sm">Empty</p>
+            <p class="py-4 text-sm">{gettext("Empty")}</p>
           <% end %>
           <div class="modal-action">
             <label phx-click="close_inventory" for="inventory" class="btn">{gettext("Close")}</label>
@@ -451,7 +451,7 @@ defmodule EuropaWeb.GameCompotents do
               <% end %>
             </ul>
           <% else %>
-            <p class="py-4 text-sm">Empty</p>
+            <p class="py-4 text-sm">{gettext("Empty")}</p>
           <% end %>
           <div class="modal-action">
             <label phx-click="close_item_box" for="item_box" class="btn">{gettext("Close")}</label>
@@ -584,23 +584,47 @@ defmodule EuropaWeb.GameCompotents do
         phx-change="close_craft_menu"
       />
       <div class="modal overflow-visible" role="dialog">
-        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
           <h3 class="text-lg font-bold pb-3">{gettext("Crafting items")}</h3>
+          <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
+            <a
+              role="tab"
+              class={"#{item_tab_class(:all, @blueprints_type)}"}
+              id="tab-all"
+              {open_craft_menu_attrs()}
+            >
+              All
+            </a>
+            <%= for {item_type, item_type_name} <- Loot.allowed_item_types() do %>
+              <a
+                role="tab"
+                class={"#{item_tab_class(item_type, @blueprints_type)}"}
+                id={"tab-#{item_type}"}
+                {open_craft_menu_attrs(item_type)}
+              >
+                {item_type_name}
+              </a>
+            <% end %>
+          </div>
           <div>
             <ul class="list-disc list-inside space-y-2 text-sm">
-              <%= for %Loot.Blueprint{item: item, tools: required_tools} <- @blueprints do %>
-                <li
-                  id={"craft_item_#{item.uuid}"}
-                  phx-hook="Tooltip"
-                  data-tooltip={"<span class=\"font-semibold pb-10\">#{gettext("Required items")}:</span>#{craft_tools_requirements(required_tools, @player)}"}
-                >
-                  {craft_item_name(item)}
-                  <%= if Player.enough_tools?(@player, required_tools) do %>
-                    <div class="tooltip" data-tip={"#{gettext("Create")}"}>
-                      <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>🛠️</.link>
-                    </div>
-                  <% end %>
-                </li>
+              <%= if Enum.count(@blueprints) > 0 do %>
+                <%= for %Loot.Blueprint{item: item, tools: required_tools} <- @blueprints do %>
+                  <li
+                    id={"craft_item_#{item.uuid}"}
+                    phx-hook="Tooltip"
+                    data-tooltip={"<span class=\"font-semibold pb-10\">#{gettext("Required items")}:</span>#{craft_tools_requirements(required_tools, @player)}"}
+                  >
+                    {craft_item_name(item)}
+                    <%= if Player.enough_tools?(@player, required_tools) do %>
+                      <div class="tooltip" data-tip={"#{gettext("Create")}"}>
+                        <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>🛠️</.link>
+                      </div>
+                    <% end %>
+                  </li>
+                <% end %>
+              <% else %>
+                <p class="py-4 text-sm">{gettext("No blueprints")}</p>
               <% end %>
             </ul>
           </div>
@@ -900,6 +924,20 @@ defmodule EuropaWeb.GameCompotents do
 
   defp open_inventory_click do
     JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_inventory")
+  end
+
+  defp open_craft_menu_attrs(type \\ nil) do
+    attrs = ["phx-click": open_craft_menu_click()]
+
+    if type do
+      attrs ++ ["phx-value-type": type]
+    else
+      attrs
+    end
+  end
+
+  defp open_craft_menu_click do
+    JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_craft_menu")
   end
 
   defp health_stats_class(player_stats) do

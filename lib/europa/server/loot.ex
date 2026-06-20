@@ -334,9 +334,14 @@ defmodule Europa.Server.Loot do
     Map.fetch!(@items_attrs, category)
   end
 
-  @spec blueprints() :: list(Blueprint.t())
-  def blueprints do
-    weapon_blueprints() ++ tool_blueprints()
+  @spec blueprints(item_type() | :all) :: list(Blueprint.t())
+  def blueprints(item_type \\ :all) do
+    blueprints = weapon_blueprints() ++ tool_blueprints()
+
+    case item_type do
+      :all -> blueprints
+      type -> Enum.filter(blueprints, &(Item.item_type(&1.item) == type))
+    end
   end
 
   defp weapon_blueprints do

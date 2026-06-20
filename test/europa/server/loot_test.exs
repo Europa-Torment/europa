@@ -515,13 +515,23 @@ defmodule Europa.Server.LootTest do
     end
   end
 
-  describe "blueprints/0" do
+  describe "blueprints/1" do
     test "returns list of blueprints" do
       blueprints = Loot.blueprints()
 
       assert Enum.all?(blueprints, fn %Blueprint{item: item, tools: tools} ->
                item?(item) && Enum.all?(tools, &tool?/1)
              end)
+    end
+
+    test "returns listi of blueprints with given item type" do
+      for item_type <- [:weapon, :tool] do
+        blueprints = Loot.blueprints(item_type)
+
+        assert Enum.all?(blueprints, fn %Blueprint{item: item} ->
+                 Loot.Item.item_type(item) == item_type
+               end)
+      end
     end
   end
 

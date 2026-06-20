@@ -90,7 +90,8 @@ defmodule EuropaWeb.GameLive do
           scope: get_scope(visible_planet, player, weapon),
           disassemble_item_uuid: nil,
           disassemble_items: nil,
-          blueprints: nil
+          blueprints: nil,
+          blueprints_type: nil
         )
 
       {:ok, socket}
@@ -327,8 +328,14 @@ defmodule EuropaWeb.GameLive do
     |> open_inventory()
   end
 
-  def handle_event("open_craft_menu", _, socket) do
+  def handle_event("open_craft_menu", params, socket) do
+    type =
+      params
+      |> Map.get("type", "all")
+      |> String.to_atom()
+
     socket
+    |> assign(blueprints_type: type)
     |> open_craft_menu()
   end
 
@@ -350,7 +357,8 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("close_craft_menu", _, socket) do
-    close_craft_menu(socket)
+    socket
+    |> close_craft_menu()
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -847,11 +855,10 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp open_craft_menu(socket) do
-    blueprints = Loot.blueprints()
+    blueprints = Loot.blueprints(socket.assigns.blueprints_type)
 
     {:noreply,
      assign(socket,
-       inventory: nil,
        item_box: nil,
        show_control_hints: false,
        dialog: nil,
@@ -861,7 +868,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp close_craft_menu(socket) do
-    {:noreply, assign(socket, blueprints: nil)}
+    {:noreply, assign(socket, blueprints: nil, blueprints_type: nil)}
   end
 
   defp open_item_box(socket) do
@@ -912,7 +919,8 @@ defmodule EuropaWeb.GameLive do
             player_stats: get_player_stats(updated_player),
             chat: Server.get_chat(socket.assigns.server),
             current_time: get_current_time(socket.assigns.server),
-            blueprints: Loot.blueprints()
+            blueprints: Loot.blueprints(),
+            inventory: get_player_inventory(socket)
           )
           |> play_sound("assemble")
           |> damaged_sound(player_before.health, updated_player.health)
