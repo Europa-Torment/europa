@@ -8,6 +8,7 @@ defmodule Europa.Server.Loot.MeleeWeapon do
     field :uuid, Loot.uuid()
     field :equiped, boolean(), default: false
     field :name, String.t()
+    field :description, String.t()
     field :damage, pos_integer()
     field :hit_cost, Server.move_cost()
     field :weight, Loot.Item.weight()
@@ -21,6 +22,7 @@ defmodule Europa.Server.Loot.MeleeWeapon do
       uuid: Ecto.UUID.generate(),
       equiped: false,
       name: Map.fetch!(attrs, :name),
+      description: Map.fetch!(attrs, :description),
       damage: Map.fetch!(attrs, :damage),
       hit_cost: Map.fetch!(attrs, :hit_cost),
       weight: Map.fetch!(attrs, :weight),
@@ -55,6 +57,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
     ]
     |> to_string()
   end
+
+  @spec description(MeleeWeapon.t()) :: String.t()
+  def description(%MeleeWeapon{description: description}), do: description
 
   @spec readable_attrs(MeleeWeapon.t()) :: list()
   def readable_attrs(%MeleeWeapon{} = weapon) do

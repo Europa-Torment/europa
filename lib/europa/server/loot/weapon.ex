@@ -5,6 +5,7 @@ defmodule Europa.Server.Loot.Weapon do
   alias Europa.Server
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Tools.AttrsDeterminator
 
   import Europa.Tools.Conf
 
@@ -20,6 +21,7 @@ defmodule Europa.Server.Loot.Weapon do
     field :uuid, Loot.uuid()
     field :equiped, boolean(), default: false
     field :name, String.t()
+    field :description, String.t()
     field :shot_cost, Server.move_cost()
     field :reload_cost, Server.move_cost()
     field :magazine_size, pos_integer()
@@ -42,6 +44,7 @@ defmodule Europa.Server.Loot.Weapon do
       uuid: Ecto.UUID.generate(),
       equiped: false,
       name: Map.fetch!(attrs, :name),
+      description: Map.fetch!(attrs, :description),
       shot_cost: Map.fetch!(attrs, :shot_cost),
       reload_cost: Map.fetch!(attrs, :reload_cost),
       magazine_size: Map.fetch!(attrs, :magazine_size),
@@ -105,9 +108,15 @@ defmodule Europa.Server.Loot.Weapon do
   end
 
   def unload(%__MODULE__{} = weapon) do
-    ammo = Ammo.new(%{caliber: weapon.caliber, count: weapon.rounds_loaded, weight: Ammo.weight(weapon.caliber)})
-    updated_weapon = decrease_rounds_loaded(weapon, weapon.rounds_loaded)
+    ammo =
+      Loot.get_items(:ammo)
+      |> Enum.find(fn {ammo, _} -> ammo.caliber == weapon.caliber end)
+      |> elem(0)
+      |> AttrsDeterminator.determine_attrs()
+      |> Map.put(:count, weapon.rounds_loaded)
+      |> Ammo.new()
 
+    updated_weapon = decrease_rounds_loaded(weapon, weapon.rounds_loaded)
     {:ok, {updated_weapon, ammo}}
   end
 end
@@ -140,6 +149,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
     ]
     |> to_string()
   end
+
+  @spec description(Weapon.t()) :: String.t()
+  def description(%Weapon{description: description}), do: description
 
   @spec readable_attrs(Weapon.t()) :: list()
   def readable_attrs(%Weapon{} = weapon) do

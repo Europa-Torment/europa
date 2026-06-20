@@ -1,6 +1,7 @@
 [
     {
         "name": "Guard's pistol",
+        "description": "An antique Earth pistol. The most popular weapon on Europa. Progress on Europa was focused on science and gunsmithing wasn't very popular, so even this old thing will do.",
         "shot_cost": {"from": 1, "to": 2},
         "reload_cost": {"from": 1, "to": 2},
         "magazine_size": {"from": 5, "to": 8},
@@ -19,6 +20,7 @@
     },
     {
         "name": "The Equalizer",
+        "description": "A modified Earth pistol with increased power. Better to hold it with both hands!",
         "shot_cost": {"from": 1, "to": 2},
         "reload_cost": {"from": 1, "to": 2},
         "magazine_size": {"from": 5, "to": 7},
@@ -37,6 +39,7 @@
     },
     {
         "name": "Shotgun",
+        "description": "Earth Shotgun. An old and tried-and-true weapon for pacifying protesters. It shoots even further in low-gravity conditions.",
         "shot_cost": {"from": 2, "to": 3},
         "reload_cost": {"from": 3, "to": 4},
         "magazine_size": {"from": 6, "to": 10},
@@ -55,6 +58,7 @@
     },
     {
         "name": "Beast Slayer",
+        "description": "A modified Earth shotgun. It features an extended barrel, increasing spread and allowing for larger buckshot. It was home-made, so it's not widely available. Monsters will love it.",
         "shot_cost": {"from": 3, "to": 4},
         "reload_cost": {"from": 4, "to": 5},
         "magazine_size": {"from": 10, "to": 15},
@@ -73,6 +77,7 @@
     },
     {
         "name": "Modified SSB rifle",
+        "description": "An antique Earth rifle, modified by SSB rebels for use in Europa. It fires short bursts and has a sufficient range.",
         "shot_cost": {"from": 1, "to": 4},
         "reload_cost": {"from": 2, "to": 3},
         "magazine_size": {"from": 20, "to": 40},
@@ -91,6 +96,7 @@
     },
     {
         "name": "Hawk's eye",
+        "description": "A single-shot sniper rifle, assembled by the WCC military using Earth weapons. It has an incredible range and has proven itself in combat against SSB terrorists.",
         "shot_cost": {"from": 4, "to": 5},
         "reload_cost": {"from": 3, "to": 5},
         "magazine_size": 1,
@@ -109,6 +115,7 @@
     },
     {
         "name": "Atom splitter",
+        "description": "A device for splitting atoms in a laboratory setting. It emits a highly focused beam of neutrons accelerated to 99.95% the speed of light. Monsters and people are made of atoms too. Get it?",
         "shot_cost": {"from": 4, "to": 5},
         "reload_cost": {"from": 3, "to": 5},
         "magazine_size": {"from": 3, "to": 5},
@@ -127,6 +134,7 @@
     },
     {
         "name": "ETC laser cutter",
+        "description": "A compact, medium-power hydrogen laser. It was primarily used in construction as a replacement for a drill: its short pulse can create a perfect hole in any building material.",
         "shot_cost": {"from": 2, "to": 4},
         "reload_cost": {"from": 3, "to": 4},
         "magazine_size": 1,

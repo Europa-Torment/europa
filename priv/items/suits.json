@@ -1,6 +1,7 @@
 [
     {
         "name": "WCC civil suit", 
+        "description": "A standard spacesuit for civilians. More than covers all everyday needs.",
         "efficiency": {"from": 1, "to": 3}, 
         "max_health": {"from": 5, "to": 10},
         "max_warm": {"from": 5, "to": 10},
@@ -11,6 +12,7 @@
     },
     {
         "name": "SSB suit", 
+        "description": "A reinforced spacesuit that allows for longer exposure to cold and greater weight capacity. Developed by terrorists from the SSB.",
         "efficiency": {"from": 2, "to": 4}, 
         "max_health": {"from": 8, "to": 12},
         "max_warm": {"from": 10, "to": 15}, 

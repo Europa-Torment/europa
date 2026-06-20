@@ -1,6 +1,7 @@
 [
     {
-        "name": "Weapon parts 1", 
+        "name": "Weapon parts 1",
+        "description": "A set of parts for a primitive earthly weapon.",
         "type": "weapon_parts",
         "count": {"from": 1, "to": 4}, 
         "sound_name": "assemble",
@@ -13,6 +14,7 @@
     },
     {
         "name": "Weapon parts 2", 
+        "description": "Parts for Earth weapons. Nothing complicated, but the instructions are helpful.",
         "type": "weapon_parts",
         "count": {"from": 1, "to": 3}, 
         "sound_name": "assemble",
@@ -25,6 +27,7 @@
     },
     {
         "name": "Weapon parts 3", 
+        "description": "Parts for advanced weapons.",
         "type": "weapon_parts",
         "count": {"from": 1, "to": 2}, 
         "sound_name": "assemble",
@@ -37,6 +40,7 @@
     },
     {
         "name": "Weapon parts 4", 
+        "description": "Complex mechanical and scientific components that were not intended for weapon assembly, but...",
         "type": "weapon_parts",
         "count": 1, 
         "sound_name": "assemble",

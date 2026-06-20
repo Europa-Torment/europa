@@ -26,6 +26,7 @@ defmodule Europa.Server.Loot.Tool do
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
     field :name, String.t()
+    field :description, String.t()
     field :type, tool_type()
     field :count, pos_integer()
     field :properties, Properties.t()
@@ -40,6 +41,7 @@ defmodule Europa.Server.Loot.Tool do
       uuid: Ecto.UUID.generate(),
       type: Map.fetch!(attrs, :type) |> to_atom() |> validate_type!(),
       name: Map.fetch!(attrs, :name),
+      description: Map.fetch!(attrs, :description),
       count: Map.fetch!(attrs, :count),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
       stackable?: Map.fetch!(attrs, :stackable),
@@ -107,6 +109,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
     ]
     |> to_string()
   end
+
+  @spec description(Tool.t()) :: String.t()
+  def description(%Tool{description: description}), do: description
 
   @spec readable_attrs(Tool.t()) :: list()
   def readable_attrs(%Tool{} = tool) do

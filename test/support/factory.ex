@@ -67,6 +67,7 @@ defmodule Europa.Support.Factory do
       uuid: Ecto.UUID.generate(),
       equiped: false,
       name: sequence(:name, &"weapon #{&1 + 1}"),
+      description: "description",
       shot_cost: 1,
       reload_cost: 1,
       magazine_size: 10,
@@ -89,6 +90,7 @@ defmodule Europa.Support.Factory do
     %Loot.Weapon.Ammo{
       uuid: Ecto.UUID.generate(),
       caliber: ".40 S&W",
+      description: "description",
       weight: 1.0,
       count: 10
     }
@@ -100,6 +102,7 @@ defmodule Europa.Support.Factory do
       uuid: Ecto.UUID.generate(),
       equiped: false,
       name: sequence(:name, &"melee weapon #{&1 + 1}"),
+      description: "description",
       hit_cost: 1,
       damage: 1,
       weight: 1.0,
@@ -113,6 +116,7 @@ defmodule Europa.Support.Factory do
     %Loot.Helmet{
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"helmet #{&1 + 1}"),
+      description: "description",
       max_health: 1,
       max_warm: 1,
       accuracy: 2,
@@ -126,6 +130,7 @@ defmodule Europa.Support.Factory do
     %Loot.Suit{
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"suit #{&1 + 1}"),
+      description: "description",
       max_health: 1,
       max_warm: 1,
       max_weight: 1,
@@ -140,6 +145,7 @@ defmodule Europa.Support.Factory do
     %Loot.Boots{
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"boots #{&1 + 1}"),
+      description: "description",
       max_health: 1,
       max_warm: 1,
       efficiency: 2,
@@ -153,6 +159,7 @@ defmodule Europa.Support.Factory do
     %Loot.Supply{
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"supply #{&1 + 1}"),
+      description: "description",
       count: 1,
       consume_cost: 1,
       properties: build(:supply_properties),
@@ -178,6 +185,7 @@ defmodule Europa.Support.Factory do
       uuid: Ecto.UUID.generate(),
       type: :weapon_parts,
       name: sequence(:name, &"tool #{&1 + 1}"),
+      description: "description",
       count: 1,
       properties: build(:tool_properties),
       stackable?: true,

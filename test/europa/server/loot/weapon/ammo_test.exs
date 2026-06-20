@@ -16,10 +16,4 @@ defmodule Europa.Server.Loot.Weapon.AmmoTest do
       assert %Ammo{count: 0} = Ammo.decrease_count(ammo, n)
     end
   end
-
-  describe "weight/1" do
-    test "returns ammo weight by caliber" do
-      assert Ammo.weight(".40 S&W") |> is_number()
-    end
-  end
 end

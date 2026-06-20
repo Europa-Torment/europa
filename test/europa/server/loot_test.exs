@@ -24,6 +24,23 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "description/1" do
+    test "returns string with item description" do
+      for item <- [
+            build(:weapon),
+            build(:ammo),
+            build(:tool),
+            build(:melee_weapon),
+            build(:helmet),
+            build(:suit),
+            build(:boots),
+            build(:supply)
+          ] do
+        assert Item.description(item) |> is_binary()
+      end
+    end
+  end
+
   describe "negative_attrs/1" do
     test "returns list of atoms" do
       for item <- [

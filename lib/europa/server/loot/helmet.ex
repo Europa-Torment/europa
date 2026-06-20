@@ -7,6 +7,7 @@ defmodule Europa.Server.Loot.Helmet do
     field :uuid, Loot.uuid()
     field :equiped, boolean(), default: false
     field :name, String.t()
+    field :description, String.t()
     field :accuracy, pos_integer()
     field :max_health, pos_integer()
     field :max_warm, pos_integer()
@@ -20,6 +21,7 @@ defmodule Europa.Server.Loot.Helmet do
       uuid: Ecto.UUID.generate(),
       equiped: false,
       name: Map.fetch!(attrs, :name),
+      description: Map.fetch!(attrs, :description),
       accuracy: Map.fetch!(attrs, :accuracy),
       max_health: Map.fetch!(attrs, :max_health),
       max_warm: Map.fetch!(attrs, :max_warm),
@@ -56,6 +58,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
     ]
     |> to_string()
   end
+
+  @spec description(Helmet.t()) :: String.t()
+  def description(%Helmet{description: description}), do: description
 
   @spec readable_attrs(Helmet.t()) :: list()
   def readable_attrs(%Helmet{} = helmet) do

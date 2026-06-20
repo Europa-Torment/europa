@@ -1,10 +1,57 @@
 [
-    {"caliber": ".40 S&W", "count": {"from": 10, "to": 20}, "weight": 0.02, "random_weight": 2.0},
-    {"caliber": ".45 ACP", "count": {"from": 10, "to": 20}, "weight": 0.02, "random_weight": 1.0},
-    {"caliber": "shotgun", "count": {"from": 5, "to": 10}, "weight": 0.05, "random_weight": 0.5},
-    {"caliber": "buckshot", "count": {"from": 2, "to": 5}, "weight": 0.1, "random_weight": 0.4},
-    {"caliber": "5.56mm", "count": {"from": 1, "to": 10}, "weight": 0.1, "random_weight": 0.2},
-    {"caliber": ".50 BMG", "count": {"from": 1, "to": 5}, "weight": 0.4, "random_weight": 0.1},
-    {"caliber": "neutron cartridges", "count": {"from": 1, "to": 5}, "weight": 0.5, "random_weight": 0.09},
-    {"caliber": "hydrogen battery", "count": {"from": 1, "to": 10}, "weight": 0.2, "random_weight": 0.4}
+    {
+        "caliber": ".40 S&W",
+        "description": "Standard pistol cartridges.",
+        "count": {"from": 10, "to": 20},
+        "weight": 0.02, "random_weight": 2.0
+    },
+    {
+        "caliber": ".45 ACP", 
+        "description": "Heavy pistol cartridges.",
+        "count": {"from": 10, "to": 20}, 
+        "weight": 0.02, 
+        "random_weight": 1.0
+    },
+    {
+        "caliber": "shotgun",
+        "description": "Standard shotgun shells.", 
+        "count": {"from": 5, "to": 10}, 
+        "weight": 0.05, 
+        "random_weight": 0.5
+    },
+    {
+        "caliber": "buckshot", 
+        "description": "Powerful buckshot shotgun shells, perfect for exploring the insides of monsters.",
+        "count": {"from": 2, "to": 5}, 
+        "weight": 0.1, 
+        "random_weight": 0.4
+    },
+    {
+        "caliber": "5.56mm", 
+        "description": "Automatic rifle cartridges. The rebels' loyal allies from the SSB.",
+        "count": {"from": 1, "to": 10}, 
+        "weight": 0.1, 
+        "random_weight": 0.2
+    },
+    {
+        "caliber": ".50 BMG",
+        "description": "Heavy sniper rounds. Incredibly rare. Could any living creature survive such a shot?",
+        "count": {"from": 1, "to": 5}, 
+        "weight": 0.4, 
+        "random_weight": 0.1
+    },
+    {
+        "caliber": "neutron cartridges", 
+        "description": "A development by European scientists, designed to split atoms in laboratories. An extremely powerful and dangerous tool. Difficult times can weaponize anything...",
+        "count": {"from": 1, "to": 5}, 
+        "weight": 0.5, 
+        "random_weight": 0.09
+    },
+    {
+        "caliber": "hydrogen battery", 
+        "description": "Disposable batteries for hydrogen laser.",
+        "count": {"from": 1, "to": 10}, 
+        "weight": 0.2, 
+        "random_weight": 0.4
+    }
 ]

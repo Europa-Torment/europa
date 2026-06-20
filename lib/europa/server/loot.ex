@@ -95,6 +95,9 @@ defmodule Europa.Server.Loot do
     @spec composed_name(item()) :: String.t()
     def composed_name(item)
 
+    @spec description(item()) :: String.t()
+    def description(item)
+
     @spec readable_attrs(item()) :: list()
     def readable_attrs(item)
 

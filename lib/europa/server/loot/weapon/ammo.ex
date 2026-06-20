@@ -7,6 +7,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
     field :caliber, Weapon.caliber()
+    field :description, String.t()
     field :weight, Loot.Item.weight()
     field :count, pos_integer()
   end
@@ -16,6 +17,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
       caliber: Map.fetch!(attrs, :caliber),
+      description: Map.fetch!(attrs, :description),
       weight: Map.fetch!(attrs, :weight),
       count: Map.fetch!(attrs, :count)
     }
@@ -25,18 +27,6 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   def decrease_count(%__MODULE__{} = ammo, n) when n > 0 do
     updated_value = (ammo.count - n) |> max(0)
     struct!(ammo, count: updated_value)
-  end
-
-  @spec weight(Weapon.caliber()) :: Loot.Item.weight()
-  def weight(caliber) when is_binary(caliber) do
-    get_weights()
-    |> Map.fetch!(caliber)
-  end
-
-  defp get_weights do
-    Loot.get_items(:ammo)
-    |> Enum.map(fn {%{caliber: caliber, weight: weight}, _} -> {caliber, weight} end)
-    |> Enum.into(%{})
   end
 end
 
@@ -60,6 +50,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   def composed_name(%Ammo{} = ammo) do
     "AMMO: #{ammo.caliber} (#{ammo.count})"
   end
+
+  @spec description(Ammo.t()) :: String.t()
+  def description(%Ammo{description: description}), do: description
 
   @spec readable_attrs(Ammo.t()) :: list()
   def readable_attrs(%Ammo{} = ammo) do

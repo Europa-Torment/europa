@@ -5,7 +5,7 @@ export const hooks = {
         document.querySelectorAll('.phx-tooltip').forEach(t => t.remove());
         const tooltip = document.createElement('div');
         
-        tooltip.className = 'fixed bg-neutral text-white p-2 rounded shadow-lg text-xs z-1000 phx-tooltip';
+        tooltip.className = 'fixed bg-neutral text-white p-2 rounded shadow-lg text-xs z-1000 phx-tooltip break-words max-w-xs';
         tooltip.innerHTML = this.el.dataset.tooltip;
         tooltip.style.left = e.clientX + 40 + 'px';
         tooltip.style.top = '0px';

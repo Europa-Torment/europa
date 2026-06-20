@@ -613,7 +613,7 @@ defmodule EuropaWeb.GameCompotents do
                   <li
                     id={"craft_item_#{item.uuid}"}
                     phx-hook="Tooltip"
-                    data-tooltip={"<span class=\"font-semibold pb-10\">#{gettext("Required items")}:</span>#{craft_tools_requirements(required_tools, @player)}"}
+                    data-tooltip={craft_item_tooltip(item, required_tools, @player)}
                   >
                     {craft_item_name(item)}
                     <%= if Player.enough_tools?(@player, required_tools) do %>
@@ -732,9 +732,20 @@ defmodule EuropaWeb.GameCompotents do
         _ -> nil
       end
 
-    item
-    |> get_item_attrs(current_item)
-    |> to_ul()
+    attrs =
+      item
+      |> get_item_attrs(current_item)
+      |> to_ul()
+
+    [item_description(item) | attrs]
+  end
+
+  defp craft_item_tooltip(item, required_tools, player) do
+    requirements =
+      ~s|<span class="font-semibold pb-10">| <>
+        gettext("Required items") <> ~s|:</span>| <> craft_tools_requirements(required_tools, player)
+
+    [item_description(item) | requirements]
   end
 
   defp tile_tooltip(tile, player) do
@@ -755,6 +766,10 @@ defmodule EuropaWeb.GameCompotents do
       tile ->
         Planet.readable_tile_name(tile)
     end
+  end
+
+  defp item_description(item) do
+    ~s|<span class="italic text-base-content">| <> Loot.Item.description(item) <> ~s|</span><br/><br/>|
   end
 
   defp to_ul(list) do

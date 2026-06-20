@@ -28,6 +28,7 @@ defmodule Europa.Server.Loot.Supply do
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
     field :name, String.t()
+    field :description, String.t()
     field :count, pos_integer()
     field :consume_cost, Server.move_cost()
     field :properties, Properties.t()
@@ -40,6 +41,7 @@ defmodule Europa.Server.Loot.Supply do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
       name: Map.fetch!(attrs, :name),
+      description: Map.fetch!(attrs, :description),
       count: Map.fetch!(attrs, :count),
       consume_cost: Map.fetch!(attrs, :consume_cost),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
@@ -83,6 +85,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
     ]
     |> to_string()
   end
+
+  @spec description(Supply.t()) :: String.t()
+  def description(%Supply{description: description}), do: description
 
   @spec readable_attrs(Supply.t()) :: list()
   def readable_attrs(%Supply{} = supply) do

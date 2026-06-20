@@ -1,6 +1,7 @@
 [
     {
         "name": "WCC civil boots", 
+        "description": "Standard boots sold by WCC to the European population.",
         "efficiency": {"from": 1, "to": 3}, 
         "max_health": {"from": 5, "to": 10}, 
         "max_warm": {"from": 5, "to": 10}, 
@@ -9,7 +10,8 @@
         "random_weight": 2.0
     },
     {
-        "name": "SSB boots", 
+        "name": "SSB boots",
+        "description": "Heavy-duty boots designed to withstand cold conditions for extended periods. Developed by SSB terrorists for extended outdoor operations.",
         "efficiency": {"from": 2, "to": 4}, 
         "max_health": {"from": 8, "to": 12},
         "max_warm": {"from": 10, "to": 15},

@@ -1,6 +1,7 @@
 [
     {
-        "name": "WCC medical kit", 
+        "name": "WCC medical kit",
+        "description": "First aid kit with European antibiotics.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
         "sound_name": "eat",
@@ -12,6 +13,7 @@
     },
     {
         "name": "Stem cell injector", 
+        "description": "A syringe with stem cells. An expensive but effective treatment for injuries.",
         "count": 1,
         "consume_cost": 2,
         "sound_name": "injection",
@@ -23,6 +25,7 @@
     },
     {
         "name": "Self-heating food tube", 
+        "description": "A self-heating food tube, designed for space travel, has also found use in the European cold. It tastes like low-quality vegetable puree, but it warms you up nicely.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 2,
         "sound_name": "eat",
@@ -36,6 +39,7 @@
     },
     {
         "name": "Freeze-dried berries", 
+        "description": "Freeze-dried berries. They keep almost forever and contain some vitamins and sugars.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 1,
         "sound_name": "eat",
@@ -49,6 +53,7 @@
     },
     {
         "name": "Bottle of pure water", 
+        "description": "Crystal-clear water from a purifier. The laboratories that purified water from radiation were destroyed along with the nuclear reactors, so the clean water became local gold.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
         "sound_name": "drink",
@@ -60,6 +65,7 @@
     },
     {
         "name": "Bottle of water with radiation", 
+        "description": "A bottle of water contaminated with radiation. Drink at your own risk.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
         "sound_name": "drink",
@@ -72,6 +78,7 @@
     },
     {
         "name": "Can of expired Earth beer", 
+        "description": "Many settlers believed that beer and cheese were humanity's most important food inventions. Wheat didn't thrive on Europa, so beer supplies were limited to what they brought from Earth. Much of it had already expired.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
         "sound_name": "drink",
@@ -84,6 +91,7 @@
     },
     {
         "name": "Fish crackers", 
+        "description": "Good old fish-shaped cookies. They were brought from Earth in huge quantities because they didn't spoil quickly.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 1,
         "sound_name": "eat",
@@ -96,7 +104,8 @@
         "random_weight": 1.0
     },
     {
-        "name": "WCC dry rations", 
+        "name": "WCC dry rations",
+        "description": "A dry ration covering basic needs. An indispensable item at the beginning of colonization, it became popular again after the disaster.", 
         "count": {"from": 1, "to": 2},
         "consume_cost": 2,
         "sound_name": "eat",
@@ -109,6 +118,7 @@
     },
     {
         "name": "Vodka", 
+        "description": "A strong, warming drink. They say it protects against radiation, but it's harmful to health.",
         "count": {"from": 1, "to": 2},
         "consume_cost": 2,
         "sound_name": "drink",
@@ -124,6 +134,7 @@
     },
     {
         "name": "Canned beef stew", 
+        "description": "Canned meat that can be stored for decades. A highly nutritious food.",
         "count": {"from": 1, "to": 4},
         "consume_cost": 2,
         "sound_name": "eat",
@@ -137,6 +148,7 @@
     },
     {
         "name": "Expired canned beef stew", 
+        "description": "Expired canned meat. Is it worth eating?",
         "count": {"from": 1, "to": 4},
         "consume_cost": 2,
         "sound_name": "eat",
@@ -150,6 +162,7 @@
     },
     {
         "name": "Cystamin",
+        "description": "A drug used to reduce the negative effects of radiation on body tissues, including during radiation therapy.",
         "count": {"from": 1, "to": 4},
         "consume_cost": 1,
         "sound_name": "eat",
@@ -160,7 +173,8 @@
         "random_weight": 0.4
     },
     {
-        "name": "Tincture of monster bile",
+        "name": "The local monsters are adapted to the local conditions. Their bile stinks horribly of rotten fish, but it's incredibly warming and healing. An incredibly valuable remedy.",
+        "description": "",
         "count": 1,
         "consume_cost": 2,
         "sound_name": "drink",
@@ -175,6 +189,7 @@
     },
     {
         "name": "Stroganina",
+        "description": "Northern Earth peoples warmed themselves with a dish consisting of finely shredded raw fatty fish. It works on Europa too!",
         "count": {"from": 1, "to": 4},
         "consume_cost": 2,
         "sound_name": "eat",

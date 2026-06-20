@@ -1,6 +1,7 @@
 [
     {
-        "name": "WCC civil helmet", 
+        "name": "WCC civil helmet",
+        "description": "A standard helmet designed for civilian use.",
         "accuracy": {"from": 1, "to": 3}, 
         "max_health": {"from": 5, "to": 10},
         "max_warm": {"from": 5, "to": 10}, 
@@ -10,6 +11,7 @@
     },
     {
         "name": "SSB helmet", 
+        "description": "A helmet with improved glare for more precise aiming. Developed by SSB.",
         "accuracy": {"from": 2, "to": 4}, 
         "max_health": {"from": 10, "to": 15},
         "max_warm": {"from": 4, "to": 15}, 
