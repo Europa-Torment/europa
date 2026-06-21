@@ -43,7 +43,7 @@ config :europa, Europa.Server.Planet,
   enemy_view_distance: 6,
   enemy_move_possibility: [from: 85, to: 100],
   npc_generate_possibility: 7000,
-  predefined_cluster_distance: 30,
+  predefined_cluster_distance: 50,
   predefined_cluster_update_distance: 150
 
 config :europa, Europa.Server.Planet.Predefined,
