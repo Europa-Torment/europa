@@ -460,13 +460,14 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "reload/1" do
+  describe "reload/2" do
     test "handles success response", %{server: server} do
       weapon = build(:weapon)
+      weapon_uuid = weapon.uuid
       moves_count = weapon.reload_cost
 
       PlayerManagerMock
-      |> expect(:reload_weapon, fn %Player{} = player ->
+      |> expect(:reload_weapon, fn %Player{} = player, ^weapon_uuid ->
         {:ok, player, weapon}
       end)
 
@@ -482,7 +483,7 @@ defmodule Europa.ServerTest do
         {:ok, player, []}
       end)
 
-      assert Server.reload(server) == :ok
+      assert Server.reload(server, weapon_uuid) == :ok
       :timer.sleep(100)
     end
 

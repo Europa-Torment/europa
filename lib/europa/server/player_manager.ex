@@ -128,7 +128,7 @@ defmodule Europa.Server.PlayerManager do
               {:ok, ammo :: Loot.Item.item()} | {:error, :no_ammo}
 
   @doc """
-  Reloads current weapon or returns one of errors:
+  Reloads given weapon or returns one of errors:
 
   `{:error, :no_weapon}` - no equiped weapon
   `{:error, :no_ammo}` - no necessary ammo in inventory
@@ -138,6 +138,21 @@ defmodule Europa.Server.PlayerManager do
   @callback reload_weapon(Player.t()) ::
               {:ok, Player.t(), weapon :: Loot.Item.item()}
               | {:error, :no_weapon}
+              | {:error, :no_ammo}
+              | {:error, :full_magazine}
+              | {:error, Errors.NotApplicableError.t()}
+
+  @doc """
+  Reloads given weapon or returns one of errors:
+
+  `{:error, :not_found}` - weapon with given uuid is not found
+  `{:error, :no_ammo}` - no necessary ammo in inventory
+  `{:error, :full_magazine}` - weapon is already fully loaded
+  `{:error, %Europa.Server.Errors.NotApplicableError{}}` - invalid item is equiped as weapon
+  """
+  @callback reload_weapon(Player.t(), Loot.uuid()) ::
+              {:ok, Player.t(), weapon :: Loot.Item.item()}
+              | {:error, :not_found}
               | {:error, :no_ammo}
               | {:error, :full_magazine}
               | {:error, Errors.NotApplicableError.t()}
@@ -228,6 +243,8 @@ defmodule Europa.Server.PlayerManager do
   def take_damage(player, damage), do: manager_impl().take_damage(player, damage)
 
   def reload_weapon(player), do: manager_impl().reload_weapon(player)
+
+  def reload_weapon(player, weapon_uuid), do: manager_impl().reload_weapon(player, weapon_uuid)
 
   def unload_weapon(player, weapon_uuid), do: manager_impl().unload_weapon(player, weapon_uuid)
 

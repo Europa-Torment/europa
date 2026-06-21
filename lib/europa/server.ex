@@ -141,9 +141,10 @@ defmodule Europa.Server do
     GenServer.call(server, :shoot)
   end
 
-  @spec reload(pid()) :: :ok | {:error, :no_weapon} | {:error, :no_ammo} | {:error, :full_magazine}
-  def reload(server) do
-    GenServer.call(server, :reload)
+  @spec reload(pid(), Loot.uuid() | :equiped) ::
+          :ok | {:error, :no_weapon} | {:error, :no_ammo} | {:error, :full_magazine}
+  def reload(server, item_uuid \\ :equiped) do
+    GenServer.call(server, {:reload, item_uuid})
   end
 
   @spec unload_weapon(pid(), Loot.uuid()) :: :ok | {:error, :not_found} | {:error, :empty_magazine}
@@ -437,8 +438,14 @@ defmodule Europa.Server do
     end
   end
 
-  def handle_call(:reload, {caller_pid, _}, state) do
-    case PlayerManager.reload_weapon(state.player) do
+  def handle_call({:reload, item_uuid}, {caller_pid, _}, state) do
+    result =
+      case item_uuid do
+        :equiped -> PlayerManager.reload_weapon(state.player)
+        _ -> PlayerManager.reload_weapon(state.player, item_uuid)
+      end
+
+    case result do
       {:ok, updated_player, weapon} ->
         moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
         reloaded_message = reloaded_message(weapon, moves_count)

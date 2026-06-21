@@ -668,6 +668,53 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "reload_weapon/2" do
+    setup do
+      weapon = build(:weapon, rounds_loaded: 10, magazine_size: 20)
+      ammo = build(:ammo, caliber: weapon.caliber, count: 100)
+
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo])
+
+      {:ok, player: player, weapon: weapon, ammo: ammo}
+    end
+
+    test "reloads weapon (enough ammo for full magazine)", %{player: player, weapon: weapon, ammo: ammo} do
+      expected_weapon = struct!(weapon, rounds_loaded: weapon.magazine_size)
+
+      expected_ammo = struct!(ammo, count: ammo.count - (weapon.magazine_size - weapon.rounds_loaded))
+
+      assert {:ok, %Player{inventory: [^expected_weapon, ^expected_ammo]}, ^expected_weapon} =
+               Player.reload_weapon(player, weapon.uuid)
+    end
+
+    test "reloads weapon (not enough ammo for full magazine)", %{player: player, weapon: weapon, ammo: ammo} do
+      ammo = struct!(ammo, count: 1)
+
+      player = struct!(player, inventory: [weapon, ammo])
+      expected_weapon = struct!(weapon, rounds_loaded: weapon.rounds_loaded + 1)
+
+      assert {:ok, %Player{inventory: [^expected_weapon]}, ^expected_weapon} =
+               Player.reload_weapon(player, weapon.uuid)
+    end
+
+    test "returns not_found error", %{player: player} do
+      weapon_uuid = Ecto.UUID.generate()
+      assert Player.reload_weapon(player, weapon_uuid) == {:error, :not_found}
+    end
+
+    test "returns no_ammo error", %{player: player, weapon: weapon, ammo: ammo} do
+      player = Player.delete_item(player, ammo)
+      assert Player.reload_weapon(player, weapon.uuid) == {:error, :no_ammo}
+    end
+
+    test "returns full_magazine error", %{player: player, weapon: weapon} do
+      weapon = struct!(weapon, rounds_loaded: weapon.magazine_size)
+      player = Player.update_item(player, weapon)
+
+      assert Player.reload_weapon(player, weapon.uuid) == {:error, :full_magazine}
+    end
+  end
+
   describe "unload_weapon/2" do
     test "returns updated player and weapon" do
       caliber = ".40 S&W"

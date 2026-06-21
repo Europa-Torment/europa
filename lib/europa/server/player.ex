@@ -340,6 +340,15 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
+  def reload_weapon(%__MODULE__{} = player, weapon_uuid) do
+    with {:ok, weapon} <- get_item(player, weapon_uuid),
+         :ok <- Weapon.check_reload_needed(weapon),
+         {:ok, ammo} <- find_weapon_ammo(player, weapon) do
+      do_reload_weapon(player, weapon, ammo)
+    end
+  end
+
+  @impl true
   def unload_weapon(%__MODULE__{} = player, weapon_uuid) do
     with {:ok, %Weapon{} = weapon} <- get_item(player, weapon_uuid),
          {:ok, {updated_weapon, ammo}} <- Weapon.unload(weapon),

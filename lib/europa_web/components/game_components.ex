@@ -388,9 +388,14 @@ defmodule EuropaWeb.GameCompotents do
                         </div>
                       <% end %>
                     <% end %>
-                    <div class="dropdown" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
+                    <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                        <%= if weapon?(item) && item.rounds_loaded < item.magazine_size do %>
+                          <li phx-click="reload_weapon" phx-value-uuid={"#{item.uuid}"}>
+                            <a>{gettext("Reload")} <.moves_count moves_count={item.reload_cost} /></a>
+                          </li>
+                        <% end %>
                         <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                           <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}>
                             <a>{gettext("Unload")} <.moves_count moves_count={item.reload_cost} /></a>
@@ -445,7 +450,7 @@ defmodule EuropaWeb.GameCompotents do
                       {Item.composed_name(item)}
                     </.link>
                     <%= if weapon?(item) && item.rounds_loaded > 0 do %>
-                      <div class="dropdown" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
+                      <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                         <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                         <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
                           <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"}>

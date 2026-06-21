@@ -283,27 +283,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @reload_keys do
-    player_before = socket.assigns.player
-    result = Server.reload(socket.assigns.server)
-
-    player = Server.get_player(socket.assigns.server)
-    {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
-
-    socket =
-      socket
-      |> assign(
-        visible_planet: Server.get_visible_planet(socket.assigns.server),
-        player: player,
-        weapon: weapon,
-        ammo_count: ammo_count,
-        chat: Server.get_chat(socket.assigns.server),
-        player_stats: get_player_stats(player),
-        current_time: get_current_time(socket.assigns.server)
-      )
-      |> reload_sound(result)
-      |> damaged_sound(player_before.health, player.health)
-
-    {:noreply, socket}
+    reload_weapon(socket)
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @scope_keys do
@@ -315,6 +295,10 @@ defmodule EuropaWeb.GameLive do
     socket = put_flash(socket, :error, message)
 
     {:noreply, socket}
+  end
+
+  def handle_event("reload_weapon", %{"uuid" => item_uuid}, socket) do
+    reload_weapon(socket, item_uuid)
   end
 
   def handle_event("open_inventory", params, socket) do
@@ -834,6 +818,38 @@ defmodule EuropaWeb.GameLive do
 
   defp redirect_to_game_over_page(socket, game_uuid) do
     redirect(socket, to: ~p"/games/#{game_uuid}/game-over")
+  end
+
+  defp reload_weapon(socket, item_uuid \\ :equiped) do
+    player_before = socket.assigns.player
+    result = Server.reload(socket.assigns.server, item_uuid)
+
+    player = Server.get_player(socket.assigns.server)
+    {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
+
+    inventory =
+      if socket.assigns.inventory do
+        get_player_inventory(socket)
+      else
+        nil
+      end
+
+    socket =
+      socket
+      |> assign(
+        visible_planet: Server.get_visible_planet(socket.assigns.server),
+        player: player,
+        inventory: inventory,
+        weapon: weapon,
+        ammo_count: ammo_count,
+        chat: Server.get_chat(socket.assigns.server),
+        player_stats: get_player_stats(player),
+        current_time: get_current_time(socket.assigns.server)
+      )
+      |> reload_sound(result)
+      |> damaged_sound(player_before.health, player.health)
+
+    {:noreply, socket}
   end
 
   defp open_inventory(socket) do
