@@ -370,24 +370,7 @@ defmodule EuropaWeb.GameCompotents do
                     data-tooltip={item_tooltip(item, @player)}
                   >
                     {Item.composed_name(item)}
-                    <%= if Item.consumable?(item) do %>
-                      <div class="tooltip" data-tip={"#{gettext("Consume")}"}>
-                        <.link phx-click="consume_supply" phx-value-uuid={"#{item.uuid}"}>
-                          💊 <.moves_count moves_count={item.consume_cost} />
-                        </.link>
-                      </div>
-                    <% end %>
-                    <%= if Item.equipable?(item) do %>
-                      <%= if item.equiped do %>
-                        <div class="tooltip" data-tip={"#{gettext("Unequip")}"}>
-                          <.link phx-click="unequip_item" phx-value-uuid={"#{item.uuid}"}>🫳🏻</.link>
-                        </div>
-                      <% else %>
-                        <div class="tooltip" data-tip={"#{gettext("Equip")}"}>
-                          <.link phx-click="equip_item" phx-value-uuid={"#{item.uuid}"}>🛠️</.link>
-                        </div>
-                      <% end %>
-                    <% end %>
+                    <.item_quick_action item={item} />
                     <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
@@ -652,6 +635,29 @@ defmodule EuropaWeb.GameCompotents do
           </div>
         </div>
       </div>
+    <% end %>
+    """
+  end
+
+  def item_quick_action(assigns) do
+    ~H"""
+    <%= if Item.consumable?(@item) do %>
+      <div class="tooltip" data-tip={"#{gettext("Consume")}"}>
+        <.link phx-click="consume_supply" phx-value-uuid={"#{@item.uuid}"}>
+          💊 <.moves_count moves_count={@item.consume_cost} />
+        </.link>
+      </div>
+    <% end %>
+    <%= if Item.equipable?(@item) do %>
+      <%= if @item.equiped do %>
+        <div class="tooltip" data-tip={"#{gettext("Unequip")}"}>
+          <.link phx-click="unequip_item" phx-value-uuid={"#{@item.uuid}"}>🫳🏻</.link>
+        </div>
+      <% else %>
+        <div class="tooltip" data-tip={"#{gettext("Equip")}"}>
+          <.link phx-click="equip_item" phx-value-uuid={"#{@item.uuid}"}>🛠️</.link>
+        </div>
+      <% end %>
     <% end %>
     """
   end
