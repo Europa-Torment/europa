@@ -146,7 +146,7 @@
         "shooting_distance": {"from": 4, "to": 6},
         "level": 4,
         "parts_count": 2,
-        "weight": 15.0,
+        "weight": 4.0,
         "image_name": "default_pistol",
         "sound_name": "laser",
         "random_weight": 0.06
