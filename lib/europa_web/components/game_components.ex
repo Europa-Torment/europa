@@ -42,6 +42,8 @@ defmodule EuropaWeb.GameCompotents do
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
+  @craft_moves_count fetch_config!([:game_params, :craft_moves_count])
+
   @tiles_image_names Tiles.image_names()
 
   @gif_tiles Tiles.gif_tiles()
@@ -322,6 +324,8 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def inventory(assigns) do
+    assigns = assign(assigns, craft_moves_count: @craft_moves_count)
+
     ~H"""
     <%= if @inventory do %>
       <input type="checkbox" id="inventory" class="modal-toggle h-screen" checked={true} phx-change="close_inventory" />
@@ -368,7 +372,9 @@ defmodule EuropaWeb.GameCompotents do
                     {Item.composed_name(item)}
                     <%= if Item.consumable?(item) do %>
                       <div class="tooltip" data-tip={"#{gettext("Consume")}"}>
-                        <.link phx-click="consume_supply" phx-value-uuid={"#{item.uuid}"}>💊</.link>
+                        <.link phx-click="consume_supply" phx-value-uuid={"#{item.uuid}"}>
+                          💊 <.moves_count moves_count={item.consume_cost} />
+                        </.link>
                       </div>
                     <% end %>
                     <%= if Item.equipable?(item) do %>
@@ -386,11 +392,13 @@ defmodule EuropaWeb.GameCompotents do
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
                         <%= if weapon?(item) && item.rounds_loaded > 0 do %>
-                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Unload")}</a></li>
+                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}>
+                            <a>{gettext("Unload")} <.moves_count moves_count={item.reload_cost} /></a>
+                          </li>
                         <% end %>
                         <%= if Loot.Item.disassemblable?(item) do %>
                           <li phx-click="disassemble_item" phx-value-uuid={"#{item.uuid}"}>
-                            <a>{gettext("Disassemble")}</a>
+                            <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
                           </li>
                         <% end %>
                         <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Drop")}</a></li>
@@ -574,6 +582,8 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def craft_menu(assigns) do
+    assigns = assign(assigns, craft_moves_count: @craft_moves_count)
+
     ~H"""
     <%= if @blueprints do %>
       <input
@@ -618,7 +628,9 @@ defmodule EuropaWeb.GameCompotents do
                     {craft_item_name(item)}
                     <%= if Player.enough_tools?(@player, required_tools) do %>
                       <div class="tooltip" data-tip={"#{gettext("Create")}"}>
-                        <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>🛠️</.link>
+                        <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>
+                          🛠️ <.moves_count moves_count={@craft_moves_count} />
+                        </.link>
                       </div>
                     <% end %>
                   </li>
@@ -636,6 +648,12 @@ defmodule EuropaWeb.GameCompotents do
         </div>
       </div>
     <% end %>
+    """
+  end
+
+  def moves_count(assigns) do
+    ~H"""
+    <span class="italic text-base-content text-[0.625rem]">🎲{@moves_count}</span>
     """
   end
 
