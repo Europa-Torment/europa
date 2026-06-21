@@ -175,7 +175,7 @@ defmodule EuropaWeb.GameCompotents do
 
     ~H"""
     <div class="bg-base-200 p-5 rounded-box shadow-md text-xs">
-      <.link phx-click="show_control_hints">{gettext("Control hints")}</.link>
+      <.link phx-click="show_control_hints">ℹ️ {gettext("Control hints")}</.link>
     </div>
     <div class="p-1 text-center text-xs">
       <div class="inline-block text-neutral">
@@ -290,7 +290,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @weapon do %>
       <div class="bg-base-200 p-5 rounded-box shadow-md text-xs" {open_inventory_attrs("ammo")}>
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")}/#{gettext("In inventory")}"}>
-          {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
+          🔫 {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
         </p>
       </div>
     <% end %>
