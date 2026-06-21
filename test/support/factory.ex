@@ -243,6 +243,7 @@ defmodule Europa.Support.Factory do
     %Planet{
       year: Map.get(opts, :year, 1000),
       current_coord: Map.get(opts, :current_coord, {4, 5}),
+      predefined_cluster_coord: Map.get(opts, :predefined_cluster_coord, {400, 500}),
       land: Map.get(opts, :land, default_land()),
       characters_pid: characters_pid
     }

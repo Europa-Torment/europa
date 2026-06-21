@@ -45,6 +45,9 @@ defmodule Europa.Server.Planet do
 
   @npc_generate_possibility fetch_config!([__MODULE__, :npc_generate_possibility])
 
+  @predefined_cluster_distance fetch_config!([__MODULE__, :predefined_cluster_distance])
+  @predefined_cluster_update_distance fetch_config!([__MODULE__, :predefined_cluster_update_distance])
+
   @disaster_year fetch_config!([:game_params, :disaster_year])
 
   @player :player
@@ -91,10 +94,11 @@ defmodule Europa.Server.Planet do
   end
 
   typedstruct enforce: true do
-    field :land, Land.t()
-    field :current_coord, coord()
-    field :year, pos_integer()
-    field :characters_pid, pid()
+    field :land, Land.t(), enforce: true
+    field :current_coord, coord(), enforce: true
+    field :predefined_cluster_coord, coord()
+    field :year, pos_integer(), enforce: true
+    field :characters_pid, pid(), enforce: true
   end
 
   ### PUBLIC INTERFACE ###
@@ -108,6 +112,7 @@ defmodule Europa.Server.Planet do
       %__MODULE__{
         land: generate_land(),
         current_coord: initial_coord(),
+        predefined_cluster_coord: initial_coord(),
         year: year,
         characters_pid: characters_pid
       }
@@ -276,7 +281,8 @@ defmodule Europa.Server.Planet do
   defp do_tick(%__MODULE__{} = planet, moves_count, actions) do
     ticks = [
       fn planet -> maybe_perform_enemies_actions(planet) end,
-      fn planet -> maybe_warm_up(planet) end
+      fn planet -> maybe_warm_up(planet) end,
+      fn planet -> maybe_set_new_predefined_cluster_coord(planet) end
     ]
 
     {updated_planet, actions} =
@@ -531,6 +537,14 @@ defmodule Europa.Server.Planet do
     case Tiles.tile_by_blood_version(tile) do
       %Tiles.Tile{atom_value: atom_value} -> atom_value
       _ -> tile
+    end
+  end
+
+  defp maybe_set_new_predefined_cluster_coord(%__MODULE__{} = planet) do
+    if coords_disntance(planet.current_coord, planet.predefined_cluster_coord) >= @predefined_cluster_update_distance do
+      {struct!(planet, predefined_cluster_coord: planet.current_coord), _actions = []}
+    else
+      {planet, _actions = []}
     end
   end
 
@@ -1109,10 +1123,19 @@ defmodule Europa.Server.Planet do
   # coveralls-ignore-start
 
   defp maybe_generate_predefined(land, direction, characters_pid, planet) do
-    if m_to_n?(1, 50) do
+    in_predefined_cluster? = in_predefined_cluster?(planet.current_coord, planet.predefined_cluster_coord)
+
+    {m, n} =
+      if in_predefined_cluster? do
+        {1, 10}
+      else
+        {1, 50}
+      end
+
+    if m_to_n?(m, n) do
       template = Predefined.generate_random()
 
-      coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
+      coord_fun = generate_template_coord_fun(land, direction, planet.current_coord, in_predefined_cluster?)
       new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
 
       is_all_tiles_movable =
@@ -1130,9 +1153,27 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp generate_template_coord_fun(land, direction, {current_x, current_y}) do
-    x_padding = current_x + Enum.random(-30..30)
-    y_padding = current_y + Enum.random(-30..30)
+  defp in_predefined_cluster?(current_coord, cluster_coord) do
+    distance = coords_disntance(current_coord, cluster_coord)
+    distance in 1..@predefined_cluster_distance
+  end
+
+  defp coords_disntance({x1, y1}, {x2, y2}) do
+    abs(x1 - x2) + abs(y1 - y2)
+  end
+
+  defp generate_template_coord_fun(land, direction, {current_x, current_y}, in_predefined_cluster?) do
+    padding =
+      fn ->
+        if in_predefined_cluster? do
+          Enum.random(-10..10)
+        else
+          Enum.random(-30..30)
+        end
+      end
+
+    x_padding = current_x + padding.()
+    y_padding = current_y + padding.()
 
     case direction do
       :up -> fn x, y -> {x + x_padding, y - abs(land.min_y - @view_distance)} end

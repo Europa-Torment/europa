@@ -22,6 +22,8 @@ defmodule Europa.Server.PlanetTest do
   @max_accuracy fetch_config!([:weapons, :max_accuracy])
   @burst_bullets_per_shot fetch_config!([:weapons, :burst_bullets_per_shot])
 
+  @predefined_cluster_update_distance fetch_config!([Planet, :predefined_cluster_update_distance])
+
   @initial_enemy_health 100
 
   @s Tiles.tile(:snow).atom_value
@@ -856,6 +858,43 @@ defmodule Europa.Server.PlanetTest do
                Planet.tick(planet, 1)
 
       assert_human_bodies(updated_planet, _human_bodies_count = 1)
+    end
+
+    test "doesn't update predefined_cluster_coord when player not to far from current cluster" do
+      current_coord = {4, 7}
+
+      planet =
+        build(:planet,
+          land: @land_player_look_up_at_enemy,
+          current_coord: current_coord,
+          predefined_cluster_coord: current_coord
+        )
+
+      assert {:ok, %Planet{land: updated_land, predefined_cluster_coord: ^current_coord},
+              [%Action{subject: @en, action_type: :chasing}]} =
+               Planet.tick(planet, 1)
+
+      assert updated_land == @land_player_up_close_to_enemy
+    end
+
+    test "updates predefined_cluster_coord" do
+      current_x = 4
+      current_y = 7
+      current_coord = {current_x, current_y}
+      predefined_cluster_coord = {current_x + @predefined_cluster_update_distance, current_y}
+
+      planet =
+        build(:planet,
+          land: @land_player_look_up_at_enemy,
+          current_coord: current_coord,
+          predefined_cluster_coord: predefined_cluster_coord
+        )
+
+      assert {:ok, %Planet{land: updated_land, predefined_cluster_coord: ^current_coord},
+              [%Action{subject: @en, action_type: :chasing}]} =
+               Planet.tick(planet, 1)
+
+      assert updated_land == @land_player_up_close_to_enemy
     end
 
     @tag perfomance: true
