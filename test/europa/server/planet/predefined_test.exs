@@ -65,7 +65,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
                  %Enemy{},
                  %ItemBox{type: :box},
                  shuttle,
-                 {:npc, nil},
+                 npc_or_skip,
                  %ItemBox{type: :monster_body}
                ]
              ] =
@@ -78,6 +78,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
         end
 
       assert is_shuttle
+      assert npc_or_skip in [{:npc, nil}, :skip]
     end
   end
 

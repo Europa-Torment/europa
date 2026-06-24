@@ -141,7 +141,14 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:situation, "m"), do: Loot.generate_item_box(:monster_body)
   defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
   defp elem_to_tile(:situation, "f"), do: @bonefire
-  defp elem_to_tile(:situation, "N"), do: {:npc, nil}
+
+  defp elem_to_tile(:situation, "N") do
+    if m_to_n?(1, @npc_generate_possibility) do
+      {:npc, nil}
+    else
+      :skip
+    end
+  end
 
   defp elem_to_tile(:situation, "s") do
     crashed_shuttle = Loot.generate_item_box(:crashed_shuttle)
