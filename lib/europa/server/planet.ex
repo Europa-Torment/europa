@@ -541,7 +541,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp maybe_set_new_predefined_cluster_coord(%__MODULE__{} = planet) do
-    if coords_disntance(planet.current_coord, planet.predefined_cluster_coord) >= @predefined_cluster_update_distance do
+    if coords_distance(planet.current_coord, planet.predefined_cluster_coord) >= @predefined_cluster_update_distance do
       {struct!(planet, predefined_cluster_coord: planet.current_coord), _actions = []}
     else
       {planet, _actions = []}
@@ -575,11 +575,8 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp move_enemy(%__MODULE__{current_coord: {px, py}} = planet, {ex, ey} = enemy_coord, enemy) do
-    distance_x = ex - px
-    distance_y = ey - py
-
-    if abs(distance_x) <= 1 and abs(distance_y) <= 1 do
+  defp move_enemy(%__MODULE__{current_coord: current_coord} = planet, enemy_coord, enemy) do
+    if coords_distance(current_coord, enemy_coord) <= 1 do
       {planet, attack_or_miss(enemy)}
     else
       # Give player chance to run away
@@ -735,8 +732,8 @@ defmodule Europa.Server.Planet do
     |> Enum.map(fn {enemy_coord, _} -> enemy_coord end)
   end
 
-  defp enemy_visible?({x1, y1}, {x2, y2}) do
-    abs(x1 - x2) <= @enemy_view_distance and abs(y1 - y2) <= @enemy_view_distance
+  defp enemy_visible?(coord1, coord2) do
+    coords_distance(coord1, coord2) <= @enemy_view_distance
   end
 
   defp do_take_loot(
@@ -1093,30 +1090,21 @@ defmodule Europa.Server.Planet do
     |> Enum.into(%{})
   end
 
-  defp tile_or_darkness(tile, {cx, cy}, {x, y}, current_hour) do
-    max_view_distance = div(@view_distance, 2)
+  defp tile_or_darkness(tile, current_coord, tile_coord, current_hour) do
+    max_view_distance = @view_distance
 
     view_distance =
       cond do
-        current_hour in 0..6 ->
-          min(@min_view_distance + current_hour, max_view_distance)
-
-        current_hour <= 18 ->
-          max_view_distance
-
-        true ->
-          max(max_view_distance - (current_hour - 18), @min_view_distance)
+        current_hour <= 12 -> @min_view_distance + (max_view_distance - @min_view_distance) * current_hour / 12
+        current_hour <= 18 -> max_view_distance
+        true -> max_view_distance - (max_view_distance - @min_view_distance) * (current_hour - 18) / 6
       end
 
-    if out_of_view_distance?(cx - x, view_distance) || out_of_view_distance?(cy - y, view_distance) do
+    if view_distance < max_view_distance && coords_distance(current_coord, tile_coord) > view_distance do
       @darkness
     else
       tile
     end
-  end
-
-  defp out_of_view_distance?(distance, view_distance) do
-    abs(distance) > view_distance
   end
 
   # TODO: figure out how to test this
@@ -1154,11 +1142,11 @@ defmodule Europa.Server.Planet do
   end
 
   defp in_predefined_cluster?(current_coord, cluster_coord) do
-    distance = coords_disntance(current_coord, cluster_coord)
+    distance = coords_distance(current_coord, cluster_coord)
     distance in 1..@predefined_cluster_distance
   end
 
-  defp coords_disntance({x1, y1}, {x2, y2}) do
+  defp coords_distance({x1, y1}, {x2, y2}) do
     abs(x1 - x2) + abs(y1 - y2)
   end
 

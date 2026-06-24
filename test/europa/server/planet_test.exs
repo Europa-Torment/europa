@@ -585,14 +585,14 @@ defmodule Europa.Server.PlanetTest do
     test "returns visible part of land (with darkness)", %{planet: planet} do
       expected_visible_land =
         [
-          [@d, @d, @d, @d, @d],
-          [@d, @s, @ib, @s, @d],
-          [@d, @s, @pl, @i, @d],
           [@d, @s, @s, @s, @d],
-          [@d, @d, @d, @d, @d]
+          [@s, @s, @ib, @s, @s],
+          [@s, @s, @pl, @i, @s],
+          [@s, @s, @s, @s, @s],
+          [@d, @s, @s, @s, @d]
         ]
 
-      evening = Timex.parse!("2016-02-29T19:00:00-06:00", "{ISO:Extended}")
+      evening = Timex.parse!("2016-02-29T20:00:00-06:00", "{ISO:Extended}")
       assert Planet.get_visible_land(planet, evening) == expected_visible_land
     end
   end
