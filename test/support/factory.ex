@@ -7,7 +7,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Player
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
-  alias Europa.Server.Planet.Tiles.Object
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
   alias Europa.Server.Action

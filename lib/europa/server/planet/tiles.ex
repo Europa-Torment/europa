@@ -65,6 +65,42 @@ defmodule Europa.Server.Planet.Tiles do
       warm?: true,
       image_name: "litter_floor"
     },
+    open_left_door: %Tile{
+      atom_value: :old,
+      blood_version: :oldb,
+      readable_name: gettext("door"),
+      move_cost: 1,
+      movable?: true,
+      warm?: true,
+      image_name: "door_open_left"
+    },
+    open_right_door: %Tile{
+      atom_value: :ord,
+      blood_version: :ordb,
+      readable_name: gettext("door"),
+      move_cost: 1,
+      movable?: true,
+      warm?: true,
+      image_name: "door_open_right"
+    },
+    open_up_door: %Tile{
+      atom_value: :oud,
+      blood_version: :oudb,
+      readable_name: gettext("door"),
+      move_cost: 1,
+      movable?: true,
+      warm?: true,
+      image_name: "door_open_up"
+    },
+    open_down_door: %Tile{
+      atom_value: :odd,
+      blood_version: :oddb,
+      readable_name: gettext("door"),
+      move_cost: 1,
+      movable?: true,
+      warm?: true,
+      image_name: "door_open_down"
+    },
     darkness: %Tile{
       atom_value: :d,
       blood_version: nil,

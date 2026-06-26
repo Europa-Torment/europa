@@ -127,6 +127,17 @@ defmodule Europa.ServerTest do
       assert Server.interact(server) == {:ok, interaction}
     end
 
+    test "returns interaction (transform)", %{server: server} do
+      interaction = {:transform, "open_door"}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, %Player{} ->
+        {:ok, planet, interaction}
+      end)
+
+      assert Server.interact(server) == {:ok, interaction}
+    end
+
     test "returns nothing error", %{server: server} do
       error = {:error, :nothing}
 

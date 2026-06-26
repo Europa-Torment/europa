@@ -7,7 +7,8 @@ defmodule Europa.Server.Planet do
 
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Tile
-  alias Europa.Server.Planet.Tiles.Object
+  alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Planet.Predefined
 
   alias Europa.Tools.Types
@@ -65,7 +66,7 @@ defmodule Europa.Server.Planet do
 
   @type land :: list(list(tile()))
 
-  @type interaction :: {:talk, Npc.t()} | {:drink, :radioactive_water}
+  @type interaction :: {:talk, Npc.t()} | {:drink, :radioactive_water} | {:transform, sound_name :: String.t()}
 
   @ice Tiles.tile(:ice).atom_value
   @water Tiles.tile(:water).atom_value
@@ -83,6 +84,22 @@ defmodule Europa.Server.Planet do
   @move_costs Tiles.move_costs()
 
   @tiles_readable_names Tiles.readable_names()
+
+  @open_left_door Tiles.tile(:open_left_door)
+  @open_right_door Tiles.tile(:open_right_door)
+  @open_up_door Tiles.tile(:open_up_door)
+  @open_down_door Tiles.tile(:open_down_door)
+
+  @transforms %{
+    @open_left_door.atom_value => Objects.object(:door_left),
+    @open_right_door.atom_value => Objects.object(:door_right),
+    @open_up_door.atom_value => Objects.object(:door_up),
+    @open_down_door.atom_value => Objects.object(:door_down),
+    @open_left_door.blood_version => Objects.object(:door_left),
+    @open_right_door.blood_version => Objects.object(:door_right),
+    @open_up_door.blood_version => Objects.object(:door_up),
+    @open_down_door.blood_version => Objects.object(:door_down)
+  }
 
   typedstruct module: Land, enforce: true do
     field :tiles, map()
@@ -270,8 +287,33 @@ defmodule Europa.Server.Planet do
     {:ok, planet, {:drink, :radioactive_water}}
   end
 
-  defp do_interact(_, _, _) do
-    {:error, :nothing}
+  defp do_interact(%Object{transforms_to_tile: tile_name} = object, planet, player) when not is_nil(tile_name) do
+    target_coord = target_coord(planet, player.view_direction)
+    transformed_tile = Object.transform(object)
+
+    updated_land =
+      planet.land
+      |> change_tile(target_coord, transformed_tile)
+
+    {:ok, struct!(planet, land: updated_land), {:transform, object.transform_sound_name}}
+  end
+
+  defp do_interact(tile, planet, player) do
+    object = Map.get(@transforms, tile)
+
+    if object do
+      target_coord = target_coord(planet, player.view_direction)
+      stand_on_tile = predefined_stand_on_tile(planet.land, target_coord)
+      object = Object.stand_on(object, stand_on_tile)
+
+      updated_land =
+        planet.land
+        |> change_tile(target_coord, object)
+
+      {:ok, struct!(planet, land: updated_land), {:transform, object.transform_sound_name}}
+    else
+      {:error, :nothing}
+    end
   end
 
   defp do_tick(%__MODULE__{} = planet, 0, actions) do

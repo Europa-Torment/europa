@@ -5,7 +5,7 @@ defmodule EuropaWeb.GameCompotents do
 
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
-  alias Europa.Server.Planet.Tiles.Object
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Player
   alias Europa.Server.Enemy
   alias Europa.Server.Npc

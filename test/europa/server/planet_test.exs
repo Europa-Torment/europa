@@ -4,6 +4,8 @@ defmodule Europa.Server.PlanetTest do
 
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Player
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Enemy
@@ -33,7 +35,17 @@ defmodule Europa.Server.PlanetTest do
   @d Tiles.tile(:darkness).atom_value
   @pl Planet.player()
 
-  @wl build(:object, high?: true)
+  @wl Objects.object(:wall_left)
+
+  @dl Objects.object(:door_left)
+  @dr Objects.object(:door_right)
+  @du Objects.object(:door_up)
+  @dd Objects.object(:door_down)
+
+  @dlo Object.transform(@dl)
+  @dro Object.transform(@dr)
+  @duo Object.transform(@du)
+  @ddo Object.transform(@dd)
 
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)])
@@ -521,6 +533,118 @@ defmodule Europa.Server.PlanetTest do
                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
+
+  @land_player_up_close_to_door [
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @dd, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                ]
+                                |> PlanetLandConverter.from_matrix()
+
+  @land_player_down_close_to_door [
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @du, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  ]
+                                  |> PlanetLandConverter.from_matrix()
+
+  @land_player_left_close_to_door [
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @pl, @dl, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  ]
+                                  |> PlanetLandConverter.from_matrix()
+
+  @land_player_right_close_to_door [
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @dr, @pl, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   ]
+                                   |> PlanetLandConverter.from_matrix()
+
+  @land_player_up_close_to_open_door [
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @ddo, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     ]
+                                     |> PlanetLandConverter.from_matrix()
+
+  @land_player_down_close_to_open_door [
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @duo, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                       ]
+                                       |> PlanetLandConverter.from_matrix()
+
+  @land_player_left_close_to_open_door [
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @pl, @dlo, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                       ]
+                                       |> PlanetLandConverter.from_matrix()
+
+  @land_player_right_close_to_open_door [
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @dro, @pl, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                        ]
+                                        |> PlanetLandConverter.from_matrix()
 
   @land_enemy_right_close_to_npc [
                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -1111,10 +1235,90 @@ defmodule Europa.Server.PlanetTest do
       assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
     end
 
+    test "opens right door" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_door, current_coord: {4, 1})
+
+      assert {:ok, %Planet{land: @land_player_left_close_to_open_door}, {:transform, sound_name}} =
+               Planet.interact(planet, player)
+
+      assert sound_name == @dd.transform_sound_name
+    end
+
+    test "opens left door" do
+      player = build(:player, view_direction: :left)
+      planet = build(:planet, land: @land_player_right_close_to_door, current_coord: {4, 1})
+
+      assert {:ok, %Planet{land: @land_player_right_close_to_open_door}, {:transform, sound_name}} =
+               Planet.interact(planet, player)
+
+      assert sound_name == @dd.transform_sound_name
+    end
+
+    test "opens bottom door" do
+      player = build(:player, view_direction: :down)
+      planet = build(:planet, land: @land_player_down_close_to_door, current_coord: {4, 1})
+
+      assert {:ok, %Planet{land: @land_player_down_close_to_open_door}, {:transform, sound_name}} =
+               Planet.interact(planet, player)
+
+      assert sound_name == @dd.transform_sound_name
+    end
+
+    test "opens top door" do
+      player = build(:player, view_direction: :up)
+      planet = build(:planet, land: @land_player_up_close_to_door, current_coord: {4, 7})
+
+      assert {:ok, %Planet{land: @land_player_up_close_to_open_door}, {:transform, sound_name}} =
+               Planet.interact(planet, player)
+
+      assert sound_name == @dd.transform_sound_name
+    end
+
+    test "closes right door" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_open_door, current_coord: {4, 1})
+      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
+      assert sound_name == @dd.transform_sound_name
+
+      test_closes_door(planet, {4 + 1, 1})
+    end
+
+    test "closes left door" do
+      player = build(:player, view_direction: :left)
+      planet = build(:planet, land: @land_player_right_close_to_open_door, current_coord: {4, 1})
+      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
+      assert sound_name == @dd.transform_sound_name
+
+      test_closes_door(planet, {4 - 1, 1})
+    end
+
+    test "closes bottom door" do
+      player = build(:player, view_direction: :down)
+      planet = build(:planet, land: @land_player_down_close_to_open_door, current_coord: {4, 1})
+      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
+      assert sound_name == @dd.transform_sound_name
+
+      test_closes_door(planet, {4, 1 + 1})
+    end
+
+    test "closes top door" do
+      player = build(:player, view_direction: :up)
+      planet = build(:planet, land: @land_player_up_close_to_open_door, current_coord: {4, 7})
+      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
+      assert sound_name == @dd.transform_sound_name
+
+      test_closes_door(planet, {4, 7 - 1})
+    end
+
     test "returns error when there is nothing to interact with" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
       assert {:error, :nothing} = Planet.interact(planet, player)
+    end
+
+    defp test_closes_door(planet, target_coord) do
+      assert %Object{} = tile_at(planet.land, target_coord)
     end
   end
 

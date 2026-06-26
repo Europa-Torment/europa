@@ -3,11 +3,9 @@ defmodule Europa.Server.Planet.Predefined do
   Predefined planet sectors generator.
   """
 
-  use Gettext, backend: Europa.Gettext
-
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
-  alias Europa.Server.Planet.Tiles.Object
+  alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Enemy
   alias Europa.Server.Loot
 
@@ -31,24 +29,6 @@ defmodule Europa.Server.Planet.Predefined do
   @bloody_floor Tiles.tile(:bloody_floor).atom_value
 
   @dirty_floors [@litter_floor, @bloody_floor]
-
-  @wall_up %Object{name: gettext("wall"), image_name: "wall_up", high?: true}
-  @wall_down %Object{name: gettext("wall"), image_name: "wall_down", high?: true}
-  @wall_right %Object{name: gettext("wall"), image_name: "wall_right", high?: true}
-  @wall_right_up %Object{name: gettext("wall"), image_name: "wall_right_up", high?: true}
-  @wall_right_down %Object{name: gettext("wall"), image_name: "wall_right_down", high?: true}
-  @wall_left %Object{name: gettext("wall"), image_name: "wall_left", high?: true}
-  @wall_left_up %Object{name: gettext("wall"), image_name: "wall_left_up", high?: true}
-  @wall_left_down %Object{name: gettext("wall"), image_name: "wall_left_down", high?: true}
-  @wall_vertical_inside %Object{
-    name: gettext("wall"),
-    image_name: "wall_vertical_inside",
-    high?: true,
-    stand_on: @floor
-  }
-
-  @bonefire %Object{name: gettext("bonefire"), image_name: "bonefire", warm?: true}
-  @fire_shuttle %Object{name: gettext("burning shuttle"), image_name: "fire_shuttle", gif_tile?: true, warm?: true}
 
   @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
   @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
@@ -84,15 +64,19 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(_, "*"), do: :skip
 
   # buildings
-  defp elem_to_tile(:building, "l"), do: @wall_left
-  defp elem_to_tile(:building, "r"), do: @wall_right
-  defp elem_to_tile(:building, "u"), do: @wall_up
-  defp elem_to_tile(:building, "d"), do: @wall_down
-  defp elem_to_tile(:building, "I"), do: @wall_vertical_inside
-  defp elem_to_tile(:building, "i"), do: @wall_left_up
-  defp elem_to_tile(:building, "!"), do: @wall_left_down
-  defp elem_to_tile(:building, "^"), do: @wall_right_up
-  defp elem_to_tile(:building, "v"), do: @wall_right_down
+  defp elem_to_tile(:building, "l"), do: Objects.object(:wall_left)
+  defp elem_to_tile(:building, "r"), do: Objects.object(:wall_right)
+  defp elem_to_tile(:building, "u"), do: Objects.object(:wall_up)
+  defp elem_to_tile(:building, "d"), do: Objects.object(:wall_down)
+  defp elem_to_tile(:building, "I"), do: Objects.object(:wall_vertical_inside)
+  defp elem_to_tile(:building, "i"), do: Objects.object(:wall_left_up)
+  defp elem_to_tile(:building, "!"), do: Objects.object(:wall_left_down)
+  defp elem_to_tile(:building, "^"), do: Objects.object(:wall_right_up)
+  defp elem_to_tile(:building, "v"), do: Objects.object(:wall_right_down)
+  defp elem_to_tile(:building, "("), do: Objects.object(:door_left)
+  defp elem_to_tile(:building, ")"), do: Objects.object(:door_right)
+  defp elem_to_tile(:building, "1"), do: Objects.object(:door_up)
+  defp elem_to_tile(:building, "2"), do: Objects.object(:door_down)
 
   defp elem_to_tile(:building, "f") do
     cond do
@@ -140,7 +124,7 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:situation, "c"), do: Loot.generate_item_box(:human_body)
   defp elem_to_tile(:situation, "m"), do: Loot.generate_item_box(:monster_body)
   defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
-  defp elem_to_tile(:situation, "f"), do: @bonefire
+  defp elem_to_tile(:situation, "f"), do: Objects.object(:bonefire)
 
   defp elem_to_tile(:situation, "N") do
     if m_to_n?(1, @npc_generate_possibility) do
@@ -152,7 +136,7 @@ defmodule Europa.Server.Planet.Predefined do
 
   defp elem_to_tile(:situation, "s") do
     crashed_shuttle = Loot.generate_item_box(:crashed_shuttle)
-    Enum.random([crashed_shuttle, @fire_shuttle])
+    Enum.random([crashed_shuttle, Objects.object(:fire_shuttle)])
   end
 
   defp parse_random_file(category) do

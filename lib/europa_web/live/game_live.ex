@@ -216,6 +216,24 @@ defmodule EuropaWeb.GameLive do
 
         {:noreply, socket}
 
+      {:ok, {:transform, sound_name}} ->
+        player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
+            chat: Server.get_chat(socket.assigns.server),
+            show_control_hints: false,
+            inventory: nil,
+            item_box: nil,
+            player: player,
+            player_stats: get_player_stats(player)
+          )
+          |> play_sound(sound_name)
+
+        {:noreply, socket}
+
       _ ->
         {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
     end
@@ -718,7 +736,8 @@ defmodule EuropaWeb.GameLive do
         overloaded3: %{name: ~p"/sounds/overloaded3.mp3", volume: 0.08},
         injured: %{name: ~p"/sounds/injured.mp3", volume: 0.05},
         dead: %{name: ~p"/sounds/dead.mp3", volume: 0.2},
-        game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1}
+        game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1},
+        open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03}
       })
 
     assign(socket, :sounds, json)

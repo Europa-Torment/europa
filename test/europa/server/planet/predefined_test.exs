@@ -4,7 +4,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
   alias Europa.Server.Planet.Predefined
   alias Europa.Server.Planet.Tiles
-  alias Europa.Server.Planet.Tiles.Object
+  alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Enemy
 
@@ -13,17 +13,22 @@ defmodule Europa.Server.Planet.PredefinedTest do
   @bloody_floor Tiles.tile(:bloody_floor).atom_value
   @floors [@floor, @bloody_floor, @litter_floor]
 
-  @wall_up %Object{name: "wall", image_name: "wall_up", high?: true}
-  @wall_down %Object{name: "wall", image_name: "wall_down", high?: true}
-  @wall_right %Object{name: "wall", image_name: "wall_right", high?: true}
-  @wall_right_up %Object{name: "wall", image_name: "wall_right_up", high?: true}
-  @wall_right_down %Object{name: "wall", image_name: "wall_right_down", high?: true}
-  @wall_left %Object{name: "wall", image_name: "wall_left", high?: true}
-  @wall_left_up %Object{name: "wall", image_name: "wall_left_up", high?: true}
-  @wall_left_down %Object{name: "wall", image_name: "wall_left_down", high?: true}
-  @wall_vertical_inside %Object{name: "wall", image_name: "wall_vertical_inside", high?: true, stand_on: @floor}
+  @wall_up Objects.object(:wall_up)
+  @wall_down Objects.object(:wall_down)
+  @wall_right Objects.object(:wall_right)
+  @wall_right_up Objects.object(:wall_right_up)
+  @wall_right_down Objects.object(:wall_right_down)
+  @wall_left Objects.object(:wall_left)
+  @wall_left_up Objects.object(:wall_left_up)
+  @wall_left_down Objects.object(:wall_left_down)
+  @wall_vertical_inside Objects.object(:wall_vertical_inside)
 
-  @fire_shuttle %Object{name: "burning shuttle", image_name: "fire_shuttle", gif_tile?: true, warm?: true}
+  @door_left Objects.object(:door_left)
+  @door_right Objects.object(:door_right)
+  @door_up Objects.object(:door_up)
+  @door_down Objects.object(:door_down)
+
+  @fire_shuttle Objects.object(:fire_shuttle)
 
   describe "generate/1" do
     property "generates building" do
@@ -34,23 +39,29 @@ defmodule Europa.Server.Planet.PredefinedTest do
             case {i, j} do
               {0, 0} -> assert e == @wall_left_up
               {0, 1} -> assert e == @wall_up
-              {0, 2} -> assert e == @wall_up
+              {0, 2} -> assert e == @door_up
               {0, 3} -> assert e == @wall_up
               {0, 4} -> assert e == @wall_up
               {0, 5} -> assert e == @wall_right_up
-              {1, 0} -> assert e == @wall_left
+              {1, 0} -> assert e == @door_left
               {1, 1} -> assert e in @floors || loot?(e)
               {1, 2} -> assert e == @wall_vertical_inside
               {1, 3} -> assert e in @floors || enemy?(e)
               {1, 4} -> assert e in @floors || enemy?(e) || {:npc, @floor}
-              {1, 5} -> assert e == @wall_right
-              {2, 0} -> assert e == @wall_left_down
-              {2, 1} -> assert e == @wall_down
-              {2, 2} -> assert e in @floors || enemy?(e)
-              {2, 3} -> assert e == @wall_down
-              {2, 4} -> assert e == @wall_down
-              {2, 5} -> assert e == @wall_right_down
-              {2, 6} -> assert e == :skip
+              {1, 5} -> assert e == @door_right
+              {2, 0} -> assert e == @wall_left
+              {2, 1} -> assert e in @floors || loot?(e)
+              {2, 2} -> assert e in @floors || loot?(e)
+              {2, 3} -> assert e in @floors || loot?(e)
+              {2, 4} -> assert e in @floors || loot?(e)
+              {2, 5} -> assert e == @wall_right
+              {3, 0} -> assert e == @wall_left_down
+              {3, 1} -> assert e == @wall_down
+              {3, 2} -> assert e == @door_down
+              {3, 3} -> assert e == @wall_down
+              {3, 4} -> assert e == @wall_down
+              {3, 5} -> assert e == @wall_right_down
+              {3, 6} -> assert e == :skip
             end
           end)
         end)
