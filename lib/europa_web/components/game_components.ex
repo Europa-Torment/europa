@@ -505,10 +505,10 @@ defmodule EuropaWeb.GameCompotents do
       />
       <div class="modal overflow-visible" role="dialog">
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
-          <h3 class="text-lg font-bold pb-3">{gettext("Confirm the action")}</h3>
+          <h3 class="text-lg font-bold pb-3">{gettext("Confirm action")}</h3>
 
           <%= if interaction_requires_tools?(@interaction_confirmation) do %>
-            <.interact_required_tools tools={@interaction_confirmation} player={@player} />
+            <.interact_required_tools interaction_confirmation={@interaction_confirmation} player={@player} />
           <% end %>
 
           <%= if @interaction_confirmation == :danger_action do %>
@@ -537,6 +537,9 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def interact_required_tools(assigns) do
+    {:required_tools, tools} = assigns.interaction_confirmation
+    assigns = assign(assigns, tools: tools)
+
     ~H"""
     <span class="text-md">{gettext("The action requires following items")}:</span>
     <br />
