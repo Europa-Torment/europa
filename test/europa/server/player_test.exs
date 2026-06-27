@@ -501,6 +501,33 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "use_tools/2" do
+    setup do
+      tool1 = build(:tool, name: "tool 1", count: 1, type: :weapon_parts, properties: build(:tool_properties, level: 1))
+      tool2 = build(:tool, name: "tool 2", count: 2, type: :weapon_parts, properties: build(:tool_properties, level: 2))
+
+      {:ok, tool1: tool1, tool2: tool2}
+    end
+
+    test "decreases tools count", %{tool1: tool1, tool2: tool2} do
+      player = build(:player, inventory: [tool1, tool2])
+
+      tools = [
+        struct!(tool1, count: 1),
+        struct!(tool2, count: 1)
+      ]
+
+      assert {:ok, %Player{inventory: [tool]}} = Player.use_tools(player, tools)
+      assert tool.name == tool2.name
+      assert tool.count == 1
+    end
+
+    test "returns NotApplicableError when player hasn't enough tools", %{tool1: tool1, tool2: tool2} do
+      player = build(:player, inventory: [tool1])
+      assert Player.use_tools(player, [tool1, tool2]) == {:error, %NotApplicableError{}}
+    end
+  end
+
   describe "get_equiped_weapon/1" do
     setup do
       weapon = build(:weapon)

@@ -486,6 +486,71 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def interaction_confirmation(assigns) do
+    assigns =
+      if assigns.interaction_confirmation do
+        assign(assigns, interaction_allowed?: interaction_allowed?(assigns.interaction_confirmation, assigns.player))
+      else
+        assigns
+      end
+
+    ~H"""
+    <%= if @interaction_confirmation do %>
+      <input
+        type="checkbox"
+        id="interaction_confirmation"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_interaction_confirmation"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
+          <h3 class="text-lg font-bold pb-3">{gettext("Confirm the action")}</h3>
+
+          <%= if interaction_requires_tools?(@interaction_confirmation) do %>
+            <.interact_required_tools tools={@interaction_confirmation} player={@player} />
+          <% end %>
+
+          <%= if @interaction_confirmation == :danger_action do %>
+            <span class="text-md">{gettext("Commit a dangerous act?")}</span>
+          <% end %>
+
+          <div class="modal-action">
+            <%= if @interaction_allowed? do %>
+              <label
+                phx-click="interact"
+                phx-value-type="forced"
+                for="interaction_confirmation"
+                class="btn btn-secondary"
+              >
+                {gettext("Confirm")}
+              </label>
+            <% end %>
+            <label phx-click="close_interaction_confirmation" for="interaction_confirmation" class="btn">
+              {gettext("Close")}
+            </label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def interact_required_tools(assigns) do
+    ~H"""
+    <span class="text-md">{gettext("The action requires following items")}:</span>
+    <br />
+
+    <ul class="list-disc list-inside space-y-2 text-sm">
+      <%= for tool <- @tools do %>
+        <li class={required_tool_class(@player, tool)}>
+          {Loot.Item.composed_name(tool)}
+        </li>
+      <% end %>
+    </ul>
+    """
+  end
+
   def item_drop_menu(assigns) do
     ~H"""
     <%= if @item_to_drop do %>
@@ -678,17 +743,25 @@ defmodule EuropaWeb.GameCompotents do
     |> Enum.map(fn required_tool ->
       player_tools_count = Player.tools_amount(player, required_tool)
       count = "#{player_tools_count}/#{required_tool.count}"
-
-      count_class =
-        if player_tools_count >= required_tool.count do
-          "text-blue-500"
-        else
-          "text-red-500"
-        end
+      count_class = required_tool_class(player_tools_count, required_tool)
 
       {craft_item_name(required_tool), count, count_class}
     end)
     |> to_ul()
+  end
+
+  defp required_tool_class(%Player{} = player, required_tool) do
+    player
+    |> Player.tools_amount(required_tool)
+    |> required_tool_class(required_tool)
+  end
+
+  defp required_tool_class(player_tools_count, required_tool) do
+    if player_tools_count >= required_tool.count do
+      "text-blue-500"
+    else
+      "text-red-500"
+    end
   end
 
   defp chat_color(%Chat.Message{category: category}) do
@@ -1084,6 +1157,15 @@ defmodule EuropaWeb.GameCompotents do
   defp maybe_round_number(number) do
     number
   end
+
+  defp interaction_requires_tools?({:required_tools, requirements}) when is_list(requirements), do: true
+  defp interaction_requires_tools?(_), do: false
+
+  defp interaction_allowed?({:required_tools, requirements}, player) when is_list(requirements) do
+    Player.enough_tools?(player, requirements)
+  end
+
+  defp interaction_allowed?(_, _), do: true
 
   # coveralls-ignore-stop
 end

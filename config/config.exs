@@ -49,7 +49,8 @@ config :europa, Europa.Server.Planet,
 config :europa, Europa.Server.Planet.Predefined,
   building: [
     enemy_generate_possibility: 100,
-    loot_generate_possibility: 3
+    loot_generate_possibility: 3,
+    locked_door_possibility: 7
   ]
 
 config :europa, Europa.Games, leaders_limit: 50

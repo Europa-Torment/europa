@@ -29,4 +29,10 @@ defmodule Europa.Server.Loot.Weapon.ToolTest do
       assert count == parts_count - 1
     end
   end
+
+  describe "generate_key/0" do
+    test "generates key" do
+      assert %Tool{type: :key} = Tool.generate_key()
+    end
+  end
 end

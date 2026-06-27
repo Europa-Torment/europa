@@ -14,6 +14,7 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
+  alias Europa.Server.Planet.Tiles.Objects.Object
 
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
@@ -91,7 +92,8 @@ defmodule EuropaWeb.GameLive do
           disassemble_item_uuid: nil,
           disassemble_items: nil,
           blueprints: nil,
-          blueprints_type: nil
+          blueprints_type: nil,
+          interaction_confirmation: nil
         )
 
       {:ok, socket}
@@ -187,56 +189,8 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @interact_keys do
-    case Server.interact(socket.assigns.server) do
-      {:ok, {:talk, npc}} ->
-        {:noreply,
-         assign(socket,
-           dialog: %{npc: npc},
-           chat: Server.get_chat(socket.assigns.server),
-           show_control_hints: false,
-           inventory: nil,
-           item_box: nil
-         )}
-
-      {:ok, {:drink, _}} ->
-        player = Server.get_player(socket.assigns.server)
-
-        socket =
-          socket
-          |> assign(
-            chat: Server.get_chat(socket.assigns.server),
-            show_control_hints: false,
-            inventory: nil,
-            item_box: nil,
-            player: player,
-            player_stats: get_player_stats(player)
-          )
-          |> play_sound("drink")
-
-        {:noreply, socket}
-
-      {:ok, {:transform, sound_name}} ->
-        player = Server.get_player(socket.assigns.server)
-
-        socket =
-          socket
-          |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            chat: Server.get_chat(socket.assigns.server),
-            show_control_hints: false,
-            inventory: nil,
-            item_box: nil,
-            player: player,
-            player_stats: get_player_stats(player)
-          )
-          |> play_sound(sound_name)
-
-        {:noreply, socket}
-
-      _ ->
-        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
-    end
+  def handle_event("key_pressed", %{"key" => key} = params, socket) when key in @interact_keys do
+    interact(socket, params)
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @loot_keys do
@@ -272,7 +226,8 @@ defmodule EuropaWeb.GameLive do
        item_to_drop: nil,
        dialog: nil,
        disassemble_items: nil,
-       blueprints: nil
+       blueprints: nil,
+       interaction_confirmation: nil
      )}
   end
 
@@ -315,6 +270,10 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
+  def handle_event("interact", params, socket) do
+    interact(socket, params)
+  end
+
   def handle_event("reload_weapon", %{"uuid" => item_uuid}, socket) do
     reload_weapon(socket, item_uuid)
   end
@@ -352,6 +311,10 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_dialog", _, socket) do
     {:noreply, assign(socket, dialog: nil)}
+  end
+
+  def handle_event("close_interaction_confirmation", _, socket) do
+    {:noreply, assign(socket, interaction_confirmation: nil)}
   end
 
   def handle_event("close_item_disassemble_menu", _, socket) do
@@ -930,6 +893,70 @@ defmodule EuropaWeb.GameLive do
 
   defp toggle_control_hints(socket) do
     {:noreply, assign(socket, show_control_hints: !socket.assigns.show_control_hints)}
+  end
+
+  defp interact(socket, params) do
+    opts =
+      case Map.get(params, "type", "regular") do
+        "forced" -> [forced: true]
+        _ -> []
+      end
+
+    case Server.interact(socket.assigns.server, opts) do
+      {:ok, {:confirmation, requirements}} ->
+        {:noreply, assign(socket, interaction_confirmation: requirements)}
+
+      {:ok, {:talk, npc}} ->
+        {:noreply,
+         assign(socket,
+           dialog: %{npc: npc},
+           chat: Server.get_chat(socket.assigns.server),
+           show_control_hints: false,
+           inventory: nil,
+           item_box: nil,
+           interaction_confirmation: nil
+         )}
+
+      {:ok, {:drink, _}} ->
+        player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            chat: Server.get_chat(socket.assigns.server),
+            show_control_hints: false,
+            inventory: nil,
+            item_box: nil,
+            player: player,
+            player_stats: get_player_stats(player),
+            interaction_confirmation: nil
+          )
+          |> play_sound("drink")
+
+        {:noreply, socket}
+
+      {:ok, {:transform, %Object{transform_sound_name: sound_name}}} ->
+        player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
+            chat: Server.get_chat(socket.assigns.server),
+            show_control_hints: false,
+            inventory: nil,
+            item_box: nil,
+            player: player,
+            player_stats: get_player_stats(player),
+            interaction_confirmation: nil
+          )
+          |> play_sound(sound_name)
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
+    end
   end
 
   defp craft_item(item_uuid, blueprints, socket) do

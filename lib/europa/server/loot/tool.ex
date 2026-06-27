@@ -6,7 +6,7 @@ defmodule Europa.Server.Loot.Tool do
   alias Europa.Server.Loot.Weapon
   alias Europa.Tools.AttrsDeterminator
 
-  @allowed_tool_types [:weapon_parts]
+  @allowed_tool_types [:weapon_parts, :key]
 
   @type tool_type() :: unquote(Types.one_of(@allowed_tool_types))
 
@@ -67,6 +67,16 @@ defmodule Europa.Server.Loot.Tool do
       |> new()
 
     [weapon_parts]
+  end
+
+  @spec generate_key() :: t()
+  def generate_key do
+    Loot.get_items(:tool)
+    |> Enum.filter(fn {tool, _} -> tool.type == "key" end)
+    |> WeightedRandom.take_one()
+    |> AttrsDeterminator.determine_attrs()
+    |> Map.put(:count, 1)
+    |> new()
   end
 
   defp validate_type!(type) when type in @allowed_tool_types, do: type

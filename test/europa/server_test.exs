@@ -105,7 +105,7 @@ defmodule Europa.ServerTest do
       interaction = {:talk, build(:npc)}
 
       PlanetManagerMock
-      |> expect(:interact, fn %Planet{} = planet, %Player{} ->
+      |> expect(:interact, fn %Planet{} = planet, %Player{}, _opts ->
         {:ok, planet, interaction}
       end)
 
@@ -116,7 +116,7 @@ defmodule Europa.ServerTest do
       interaction = {:drink, :radioactive_water}
 
       PlanetManagerMock
-      |> expect(:interact, fn %Planet{} = planet, %Player{} ->
+      |> expect(:interact, fn %Planet{} = planet, %Player{}, _opts ->
         {:ok, planet, interaction}
       end)
 
@@ -128,10 +128,32 @@ defmodule Europa.ServerTest do
     end
 
     test "returns interaction (transform)", %{server: server} do
-      interaction = {:transform, "open_door"}
+      interaction = {:transform, build(:object)}
 
       PlanetManagerMock
-      |> expect(:interact, fn %Planet{} = planet, %Player{} ->
+      |> expect(:interact, fn %Planet{} = planet, %Player{}, _opts ->
+        {:ok, planet, interaction}
+      end)
+
+      assert Server.interact(server) == {:ok, interaction}
+    end
+
+    test "returns confirmation (danger_action)", %{server: server} do
+      interaction = {:confirmation, :danger_action}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, %Player{}, _opts ->
+        {:ok, planet, interaction}
+      end)
+
+      assert Server.interact(server) == {:ok, interaction}
+    end
+
+    test "returns confirmation (required_tools)", %{server: server} do
+      interaction = {:confirmation, {:required_tools, build_list(2, :tool)}}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, %Player{}, _opts ->
         {:ok, planet, interaction}
       end)
 
@@ -142,7 +164,7 @@ defmodule Europa.ServerTest do
       error = {:error, :nothing}
 
       PlanetManagerMock
-      |> expect(:interact, fn %Planet{}, %Player{} ->
+      |> expect(:interact, fn %Planet{}, %Player{}, _opts ->
         error
       end)
 

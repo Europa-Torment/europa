@@ -174,7 +174,7 @@
     },
     {
         "name": "Tincture of monster bile",
-        "description": "The local monsters are adapted to the local conditions. Their bile stinks horribly of rotten fish, but it's incredibly warming and healing. An incredibly valuable remedy.",
+        "description": "The local monsters are adapted to the local conditions. Their bile stinks horribly of rotten fish, but it's warming and healing good. An incredibly valuable remedy.",
         "count": 1,
         "consume_cost": 2,
         "sound_name": "drink",

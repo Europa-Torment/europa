@@ -97,6 +97,11 @@ defmodule Europa.Server.PlayerManager do
   @callback enough_tools?(Player.t(), list(Loot.Item.item())) :: boolean()
 
   @doc """
+  Use given tools (decrease counts or delete)
+  """
+  @callback use_tools(Player.t(), list(Loot.Item.item())) :: {:ok, Player.t()} | {:error, Errors.NotApplicableError.t()}
+
+  @doc """
   Finds current equiped weapon or returns error if no weapon is equiped.
   """
   @callback get_equiped_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_weapon}
@@ -225,6 +230,8 @@ defmodule Europa.Server.PlayerManager do
   def tools_amount(player, tool), do: manager_impl().tools_amount(player, tool)
 
   def enough_tools?(player, tools), do: manager_impl().enough_tools?(player, tools)
+
+  def use_tools(player, tools), do: manager_impl().use_tools(player, tools)
 
   def craft_item(player, blueprint), do: manager_impl().craft_item(player, blueprint)
 

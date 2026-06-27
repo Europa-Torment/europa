@@ -7,6 +7,7 @@ defmodule Europa.Server do
   alias Europa.Server.Planet
   alias Europa.Server.PlanetManager
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
   alias Europa.Server.Chat
@@ -203,9 +204,9 @@ defmodule Europa.Server do
     GenServer.call(server, {:consume_supply, item_uuid})
   end
 
-  @spec interact(pid()) :: {:ok, Planet.interaction()} | {:error, :nothing}
-  def interact(server) do
-    GenServer.call(server, :interact)
+  @spec interact(pid(), opts :: keyword()) :: {:ok, Planet.interaction()} | {:error, :nothing}
+  def interact(server, opts \\ []) do
+    GenServer.call(server, {:interact, opts})
   end
 
   ### CALLBACKS ###
@@ -543,8 +544,8 @@ defmodule Europa.Server do
     {:reply, PlayerManager.get_inventory(state.player, type), state, @inactivity_timeout_ms}
   end
 
-  def handle_call(:interact, _from, state) do
-    case PlanetManager.interact(state.planet, state.player) do
+  def handle_call({:interact, opts}, _from, state) do
+    case PlanetManager.interact(state.planet, state.player, opts) do
       {:ok, updated_planet, {:drink, :radioactive_water} = interaction} ->
         updated_player =
           state.player
@@ -561,6 +562,17 @@ defmodule Europa.Server do
 
         {:reply, {:ok, interaction}, struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
          @inactivity_timeout_ms}
+
+      {:ok, updated_planet, {:transform, %Object{transform_requirements: required_tools}} = interaction}
+      when is_list(required_tools) ->
+        case PlayerManager.use_tools(state.player, required_tools) do
+          {:ok, updated_player} ->
+            {:reply, {:ok, interaction}, struct!(state, planet: updated_planet, player: updated_player),
+             @inactivity_timeout_ms}
+
+          _ ->
+            {:reply, {:error, :nothing}, state}
+        end
 
       {:ok, updated_planet, interaction} ->
         {:reply, {:ok, interaction}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}

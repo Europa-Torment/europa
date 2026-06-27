@@ -50,5 +50,18 @@
         "stackable": true,
         "weight": 0.4, 
         "random_weight": 0.05
+    },
+    {
+        "name": "Key card", 
+        "description": "A service key card that allows you to open a regular door.",
+        "type": "key",
+        "count": {"from": 1, "to": 4},
+        "sound_name": "assemble",
+        "properties": {
+            "level": 1
+        },
+        "stackable": true,
+        "weight": 0.01, 
+        "random_weight": 3.0
     }
 ]

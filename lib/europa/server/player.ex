@@ -239,8 +239,15 @@ defmodule Europa.Server.Player do
 
   @impl true
   def craft_item(%__MODULE__{} = player, %Loot.Blueprint{} = blueprint) do
-    if enough_tools?(player, blueprint.tools) do
-      do_craft_item(player, blueprint)
+    with {:ok, player} <- use_tools(player, blueprint.tools) do
+      add_item(player, blueprint.item)
+    end
+  end
+
+  @impl true
+  def use_tools(%__MODULE__{} = player, tools) when is_list(tools) do
+    if enough_tools?(player, tools) do
+      {:ok, do_use_tools(player, tools)}
     else
       {:error, %Errors.NotApplicableError{}}
     end
@@ -392,6 +399,21 @@ defmodule Europa.Server.Player do
   def tick(player, _), do: {:ok, player, []}
 
   ### PRIVATE ###
+
+  defp do_use_tools(%__MODULE__{} = player, tools) when is_list(tools) do
+    Enum.reduce(tools, player, fn tool, player ->
+      updated_tool =
+        player
+        |> find_tool(tool)
+        |> Loot.Tool.decrease_count(tool.count)
+
+      if updated_tool.count > 0 do
+        update_item(player, updated_tool)
+      else
+        delete_item(player, updated_tool)
+      end
+    end)
+  end
 
   defp add_items(%__MODULE__{} = player, items) when is_list(items) do
     Enum.reduce(items, player, fn item, player ->
@@ -609,22 +631,6 @@ defmodule Europa.Server.Player do
   end
 
   defp do_consume_supply(_player, _supply), do: {:error, %Errors.NotApplicableError{}}
-
-  defp do_craft_item(%__MODULE__{} = player, %Loot.Blueprint{} = blueprint) do
-    Enum.reduce(blueprint.tools, player, fn tool, player ->
-      updated_tool =
-        player
-        |> find_tool(tool)
-        |> Loot.Tool.decrease_count(tool.count)
-
-      if updated_tool.count > 0 do
-        update_item(player, updated_tool)
-      else
-        delete_item(player, updated_tool)
-      end
-    end)
-    |> add_item(blueprint.item)
-  end
 
   defp find_tool(%__MODULE__{} = player, %Loot.Tool{} = tool) do
     Enum.find(player.inventory, fn

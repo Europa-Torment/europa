@@ -47,6 +47,8 @@ defmodule Europa.Server.PlanetTest do
   @duo Object.transform(@du)
   @ddo Object.transform(@dd)
 
+  @dll Objects.object(:door_left) |> Object.set_transform_requirements(build_list(2, :tool))
+
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)])
 
@@ -646,6 +648,20 @@ defmodule Europa.Server.PlanetTest do
                                         ]
                                         |> PlanetLandConverter.from_matrix()
 
+  @land_player_left_close_to_locked_door [
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @pl, @dll, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                         ]
+                                         |> PlanetLandConverter.from_matrix()
+
   @land_enemy_right_close_to_npc [
                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                    [@s, @s, @en, @n, @pl, @s, @s, @s, @s, @s],
@@ -1214,72 +1230,80 @@ defmodule Europa.Server.PlanetTest do
     test "returns drink radioactive water (up)" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_water, current_coord: {4, 7})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
     end
 
     test "returns drink radioactive water (down)" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
     end
 
     test "returns drink radioactive water (left)" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
     end
 
     test "returns drink radioactive water (right)" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
+    end
+
+    test "returns danger_action confirmation when trying to drink radioactive water" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_water, current_coord: {4, 1})
+      assert {:ok, %Planet{}, {:confirmation, :danger_action}} = Planet.interact(planet, player)
     end
 
     test "opens right door" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_door, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: @land_player_left_close_to_open_door}, {:transform, sound_name}} =
+      assert {:ok, %Planet{land: @land_player_left_close_to_open_door}, {:transform, @dl}} =
                Planet.interact(planet, player)
-
-      assert sound_name == @dd.transform_sound_name
     end
 
     test "opens left door" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_door, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: @land_player_right_close_to_open_door}, {:transform, sound_name}} =
+      assert {:ok, %Planet{land: @land_player_right_close_to_open_door}, {:transform, @dr}} =
                Planet.interact(planet, player)
-
-      assert sound_name == @dd.transform_sound_name
     end
 
     test "opens bottom door" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_door, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: @land_player_down_close_to_open_door}, {:transform, sound_name}} =
+      assert {:ok, %Planet{land: @land_player_down_close_to_open_door}, {:transform, @du}} =
                Planet.interact(planet, player)
-
-      assert sound_name == @dd.transform_sound_name
     end
 
     test "opens top door" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_door, current_coord: {4, 7})
 
-      assert {:ok, %Planet{land: @land_player_up_close_to_open_door}, {:transform, sound_name}} =
+      assert {:ok, %Planet{land: @land_player_up_close_to_open_door}, {:transform, @dd}} =
                Planet.interact(planet, player)
+    end
 
-      assert sound_name == @dd.transform_sound_name
+    test "opens locked door" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_locked_door, current_coord: {4, 1})
+
+      required_tools = @dll.transform_requirements
+
+      assert {:ok, %Planet{land: @land_player_left_close_to_locked_door},
+              {:confirmation, {:required_tools, ^required_tools}}} =
+               Planet.interact(planet, player)
     end
 
     test "closes right door" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
-      assert sound_name == @dd.transform_sound_name
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
 
       test_closes_door(planet, {4 + 1, 1})
     end
@@ -1287,8 +1311,7 @@ defmodule Europa.Server.PlanetTest do
     test "closes left door" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
-      assert sound_name == @dd.transform_sound_name
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
 
       test_closes_door(planet, {4 - 1, 1})
     end
@@ -1296,8 +1319,7 @@ defmodule Europa.Server.PlanetTest do
     test "closes bottom door" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
-      assert sound_name == @dd.transform_sound_name
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
 
       test_closes_door(planet, {4, 1 + 1})
     end
@@ -1305,8 +1327,7 @@ defmodule Europa.Server.PlanetTest do
     test "closes top door" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_open_door, current_coord: {4, 7})
-      assert {:ok, planet, {:transform, sound_name}} = Planet.interact(planet, player)
-      assert sound_name == @dd.transform_sound_name
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
 
       test_closes_door(planet, {4, 7 - 1})
     end

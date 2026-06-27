@@ -129,7 +129,8 @@ defmodule Europa.Server.PlanetManager do
               | {:error, :nothing}
               | {:error, Errors.NotApplicableError.t()}
 
-  @callback interact(Planet.t(), Player.t()) :: {:ok, Planet.t(), Planet.interaction()} | {:error, :nothing}
+  @callback interact(Planet.t(), Player.t(), opts :: keyword()) ::
+              {:ok, Planet.t(), Planet.interaction()} | {:error, :nothing}
 
   @doc """
   Runs planet activities such as enemies moving and attacking. Takes current `planet` and `moves_count`.
@@ -168,7 +169,7 @@ defmodule Europa.Server.PlanetManager do
 
   def crop_land(planet), do: manager_impl().crop_land(planet)
 
-  def interact(planet, player), do: manager_impl().interact(planet, player)
+  def interact(planet, player, opts), do: manager_impl().interact(planet, player, opts)
 
   ### PRIVATE ###
 

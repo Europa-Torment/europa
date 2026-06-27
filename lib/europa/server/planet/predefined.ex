@@ -6,8 +6,10 @@ defmodule Europa.Server.Planet.Predefined do
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Enemy
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Tool
 
   alias Europa.Tools.FilesCache
   alias Europa.Tools.Types
@@ -32,6 +34,8 @@ defmodule Europa.Server.Planet.Predefined do
 
   @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
   @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
+  @locked_door_possibility fetch_config!([__MODULE__, :building, :locked_door_possibility])
+
   @npc_generate_possibility fetch_config!([Planet, :npc_generate_possibility])
 
   @type category() :: unquote(@categories |> Map.keys() |> Types.one_of())
@@ -73,10 +77,10 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:building, "!"), do: Objects.object(:wall_left_down)
   defp elem_to_tile(:building, "^"), do: Objects.object(:wall_right_up)
   defp elem_to_tile(:building, "v"), do: Objects.object(:wall_right_down)
-  defp elem_to_tile(:building, "("), do: Objects.object(:door_left)
-  defp elem_to_tile(:building, ")"), do: Objects.object(:door_right)
-  defp elem_to_tile(:building, "1"), do: Objects.object(:door_up)
-  defp elem_to_tile(:building, "2"), do: Objects.object(:door_down)
+  defp elem_to_tile(:building, "("), do: Objects.object(:door_left) |> maybe_lock_door()
+  defp elem_to_tile(:building, ")"), do: Objects.object(:door_right) |> maybe_lock_door()
+  defp elem_to_tile(:building, "1"), do: Objects.object(:door_up) |> maybe_lock_door()
+  defp elem_to_tile(:building, "2"), do: Objects.object(:door_down) |> maybe_lock_door()
 
   defp elem_to_tile(:building, "f") do
     cond do
@@ -137,6 +141,17 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:situation, "s") do
     crashed_shuttle = Loot.generate_item_box(:crashed_shuttle)
     Enum.random([crashed_shuttle, Objects.object(:fire_shuttle)])
+  end
+
+  # Helpers
+
+  defp maybe_lock_door(%Object{} = door) do
+    if m_to_n?(1, @locked_door_possibility) do
+      key = Tool.generate_key()
+      Object.set_transform_requirements(door, [key])
+    else
+      door
+    end
   end
 
   defp parse_random_file(category) do

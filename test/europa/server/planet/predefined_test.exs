@@ -5,6 +5,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
   alias Europa.Server.Planet.Predefined
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Enemy
 
@@ -39,16 +40,16 @@ defmodule Europa.Server.Planet.PredefinedTest do
             case {i, j} do
               {0, 0} -> assert e == @wall_left_up
               {0, 1} -> assert e == @wall_up
-              {0, 2} -> assert e == @door_up
+              {0, 2} -> assert_door_object(e, @door_up)
               {0, 3} -> assert e == @wall_up
               {0, 4} -> assert e == @wall_up
               {0, 5} -> assert e == @wall_right_up
-              {1, 0} -> assert e == @door_left
+              {1, 0} -> assert_door_object(e, @door_left)
               {1, 1} -> assert e in @floors || loot?(e)
               {1, 2} -> assert e == @wall_vertical_inside
               {1, 3} -> assert e in @floors || enemy?(e)
               {1, 4} -> assert e in @floors || enemy?(e) || {:npc, @floor}
-              {1, 5} -> assert e == @door_right
+              {1, 5} -> assert_door_object(e, @door_right)
               {2, 0} -> assert e == @wall_left
               {2, 1} -> assert e in @floors || loot?(e)
               {2, 2} -> assert e in @floors || loot?(e)
@@ -57,7 +58,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
               {2, 5} -> assert e == @wall_right
               {3, 0} -> assert e == @wall_left_down
               {3, 1} -> assert e == @wall_down
-              {3, 2} -> assert e == @door_down
+              {3, 2} -> assert_door_object(e, @door_down)
               {3, 3} -> assert e == @wall_down
               {3, 4} -> assert e == @wall_down
               {3, 5} -> assert e == @wall_right_down
@@ -90,6 +91,10 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
       assert is_shuttle
       assert npc_or_skip in [{:npc, nil}, :skip]
+    end
+
+    defp assert_door_object(object, expected_object) do
+      assert Object.set_transform_requirements(object, nil) == Object.set_transform_requirements(expected_object, nil)
     end
   end
 

@@ -28,4 +28,13 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
       assert Object.transform(object) == object
     end
   end
+
+  describe "set_transform_requirements/2" do
+    test "sets transform_requirements" do
+      object = build(:object, transform_requirements: nil)
+      requirements = build_list(3, :tool)
+
+      assert %Object{transform_requirements: ^requirements} = Object.set_transform_requirements(object, requirements)
+    end
+  end
 end

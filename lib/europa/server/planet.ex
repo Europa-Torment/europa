@@ -66,7 +66,11 @@ defmodule Europa.Server.Planet do
 
   @type land :: list(list(tile()))
 
-  @type interaction :: {:talk, Npc.t()} | {:drink, :radioactive_water} | {:transform, sound_name :: String.t()}
+  @type interaction ::
+          {:talk, Npc.t()}
+          | {:drink, :radioactive_water}
+          | {:confirmation, {:required_tools, list(Loot.Tool.t())} | :danger_action}
+          | {:transform, Object.t()}
 
   @ice Tiles.tile(:ice).atom_value
   @water Tiles.tile(:water).atom_value
@@ -261,11 +265,11 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
-  def interact(%__MODULE__{land: land} = planet, %Player{view_direction: view_direction} = player) do
+  def interact(%__MODULE__{land: land} = planet, %Player{view_direction: view_direction} = player, opts \\ []) do
     target_coord = target_coord(planet, view_direction)
     target_tile = get_tile(land, target_coord)
 
-    do_interact(target_tile, planet, player)
+    do_interact(target_tile, planet, player, opts)
   end
 
   @impl true
@@ -279,26 +283,34 @@ defmodule Europa.Server.Planet do
 
   ### PRIVATE ###
 
-  defp do_interact(%Npc{} = npc, planet, _player) do
+  defp do_interact(%Npc{} = npc, planet, _player, _opts) do
     {:ok, planet, {:talk, npc}}
   end
 
-  defp do_interact(@water, planet, _player) do
-    {:ok, planet, {:drink, :radioactive_water}}
+  defp do_interact(@water, planet, _player, opts) do
+    if forced_interaction?(opts) do
+      {:ok, planet, {:drink, :radioactive_water}}
+    else
+      {:ok, planet, {:confirmation, :danger_action}}
+    end
   end
 
-  defp do_interact(%Object{transforms_to_tile: tile_name} = object, planet, player) when not is_nil(tile_name) do
-    target_coord = target_coord(planet, player.view_direction)
-    transformed_tile = Object.transform(object)
+  defp do_interact(%Object{transforms_to_tile: tile_name} = object, planet, player, opts) when not is_nil(tile_name) do
+    if (object.transform_requirements && forced_interaction?(opts)) || is_nil(object.transform_requirements) do
+      target_coord = target_coord(planet, player.view_direction)
+      transformed_tile = Object.transform(object)
 
-    updated_land =
-      planet.land
-      |> change_tile(target_coord, transformed_tile)
+      updated_land =
+        planet.land
+        |> change_tile(target_coord, transformed_tile)
 
-    {:ok, struct!(planet, land: updated_land), {:transform, object.transform_sound_name}}
+      {:ok, struct!(planet, land: updated_land), {:transform, object}}
+    else
+      {:ok, planet, {:confirmation, {:required_tools, object.transform_requirements}}}
+    end
   end
 
-  defp do_interact(tile, planet, player) do
+  defp do_interact(tile, planet, player, _opts) do
     object = Map.get(@transforms, tile)
 
     if object do
@@ -310,10 +322,14 @@ defmodule Europa.Server.Planet do
         planet.land
         |> change_tile(target_coord, object)
 
-      {:ok, struct!(planet, land: updated_land), {:transform, object.transform_sound_name}}
+      {:ok, struct!(planet, land: updated_land), {:transform, object}}
     else
       {:error, :nothing}
     end
+  end
+
+  defp forced_interaction?(opts) do
+    Keyword.get(opts, :forced, false)
   end
 
   defp do_tick(%__MODULE__{} = planet, 0, actions) do
