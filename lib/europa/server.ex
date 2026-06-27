@@ -39,6 +39,7 @@ defmodule Europa.Server do
 
   @disaster_year fetch_config!([:game_params, :disaster_year])
   @craft_moves_count fetch_config!([:game_params, :craft_moves_count])
+  @aim_mode_moves_penalty fetch_config!([:game_params, :player, :aim_mode_moves_penalty])
 
   typedstruct enforce: true do
     field :game_uuid, Ecto.UUID.t()
@@ -207,6 +208,11 @@ defmodule Europa.Server do
   @spec interact(pid(), opts :: keyword()) :: {:ok, Planet.interaction()} | {:error, :nothing}
   def interact(server, opts \\ []) do
     GenServer.call(server, {:interact, opts})
+  end
+
+  @spec toggle_aim_mode(pid()) :: :ok | {:error, :no_weapon}
+  def toggle_aim_mode(server) do
+    GenServer.call(server, :toggle_aim_mode)
   end
 
   ### CALLBACKS ###
@@ -393,10 +399,30 @@ defmodule Europa.Server do
     end
   end
 
+  def handle_call(:toggle_aim_mode, caller_pid, state) do
+    case PlayerManager.toggle_aim_mode(state.player) do
+      {:ok, player} ->
+        moves_count = 1
+        aim_mode_switched_message = aim_mode_switched_message(moves_count)
+
+        updated_chat =
+          state.chat
+          |> Chat.add_message(aim_mode_switched_message)
+
+        {:reply, :ok, struct!(state, player: player, chat: updated_chat), {:continue, {:tick, moves_count, caller_pid}}}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
   def handle_call(:shoot, {caller_pid, _}, state) do
     case PlanetManager.shoot(state.planet, state.player) do
       {:ok, {updated_planet, updated_player, damaged_enemies, moves_count}} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
+        moves_count =
+          maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
+          |> maybe_increase_moves_count_with_aim_mode(updated_player)
+
         shoot_message = shoot_message(moves_count)
 
         updated_chat =
@@ -415,7 +441,10 @@ defmodule Europa.Server do
          ), {:continue, {:tick, moves_count, caller_pid}}}
 
       {:error, :miss, updated_player, moves_count} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
+        moves_count =
+          maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
+          |> maybe_increase_moves_count_with_aim_mode(updated_player)
+
         shoot_message = shoot_message(moves_count)
         miss_message = miss_message()
 
@@ -764,6 +793,7 @@ defmodule Europa.Server do
           moves_count
           |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
           |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
+          |> maybe_increase_moves_count_with_aim_mode(state.player)
 
         killed_enemies_count = killed_enemies_count(damaged_enemies)
 
@@ -797,6 +827,12 @@ defmodule Europa.Server do
       end
     end
   end
+
+  defp maybe_increase_moves_count_with_aim_mode(moves_count, %Player{aim_mode?: true}) do
+    moves_count + @aim_mode_moves_penalty
+  end
+
+  defp maybe_increase_moves_count_with_aim_mode(moves_count, _player), do: moves_count
 
   defp maybe_increase_moves_count_with_inventory_weight(moves_count, weight_ratio) do
     cond do
@@ -997,6 +1033,11 @@ defmodule Europa.Server do
         "You fired, it took #{moves_count} step(s)"
       )
 
+    Chat.Message.new(msg, :regular)
+  end
+
+  defp aim_mode_switched_message(moves_count) do
+    msg = gettext("You have changed the aiming mode, it took %{count} step(s)", count: moves_count)
     Chat.Message.new(msg, :regular)
   end
 

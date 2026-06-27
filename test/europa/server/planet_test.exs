@@ -21,7 +21,7 @@ defmodule Europa.Server.PlanetTest do
 
   @year 100
 
-  @max_accuracy fetch_config!([:weapons, :max_accuracy])
+  @max_accuracy fetch_config!([:weapons, :max_accuracy]) + 10
   @burst_bullets_per_shot fetch_config!([:weapons, :burst_bullets_per_shot])
 
   @predefined_cluster_update_distance fetch_config!([Planet, :predefined_cluster_update_distance])

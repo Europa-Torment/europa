@@ -24,6 +24,7 @@ defmodule Europa.Server.Player do
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
   @max_radiation fetch_config!([:game_params, :player, :max_radiation])
+  @aim_accuracy fetch_config!([:game_params, :player, :aim_accuracy])
 
   @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
 
@@ -49,6 +50,7 @@ defmodule Europa.Server.Player do
     field :helmet_uuid, Loot.uuid()
     field :suit_uuid, Loot.uuid()
     field :boots_uuid, Loot.uuid()
+    field :aim_mode?, boolean(), default: false
   end
 
   @impl true
@@ -142,6 +144,22 @@ defmodule Europa.Server.Player do
   @impl true
   def increase_thirst(%__MODULE__{} = player, thirst_units) when is_integer(thirst_units) do
     increase_attrs(player, %{thirst: thirst_units})
+  end
+
+  @impl true
+  def toggle_aim_mode(%__MODULE__{weapon_uuid: nil}) do
+    {:error, :no_weapon}
+  end
+
+  def toggle_aim_mode(%__MODULE__{} = player) do
+    accuracy =
+      if player.aim_mode? do
+        player.accuracy - @aim_accuracy
+      else
+        player.accuracy + @aim_accuracy
+      end
+
+    {:ok, struct!(player, aim_mode?: !player.aim_mode?, accuracy: accuracy)}
   end
 
   @impl true

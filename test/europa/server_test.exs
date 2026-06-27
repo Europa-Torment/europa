@@ -694,6 +694,41 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "toggle_aim_mode" do
+    test "handles success response", %{server: server} do
+      moves_count = 1
+
+      PlayerManagerMock
+      |> expect(:toggle_aim_mode, fn %Player{} = player ->
+        {:ok, player}
+      end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      PlanetManagerMock
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      assert :ok = Server.toggle_aim_mode(server)
+      :timer.sleep(100)
+    end
+
+    test "handles no_weapon response", %{server: server} do
+      error = {:error, :no_weapon}
+
+      PlayerManagerMock
+      |> expect(:toggle_aim_mode, fn %Player{} ->
+        error
+      end)
+
+      assert Server.toggle_aim_mode(server) == error
+    end
+  end
+
   describe "unequip_item/2" do
     test "handles success response", %{server: server} do
       item_uuid = Ecto.UUID.generate()

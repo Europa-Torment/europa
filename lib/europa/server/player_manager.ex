@@ -201,6 +201,11 @@ defmodule Europa.Server.PlayerManager do
   """
   @callback increase_thirst(Player.t(), thirst_units :: integer()) :: Player.t()
 
+  @doc """
+  Switches aim mode.
+  """
+  @callback toggle_aim_mode(Player.t()) :: {:ok, Player.t()} | {:error, :no_weapon}
+
   @callback tick(Player.t(), Server.move_cost()) :: {:ok, Player.t(), list(Action.t())}
 
   ### Implementation callers ###
@@ -268,6 +273,8 @@ defmodule Europa.Server.PlayerManager do
   def increase_thirst(player, thirst_units), do: manager_impl().increase_thirst(player, thirst_units)
 
   def increase_radiation(player, radiation_units), do: manager_impl().increase_radiation(player, radiation_units)
+
+  def toggle_aim_mode(player), do: manager_impl().toggle_aim_mode(player)
 
   def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
 

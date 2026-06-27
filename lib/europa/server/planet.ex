@@ -522,7 +522,16 @@ defmodule Europa.Server.Planet do
 
     %{planet: updated_planet, shooted_enemies: shooted_enemies} =
       Enum.reduce(enemies_coords, %{shooted_enemies: [], planet: planet}, fn coord, acc ->
-        if player.accuracy >= @max_accuracy || m_to_n?(player.accuracy, @max_accuracy) do
+        distance_to_target = coords_distance(planet.current_coord, coord)
+
+        accuracy =
+          if distance_to_target == 1 do
+            player.accuracy + 2
+          else
+            max(player.accuracy - distance_to_target, 1)
+          end
+
+        if accuracy >= @max_accuracy || m_to_n?(accuracy, @max_accuracy) do
           {enemy, updated_land} = shoot_enemy(acc.planet.land, coord, damage)
 
           acc

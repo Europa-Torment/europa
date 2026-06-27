@@ -33,7 +33,7 @@ defmodule EuropaWeb.GameLive do
   @control_hints_keys fetch_config!([:control_bindings, :control_hints])
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
-  @scope_keys fetch_config!([:control_bindings, :scope])
+  @aim_keys fetch_config!([:control_bindings, :aim])
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -87,8 +87,8 @@ defmodule EuropaWeb.GameLive do
           game_over: false,
           game_page: true,
           dialog: nil,
-          show_scope: false,
-          scope: get_scope(visible_planet, player, weapon),
+          show_aim: false,
+          aim: get_aim(visible_planet, player, weapon),
           disassemble_item_uuid: nil,
           disassemble_items: nil,
           blueprints: nil,
@@ -143,7 +143,7 @@ defmodule EuropaWeb.GameLive do
             chat: Server.get_chat(socket.assigns.server),
             player_stats: get_player_stats(player),
             current_time: get_current_time(socket.assigns.server),
-            scope: get_scope(visible_planet, player, weapon)
+            aim: get_aim(visible_planet, player, weapon)
           )
           |> step_sound(player.stand_on)
           |> damaged_sound(player_before.health, player.health)
@@ -165,7 +165,7 @@ defmodule EuropaWeb.GameLive do
             chat: Server.get_chat(socket.assigns.server),
             player_stats: get_player_stats(player),
             current_time: get_current_time(socket.assigns.server),
-            scope: get_scope(visible_planet, player, weapon)
+            aim: get_aim(visible_planet, player, weapon)
           )
           |> punch_sound(status)
           |> damaged_sound(player_before.health, player.health)
@@ -184,7 +184,7 @@ defmodule EuropaWeb.GameLive do
            player: player,
            chat: Server.get_chat(socket.assigns.server),
            current_time: get_current_time(socket.assigns.server),
-           scope: get_scope(visible_planet, player, weapon)
+           aim: get_aim(visible_planet, player, weapon)
          )}
     end
   end
@@ -259,8 +259,27 @@ defmodule EuropaWeb.GameLive do
     reload_weapon(socket)
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @scope_keys do
-    {:noreply, assign(socket, :show_scope, !socket.assigns.show_scope)}
+  def handle_event("key_pressed", %{"key" => key}, socket) when key in @aim_keys do
+    case Server.toggle_aim_mode(socket.assigns.server) do
+      :ok ->
+        player = Server.get_player(socket.assigns.server)
+
+        socket =
+          socket
+          |> assign(
+            show_aim: !socket.assigns.show_aim,
+            player: player,
+            player_stats: get_player_stats(player),
+            visible_planet: Server.get_visible_planet(socket.assigns.server),
+            chat: Server.get_chat(socket.assigns.server)
+          )
+          |> play_sound("click")
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   def handle_event("key_pressed", _params, socket) do
@@ -373,7 +392,7 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            scope: get_scope(visible_planet, updated_player, weapon)
+            aim: get_aim(visible_planet, updated_player, weapon)
           )
           |> play_sound("equip")
 
@@ -406,8 +425,8 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            show_scope: socket.assigns.show_scope && not is_nil(weapon),
-            scope: get_scope(visible_planet, updated_player, weapon)
+            show_aim: socket.assigns.show_aim && not is_nil(weapon),
+            aim: get_aim(visible_planet, updated_player, weapon)
           )
           |> play_sound("unequip")
 
@@ -453,8 +472,8 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            show_scope: socket.assigns.show_scope && not is_nil(weapon),
-            scope: get_scope(visible_planet, updated_player, weapon),
+            show_aim: socket.assigns.show_aim && not is_nil(weapon),
+            aim: get_aim(visible_planet, updated_player, weapon),
             disassemble_item_uuid: nil,
             disassemble_items: nil,
             chat: Server.get_chat(socket.assigns.server)
@@ -491,8 +510,8 @@ defmodule EuropaWeb.GameLive do
             ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
             player_stats: get_player_stats(updated_player),
-            show_scope: socket.assigns.show_scope && not is_nil(weapon),
-            scope: get_scope(visible_planet, updated_player, weapon),
+            show_aim: socket.assigns.show_aim && not is_nil(weapon),
+            aim: get_aim(visible_planet, updated_player, weapon),
             item_to_drop: nil,
             item_drop_count: nil
           )
@@ -1072,9 +1091,9 @@ defmodule EuropaWeb.GameLive do
     %{year: year, day: day, time: time}
   end
 
-  defp get_scope(_, _, nil), do: []
+  defp get_aim(_, _, nil), do: []
 
-  defp get_scope(visible_planet, player, %Weapon{shooting_distance: shooting_distance} = weapon) do
+  defp get_aim(visible_planet, player, %Weapon{shooting_distance: shooting_distance} = weapon) do
     planet_view_distance = div(@view_distance, 2)
     distance = min(shooting_distance, planet_view_distance)
 
@@ -1094,10 +1113,10 @@ defmodule EuropaWeb.GameLive do
       :left -> [{{player_y, player_x}, {player_y, player_x - distance}}]
       :right -> [{{player_y, player_x}, {player_y, player_x + distance}}]
     end
-    |> maybe_add_shotgun_scopes(weapon, player.view_direction)
+    |> maybe_add_shotgun_aims(weapon, player.view_direction)
   end
 
-  defp maybe_add_shotgun_scopes(
+  defp maybe_add_shotgun_aims(
          [{{from_y, from_x}, {to_y, to_x}}],
          %Weapon{shooting_type: :shot} = weapon,
          view_direction
@@ -1112,7 +1131,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  defp maybe_add_shotgun_scopes(scopes, _, _), do: scopes
+  defp maybe_add_shotgun_aims(aims, _, _), do: aims
 
   defp move_key_to_direction(key) when key in @move_up_keys, do: :up
   defp move_key_to_direction(key) when key in @move_down_keys, do: :down

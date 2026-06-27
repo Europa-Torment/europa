@@ -232,7 +232,8 @@ defmodule Europa.Support.Factory do
       hunger: 0,
       thirst: 0,
       radiation: 0,
-      stand_on: Tiles.tile(:snow).atom_value
+      stand_on: Tiles.tile(:snow).atom_value,
+      aim_mode?: false
     }
   end
 

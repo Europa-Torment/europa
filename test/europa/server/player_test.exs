@@ -19,6 +19,7 @@ defmodule Europa.Server.PlayerTest do
 
   @max_radiation fetch_config!([:game_params, :player, :max_radiation])
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
+  @aim_accuracy fetch_config!([:game_params, :player, :aim_accuracy])
 
   describe "new/0" do
     setup do
@@ -645,6 +646,23 @@ defmodule Europa.Server.PlayerTest do
     test "no negative radiation", %{player: player} do
       radiation = -100_000
       assert %Player{radiation: 0} = Player.increase_radiation(player, radiation)
+    end
+  end
+
+  describe "toggle_aim_mode/1" do
+    test "toggles aim mode" do
+      weapon = build(:weapon)
+      player = build(:player, aim_mode?: false, inventory: [weapon], weapon_uuid: weapon.uuid)
+      accuracy = player.accuracy
+      aim_accuracy = accuracy + @aim_accuracy
+
+      assert {:ok, %Player{aim_mode?: true, accuracy: ^aim_accuracy} = updated_player} = Player.toggle_aim_mode(player)
+      assert {:ok, %Player{aim_mode?: false, accuracy: ^accuracy}} = Player.toggle_aim_mode(updated_player)
+    end
+
+    test "returns no_weapon error when weapon not equiped" do
+      player = build(:player, weapon_uuid: nil)
+      assert {:error, :no_weapon} = Player.toggle_aim_mode(player)
     end
   end
 

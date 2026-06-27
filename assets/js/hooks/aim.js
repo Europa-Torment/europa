@@ -1,8 +1,8 @@
 export const hooks = {
-  Scope: {
+  Aim: {
       mounted() {
-        this.scopes = JSON.parse(this.el.dataset.scopes || '[]');
-        this.show = this.el.dataset.show_scope == "true";
+        this.aims = JSON.parse(this.el.dataset.aims || '[]');
+        this.show = this.el.dataset.show_aim == "true";
         this.svg = null;
         this.drawScheduled = false;
 
@@ -19,12 +19,12 @@ export const hooks = {
     },
 
     updated() {
-        const newShow = this.el.dataset.show_scope == "true";
-        const newScopes = JSON.parse(this.el.dataset.scopes || '[]');
+        const newShow = this.el.dataset.show_aim == "true";
+        const newAims = JSON.parse(this.el.dataset.aims || '[]');
 
-        if (newShow !== this.show || JSON.stringify(newScopes) !== JSON.stringify(this.scopes)) {
+        if (newShow !== this.show || JSON.stringify(newAims) !== JSON.stringify(this.aims)) {
             this.show = newShow;
-            this.scopes = newScopes;
+            this.aims = newAims;
             this.updateVisibility();
         } else if (this.show) {
             this.scheduleDraw();
@@ -48,7 +48,7 @@ export const hooks = {
     },
 
     drawAll() {
-        if (!this.show || !this.scopes.length) return;
+        if (!this.show || !this.aims.length) return;
 
         if (!this.svg) {
             this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -83,7 +83,7 @@ export const hooks = {
         defs.appendChild(marker);
         this.svg.appendChild(defs);
 
-        this.scopes.forEach((pair, idx) => {
+        this.aims.forEach((pair, idx) => {
             const fromEl = document.querySelector(pair.from);
             const toEl = document.querySelector(pair.to);
             if (!fromEl || !toEl) return;

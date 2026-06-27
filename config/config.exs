@@ -100,7 +100,9 @@ config :europa, :game_params,
     max_thirst: 100,
     max_hunger: 100,
     max_radiation: 100,
-    low_health_ratio: 0.3
+    low_health_ratio: 0.3,
+    aim_accuracy: 5,
+    aim_mode_moves_penalty: 1
   ]
 
 config :europa, :control_bindings,
@@ -114,7 +116,7 @@ config :europa, :control_bindings,
   control_hints: ["H", "h"],
   shoot: [" ", "Space"],
   reload: ["R", "r"],
-  scope: ["V", "v"],
+  aim: ["V", "v"],
   close: ["Escape"]
 
 # Configure esbuild (the version is required)

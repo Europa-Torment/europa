@@ -35,7 +35,7 @@ defmodule EuropaWeb.GameCompotents do
   @control_hints_keys fetch_config!([:control_bindings, :control_hints])
   @close_keys fetch_config!([:control_bindings, :close])
   @shoot_keys fetch_config!([:control_bindings, :shoot])
-  @scope_keys fetch_config!([:control_bindings, :scope])
+  @aim_keys fetch_config!([:control_bindings, :aim])
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -65,12 +65,12 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def game_field(assigns) do
-    formatted_scope =
-      Enum.map(assigns.scope, fn {{from_y, from_x}, {to_y, to_x}} ->
+    formatted_aim =
+      Enum.map(assigns.aim, fn {{from_y, from_x}, {to_y, to_x}} ->
         %{from: "#tile_#{from_y}_#{from_x}", to: "#tile_#{to_y}_#{to_x}"}
       end)
 
-    assigns = assign(assigns, scope: formatted_scope)
+    assigns = assign(assigns, aim: formatted_aim)
 
     ~H"""
     <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
@@ -91,10 +91,10 @@ defmodule EuropaWeb.GameCompotents do
       <% end %>
     </div>
     <div
-      id="scope-data"
-      phx-hook="Scope"
-      data-show_scope={"#{@show_scope}"}
-      data-scopes={Jason.encode!(@scope)}
+      id="aim-data"
+      phx-hook="Aim"
+      data-show_aim={"#{@show_aim}"}
+      data-aims={Jason.encode!(@aim)}
       data-stroke-color="black"
       data-stroke-width="2"
       data-marker-color="darkred"
@@ -1004,7 +1004,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Control hints"), @control_hints_keys),
       control_hint(gettext("Shoot"), @shoot_keys),
       control_hint(gettext("Reload weapon"), @reload_keys),
-      control_hint(gettext("Show/hide scope"), @scope_keys),
+      control_hint(gettext("Aim mode"), @aim_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
   end
