@@ -1027,12 +1027,7 @@ defmodule Europa.Server do
   end
 
   defp shoot_message(moves_count) do
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You fired, it took #{moves_count} step(s)"
-      )
-
+    msg = gettext("You fired, it took %{count} step(s)", count: moves_count)
     Chat.Message.new(msg, :regular)
   end
 
