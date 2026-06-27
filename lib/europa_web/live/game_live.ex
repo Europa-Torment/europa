@@ -271,7 +271,8 @@ defmodule EuropaWeb.GameLive do
             player: player,
             player_stats: get_player_stats(player),
             visible_planet: Server.get_visible_planet(socket.assigns.server),
-            chat: Server.get_chat(socket.assigns.server)
+            chat: Server.get_chat(socket.assigns.server),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound("click")
 
@@ -476,7 +477,8 @@ defmodule EuropaWeb.GameLive do
             aim: get_aim(visible_planet, updated_player, weapon),
             disassemble_item_uuid: nil,
             disassemble_items: nil,
-            chat: Server.get_chat(socket.assigns.server)
+            chat: Server.get_chat(socket.assigns.server),
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound("assemble")
           |> damaged_sound(player_before.health, updated_player.health)
@@ -948,7 +950,8 @@ defmodule EuropaWeb.GameLive do
             item_box: nil,
             player: player,
             player_stats: get_player_stats(player),
-            interaction_confirmation: nil
+            interaction_confirmation: nil,
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound("drink")
 
@@ -967,7 +970,8 @@ defmodule EuropaWeb.GameLive do
             item_box: nil,
             player: player,
             player_stats: get_player_stats(player),
-            interaction_confirmation: nil
+            interaction_confirmation: nil,
+            current_time: get_current_time(socket.assigns.server)
           )
           |> play_sound(sound_name)
 
