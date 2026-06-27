@@ -30,8 +30,8 @@ config :europa, Europa.Server.PlayerManager, implementation: Europa.Server.Playe
 config :europa, Europa.Server,
   finish_game_on_server_exit: true,
   max_efficiency: 50,
-  # 20 minutes,
-  inactivity_timeout_ms: 20 * 60 * 1000
+  # 5 hours,
+  inactivity_timeout_ms: 5 * 60 * 60 * 1000
 
 config :europa, Europa.Server.Planet,
   view_distance: 16,
