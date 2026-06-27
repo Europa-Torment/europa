@@ -364,34 +364,38 @@ defmodule EuropaWeb.GameCompotents do
             <ul class="list-disc list-inside space-y-2 text-sm">
               <%= for item <- @inventory do %>
                 <div class="group relative">
-                  <li
-                    id={"loot_item_#{item.uuid}"}
-                    phx-hook="Tooltip"
-                    data-tooltip={item_tooltip(item, @player)}
-                  >
-                    {Item.composed_name(item)}
+                  <li>
+                    <span
+                      id={"loot_item_#{item.uuid}"}
+                      phx-hook="Tooltip"
+                      data-tooltip={item_tooltip(item, @player)}
+                    >
+                      {Item.composed_name(item)}
+                    </span>
                     <.item_quick_action item={item} />
                     <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                       <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
                         <%= if weapon?(item) && item.rounds_loaded < item.magazine_size do %>
-                          <li phx-click="reload_weapon" phx-value-uuid={"#{item.uuid}"}>
+                          <li phx-click="reload_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Reload")} <.moves_count moves_count={item.reload_cost} /></a>
                           </li>
                         <% end %>
                         <%= if weapon?(item) && item.rounds_loaded > 0 do %>
-                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"}>
+                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Unload")} <.moves_count moves_count={item.reload_cost} /></a>
                           </li>
                         <% end %>
                         <%= if Loot.Item.disassemblable?(item) do %>
-                          <li phx-click="disassemble_item" phx-value-uuid={"#{item.uuid}"}>
+                          <li phx-click="disassemble_item" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
                           </li>
                         <% end %>
-                        <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"}><a>{gettext("Drop")}</a></li>
+                        <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
+                          <a>{gettext("Drop")}</a>
+                        </li>
                         <%= if Loot.Item.stackable?(item) do %>
-                          <li phx-click="open_item_drop_menu" phx-value-uuid={"#{item.uuid}"}>
+                          <li phx-click="open_item_drop_menu" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Drop partly")}</a>
                           </li>
                         <% end %>
@@ -424,19 +428,21 @@ defmodule EuropaWeb.GameCompotents do
             <ul class="list-disc list-inside space-y-2 text-sm">
               <%= for item <- @item_box.items do %>
                 <div class="group relative">
-                  <li
-                    id={"loot_item_#{item.uuid}"}
-                    phx-hook="Tooltip"
-                    data-tooltip={item_tooltip(item, @player)}
-                  >
-                    <.link phx-click="take_item" phx-value-uuid={"#{item.uuid}"}>
+                  <li>
+                    <.link
+                      phx-click="take_item"
+                      phx-value-uuid={"#{item.uuid}"}
+                      id={"loot_item_#{item.uuid}"}
+                      phx-hook="Tooltip"
+                      data-tooltip={item_tooltip(item, @player)}
+                    >
                       {Item.composed_name(item)}
                     </.link>
                     <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                       <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                         <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
                         <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
-                          <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"}>
+                          <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Unload")}</a>
                           </li>
                         </ul>
@@ -1040,6 +1046,10 @@ defmodule EuropaWeb.GameCompotents do
     else
       attrs
     end
+  end
+
+  defp dropdown_attrs do
+    [onclick: "document.activeElement.blur()"]
   end
 
   defp open_inventory_click do
