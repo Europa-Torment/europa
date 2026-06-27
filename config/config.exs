@@ -50,7 +50,7 @@ config :europa, Europa.Server.Planet.Predefined,
   building: [
     enemy_generate_possibility: 100,
     loot_generate_possibility: 3,
-    locked_door_possibility: 1
+    locked_door_possibility: 10
   ]
 
 config :europa, Europa.Games,

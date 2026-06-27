@@ -62,6 +62,6 @@
         },
         "stackable": true,
         "weight": 0.01, 
-        "random_weight": 3.0
+        "random_weight": 1.0
     }
 ]
