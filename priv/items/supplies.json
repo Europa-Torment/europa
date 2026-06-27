@@ -185,7 +185,7 @@
             "thirst": -30
         },
         "weight": 0.3,
-        "random_weight": 0.05
+        "random_weight": 0.09
     },
     {
         "name": "Stroganina",
@@ -199,6 +199,6 @@
             "hunger": -40
         },
         "weight": 0.25,
-        "random_weight": 0.08
+        "random_weight": 0.1
     }
 ]

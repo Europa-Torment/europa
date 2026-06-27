@@ -24,28 +24,28 @@
         "description": "Powerful buckshot shotgun shells, perfect for exploring the insides of monsters.",
         "count": {"from": 2, "to": 5}, 
         "weight": 0.1, 
-        "random_weight": 0.4
+        "random_weight": 0.6
     },
     {
         "caliber": "5.56mm", 
         "description": "Automatic rifle cartridges. The rebels' loyal allies from the SSB.",
         "count": {"from": 1, "to": 10}, 
         "weight": 0.1, 
-        "random_weight": 0.2
+        "random_weight": 0.4
     },
     {
         "caliber": ".50 BMG",
         "description": "Heavy sniper rounds. Incredibly rare. Could any living creature survive such a shot?",
         "count": {"from": 1, "to": 5}, 
         "weight": 0.4, 
-        "random_weight": 0.1
+        "random_weight": 0.4
     },
     {
         "caliber": "neutron cartridges", 
         "description": "A development by European scientists, designed to split atoms in laboratories. An extremely powerful and dangerous tool. Difficult times can weaponize anything...",
         "count": {"from": 1, "to": 5}, 
         "weight": 0.5, 
-        "random_weight": 0.09
+        "random_weight": 0.4
     },
     {
         "caliber": "hydrogen battery", 
