@@ -53,7 +53,10 @@ config :europa, Europa.Server.Planet.Predefined,
     locked_door_possibility: 1
   ]
 
-config :europa, Europa.Games, leaders_limit: 50
+config :europa, Europa.Games,
+  leaders_limit: 50,
+  active_games_per_user_limit: 3
+
 # 5 minutes
 config :europa, Europa.Games.LeadersCache, ttl_ms: 5 * 60 * 1000
 

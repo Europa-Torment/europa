@@ -24,13 +24,14 @@ defmodule Europa.Games do
   @default_leaders_category :days
 
   @leaders_limit fetch_config!([__MODULE__, :leaders_limit])
+  @active_games_per_user_limit fetch_config!([__MODULE__, :active_games_per_user_limit])
 
   @type leaders_category :: unquote(Types.one_of(Map.keys(Enum.into(@allowed_leaders_categories, %{}))))
   @type leaders :: {leaders_category(), list({{username :: String.t(), result :: integer()}, index :: pos_integer()})}
 
-  @spec get_recent_for_user(Users.id()) :: list(Game.t())
-  def get_recent_for_user(user_id) when is_integer(user_id) do
-    from(g in Game, where: g.user_id == ^user_id, order_by: [desc: g.id], limit: 30)
+  @spec get_active_for_user(Users.id()) :: list(Game.t())
+  def get_active_for_user(user_id) when is_integer(user_id) do
+    from(g in Game, where: g.user_id == ^user_id and g.state == :active, order_by: [desc: g.id])
     |> Repo.all()
   end
 
@@ -45,13 +46,18 @@ defmodule Europa.Games do
     end
   end
 
-  @spec create(Users.id()) :: {:ok, Game.t()} | {:error, Ecto.Changeset.t()}
+  @spec create(Users.id()) ::
+          {:ok, Game.t()}
+          | {:error, Ecto.Changeset.t()}
+          | {:error, {:active_games_limit_reached, active_games_count :: non_neg_integer()}}
   def create(user_id) when is_integer(user_id) do
-    user_id
-    |> build_create_params()
-    |> Game.create_changeset()
-    |> Repo.insert()
-    |> start_server()
+    with :ok <- check_active_games_limit(user_id) do
+      user_id
+      |> build_create_params()
+      |> Game.create_changeset()
+      |> Repo.insert()
+      |> start_server()
+    end
   end
 
   @spec finish_game(Ecto.UUID.t(), Game.finish_reason()) ::
@@ -62,6 +68,14 @@ defmodule Europa.Games do
       |> Game.finish_changeset(%{finish_reason: reason})
       |> Repo.update()
     end
+  end
+
+  @spec finish_active_games() :: :ok
+  def finish_active_games do
+    Game
+    |> where(state: :active)
+    |> Repo.all()
+    |> Enum.each(fn game -> finish_game(game.uuid, :server_error) end)
   end
 
   @spec update_stats(Ecto.UUID.t(), params :: map()) ::
@@ -166,6 +180,17 @@ defmodule Europa.Games do
       limit: @leaders_limit
     )
     |> Repo.all()
+  end
+
+  defp check_active_games_limit(user_id) when is_integer(user_id) do
+    active_games_count =
+      from(g in Game, where: g.user_id == ^user_id and g.state == :active, select: count(g.id)) |> Repo.one()
+
+    if active_games_count < @active_games_per_user_limit do
+      :ok
+    else
+      {:error, {:active_games_limit_reached, @active_games_per_user_limit}}
+    end
   end
 
   defp build_create_params(user_id) do

@@ -43,7 +43,10 @@ config :europa, Europa.Server.Planet,
 
 config :europa, Europa.Server, finish_game_on_server_exit: false
 
-config :europa, Europa.Games, leaders_limit: 5
+config :europa, Europa.Games,
+  leaders_limit: 5,
+  active_games_per_user_limit: 1
+
 config :europa, Europa.Games.LeadersCache, ttl_ms: 100
 
 # Print only warnings and errors during test

@@ -6,6 +6,7 @@ defmodule Europa.Application do
   use Application
 
   alias Europa.Tools.FilesCache
+  alias Europa.Games
 
   @impl true
   def start(_type, _args) do
@@ -26,7 +27,12 @@ defmodule Europa.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Europa.Supervisor]
-    Supervisor.start_link(children, opts)
+
+    with {:ok, pid} <- Supervisor.start_link(children, opts) do
+      # Stopping games stuck in active mode
+      Games.finish_active_games()
+      {:ok, pid}
+    end
   end
 
   # Tell Phoenix to update the endpoint configuration

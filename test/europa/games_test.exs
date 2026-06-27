@@ -11,6 +11,7 @@ defmodule Europa.GamesTest do
   import Europa.Tools.Conf
 
   @leaders_limit fetch_config!([Games, :leaders_limit])
+  @active_games_per_user_limit fetch_config!([Games, :active_games_per_user_limit])
 
   setup :verify_on_exit!
 
@@ -19,12 +20,14 @@ defmodule Europa.GamesTest do
     {:ok, user: user}
   end
 
-  describe "get_recent_for_user/1" do
-    test "returns all user games", %{user: user} do
+  describe "get_active_for_user/1" do
+    test "returns all user active games", %{user: user} do
       insert_list(20, :game)
 
-      expected_games = insert_list(10, :game, user: user)
-      games = Games.get_recent_for_user(user.id)
+      expected_games = insert_list(10, :game, user: user, state: :active)
+      insert_list(2, :game, user: user, state: :finished)
+
+      games = Games.get_active_for_user(user.id)
 
       assert Enum.count(games) == Enum.count(expected_games)
 
@@ -72,6 +75,11 @@ defmodule Europa.GamesTest do
 
       GenServer.stop(server_pid, :normal)
     end
+
+    test "returns error when too many active games for user", %{user: user} do
+      insert_list(@active_games_per_user_limit, :game, state: :active, user: user)
+      assert {:error, {:active_games_limit_reached, @active_games_per_user_limit}} = Games.create(user.id)
+    end
   end
 
   describe "finish_game/2" do
@@ -90,6 +98,17 @@ defmodule Europa.GamesTest do
 
     test "returns error if game not found" do
       assert Games.finish_game("fake", :died) == {:error, :not_found}
+    end
+  end
+
+  describe "finish_active_games/0" do
+    test "finishes all active games" do
+      games = insert_list(10, :game, state: :active)
+      assert Games.finish_active_games() == :ok
+
+      Enum.each(games, fn game ->
+        assert {:ok, %Game{state: :finished}} = Games.get_by_uuid(game.uuid)
+      end)
     end
   end
 
@@ -146,7 +165,7 @@ defmodule Europa.GamesTest do
   defp allow_server_mock(mock_module, user_id) do
     mock_module
     |> allow(self(), fn ->
-      case Games.get_recent_for_user(user_id) do
+      case Games.get_active_for_user(user_id) do
         [] ->
           self()
 

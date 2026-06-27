@@ -7,6 +7,10 @@ defmodule EuropaWeb.GameControllerTest do
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
 
+  import Europa.Tools.Conf
+
+  @active_games_per_user_limit fetch_config!([Games, :active_games_per_user_limit])
+
   setup :verify_on_exit!
 
   setup do
@@ -54,10 +58,17 @@ defmodule EuropaWeb.GameControllerTest do
       |> expect(:player_initial_stand_on_tile, fn _planet -> tile end)
 
       conn = get(conn, path)
-      game = Games.get_recent_for_user(user.id) |> List.first()
+      game = Games.get_active_for_user(user.id) |> List.first()
       assert redirected_to(conn) == ~p"/games/#{game.uuid}"
 
       stop_server(game)
+    end
+
+    test "redirects to games page when too many active games for user", %{conn: conn, path: path, user: user} do
+      insert_list(@active_games_per_user_limit, :game, user: user)
+      conn = get(conn, path)
+
+      assert redirected_to(conn) == ~p"/games"
     end
 
     test "redirects if unauthorized", %{conn_without_auth: conn, path: path} do
@@ -136,7 +147,7 @@ defmodule EuropaWeb.GameControllerTest do
   defp allow_server_mock(mock_module, user_id) do
     mock_module
     |> allow(self(), fn ->
-      case Games.get_recent_for_user(user_id) do
+      case Games.get_active_for_user(user_id) do
         [] ->
           self()
 

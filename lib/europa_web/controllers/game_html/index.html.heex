@@ -1,3 +1,4 @@
+<Layouts.flash_group flash={@flash} />
 <.background />
 
 <%= if Enum.empty?(@games) do %>
@@ -24,7 +25,7 @@
     {gettext("New game")}
   </.button>
   <ul class="list bg-base-200 rounded-box shadow-md font-display tracking-wide">
-    <li class="p-4 pb-2 text-sm opacity-60 tracking-wide">{gettext("Recent games")}</li>
+    <li class="p-4 pb-2 text-sm opacity-60 tracking-wide">{gettext("Active game sessions")}</li>
 
     <%= for game <- @games do %>
       <li class="list-row">
@@ -32,8 +33,6 @@
         <div class="list-col-grow">
           <%= if game.state == :active do %>
             <div><.link navigate={~p"/games/#{game.uuid}"}>{gettext("Continue game")} #{game.id}</.link></div>
-          <% else %>
-            <div>{gettext("Game over")}</div>
           <% end %>
         </div>
       </li>
