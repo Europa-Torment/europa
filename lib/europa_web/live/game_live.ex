@@ -83,7 +83,7 @@ defmodule EuropaWeb.GameLive do
           show_control_hints: false,
           game_started: false,
           item_to_drop: nil,
-          item_drop_count: 1,
+          item_drop_count: nil,
           game_over: false,
           game_page: true,
           dialog: nil,
