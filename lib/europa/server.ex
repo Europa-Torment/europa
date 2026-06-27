@@ -288,17 +288,17 @@ defmodule Europa.Server do
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do
-    if PlayerManager.weight_ratio(state.player) >= 1.5 do
-      message = overloaded_message()
+    cond do
+      direction != state.player.view_direction ->
+        change_view_direction(direction, state, caller_pid)
 
-      updated_player =
-        state.player
-        |> PlayerManager.change_view_direction(direction)
+      PlayerManager.weight_ratio(state.player) >= 1.5 ->
+        message = overloaded_message()
 
-      {:reply, :stay, struct!(state, player: updated_player, chat: Chat.add_message(state.chat, message)),
-       @inactivity_timeout_ms}
-    else
-      do_move(direction, state, caller_pid)
+        {:reply, :stay, struct!(state, chat: Chat.add_message(state.chat, message)), @inactivity_timeout_ms}
+
+      true ->
+        do_move(direction, state, caller_pid)
     end
   end
 
@@ -694,6 +694,23 @@ defmodule Europa.Server do
     end)
   end
 
+  defp change_view_direction(direction, state, caller_pid) do
+    moves_count = 1
+
+    updated_player =
+      state.player
+      |> PlayerManager.change_view_direction(direction)
+
+    moved_message = moved_message(moves_count, updated_player.stand_on)
+
+    updated_chat =
+      state.chat
+      |> Chat.add_message(moved_message)
+
+    {:reply, {:moved, :normal}, struct!(state, player: updated_player, chat: updated_chat),
+     {:continue, {:tick, moves_count, caller_pid}}}
+  end
+
   defp do_move(direction, state, caller_pid) do
     case PlanetManager.move(state.planet, direction, state.player) do
       {:moved, updated_planet, moves_count, step_on_tile} ->
@@ -713,11 +730,10 @@ defmodule Europa.Server do
 
         updated_player =
           state.player
-          |> PlayerManager.change_view_direction(direction)
           |> PlayerManager.stand_on(step_on_tile)
 
         {:reply, {:moved, status},
-         struct(state,
+         struct!(state,
            planet: updated_planet,
            player: updated_player,
            chat: updated_chat
@@ -751,14 +767,9 @@ defmodule Europa.Server do
 
         killed_enemies_count = killed_enemies_count(damaged_enemies)
 
-        updated_player =
-          state.player
-          |> PlayerManager.change_view_direction(direction)
-
         {:reply, {:attack, status},
          struct!(state,
            planet: updated_planet,
-           player: updated_player,
            chat: updated_chat,
            killed_enemies: state.killed_enemies + killed_enemies_count
          ), {:continue, {:tick, moves_count, caller_pid}}}
@@ -768,7 +779,6 @@ defmodule Europa.Server do
 
         {:reply, :stay,
          struct!(state,
-           player: PlayerManager.change_view_direction(state.player, direction),
            chat: Chat.add_message(state.chat, message)
          )}
     end
