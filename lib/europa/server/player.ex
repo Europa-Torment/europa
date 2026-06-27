@@ -147,7 +147,7 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def toggle_aim_mode(%__MODULE__{weapon_uuid: nil}) do
+  def toggle_aim_mode(%__MODULE__{weapon_uuid: nil, aim_mode?: false}) do
     {:error, :no_weapon}
   end
 
@@ -762,10 +762,21 @@ defmodule Europa.Server.Player do
         %Loot.Boots{equiped: false} -> [boots_uuid: nil]
       end
 
-    {:ok,
-     struct!(player, [inventory: updated_inventory] ++ changed_params)
-     |> update_player_attrs(current_item_attrs, stats_changes)}
+    updated_player =
+      player
+      |> struct!([inventory: updated_inventory] ++ changed_params)
+      |> update_player_attrs(current_item_attrs, stats_changes)
+      |> maybe_turn_off_aim_mode()
+
+    {:ok, updated_player}
   end
+
+  defp maybe_turn_off_aim_mode(%__MODULE__{weapon_uuid: nil, aim_mode?: true} = player) do
+    {:ok, player} = toggle_aim_mode(player)
+    player
+  end
+
+  defp maybe_turn_off_aim_mode(player), do: player
 
   defp update_player_attrs(player, old_item_attrs, new_item_attrs) do
     player

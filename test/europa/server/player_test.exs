@@ -344,7 +344,12 @@ defmodule Europa.Server.PlayerTest do
       suit = build(:suit, equiped: true)
       boots = build(:boots, equiped: true)
 
-      player = build(:player, weapon_uuid: nil, inventory: [weapon, melee_weapon, ammo, helmet, suit, boots])
+      player =
+        build(:player,
+          weapon_uuid: weapon.uuid,
+          inventory: [weapon, melee_weapon, ammo, helmet, suit, boots],
+          aim_mode?: true
+        )
 
       {:ok,
        player: player, weapon: weapon, melee_weapon: melee_weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
@@ -364,6 +369,12 @@ defmodule Europa.Server.PlayerTest do
 
         assert updated_item.equiped == false
         assert_changed_player_item_uuid(updated_player, updated_item, _expected_value = nil)
+
+        if Loot.Item.item_type(item) == :weapon do
+          assert updated_player.aim_mode? == false
+        else
+          assert updated_player.aim_mode? == true
+        end
       end
     end
 
