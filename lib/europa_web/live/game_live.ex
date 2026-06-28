@@ -272,6 +272,7 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> base_assign()
+          |> assign_equipment()
           |> assign(item_box: item_box)
           |> play_sound("equip")
 
