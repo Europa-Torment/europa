@@ -820,7 +820,7 @@ defmodule EuropaWeb.GameLive do
         {:noreply, socket}
 
       _ ->
-        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
+        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server), interaction_confirmation: nil)}
     end
   end
 
