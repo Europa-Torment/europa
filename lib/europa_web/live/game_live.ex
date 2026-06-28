@@ -804,6 +804,7 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> base_assign()
+          |> assign(interaction_confirmation: nil)
           |> play_sound("drink")
 
         {:noreply, socket}
@@ -812,12 +813,7 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> base_assign()
-          |> assign(
-            show_control_hints: false,
-            inventory: nil,
-            item_box: nil,
-            interaction_confirmation: nil
-          )
+          |> assign(interaction_confirmation: nil)
           |> play_sound(sound_name)
 
         {:noreply, socket}

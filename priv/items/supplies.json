@@ -58,7 +58,7 @@
         "consume_cost": 1,
         "sound_name": "drink",
         "properties": {
-            "thirst": -20
+            "thirst": -25
         },
         "weight": 0.5,
         "random_weight": 0.8
@@ -71,7 +71,7 @@
         "sound_name": "drink",
         "properties": {
             "thirst": -10,
-            "radiation": 10
+            "radiation": 5
         },
         "weight": 0.5,
         "random_weight": 1.0
