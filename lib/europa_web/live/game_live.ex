@@ -50,50 +50,31 @@ defmodule EuropaWeb.GameLive do
 
     with {:ok, %Game{state: :active, user_id: ^current_user} = game} <- Games.get_by_uuid(uuid),
          {:ok, server} <- Server.get_pid(uuid) do
-      visible_planet = Server.get_visible_planet(server)
-      player = Server.get_player(server)
-
-      {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
-
-      melee_weapon = get_current_melee_weapon(player)
-      helmet = get_current_helmet(player)
-      suit = get_current_suit(player)
-      boots = get_current_boots(player)
-
       socket =
         socket
         |> assign(
           game: game,
-          server: server,
-          visible_planet: visible_planet,
-          chat: Server.get_chat(server),
-          current_time: get_current_time(server),
-          player: player,
-          weapon: weapon,
-          melee_weapon: melee_weapon,
-          helmet: helmet,
-          suit: suit,
-          boots: boots,
-          ammo_count: ammo_count,
-          player_stats: get_player_stats(player),
-          game_field_size: length(visible_planet),
-          item_box: nil,
-          inventory: nil,
-          inventory_type: nil,
-          show_control_hints: false,
+          server: server
+        )
+        |> base_assign()
+        |> assign_equipment()
+        |> close_all()
+
+      socket =
+        socket
+        |> assign(
+          game_field_size: length(socket.assigns.visible_planet),
           game_started: false,
           item_to_drop: nil,
           item_drop_count: nil,
           game_over: false,
           game_page: true,
-          dialog: nil,
-          show_aim: false,
-          aim: get_aim(visible_planet, player, weapon),
           disassemble_item_uuid: nil,
           disassemble_items: nil,
           blueprints: nil,
           blueprints_type: nil,
-          interaction_confirmation: nil
+          interaction_confirmation: nil,
+          inventory_type: nil
         )
 
       {:ok, socket}
@@ -131,61 +112,30 @@ defmodule EuropaWeb.GameLive do
 
     case Server.move(socket.assigns.server, direction) do
       {:moved, move_status} ->
-        player = Server.get_player(socket.assigns.server)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-        weapon = get_current_weapon(player)
+        socket = base_assign(socket)
 
         socket =
           socket
-          |> assign(
-            visible_planet: visible_planet,
-            player: player,
-            chat: Server.get_chat(socket.assigns.server),
-            player_stats: get_player_stats(player),
-            current_time: get_current_time(socket.assigns.server),
-            aim: get_aim(visible_planet, player, weapon)
-          )
-          |> step_sound(player.stand_on)
-          |> damaged_sound(player_before.health, player.health)
+          |> step_sound(socket.assigns.player.stand_on)
+          |> damaged_sound(player_before.health)
           |> overloaded_sound(move_status)
-          |> low_health_sound(player)
+          |> low_health_sound(socket.assigns.player)
 
         {:noreply, socket}
 
       {:attack, status} ->
-        player = Server.get_player(socket.assigns.server)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-        weapon = get_current_weapon(player)
+        socket = base_assign(socket)
 
         socket =
           socket
-          |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            player: player,
-            chat: Server.get_chat(socket.assigns.server),
-            player_stats: get_player_stats(player),
-            current_time: get_current_time(socket.assigns.server),
-            aim: get_aim(visible_planet, player, weapon)
-          )
           |> punch_sound(status)
-          |> damaged_sound(player_before.health, player.health)
-          |> low_health_sound(player)
+          |> damaged_sound(player_before.health)
+          |> low_health_sound(socket.assigns.player)
 
         {:noreply, socket}
 
       _ ->
-        player = Server.get_player(socket.assigns.server)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-        weapon = get_current_weapon(player)
-
-        {:noreply,
-         assign(socket,
-           visible_planet: visible_planet,
-           player: player,
-           chat: Server.get_chat(socket.assigns.server),
-           current_time: get_current_time(socket.assigns.server),
-           aim: get_aim(visible_planet, player, weapon)
-         )}
+        {:noreply, base_assign(socket)}
     end
   end
 
@@ -217,40 +167,19 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @close_keys do
-    {:noreply,
-     assign(socket,
-       inventory: nil,
-       item_box: nil,
-       show_control_hints: false,
-       item_drop_menu: false,
-       item_to_drop: nil,
-       dialog: nil,
-       disassemble_items: nil,
-       blueprints: nil,
-       interaction_confirmation: nil
-     )}
+    {:noreply, close_all(socket)}
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @shoot_keys do
     player_before = socket.assigns.player
     shoot_result = Server.shoot(socket.assigns.server)
 
-    player = Server.get_player(socket.assigns.server)
-    {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
-
     socket =
       socket
-      |> assign(
-        visible_planet: Server.get_visible_planet(socket.assigns.server),
-        player: player,
-        weapon: weapon,
-        ammo_count: ammo_count,
-        chat: Server.get_chat(socket.assigns.server),
-        player_stats: get_player_stats(player),
-        current_time: get_current_time(socket.assigns.server)
-      )
-      |> shoot_sound(shoot_result, weapon)
-      |> damaged_sound(player_before.health, player.health)
+      |> base_assign()
+      |> assign_equipment()
+      |> shoot_sound(shoot_result)
+      |> damaged_sound(player_before.health)
 
     {:noreply, socket}
   end
@@ -262,18 +191,9 @@ defmodule EuropaWeb.GameLive do
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @aim_keys do
     case Server.toggle_aim_mode(socket.assigns.server) do
       :ok ->
-        player = Server.get_player(socket.assigns.server)
-
         socket =
           socket
-          |> assign(
-            show_aim: !socket.assigns.show_aim,
-            player: player,
-            player_stats: get_player_stats(player),
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            chat: Server.get_chat(socket.assigns.server),
-            current_time: get_current_time(socket.assigns.server)
-          )
+          |> base_assign()
           |> play_sound("click")
 
         {:noreply, socket}
@@ -349,19 +269,10 @@ defmodule EuropaWeb.GameLive do
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
     case Server.take_loot(socket.assigns.server, item_uuid) do
       {:ok, item_box} ->
-        player = Server.get_player(socket.assigns.server)
-        {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
-
         socket =
           socket
-          |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            item_box: item_box,
-            player: player,
-            weapon: weapon,
-            ammo_count: ammo_count,
-            player_stats: get_player_stats(player)
-          )
+          |> base_assign()
+          |> assign(item_box: item_box)
           |> play_sound("equip")
 
         {:noreply, socket}
@@ -373,28 +284,12 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("equip_item", %{"uuid" => item_uuid}, socket) do
     case Server.equip_item(socket.assigns.server, item_uuid) do
-      {:ok, updated_player} ->
-        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
-        melee_weapon = get_current_melee_weapon(updated_player)
-        helmet = get_current_helmet(updated_player)
-        suit = get_current_suit(updated_player)
-        boots = get_current_boots(updated_player)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-
+      {:ok, _updated_player} ->
         socket =
           socket
-          |> assign(
-            player: updated_player,
-            weapon: weapon,
-            melee_weapon: melee_weapon,
-            helmet: helmet,
-            suit: suit,
-            boots: boots,
-            ammo_count: ammo_count,
-            inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player),
-            aim: get_aim(visible_planet, updated_player, weapon)
-          )
+          |> base_assign()
+          |> assign_equipment()
+          |> assign(inventory: get_player_inventory(socket))
           |> play_sound("equip")
 
         {:noreply, socket}
@@ -406,29 +301,12 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("unequip_item", %{"uuid" => item_uuid}, socket) do
     case Server.unequip_item(socket.assigns.server, item_uuid) do
-      {:ok, updated_player} ->
-        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
-        melee_weapon = get_current_melee_weapon(updated_player)
-        helmet = get_current_helmet(updated_player)
-        suit = get_current_suit(updated_player)
-        boots = get_current_boots(updated_player)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-
+      {:ok, _updated_player} ->
         socket =
           socket
-          |> assign(
-            player: updated_player,
-            weapon: weapon,
-            melee_weapon: melee_weapon,
-            helmet: helmet,
-            suit: suit,
-            boots: boots,
-            ammo_count: ammo_count,
-            inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player),
-            show_aim: socket.assigns.show_aim && not is_nil(weapon),
-            aim: get_aim(visible_planet, updated_player, weapon)
-          )
+          |> base_assign()
+          |> assign_equipment()
+          |> assign(inventory: get_player_inventory(socket))
           |> play_sound("unequip")
 
         {:noreply, socket}
@@ -453,35 +331,17 @@ defmodule EuropaWeb.GameLive do
 
     case Server.disassemble_item(socket.assigns.server, item_uuid) do
       :ok ->
-        updated_player = Server.get_player(socket.assigns.server)
-        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
-        melee_weapon = get_current_melee_weapon(updated_player)
-        helmet = get_current_helmet(updated_player)
-        suit = get_current_suit(updated_player)
-        boots = get_current_boots(updated_player)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-
         socket =
           socket
+          |> base_assign()
+          |> assign_equipment()
           |> assign(
-            player: updated_player,
-            weapon: weapon,
-            melee_weapon: melee_weapon,
-            helmet: helmet,
-            suit: suit,
-            boots: boots,
-            ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player),
-            show_aim: socket.assigns.show_aim && not is_nil(weapon),
-            aim: get_aim(visible_planet, updated_player, weapon),
             disassemble_item_uuid: nil,
-            disassemble_items: nil,
-            chat: Server.get_chat(socket.assigns.server),
-            current_time: get_current_time(socket.assigns.server)
+            disassemble_items: nil
           )
           |> play_sound("assemble")
-          |> damaged_sound(player_before.health, updated_player.health)
+          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -492,28 +352,13 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("drop_item", %{"uuid" => item_uuid}, socket) do
     case Server.drop_item(socket.assigns.server, item_uuid, socket.assigns.item_drop_count) do
-      {:ok, updated_player} ->
-        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
-        melee_weapon = get_current_melee_weapon(updated_player)
-        helmet = get_current_helmet(updated_player)
-        suit = get_current_suit(updated_player)
-        boots = get_current_boots(updated_player)
-        visible_planet = Server.get_visible_planet(socket.assigns.server)
-
+      {:ok, _updated_player} ->
         socket =
           socket
+          |> base_assign()
+          |> assign_equipment()
           |> assign(
-            player: updated_player,
-            weapon: weapon,
-            melee_weapon: melee_weapon,
-            helmet: helmet,
-            suit: suit,
-            boots: boots,
-            ammo_count: ammo_count,
             inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player),
-            show_aim: socket.assigns.show_aim && not is_nil(weapon),
-            aim: get_aim(visible_planet, updated_player, weapon),
             item_to_drop: nil,
             item_drop_count: nil
           )
@@ -554,23 +399,13 @@ defmodule EuropaWeb.GameLive do
 
     case Server.unload_weapon(socket.assigns.server, item_uuid) do
       :ok ->
-        updated_player = Server.get_player(socket.assigns.server)
-        {weapon, ammo_count} = get_current_weapon_with_ammo_count(updated_player)
-
         socket =
           socket
-          |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            player: updated_player,
-            weapon: weapon,
-            ammo_count: ammo_count,
-            inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server),
-            current_time: get_current_time(socket.assigns.server)
-          )
+          |> base_assign()
+          |> assign_equipment()
+          |> assign(inventory: get_player_inventory(socket))
           |> play_sound("unload")
-          |> damaged_sound(player_before.health, updated_player.health)
+          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -584,20 +419,12 @@ defmodule EuropaWeb.GameLive do
 
     case Server.unload_item_box_weapon(socket.assigns.server, item_uuid) do
       {:ok, updated_item_box} ->
-        updated_player = Server.get_player(socket.assigns.server)
-
         socket =
           socket
-          |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            item_box: updated_item_box,
-            player: updated_player,
-            player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server),
-            current_time: get_current_time(socket.assigns.server)
-          )
+          |> base_assign()
+          |> assign(item_box: updated_item_box)
           |> play_sound("unload")
-          |> damaged_sound(player_before.health, updated_player.health)
+          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -611,7 +438,8 @@ defmodule EuropaWeb.GameLive do
 
     case Server.consume_supply(socket.assigns.server, item_uuid) do
       {:ok, supply} ->
-        updated_player = Server.get_player(socket.assigns.server)
+        socket = base_assign(socket)
+        updated_player = socket.assigns.player
 
         is_health_not_changed =
           supply.properties.health && player_before.health != updated_player.health - supply.properties.health
@@ -625,14 +453,7 @@ defmodule EuropaWeb.GameLive do
 
         socket =
           socket
-          |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            player: updated_player,
-            inventory: get_player_inventory(socket),
-            player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server),
-            current_time: get_current_time(socket.assigns.server)
-          )
+          |> assign(inventory: get_player_inventory(socket))
           |> play_sound(supply.sound_name)
           |> damaged_sound(player_before.health, now_health)
 
@@ -689,6 +510,56 @@ defmodule EuropaWeb.GameLive do
 
   ### Private ###
 
+  defp base_assign(socket) do
+    player = Server.get_player(socket.assigns.server)
+    visible_planet = Server.get_visible_planet(socket.assigns.server)
+
+    socket
+    |> assign(
+      player: player,
+      player_stats: get_player_stats(player),
+      visible_planet: visible_planet,
+      chat: Server.get_chat(socket.assigns.server),
+      current_time: get_current_time(socket.assigns.server),
+      aim: get_aim(visible_planet, player)
+    )
+  end
+
+  defp assign_equipment(socket) do
+    player = socket.assigns.player
+
+    {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
+    melee_weapon = get_current_melee_weapon(player)
+    helmet = get_current_helmet(player)
+    suit = get_current_suit(player)
+    boots = get_current_boots(player)
+
+    socket
+    |> assign(
+      weapon: weapon,
+      ammo_count: ammo_count,
+      melee_weapon: melee_weapon,
+      helmet: helmet,
+      suit: suit,
+      boots: boots
+    )
+  end
+
+  defp close_all(socket) do
+    socket
+    |> assign(
+      inventory: nil,
+      item_box: nil,
+      show_control_hints: false,
+      item_drop_menu: false,
+      item_to_drop: nil,
+      dialog: nil,
+      disassemble_items: nil,
+      blueprints: nil,
+      interaction_confirmation: nil
+    )
+  end
+
   defp assign_sounds(socket) do
     json =
       Jason.encode!(%{
@@ -727,15 +598,15 @@ defmodule EuropaWeb.GameLive do
     assign(socket, :sounds, json)
   end
 
-  defp shoot_sound(socket, shoot_result, weapon) do
+  defp shoot_sound(socket, shoot_result) do
     case shoot_result do
       {:ok, :shot} ->
         socket
-        |> play_sound(weapon.sound_name)
+        |> play_sound(socket.assigns.weapon.sound_name)
         |> play_sound_with_delay("impact")
 
       {:ok, :miss} ->
-        play_sound(socket, weapon.sound_name)
+        play_sound(socket, socket.assigns.weapon.sound_name)
 
       {:error, :empty_magazine} ->
         play_sound(socket, "empty_magazine")
@@ -757,8 +628,15 @@ defmodule EuropaWeb.GameLive do
     play_sound(socket, sound)
   end
 
-  defp damaged_sound(socket, health_before, health_now) do
-    if health_before > health_now do
+  defp damaged_sound(socket, health_before, current_health \\ nil) do
+    current_health =
+      if current_health do
+        current_health
+      else
+        socket.assigns.player.health
+      end
+
+    if health_before > current_health do
       sound = Enum.random(["damage1", "damage2", "damage3"])
       play_sound_with_delay(socket, sound)
     else
@@ -827,8 +705,7 @@ defmodule EuropaWeb.GameLive do
     player_before = socket.assigns.player
     result = Server.reload(socket.assigns.server, item_uuid)
 
-    player = Server.get_player(socket.assigns.server)
-    {weapon, ammo_count} = get_current_weapon_with_ammo_count(player)
+    socket = base_assign(socket)
 
     inventory =
       if socket.assigns.inventory do
@@ -839,18 +716,10 @@ defmodule EuropaWeb.GameLive do
 
     socket =
       socket
-      |> assign(
-        visible_planet: Server.get_visible_planet(socket.assigns.server),
-        player: player,
-        inventory: inventory,
-        weapon: weapon,
-        ammo_count: ammo_count,
-        chat: Server.get_chat(socket.assigns.server),
-        player_stats: get_player_stats(player),
-        current_time: get_current_time(socket.assigns.server)
-      )
+      |> assign(inventory: inventory)
+      |> assign_equipment()
       |> reload_sound(result)
-      |> damaged_sound(player_before.health, player.health)
+      |> damaged_sound(player_before.health)
 
     {:noreply, socket}
   end
@@ -858,15 +727,12 @@ defmodule EuropaWeb.GameLive do
   defp open_inventory(socket) do
     inventory = get_player_inventory(socket)
 
-    {:noreply,
-     assign(socket,
-       inventory: inventory,
-       item_box: nil,
-       show_control_hints: false,
-       dialog: nil,
-       disassemble_items: nil,
-       blueprints: nil
-     )}
+    socket =
+      socket
+      |> close_all()
+      |> assign(inventory: inventory)
+
+    {:noreply, socket}
   end
 
   defp close_inventory(socket) do
@@ -875,15 +741,14 @@ defmodule EuropaWeb.GameLive do
 
   defp open_craft_menu(socket) do
     blueprints = Loot.blueprints(socket.assigns.blueprints_type)
+    inventory = get_player_inventory(socket)
 
-    {:noreply,
-     assign(socket,
-       item_box: nil,
-       show_control_hints: false,
-       dialog: nil,
-       disassemble_items: nil,
-       blueprints: blueprints
-     )}
+    socket =
+      socket
+      |> close_all()
+      |> assign(blueprints: blueprints, inventory: inventory)
+
+    {:noreply, socket}
   end
 
   defp close_craft_menu(socket) do
@@ -893,15 +758,12 @@ defmodule EuropaWeb.GameLive do
   defp open_item_box(socket) do
     case Server.loot(socket.assigns.server) do
       {:open_item_box, item_box} ->
-        {:noreply,
-         assign(socket,
-           item_box: item_box,
-           inventory: nil,
-           show_control_hints: false,
-           dialog: nil,
-           disassemble_items: nil,
-           blueprints: nil
-         )}
+        socket =
+          socket
+          |> close_all()
+          |> assign(item_box: item_box)
+
+        {:noreply, socket}
 
       _ ->
         {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server))}
@@ -939,39 +801,22 @@ defmodule EuropaWeb.GameLive do
          )}
 
       {:ok, {:drink, _}} ->
-        player = Server.get_player(socket.assigns.server)
-
         socket =
           socket
-          |> assign(
-            chat: Server.get_chat(socket.assigns.server),
-            show_control_hints: false,
-            inventory: nil,
-            item_box: nil,
-            player: player,
-            player_stats: get_player_stats(player),
-            interaction_confirmation: nil,
-            current_time: get_current_time(socket.assigns.server)
-          )
+          |> base_assign()
           |> play_sound("drink")
 
         {:noreply, socket}
 
       {:ok, {:transform, %Object{transform_sound_name: sound_name}}} ->
-        player = Server.get_player(socket.assigns.server)
-
         socket =
           socket
+          |> base_assign()
           |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            chat: Server.get_chat(socket.assigns.server),
             show_control_hints: false,
             inventory: nil,
             item_box: nil,
-            player: player,
-            player_stats: get_player_stats(player),
-            interaction_confirmation: nil,
-            current_time: get_current_time(socket.assigns.server)
+            interaction_confirmation: nil
           )
           |> play_sound(sound_name)
 
@@ -994,21 +839,15 @@ defmodule EuropaWeb.GameLive do
 
     case Server.craft_item(socket.assigns.server, blueprint) do
       :ok ->
-        updated_player = Server.get_player(socket.assigns.server)
-
         socket =
           socket
+          |> base_assign()
           |> assign(
-            visible_planet: Server.get_visible_planet(socket.assigns.server),
-            player: updated_player,
-            player_stats: get_player_stats(updated_player),
-            chat: Server.get_chat(socket.assigns.server),
-            current_time: get_current_time(socket.assigns.server),
             blueprints: Loot.blueprints(),
             inventory: get_player_inventory(socket)
           )
           |> play_sound("assemble")
-          |> damaged_sound(player_before.health, updated_player.health)
+          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -1095,11 +934,11 @@ defmodule EuropaWeb.GameLive do
     %{year: year, day: day, time: time}
   end
 
-  defp get_aim(_, _, nil), do: []
+  defp get_aim(visible_planet, %Player{aim_mode?: true} = player) do
+    {weapon, _ammo_count} = get_current_weapon_with_ammo_count(player)
 
-  defp get_aim(visible_planet, player, %Weapon{shooting_distance: shooting_distance} = weapon) do
     planet_view_distance = div(@view_distance, 2)
-    distance = min(shooting_distance, planet_view_distance)
+    distance = min(weapon.shooting_distance, planet_view_distance)
 
     {player_y, player_x} =
       visible_planet
@@ -1119,6 +958,8 @@ defmodule EuropaWeb.GameLive do
     end
     |> maybe_add_shotgun_aims(weapon, player.view_direction)
   end
+
+  defp get_aim(_, _), do: []
 
   defp maybe_add_shotgun_aims(
          [{{from_y, from_x}, {to_y, to_x}}],

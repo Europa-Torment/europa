@@ -93,7 +93,7 @@ defmodule EuropaWeb.GameCompotents do
     <div
       id="aim-data"
       phx-hook="Aim"
-      data-show_aim={"#{@show_aim}"}
+      data-show_aim={"#{@player.aim_mode?}"}
       data-aims={Jason.encode!(@aim)}
       data-stroke-color="black"
       data-stroke-width="2"
