@@ -10,7 +10,14 @@
     data-sounds={@sounds}
   >
     <div class="w-1/6 flex flex-col gap-4 m-5">
-      <.equipment player={@player} weapon={@weapon} helmet={@helmet} suit={@suit} boots={@boots} />
+      <.equipment
+        player={@player}
+        weapon={@weapon}
+        melee_weapon={@melee_weapon}
+        helmet={@helmet}
+        suit={@suit}
+        boots={@boots}
+      />
       <.ammo_info weapon={@weapon} ammo_count={@ammo_count} />
       <.control_hints_link />
     </div>

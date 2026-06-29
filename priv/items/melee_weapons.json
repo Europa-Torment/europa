@@ -5,7 +5,7 @@
         "hit_cost": {"from": 2, "to": 3},
         "damage": {"from": 3, "to": 6},
         "weight": 3.5,
-        "image_name": "default_pistol",
+        "image_name": "crowbar",
         "sound_name": "punch",
         "random_weight": 0.07
     },
@@ -15,7 +15,7 @@
         "hit_cost": {"from": 1, "to": 2},
         "damage": {"from": 2, "to": 3},
         "weight": 0.2,
-        "image_name": "default_pistol",
+        "image_name": "kitchen_knife",
         "sound_name": "punch",
         "random_weight": 0.5
     },
@@ -25,7 +25,7 @@
         "hit_cost": 1,
         "damage": 1,
         "weight": 0.1,
-        "image_name": "default_pistol",
+        "image_name": "baton",
         "sound_name": "punch",
         "random_weight": 1.0
     }

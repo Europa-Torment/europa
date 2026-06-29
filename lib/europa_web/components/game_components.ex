@@ -193,15 +193,7 @@ defmodule EuropaWeb.GameCompotents do
       <div class="grid grid-cols-2 gap-x-4">
         <div class="flex flex-col gap-y-0.5">
           <%= if @helmet do %>
-            <img
-              id={"helmet-#{@helmet.uuid}"}
-              {open_inventory_attrs("helmet")}
-              phx-hook="Tooltip"
-              data-tooltip={item_tooltip(@helmet, @player)}
-              src={~p"/images/#{@helmet.image_name <> ".png"}"}
-              alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
-            />
+            <.item_image item={@helmet} player={@player} />
           <% else %>
             <img
               id="no-helmet"
@@ -215,15 +207,7 @@ defmodule EuropaWeb.GameCompotents do
           <% end %>
 
           <%= if @suit do %>
-            <img
-              id={"suit-#{@suit.uuid}"}
-              {open_inventory_attrs("suit")}
-              phx-hook="Tooltip"
-              data-tooltip={item_tooltip(@suit, @player)}
-              src={~p"/images/#{@suit.image_name <> ".png"}"}
-              alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
-            />
+            <.item_image item={@suit} player={@player} />
           <% else %>
             <img
               id="no-suit"
@@ -237,15 +221,7 @@ defmodule EuropaWeb.GameCompotents do
           <% end %>
 
           <%= if @boots do %>
-            <img
-              id={"boots-#{@boots.uuid}"}
-              {open_inventory_attrs("boots")}
-              phx-hook="Tooltip"
-              data-tooltip={item_tooltip(@boots, @player)}
-              src={~p"/images/#{@boots.image_name <> ".png"}"}
-              alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
-            />
+            <.item_image item={@boots} player={@player} />
           <% else %>
             <img
               id="no-boots"
@@ -259,17 +235,9 @@ defmodule EuropaWeb.GameCompotents do
           <% end %>
         </div>
 
-        <div class="flex items-center">
+        <div class="flex flex-col gap-y-0.5">
           <%= if @weapon do %>
-            <img
-              id={"weapon-#{@weapon.uuid}"}
-              {open_inventory_attrs("weapon")}
-              phx-hook="Tooltip"
-              data-tooltip={item_tooltip(@weapon, @player)}
-              src={~p"/images/#{@weapon.image_name <> ".png"}"}
-              alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
-            />
+            <.item_image item={@weapon} player={@player} />
           <% else %>
             <img
               id="no-weapon"
@@ -281,9 +249,36 @@ defmodule EuropaWeb.GameCompotents do
               class="bg-neutral w-full h-auto object-cover rounded-sm"
             />
           <% end %>
+          <%= if @melee_weapon do %>
+            <.item_image item={@melee_weapon} player={@player} />
+          <% else %>
+            <img
+              id="no-melee-weapon"
+              {open_inventory_attrs("melee_weapon")}
+              phx-hook="Tooltip"
+              data-tooltip={gettext("No melee weapon")}
+              src={~p"/images/fist.png"}
+              alt="4"
+              class="bg-neutral w-full h-auto object-cover rounded-sm"
+            />
+          <% end %>
         </div>
       </div>
     </div>
+    """
+  end
+
+  def item_image(assigns) do
+    ~H"""
+    <img
+      id={"#{Loot.Item.item_type(@item)}-#{@item.uuid}"}
+      {open_inventory_attrs("#{Loot.Item.item_type(@item)}")}
+      phx-hook="Tooltip"
+      data-tooltip={item_tooltip(@item, @player)}
+      src={~p"/images/#{@item.image_name <> ".png"}"}
+      alt="4"
+      class="bg-neutral w-full h-auto object-cover rounded-sm"
+    />
     """
   end
 
