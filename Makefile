@@ -39,7 +39,6 @@ release:
 	MIX_ENV=prod mix prepare_tiles
 	MIX_ENV=prod mix phx.copy default
 	MIX_ENV=prod mix assets.deploy
-	MIX_ENV=prod mix phx.digest
 	MIX_ENV=prod mix compile
 	MIX_ENV=prod mix release --overwrite
 	mix phx.digest.clean --all
