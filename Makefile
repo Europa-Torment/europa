@@ -32,7 +32,7 @@ check-all:
 
 .PHONY: release
 release:
-    mix clean
+	mix clean
 	mix local.hex --force
 	mix local.rebar --force
 	mix deps.get --only prod
