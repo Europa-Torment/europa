@@ -32,6 +32,7 @@ check-all:
 
 .PHONY: release
 release:
+    mix clean
 	mix local.hex --force
 	mix local.rebar --force
 	mix deps.get --only prod
@@ -39,6 +40,6 @@ release:
 	MIX_ENV=prod mix prepare_tiles
 	MIX_ENV=prod mix phx.copy default
 	MIX_ENV=prod mix assets.deploy
-	MIX_ENV=prod mix compile
+	MIX_ENV=prod mix compile --force
 	MIX_ENV=prod mix release --overwrite
 	mix phx.digest.clean --all
