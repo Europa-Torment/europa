@@ -21,7 +21,7 @@
             "health": 100
         },
         "weight": 0.1,
-        "random_weight": 0.1
+        "random_weight": 0.4
     },
     {
         "name": "Self-heating food tube", 
@@ -88,7 +88,7 @@
             "warm": 5
         },
         "weight": 1.0,
-        "random_weight": 0.3
+        "random_weight": 0.8
     },
     {
         "name": "Can of expired Earth beer", 
@@ -101,7 +101,7 @@
             "health": -5
         },
         "weight": 0.5,
-        "random_weight": 1.0
+        "random_weight": 1.2
     },
     {
         "name": "Fish crackers", 
@@ -115,7 +115,7 @@
             "thirst": 5
         },
         "weight": 0.1,
-        "random_weight": 1.0
+        "random_weight": 1.2
     },
     {
         "name": "Fish crackers with radiation", 
@@ -130,7 +130,7 @@
             "radiation": 3
         },
         "weight": 0.1,
-        "random_weight": 1.3
+        "random_weight": 1.8
     },
     {
         "name": "Energy gel", 
@@ -144,7 +144,7 @@
             "thirst": -5
         },
         "weight": 0.1,
-        "random_weight": 0.4
+        "random_weight": 0.8
     },
     {
         "name": "Energy gel with radiation", 
@@ -159,7 +159,7 @@
             "radiation": 10
         },
         "weight": 0.1,
-        "random_weight": 0.5
+        "random_weight": 1.0
     },
     {
         "name": "WCC dry rations",
@@ -172,7 +172,7 @@
             "health": 30
         },
         "weight": 2.0,
-        "random_weight": 0.1
+        "random_weight": 0.7
     },
     {
         "name": "Vodka", 
@@ -202,7 +202,7 @@
             "warm": 10
         },
         "weight": 0.5,
-        "random_weight": 0.2
+        "random_weight": 0.4
     },
     {
         "name": "Expired canned beef stew", 
@@ -216,7 +216,7 @@
             "warm": 5
         },
         "weight": 0.5,
-        "random_weight": 0.4
+        "random_weight": 0.8
     },
     {
         "name": "Cystamin",
