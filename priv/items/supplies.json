@@ -9,7 +9,7 @@
             "health": 30
         },
         "weight": 0.5,
-        "random_weight": 2.0
+        "random_weight": 1.0
     },
     {
         "name": "Stem cell injector", 
@@ -21,7 +21,7 @@
             "health": 100
         },
         "weight": 0.1,
-        "random_weight": 0.4
+        "random_weight": 0.3
     },
     {
         "name": "Self-heating food tube", 
@@ -61,7 +61,7 @@
             "thirst": -25
         },
         "weight": 0.5,
-        "random_weight": 0.8
+        "random_weight": 0.7
     },
     {
         "name": "Bottle of water with radiation", 
@@ -88,7 +88,7 @@
             "warm": 5
         },
         "weight": 1.0,
-        "random_weight": 0.8
+        "random_weight": 0.4
     },
     {
         "name": "Can of expired Earth beer", 
@@ -115,7 +115,7 @@
             "thirst": 5
         },
         "weight": 0.1,
-        "random_weight": 1.2
+        "random_weight": 0.8
     },
     {
         "name": "Fish crackers with radiation", 
@@ -130,7 +130,7 @@
             "radiation": 3
         },
         "weight": 0.1,
-        "random_weight": 1.8
+        "random_weight": 1.0
     },
     {
         "name": "Energy gel", 
@@ -144,7 +144,7 @@
             "thirst": -5
         },
         "weight": 0.1,
-        "random_weight": 0.8
+        "random_weight": 0.4
     },
     {
         "name": "Energy gel with radiation", 
@@ -159,7 +159,7 @@
             "radiation": 10
         },
         "weight": 0.1,
-        "random_weight": 1.0
+        "random_weight": 0.8
     },
     {
         "name": "WCC dry rations",
@@ -228,7 +228,7 @@
             "radiation": -50
         },
         "weight": 0.1,
-        "random_weight": 0.4
+        "random_weight": 0.5
     },
     {
         "name": "Tincture of monster bile",
