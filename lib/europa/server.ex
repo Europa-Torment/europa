@@ -871,7 +871,7 @@ defmodule Europa.Server do
           PlayerManager.warm_up(player, @warm_up_quantity)
 
         %Action{action_type: :radiation_contamination, subject: :player} ->
-          PlayerManager.increase_radiation(player, 5)
+          PlayerManager.increase_radiation(player, 1)
 
         _ ->
           player

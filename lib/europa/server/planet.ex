@@ -684,7 +684,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp maybe_add_radiation(%__MODULE__{} = planet) do
-    if next_to_radioactive_tile?(planet) do
+    if next_to_radioactive_tile?(planet) && m_to_n?(1, 10) do
       {planet, [Action.new(:player, :radiation_contamination)]}
     else
       {planet, []}
