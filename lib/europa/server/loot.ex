@@ -38,11 +38,11 @@ defmodule Europa.Server.Loot do
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
   @outdoor_item_boxes %{
-    box: %{max_items: 10, item_types: :all},
+    box: %{max_items: 7, item_types: :all},
     monster_body: %{max_items: 4, item_types: [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots]},
-    human_body: %{max_items: 5, item_types: :all},
-    crashed_shuttle: %{max_items: 5, item_types: :all},
-    bunch: %{max_items: 3, item_types: :all}
+    human_body: %{max_items: 4, item_types: :all},
+    crashed_shuttle: %{max_items: 4, item_types: :all},
+    bunch: %{max_items: 2, item_types: :all}
   }
 
   @furniture_item_boxes %{
@@ -324,7 +324,8 @@ defmodule Europa.Server.Loot do
     max_items = item_box_params.max_items
 
     items =
-      case random_number(max_items) do
+      case random_number(max_items + 1) - 1 do
+        0 -> []
         1 -> [generate_item_for_types(allowed_item_types)]
         n -> Enum.map(1..n, fn _ -> generate_item_for_types(allowed_item_types) end)
       end

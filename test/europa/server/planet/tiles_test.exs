@@ -34,6 +34,12 @@ defmodule Europa.Server.Planet.TilesTest do
     end
   end
 
+  describe "radioactive_tiles/0" do
+    test "returns list of radioactive tiles atom values" do
+      assert Tiles.radioactive_tiles() |> Enum.all?(&radioactive_tile?/1)
+    end
+  end
+
   describe "move_cots/0" do
     test "returns tiles move costs" do
       assert Tiles.move_costs() |> valid_move_costs?()
@@ -118,6 +124,11 @@ defmodule Europa.Server.Planet.TilesTest do
   defp warm_tile?(tile) do
     tile = from_atom_value(tile)
     tile.warm?
+  end
+
+  defp radioactive_tile?(tile) do
+    tile = from_atom_value(tile)
+    tile.radioactive?
   end
 
   defp from_atom_value(tile) do

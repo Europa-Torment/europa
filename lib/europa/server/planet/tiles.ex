@@ -38,6 +38,26 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "water",
       gif_tile?: true
     },
+    radioactive_water: %Tile{
+      atom_value: :rw,
+      blood_version: nil,
+      readable_name: gettext("radioactive water"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "radioactive_water",
+      gif_tile?: true,
+      radioactive?: true
+    },
+    warm_water: %Tile{
+      atom_value: :ww,
+      blood_version: nil,
+      readable_name: gettext("bubbling water"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "warm_water",
+      gif_tile?: true,
+      warm?: true
+    },
     floor: %Tile{
       atom_value: :fl,
       blood_version: :flb,
@@ -163,6 +183,18 @@ defmodule Europa.Server.Planet.Tiles do
   def warm_tiles do
     Enum.reduce(@tiles, [], fn {_, tile}, acc ->
       if tile.warm? do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
+  end
+
+  @spec radioactive_tiles() :: list(atom())
+  def radioactive_tiles do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if tile.radioactive? do
         acc ++ [tile.atom_value, tile.blood_version]
       else
         acc

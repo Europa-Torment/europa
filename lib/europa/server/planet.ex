@@ -10,6 +10,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Planet.Predefined
+  alias Europa.Server.Planet.Region
 
   alias Europa.Tools.Types
   alias Europa.Tools.PerlinNoise
@@ -36,6 +37,8 @@ defmodule Europa.Server.Planet do
 
   @base_enemy_generate_possibility fetch_config!([__MODULE__, :base_enemy_generate_possibility])
   @enemy_view_distance fetch_config!([__MODULE__, :enemy_view_distance])
+
+  @region_switch_possibility fetch_config!([__MODULE__, :region_switch_possibility])
 
   @enemy_move_possibility_from fetch_config!([__MODULE__, :enemy_move_possibility, :from])
   @enemy_move_possibility_to fetch_config!([__MODULE__, :enemy_move_possibility, :to])
@@ -74,6 +77,8 @@ defmodule Europa.Server.Planet do
 
   @ice Tiles.tile(:ice).atom_value
   @water Tiles.tile(:water).atom_value
+  @radioactive_water Tiles.tile(:radioactive_water).atom_value
+  @warm_water Tiles.tile(:warm_water).atom_value
   @snow Tiles.tile(:snow).atom_value
   @path Tiles.tile(:path).atom_value
   @snow_blood Tiles.tile(:snow).blood_version
@@ -84,6 +89,9 @@ defmodule Europa.Server.Planet do
   @movable_tiles Tiles.movable_tiles()
   @high_tiles Tiles.high_tiles()
   @warm_tiles Tiles.warm_tiles()
+  @radioactive_tiles Tiles.radioactive_tiles()
+
+  @water_tiles [@water, @radioactive_water, @warm_water]
 
   @move_costs Tiles.move_costs()
 
@@ -105,13 +113,26 @@ defmodule Europa.Server.Planet do
     @open_down_door.blood_version => Objects.object(:door_down)
   }
 
+  @regions [
+    {{:regular, %Region{water_tile: @water}}, _random_weight = 1.5},
+    {{:radioactive, %Region{water_tile: @radioactive_water}}, _random_weight = 1.0},
+    {{:warm, %Region{water_tile: @warm_water}}, _random_weight = 0.4}
+  ]
+
+  @region_names Enum.map(@regions, fn {{name, _}, _} -> name end)
+
+  @type region :: unquote(Types.one_of(@region_names))
+
   typedstruct module: Land, enforce: true do
-    field :tiles, map()
+    alias Europa.Server.Planet
+
+    field :tiles, map(), default: %{}
     field :min_x, integer()
     field :max_x, integer()
     field :min_y, integer()
     field :max_y, integer()
     field :noise_coef, number()
+    field :region, Planet.region()
   end
 
   typedstruct enforce: true do
@@ -153,7 +174,7 @@ defmodule Europa.Server.Planet do
   @impl true
   def player_initial_stand_on_tile(%__MODULE__{} = planet) do
     {x, y} = initial_coord()
-    tile_by_perlin_noise(x, y, planet.land.noise_coef)
+    tile_by_perlin_noise(x, y, planet.land)
   end
 
   # Too trivial for testing
@@ -282,6 +303,7 @@ defmodule Europa.Server.Planet do
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
     planet
     |> maybe_set_new_predefined_cluster_coord()
+    |> maybe_switch_region()
     |> increment_moves_count(moves_count)
     |> do_tick(moves_count, [])
   end
@@ -291,6 +313,23 @@ defmodule Europa.Server.Planet do
   end
 
   ### PRIVATE ###
+
+  defp pick_region do
+    {region_name, _} = WeightedRandom.take_one(@regions)
+    region_name
+  end
+
+  defp fetch_region(region_name) do
+    {{_, region}, _} = Enum.find(@regions, fn {{name, _}, _} -> name == region_name end)
+    region
+  end
+
+  defp switch_region(%__MODULE__{} = planet) do
+    region = pick_region()
+    land = struct!(planet.land, region: region)
+
+    struct!(planet, land: land)
+  end
 
   defp do_interact(%Npc{} = npc, planet, _player, _opts) do
     {:ok, planet, {:talk, npc}}
@@ -348,7 +387,8 @@ defmodule Europa.Server.Planet do
   defp do_tick(%__MODULE__{} = planet, moves_count, actions) do
     ticks = [
       fn planet -> maybe_perform_enemies_actions(planet) end,
-      fn planet -> maybe_warm_up(planet) end
+      fn planet -> maybe_warm_up(planet) end,
+      fn planet -> maybe_add_radiation(planet) end
     ]
 
     {updated_planet, actions} =
@@ -615,6 +655,14 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp maybe_switch_region(%__MODULE__{} = planet) do
+    if m_to_n?(1, @region_switch_possibility) do
+      switch_region(planet)
+    else
+      planet
+    end
+  end
+
   defp maybe_set_new_predefined_cluster_coord(%__MODULE__{} = planet) do
     if coords_distance(planet.current_coord, planet.predefined_cluster_coord) >= @predefined_cluster_update_distance do
       struct!(planet, predefined_cluster_coord: planet.current_coord)
@@ -635,12 +683,29 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp maybe_add_radiation(%__MODULE__{} = planet) do
+    if next_to_radioactive_tile?(planet) do
+      {planet, [Action.new(:player, :radiation_contamination)]}
+    else
+      {planet, []}
+    end
+  end
+
   defp next_to_warm_tile?(%__MODULE__{land: land, current_coord: current_coord}) do
     land
     |> get_neighbors(current_coord, 1)
     |> Enum.any?(fn
       %Object{warm?: true} -> true
       tile -> tile in @warm_tiles and tile not in @movable_tiles
+    end)
+  end
+
+  defp next_to_radioactive_tile?(%__MODULE__{land: land, current_coord: current_coord}) do
+    land
+    |> get_neighbors(current_coord, 1)
+    |> Enum.any?(fn
+      %Object{radioactive?: true} -> true
+      tile -> tile in @radioactive_tiles and tile not in @movable_tiles
     end)
   end
 
@@ -942,22 +1007,27 @@ defmodule Europa.Server.Planet do
 
     noise_coef = :rand.uniform()
 
-    tiles =
-      for x <- 0..max_x, y <- 0..max_y, into: %{} do
-        {{x, y}, gen_initial_tile(x, y, noise_coef)}
-      end
-
     %Land{
-      tiles: tiles,
       min_x: 0,
       max_x: max_x,
       min_y: 0,
       max_y: max_y,
-      noise_coef: noise_coef
+      noise_coef: noise_coef,
+      region: :regular
     }
+    |> generate_initial_tiles()
   end
 
-  defp gen_initial_tile(x, y, noise_coef) do
+  defp generate_initial_tiles(%Land{} = land) do
+    tiles =
+      for x <- 0..land.max_x, y <- 0..land.max_y, into: %{} do
+        {{x, y}, gen_initial_tile(x, y, land)}
+      end
+
+    struct!(land, tiles: tiles)
+  end
+
+  defp gen_initial_tile(x, y, %Land{} = land) do
     {center_x, center_y} = center_coord()
 
     cond do
@@ -965,7 +1035,7 @@ defmodule Europa.Server.Planet do
         @player
 
       {x, y} == {center_x + 1, center_y} ->
-        tile = tile_by_perlin_noise(x, y, noise_coef)
+        tile = tile_by_perlin_noise(x, y, land)
 
         if tile in @movable_tiles do
           Loot.generate_item_box(:crashed_shuttle)
@@ -975,28 +1045,66 @@ defmodule Europa.Server.Planet do
         end
 
       true ->
-        tile_by_perlin_noise(x, y, noise_coef)
+        tile_by_perlin_noise(x, y, land)
     end
   end
 
-  defp tile_by_perlin_noise(x, y, noise_coef) do
+  defp tile_by_perlin_noise(x, y, %Land{} = land) do
+    region = fetch_region(land.region)
+    noise_coef = land.noise_coef
     noise = PerlinNoise.noise(x * 0.1 + noise_coef, y * 0.1 + noise_coef)
 
     cond do
-      noise < -0.4 -> @water
-      noise >= -0.5 && noise <= 0.2 -> @ice
-      true -> @snow
+      noise < -0.4 ->
+        # do not stack diff water tiles
+        neighbor_water_type(land, {x, y}) || region.water_tile
+
+      noise >= -0.5 && noise <= 0.2 ->
+        @ice
+
+      true ->
+        @snow
+    end
+  end
+
+  defp neighbor_water_type(land, coord) do
+    frequencies =
+      land
+      |> get_neighbors(coord, 2)
+      |> Enum.filter(fn tile -> tile in @water_tiles end)
+      |> Enum.frequencies()
+
+    if Enum.empty?(frequencies) do
+      nil
+    else
+      frequencies
+      |> Enum.max_by(fn {_tile, count} -> count end)
+      |> elem(0)
     end
   end
 
   defp generate_tile(%__MODULE__{} = planet, {x, y} = coord) do
-    tile_by_perlin_noise(x, y, planet.land.noise_coef)
+    tile_by_perlin_noise(x, y, planet.land)
     |> tile_or_enemy(planet, coord)
     |> tile_or_loot()
     |> tile_or_npc(planet)
   end
 
-  defp get_neighbors(land, {x, y}, count, with_coord? \\ false) do
+  defp get_neighbors(land, coord, count, with_coord? \\ false) do
+    coord
+    |> neighbor_coords(count)
+    |> Enum.map(fn coord ->
+      tile = get_tile(land, coord)
+
+      if with_coord? do
+        {coord, tile}
+      else
+        tile
+      end
+    end)
+  end
+
+  defp neighbor_coords({x, y}, count) do
     Enum.map(1..count, fn n ->
       [
         {x - n, y - n},
@@ -1010,15 +1118,6 @@ defmodule Europa.Server.Planet do
       ]
     end)
     |> List.flatten()
-    |> Enum.map(fn coord ->
-      tile = get_tile(land, coord)
-
-      if with_coord? do
-        {coord, tile}
-      else
-        tile
-      end
-    end)
   end
 
   defp tile_or_loot(tile) do
@@ -1213,7 +1312,7 @@ defmodule Europa.Server.Planet do
 
       is_all_tiles_movable =
         Enum.all?(new_tiles, fn {{x, y}, _} ->
-          get_tile(land, {x, y}) |> is_nil() && tile_by_perlin_noise(x, y, land.noise_coef) in @movable_tiles
+          get_tile(land, {x, y}) |> is_nil() && tile_by_perlin_noise(x, y, land) in @movable_tiles
         end)
 
       if is_all_tiles_movable do
@@ -1298,7 +1397,7 @@ defmodule Europa.Server.Planet do
   defp prepare_predefined_tile(tile, _, _, _, _), do: tile
 
   defp predefined_stand_on_tile(land, {x, y}) do
-    tile_by_perlin_noise(x, y, land.noise_coef)
+    tile_by_perlin_noise(x, y, land)
   end
 
   # coveralls-ignore-stop

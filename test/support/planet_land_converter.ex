@@ -25,7 +25,8 @@ defmodule Europa.Support.PlanetLandConverter do
       max_y: Enum.count(matrix) - 1,
       min_x: 0,
       max_x: Enum.count(List.first(matrix)) - 1,
-      noise_coef: 0.1
+      noise_coef: 0.1,
+      region: :regular
     }
   end
 

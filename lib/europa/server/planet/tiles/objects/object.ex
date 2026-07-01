@@ -11,6 +11,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
     field :name, String.t(), enforce: true
     field :high?, boolean(), default: false
     field :warm?, boolean(), default: false
+    field :radioactive?, boolean(), default: false
     field :gif_tile?, boolean(), default: false
     field :image_name, String.t(), enforce: true
     field :stand_on, Planet.tile()

@@ -11,5 +11,6 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :gif_tile?, boolean(), default: false
     field :high?, boolean(), default: false
     field :warm?, boolean(), default: false
+    field :radioactive?, boolean(), default: false
   end
 end
