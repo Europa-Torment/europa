@@ -1070,7 +1070,7 @@ defmodule Europa.Server.Planet do
   defp neighbor_water_type(land, coord) do
     frequencies =
       land
-      |> get_neighbors(coord, 2)
+      |> get_neighbors(coord, 4)
       |> Enum.filter(fn tile -> tile in @water_tiles end)
       |> Enum.frequencies()
 

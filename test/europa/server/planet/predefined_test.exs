@@ -38,31 +38,55 @@ defmodule Europa.Server.Planet.PredefinedTest do
         |> Enum.with_index(fn row, i ->
           Enum.with_index(row, fn e, j ->
             case {i, j} do
-              {0, 0} -> assert e == @wall_left_up
-              {0, 1} -> assert e == @wall_up
-              {0, 2} -> assert_door_object(e, @door_up)
-              {0, 3} -> assert e == @wall_up
-              {0, 4} -> assert e == @wall_up
-              {0, 5} -> assert e == @wall_right_up
-              {1, 0} -> assert_door_object(e, @door_left)
-              {1, 1} -> assert e in @floors || loot?(e)
-              {1, 2} -> assert e == @wall_vertical_inside
-              {1, 3} -> assert e in @floors || enemy?(e)
-              {1, 4} -> assert e in @floors || enemy?(e) || {:npc, @floor}
-              {1, 5} -> assert_door_object(e, @door_right)
-              {2, 0} -> assert e == @wall_left
-              {2, 1} -> assert e in @floors || loot?(e)
+              {0, 0} -> assert e == :skip
+              {0, 1} -> assert e == :skip
+              {0, 2} -> assert e == :skip
+              {0, 3} -> assert e == :skip
+              {0, 4} -> assert e == :skip
+              {0, 5} -> assert e == :skip
+              {0, 6} -> assert e == :skip
+              {1, 0} -> assert e == :skip
+              {1, 1} -> assert e == @wall_left_up
+              {1, 2} -> assert e == @wall_up
+              {1, 3} -> assert_door_object(e, @door_up)
+              {1, 4} -> assert e == @wall_up
+              {1, 5} -> assert e == @wall_up
+              {1, 6} -> assert e == @wall_right_up
+              {1, 7} -> assert e == :skip
+              {2, 0} -> assert e == :skip
+              {2, 1} -> assert_door_object(e, @door_left)
               {2, 2} -> assert e in @floors || loot?(e)
-              {2, 3} -> assert e in @floors || loot?(e)
-              {2, 4} -> assert e in @floors || loot?(e)
-              {2, 5} -> assert e == @wall_right
-              {3, 0} -> assert e == @wall_left_down
-              {3, 1} -> assert e == @wall_down
-              {3, 2} -> assert_door_object(e, @door_down)
-              {3, 3} -> assert e == @wall_down
-              {3, 4} -> assert e == @wall_down
-              {3, 5} -> assert e == @wall_right_down
-              {3, 6} -> assert e == :skip
+              {2, 3} -> assert e == @wall_vertical_inside
+              {2, 4} -> assert e in @floors || enemy?(e)
+              {2, 5} -> assert e in @floors || enemy?(e) || {:npc, @floor}
+              {2, 6} -> assert_door_object(e, @door_right)
+              {2, 7} -> assert e == :skip
+              {3, 0} -> assert e == :skip
+              {3, 1} -> assert e == @wall_left
+              {3, 2} -> assert e in @floors || loot?(e)
+              {3, 3} -> assert e in @floors || loot?(e)
+              {3, 4} -> assert e in @floors || loot?(e)
+              {3, 5} -> assert e in @floors || loot?(e)
+              {3, 6} -> assert e == @wall_right
+              {3, 7} -> assert e == :skip
+              {4, 0} -> assert e == :skip
+              {4, 1} -> assert e == @wall_left_down
+              {4, 2} -> assert e == @wall_down
+              {4, 3} -> assert_door_object(e, @door_down)
+              {4, 4} -> assert e == @wall_down
+              {4, 5} -> assert e == @wall_down
+              {4, 6} -> assert e == @wall_right_down
+              {4, 7} -> assert e == :skip
+              {4, 8} -> assert e == :skip
+              {5, 0} -> assert e == :skip
+              {5, 1} -> assert e == :skip
+              {5, 2} -> assert e == :skip
+              {5, 3} -> assert e == :skip
+              {5, 4} -> assert e == :skip
+              {5, 5} -> assert e == :skip
+              {5, 6} -> assert e == :skip
+              {5, 7} -> assert e == :skip
+              {5, 8} -> assert e == :skip
             end
           end)
         end)
@@ -71,15 +95,19 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
     test "generates situation" do
       assert [
+               [:skip, :skip, :skip, :skip, :skip, :skip, :skip],
                [
+                 :skip,
                  %Enemy{},
                  %ItemBox{type: :human_body},
                  %Enemy{},
                  %ItemBox{type: :box},
                  shuttle,
                  npc_or_skip,
-                 %ItemBox{type: :monster_body}
-               ]
+                 %ItemBox{type: :monster_body},
+                 :skip
+               ],
+               [:skip, :skip, :skip, :skip, :skip, :skip, :skip]
              ] =
                Predefined.generate(:situation)
 

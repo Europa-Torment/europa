@@ -38,9 +38,11 @@ defmodule Europa.Server.Planet.Predefined do
 
   @npc_generate_possibility fetch_config!([Planet, :npc_generate_possibility])
 
+  @skip :skip
+
   @type category() :: unquote(@categories |> Map.keys() |> Types.one_of())
   @type npc :: {:npc, Tiles.Tile.t() | nil}
-  @type template() :: list(Tiles.Tile.t() | :skip | npc())
+  @type template() :: list(list(Tiles.Tile.t() | :skip | npc()))
 
   @spec generate_random() :: template()
   def generate_random do
@@ -62,10 +64,11 @@ defmodule Europa.Server.Planet.Predefined do
       |> Enum.map(fn e -> elem_to_tile(category, e) end)
     end)
     |> Enum.filter(fn r -> r != [] end)
+    |> add_borders()
   end
 
   # common
-  defp elem_to_tile(_, "*"), do: :skip
+  defp elem_to_tile(_, "*"), do: @skip
 
   # buildings
   defp elem_to_tile(:building, "l"), do: Objects.object(:wall_left)
@@ -134,7 +137,7 @@ defmodule Europa.Server.Planet.Predefined do
     if m_to_n?(1, @npc_generate_possibility) do
       {:npc, nil}
     else
-      :skip
+      @skip
     end
   end
 
@@ -144,6 +147,19 @@ defmodule Europa.Server.Planet.Predefined do
   end
 
   # Helpers
+
+  defp add_borders([]), do: []
+
+  defp add_borders(template) when is_list(template) do
+    inner = Enum.map(template, fn row -> [@skip | row ++ [@skip]] end)
+    first_len = List.first(template) |> length()
+    last_len = List.last(template) |> length()
+
+    top_border = List.duplicate(@skip, first_len)
+    bottom_border = List.duplicate(@skip, last_len)
+
+    [top_border | inner ++ [bottom_border]]
+  end
 
   defp maybe_lock_door(%Object{} = door) do
     if m_to_n?(1, @locked_door_possibility) do
