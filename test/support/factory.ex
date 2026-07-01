@@ -246,6 +246,8 @@ defmodule Europa.Support.Factory do
       current_coord: Map.get(opts, :current_coord, {4, 5}),
       predefined_cluster_coord: Map.get(opts, :predefined_cluster_coord, {400, 500}),
       land: Map.get(opts, :land, default_land()),
+      moves_count: Map.get(opts, :moves_count, 0),
+      great_red_spots: Map.get(opts, :great_red_spots, 0),
       characters_pid: characters_pid
     }
   end

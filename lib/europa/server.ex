@@ -46,8 +46,6 @@ defmodule Europa.Server do
     field :planet, Planet.t()
     field :player, Player.t()
     field :chat, Chat.t()
-    field :moves_count, non_neg_integer()
-    field :great_red_spots, non_neg_integer()
     field :killed_enemies, non_neg_integer()
     field :start_datetime, DateTime.t()
     field :current_year_after_disaster, pos_integer()
@@ -261,8 +259,6 @@ defmodule Europa.Server do
       planet: planet,
       chat: chat,
       player: player,
-      moves_count: 0,
-      great_red_spots: 0,
       killed_enemies: 0,
       start_datetime: initial_datetime,
       current_year_after_disaster: current_year_after_disaster,
@@ -622,8 +618,8 @@ defmodule Europa.Server do
     {_year, days, _} = do_get_current_time(state)
 
     stats = %{
-      moves_count: state.moves_count,
-      great_red_spots: state.great_red_spots,
+      moves_count: state.planet.moves_count,
+      great_red_spots: state.planet.great_red_spots,
       killed_enemies: state.killed_enemies,
       days: days - 1
     }
@@ -669,7 +665,6 @@ defmodule Europa.Server do
        planet: updated_planet,
        player: updated_player,
        chat: updated_chat,
-       moves_count: state.moves_count + moves_count,
        current_datetime: shift_datetime(state.current_datetime, moves_count)
      ), @inactivity_timeout_ms}
   end
@@ -708,8 +703,7 @@ defmodule Europa.Server do
 
       struct!(state,
         planet: updated_planet,
-        chat: Chat.add_message(state.chat, message),
-        great_red_spots: state.great_red_spots + 1
+        chat: Chat.add_message(state.chat, message)
       )
     else
       state

@@ -1037,6 +1037,14 @@ defmodule Europa.Server.PlanetTest do
       assert updated_land == @land_player_up_close_to_enemy
     end
 
+    test "updates moves_count" do
+      planet = build(:planet, moves_count: 100, land: @land_player_look_up_at_enemy, current_coord: {4, 7})
+      moves_count = 5
+      expected_moves_count = planet.moves_count + moves_count
+
+      assert {:ok, %Planet{moves_count: ^expected_moves_count}, _} = Planet.tick(planet, moves_count)
+    end
+
     @tag perfomance: true
     test "tick is fast enough" do
       acceptable_time_ms = 200
@@ -1189,7 +1197,9 @@ defmodule Europa.Server.PlanetTest do
       %Planet.Land{tiles: expected_tiles} =
         Planet.get_visible_land(planet, @midday) |> PlanetLandConverter.from_matrix()
 
-      assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {2, 2}}} = Planet.crop_land(planet)
+      assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {2, 2}, great_red_spots: 1}} =
+               Planet.crop_land(planet)
+
       assert Enum.count(tiles) == Enum.count(expected_tiles)
       assert Map.values(tiles) == Map.values(expected_tiles)
     end

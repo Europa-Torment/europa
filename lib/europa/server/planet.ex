@@ -115,10 +115,12 @@ defmodule Europa.Server.Planet do
   end
 
   typedstruct enforce: true do
-    field :land, Land.t(), enforce: true
-    field :current_coord, coord(), enforce: true
+    field :land, Land.t()
+    field :current_coord, coord()
     field :predefined_cluster_coord, coord()
-    field :year, pos_integer(), enforce: true
+    field :year, pos_integer()
+    field :moves_count, non_neg_integer()
+    field :great_red_spots, non_neg_integer()
     field :characters_pid, pid(), enforce: true
   end
 
@@ -135,6 +137,8 @@ defmodule Europa.Server.Planet do
         current_coord: initial_coord(),
         predefined_cluster_coord: initial_coord(),
         year: year,
+        moves_count: 0,
+        great_red_spots: 0,
         characters_pid: characters_pid
       }
 
@@ -211,7 +215,9 @@ defmodule Europa.Server.Planet do
 
     updated_land = struct!(land, tiles: new_tiles, min_x: 0, max_x: max_x, min_y: 0, max_y: max_y)
     current_coord = {div(@view_distance, 2), div(@view_distance, 2)}
-    updated_planet = struct!(planet, land: updated_land, current_coord: current_coord)
+
+    updated_planet =
+      struct!(planet, land: updated_land, current_coord: current_coord, great_red_spots: planet.great_red_spots + 1)
 
     {:ok, updated_planet}
   end
@@ -274,7 +280,10 @@ defmodule Europa.Server.Planet do
 
   @impl true
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
-    do_tick(planet, moves_count, [])
+    planet
+    |> maybe_set_new_predefined_cluster_coord()
+    |> increment_moves_count(moves_count)
+    |> do_tick(moves_count, [])
   end
 
   def tick(%__MODULE__{} = planet, _) do
@@ -339,8 +348,7 @@ defmodule Europa.Server.Planet do
   defp do_tick(%__MODULE__{} = planet, moves_count, actions) do
     ticks = [
       fn planet -> maybe_perform_enemies_actions(planet) end,
-      fn planet -> maybe_warm_up(planet) end,
-      fn planet -> maybe_set_new_predefined_cluster_coord(planet) end
+      fn planet -> maybe_warm_up(planet) end
     ]
 
     {updated_planet, actions} =
@@ -609,10 +617,14 @@ defmodule Europa.Server.Planet do
 
   defp maybe_set_new_predefined_cluster_coord(%__MODULE__{} = planet) do
     if coords_distance(planet.current_coord, planet.predefined_cluster_coord) >= @predefined_cluster_update_distance do
-      {struct!(planet, predefined_cluster_coord: planet.current_coord), _actions = []}
+      struct!(planet, predefined_cluster_coord: planet.current_coord)
     else
-      {planet, _actions = []}
+      planet
     end
+  end
+
+  defp increment_moves_count(%__MODULE__{} = planet, moves_count) when is_integer(moves_count) do
+    struct!(planet, moves_count: planet.moves_count + moves_count)
   end
 
   defp maybe_warm_up(%__MODULE__{} = planet) do
@@ -1050,11 +1062,17 @@ defmodule Europa.Server.Planet do
       |> get_neighbors(coord, 3)
       |> Enum.count(fn tile -> tile == @water end)
 
-    if around_water_count > 0 do
-      {around_water_count, div(@base_enemy_generate_possibility - planet.year, around_water_count * 2)}
-    else
-      {1, @base_enemy_generate_possibility}
-    end
+    moves_count_factor = div(planet.moves_count, 500) * 5
+    great_red_spots_factor = planet.great_red_spots * 10
+
+    {m, n} =
+      if around_water_count > 0 do
+        {around_water_count, div(@base_enemy_generate_possibility - planet.year, around_water_count * 2)}
+      else
+        {max(moves_count_factor + great_red_spots_factor, 1), @base_enemy_generate_possibility}
+      end
+
+    {min(m, div(n, 2)), n}
   end
 
   defp center_coord do
