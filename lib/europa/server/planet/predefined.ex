@@ -10,19 +10,21 @@ defmodule Europa.Server.Planet.Predefined do
   alias Europa.Server.Enemy
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Planet.Predefined.Utils.FilesReader
 
-  alias Europa.Tools.FilesCache
   alias Europa.Tools.Types
 
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
 
-  @default_templates_path "/planet"
+  @tempaltes_path fetch_config!([__MODULE__, :templates_path])
 
   @categories %{
     building: %{dir: "/buildings", weight: 1.0},
     situation: %{dir: "/situations", weight: 0.4}
   }
+
+  @templates FilesReader.parse_files(@tempaltes_path, @categories)
 
   @futniture_item_box_types Loot.furniture_item_box_types()
 
@@ -54,8 +56,9 @@ defmodule Europa.Server.Planet.Predefined do
 
   @spec generate(category()) :: template()
   def generate(category) do
-    category
-    |> parse_random_file()
+    @templates
+    |> Map.fetch!(category)
+    |> Enum.random()
     |> String.split("\n")
     |> Enum.map(fn row ->
       row
@@ -168,35 +171,5 @@ defmodule Europa.Server.Planet.Predefined do
     else
       door
     end
-  end
-
-  defp parse_random_file(category) do
-    priv_dir = :code.priv_dir(:europa)
-    path = Path.join([priv_dir, templates_path(), Map.fetch!(@categories, category) |> Map.fetch!(:dir)])
-
-    filename =
-      path
-      |> File.ls!()
-      |> Enum.random()
-
-    path = Path.join(path, filename)
-
-    case FilesCache.get(path) do
-      {:ok, cached_file} when not is_nil(cached_file) ->
-        cached_file
-
-      _ ->
-        do_parse_file(path)
-    end
-  end
-
-  defp do_parse_file(path) do
-    path
-    |> File.read!()
-    |> tap(fn file_content -> FilesCache.put(path, file_content) end)
-  end
-
-  defp templates_path do
-    get_config(__MODULE__, []) |> Keyword.get(:templates_path, @default_templates_path)
   end
 end

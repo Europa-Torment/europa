@@ -1,9 +1,9 @@
 defmodule Europa.Server.Characters.Utils.FilesReaderTest do
   use Europa.DataCase
 
-  @filename "characters.json"
-
   alias Europa.Server.Characters.Utils.FilesReader
+
+  @filename "characters.json"
 
   describe "parse_file/1" do
     test "returns parsed file as list" do

@@ -48,6 +48,7 @@ config :europa, Europa.Server.Planet,
   predefined_cluster_update_distance: 150
 
 config :europa, Europa.Server.Planet.Predefined,
+  templates_path: "/planet/",
   building: [
     enemy_generate_possibility: 100,
     loot_generate_possibility: 3,
