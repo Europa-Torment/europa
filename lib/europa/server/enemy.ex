@@ -4,12 +4,11 @@ defmodule Europa.Server.Enemy do
 
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Enemy.Utils.FilesReader
   alias Europa.Tools.AttrsDeterminator
-  alias Europa.Tools.FilesCache
   alias Europa.Tools.Types
 
-  @templates_path "/enemies/"
-  @filename "enemies.json"
+  @enemies_attrs FilesReader.parse_file()
 
   @allowed_enemy_types [:monster]
 
@@ -56,7 +55,7 @@ defmodule Europa.Server.Enemy do
 
   @spec generate_enemy() :: t()
   def generate_enemy do
-    parse_file()
+    @enemies_attrs
     |> WeightedRandom.take_one()
     |> AttrsDeterminator.determine_attrs()
     |> new()
@@ -71,22 +70,5 @@ defmodule Europa.Server.Enemy do
   @spec stand_on(t(), Planet.tile()) :: t()
   def stand_on(%__MODULE__{} = enemy, tile) do
     struct!(enemy, stand_on: tile)
-  end
-
-  defp parse_file do
-    priv_dir = :code.priv_dir(:europa)
-    path = Path.join([priv_dir, @templates_path, @filename])
-
-    case FilesCache.get(path) do
-      {:ok, cached_file} ->
-        cached_file
-
-      _ ->
-        path
-        |> File.read!()
-        |> Jason.decode!(keys: :atoms)
-        |> Enum.map(fn attrs -> {attrs, attrs.random_weight} end)
-        |> tap(fn file_content -> FilesCache.put(path, file_content) end)
-    end
   end
 end
