@@ -90,7 +90,7 @@
         "level": 3,
         "parts_count": 4,
         "weight": 7.0,
-        "image_name": "default_pistol",
+        "image_name": "ssb_rifle",
         "sound_name": "rifle",
         "random_weight": 0.4
     },
@@ -109,7 +109,7 @@
         "level": 3,
         "parts_count": 4,
         "weight": 15.5,
-        "image_name": "default_pistol",
+        "image_name": "hawks_eye",
         "sound_name": "rifle",
         "random_weight": 0.25
     },
@@ -128,7 +128,7 @@
         "level": 4,
         "parts_count": 4,
         "weight": 15.0,
-        "image_name": "default_pistol",
+        "image_name": "atom_splitter",
         "sound_name": "laser",
         "random_weight": 0.05
     },
@@ -147,7 +147,7 @@
         "level": 4,
         "parts_count": 2,
         "weight": 4.0,
-        "image_name": "default_pistol",
+        "image_name": "etc_laser_cutter",
         "sound_name": "laser",
         "random_weight": 0.06
     }
