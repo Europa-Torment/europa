@@ -2,9 +2,12 @@ defmodule Europa.Server.Characters do
   use GenServer
   use TypedStruct
 
-  alias Europa.Tools.FilesCache
+  alias Europa.Server.Characters.Utils.FilesReader
 
-  @default_filename "characters.json"
+  import Europa.Tools.Conf
+
+  @filename fetch_config!([__MODULE__, :filename])
+  @raw_characters FilesReader.parse_file(@filename)
 
   defmodule Character do
     use Gettext, backend: Europa.Gettext
@@ -95,9 +98,9 @@ defmodule Europa.Server.Characters do
 
   ### PUBLIC INTERFACE ###
 
-  @spec start_link(filename :: String.t()) :: :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(filename \\ @default_filename) do
-    GenServer.start_link(__MODULE__, filename)
+  @spec start_link() :: :ignore | {:error, any()} | {:ok, pid()}
+  def start_link do
+    GenServer.start_link(__MODULE__, nil)
   end
 
   @spec pick_main(pid()) :: {:ok, Character.t()} | {:error, :already_picked}
@@ -113,8 +116,9 @@ defmodule Europa.Server.Characters do
   ### CALLBACKS ###
 
   @impl true
-  def init(filename) do
-    state = %State{main_character_picked?: false, characters: initial_characters(filename)}
+  def init(_args) do
+    init_characters = Enum.map(@raw_characters, &Character.from_map!/1)
+    state = %State{main_character_picked?: false, characters: init_characters}
     {:ok, state}
   end
 
@@ -172,28 +176,5 @@ defmodule Europa.Server.Characters do
     second_years = MapSet.new(second_character.years)
 
     MapSet.intersection(first_years, second_years) |> MapSet.to_list() != []
-  end
-
-  defp initial_characters(filename) do
-    priv_dir = :code.priv_dir(:europa)
-    path = Path.join([priv_dir, "characters", filename])
-
-    case FilesCache.get(path) do
-      {:ok, file_content} ->
-        file_content
-
-      _ ->
-        path
-        |> File.read!()
-    end
-    |> parse_characters()
-  end
-
-  defp parse_characters(raw_characters) do
-    raw_characters
-    |> Jason.decode!()
-    |> Enum.map(fn raw_character ->
-      Character.from_map!(raw_character)
-    end)
   end
 end

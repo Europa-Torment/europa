@@ -106,6 +106,8 @@ config :europa, :game_params,
     aim_mode_moves_penalty: 1
   ]
 
+config :europa, Europa.Server.Characters, filename: "characters.json"
+
 config :europa, :control_bindings,
   move_up: ["ArrowUp", "W", "w"],
   move_down: ["ArrowDown", "S", "s"],

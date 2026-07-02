@@ -30,6 +30,8 @@ config :europa, Europa.Server.Planet.Predefined,
     loot_generate_possibility: 1
   ]
 
+config :europa, Europa.Server.Characters, filename: "test_characters.json"
+
 # Changing will break tests
 config :europa, Europa.Server.Planet,
   initial_game_field: [width: 20, height: 20],

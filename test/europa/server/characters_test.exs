@@ -4,10 +4,8 @@ defmodule Europa.Server.CharactersTest do
   alias Europa.Server.Characters
   alias Europa.Server.Characters.Character
 
-  @filename "test_characters.json"
-
   setup do
-    {:ok, pid} = Characters.start_link(@filename)
+    {:ok, pid} = Characters.start_link()
     {:ok, pid: pid}
   end
 
