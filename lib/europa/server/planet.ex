@@ -1,4 +1,3 @@
-# TODO: optimizations required
 defmodule Europa.Server.Planet do
   @behaviour Europa.Server.PlanetManager
 
@@ -177,8 +176,6 @@ defmodule Europa.Server.Planet do
     tile_by_perlin_noise(x, y, planet.land)
   end
 
-  # Too trivial for testing
-  # coveralls-ignore-start
   @impl true
   def view_distance, do: @view_distance
 
@@ -187,7 +184,6 @@ defmodule Europa.Server.Planet do
 
   @impl true
   def allowed_directions, do: @directions
-  # coveralls-ignore-stop
 
   @impl true
   def readable_tile_name(%Loot.ItemBox{} = item_box), do: Loot.ItemBox.readable_name(item_box)

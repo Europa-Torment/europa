@@ -695,6 +695,26 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
+  describe "view_distance/0" do
+    test "returns pos integer" do
+      distance = Planet.view_distance()
+      assert is_integer(distance)
+      assert distance > 0
+    end
+  end
+
+  describe "player/0" do
+    test "returns :player atom" do
+      assert Planet.player() == :player
+    end
+  end
+
+  describe "allow_directions/0" do
+    test "returns list of allowed move directions" do
+      assert Planet.allowed_directions() == [:up, :down, :right, :left]
+    end
+  end
+
   describe "readable_tile_name/1" do
     test "returns string name for tile" do
       for tile <- @tiles do
