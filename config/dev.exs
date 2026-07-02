@@ -1,7 +1,6 @@
 import Config
 
-config :europa, Europa.Games,
-  active_games_per_user_limit: 300
+config :europa, Europa.Games, active_games_per_user_limit: 300
 
 # Configure your database
 config :europa, Europa.Repo,

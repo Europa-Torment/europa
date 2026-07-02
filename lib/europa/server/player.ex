@@ -613,7 +613,7 @@ defmodule Europa.Server.Player do
       radiation > 0 ->
         {increase_radiation(player, radiation), [Action.new(:player, :radiation_contamination)]}
 
-      radiation == 0 && player.radiation > 0 && m_to_n?(1, 20) ->
+      radiation == 0 && player.radiation > 0 && m_to_n?(1, 5) ->
         {increase_radiation(player, -1), []}
 
       true ->
