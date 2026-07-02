@@ -600,6 +600,10 @@ defmodule Europa.Server.Planet do
     struct!(monster_body, items: items ++ monster_body.items)
   end
 
+  defp generate_monster_body(%Enemy{stand_on: %Object{stand_on: stand_on}}) do
+    Loot.generate_item_box(:monster_body, tile_without_blood(stand_on))
+  end
+
   defp generate_monster_body(%Enemy{} = enemy) do
     Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
   end
