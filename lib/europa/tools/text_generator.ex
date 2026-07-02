@@ -1,15 +1,18 @@
 defmodule Europa.Tools.TextGenerator do
   alias Europa.Tools.Types
-  alias Europa.Tools.FilesCache
+  alias Europa.Tools.TextGenerator.Utils.FilesReader
 
   import Europa.Tools.Conf
 
-  @categories [:great_red_spot]
-  @default_texts_path "/texts_templates/"
+  @texts_path fetch_config!([__MODULE__, :texts_path])
 
-  @filenames %{
+  @templates %{
     great_red_spot: "story.json"
   }
+
+  @categories Map.keys(@templates)
+
+  @templates FilesReader.parse_files(@texts_path, @templates)
 
   @type category :: unquote(Types.one_of(@categories))
   @type vars :: keyword()
@@ -23,8 +26,8 @@ defmodule Europa.Tools.TextGenerator do
     generate_for_category(category, vars)
   end
 
-  defp generate_for_category(:great_red_spot, vars) do
-    template = parse_file(:great_red_spot)
+  defp generate_for_category(:great_red_spot = category, vars) do
+    template = Map.fetch!(@templates, category)
     get_text(template, "great_red_spot", vars)
   end
 
@@ -37,29 +40,5 @@ defmodule Europa.Tools.TextGenerator do
   defp do_get_text(%{"type" => "random", "texts" => texts}, vars) do
     text = Enum.random(texts)
     EEx.eval_string(text, vars)
-  end
-
-  defp parse_file(category) do
-    priv_dir = :code.priv_dir(:europa)
-    path = Path.join([priv_dir, texts_path(), Map.get(@filenames, category)])
-
-    case FilesCache.get(path) do
-      {:ok, cached_file} when not is_nil(cached_file) ->
-        cached_file
-
-      _ ->
-        do_parse_file(path)
-    end
-  end
-
-  defp do_parse_file(path) do
-    path
-    |> File.read!()
-    |> Jason.decode!()
-    |> tap(fn file_content -> FilesCache.put(path, file_content) end)
-  end
-
-  defp texts_path do
-    get_config(__MODULE__, []) |> Keyword.get(:texts_path, @default_texts_path)
   end
 end

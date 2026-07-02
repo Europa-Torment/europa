@@ -5,14 +5,12 @@ defmodule Europa.Application do
 
   use Application
 
-  alias Europa.Tools.FilesCache
   alias Europa.Games
 
   @impl true
   def start(_type, _args) do
     children = [
       EuropaWeb.Telemetry,
-      FilesCache,
       Europa.Repo,
       Europa.Server.Sup,
       Europa.Games.LeadersCache,

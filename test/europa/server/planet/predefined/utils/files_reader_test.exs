@@ -10,7 +10,7 @@ defmodule Europa.Server.Planet.Predefined.Utils.FilesReaderTest do
     situation: %{dir: "/situations"}
   }
 
-  describe "parse_file/1" do
+  describe "parse_files/2" do
     test "returns parsed file as map" do
       result = FilesReader.parse_files(@path, @categories)
       assert is_map(result)

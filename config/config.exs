@@ -109,6 +109,8 @@ config :europa, :game_params,
 
 config :europa, Europa.Server.Characters, filename: "characters.json"
 
+config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/"
+
 config :europa, :control_bindings,
   move_up: ["ArrowUp", "W", "w"],
   move_down: ["ArrowDown", "S", "s"],
