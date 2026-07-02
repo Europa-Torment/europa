@@ -339,10 +339,14 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp do_interact(%Object{transforms_to_tile: tile_name} = object, planet, player, opts) when not is_nil(tile_name) do
+  defp do_interact(%Object{transforms_to: transforms_to} = object, planet, player, opts)
+       when not is_nil(transforms_to) do
     if (object.transform_requirements && forced_interaction?(opts)) || is_nil(object.transform_requirements) do
       target_coord = target_coord(planet, player.view_direction)
-      transformed_tile = Object.transform(object)
+
+      transformed_tile =
+        Object.transform(object)
+        |> prepare_predefined_tile(planet.land, target_coord, planet.characters_pid, planet.year)
 
       updated_land =
         planet.land
@@ -591,8 +595,8 @@ defmodule Europa.Server.Planet do
     {npc, change_tile(land, coord, generate_human_body(npc))}
   end
 
-  defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items}} = enemy) do
-    monster_body = Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
+  defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}}) do
+    monster_body = Loot.generate_item_box(:monster_body, tile_without_blood(stand_on))
     struct!(monster_body, items: items ++ monster_body.items)
   end
 
@@ -602,6 +606,12 @@ defmodule Europa.Server.Planet do
 
   defp generate_human_body(%Npc{} = npc) do
     Loot.generate_item_box(:human_body, tile_without_blood(npc.stand_on))
+  end
+
+  # this is for "skip" object, see Objects module
+  defp blood_tile(%Object{name: "", image_name: "", stand_on: tile} = object) do
+    blood_tile = blood_tile(tile)
+    Object.stand_on(object, blood_tile)
   end
 
   defp blood_tile(tile) do
@@ -821,7 +831,10 @@ defmodule Europa.Server.Planet do
       tile when tile in @movable_tiles ->
         true
 
-      %Loot.ItemBox{type: type} when type in [:monster_body, :bunch] ->
+      %Loot.ItemBox{type: type} when type in [:monster_body, :bag] ->
+        true
+
+      %Object{movable?: true} ->
         true
 
       _ ->
@@ -879,7 +892,7 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp maybe_delete_empty_item_box(%Loot.ItemBox{type: :bunch, items: [], stand_on: stand_on}), do: stand_on
+  defp maybe_delete_empty_item_box(%Loot.ItemBox{type: :bag, items: [], stand_on: stand_on}), do: stand_on
   defp maybe_delete_empty_item_box(item_box), do: item_box
 
   defp do_move(planet, tile, target_coord, direction, player_stand_on) do
@@ -934,7 +947,11 @@ defmodule Europa.Server.Planet do
     struct!(land, tiles: tiles)
   end
 
-  defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in [:monster_body, :bunch] do
+  defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in [:monster_body, :bag] do
+    move_cost(tile)
+  end
+
+  defp move_cost(%Object{movable?: true, stand_on: tile}) do
     move_cost(tile)
   end
 
@@ -1024,7 +1041,7 @@ defmodule Europa.Server.Planet do
     cond do
       noise < -0.4 ->
         # do not stack diff water tiles
-        neighbor_water_type(land, {x, y}) || region.water_tile
+        neighbor_water_type(land, {x, y}, region.water_tile) || region.water_tile
 
       noise >= -0.5 && noise <= 0.2 ->
         @ice
@@ -1034,20 +1051,10 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp neighbor_water_type(land, coord) do
-    frequencies =
-      land
-      |> get_neighbors(coord, 4)
-      |> Enum.filter(fn tile -> tile in @water_tiles end)
-      |> Enum.frequencies()
-
-    if Enum.empty?(frequencies) do
-      nil
-    else
-      frequencies
-      |> Enum.max_by(fn {_tile, count} -> count end)
-      |> elem(0)
-    end
+  defp neighbor_water_type(land, coord, current_region_water) do
+    land
+    |> get_neighbors(coord, 4)
+    |> Enum.find(fn tile -> tile in @water_tiles && tile != current_region_water end)
   end
 
   defp generate_tile(%__MODULE__{} = planet, {x, y} = coord) do
@@ -1330,7 +1337,6 @@ defmodule Europa.Server.Planet do
       end)
     end)
     |> List.flatten()
-    |> Enum.filter(fn {_, tile} -> tile != :skip end)
     |> Enum.into(%{})
   end
 

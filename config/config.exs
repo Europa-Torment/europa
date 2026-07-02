@@ -52,7 +52,9 @@ config :europa, Europa.Server.Planet.Predefined,
   building: [
     enemy_generate_possibility: 100,
     loot_generate_possibility: 3,
-    locked_door_possibility: 10
+    locked_door_possibility: 10,
+    broken_building_possibility: 10,
+    broken_wall_possibility: 5
   ]
 
 config :europa, Europa.Games,

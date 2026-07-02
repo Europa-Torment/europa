@@ -2,9 +2,11 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
   use Europa.DataCase
 
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Planet.Tiles.Objects.Object
 
   @snow Tiles.tile(:snow).atom_value
+  @bonfire Objects.object(:bonfire)
 
   describe "stand_on/2" do
     setup do
@@ -18,13 +20,18 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
   end
 
   describe "transform/1" do
-    test "returns tile atom value" do
-      object = build(:object, transforms_to_tile: :snow)
+    test "transforms object to tile" do
+      object = build(:object, transforms_to: {:tile, :snow})
       assert Object.transform(object) == @snow
     end
 
+    test "transforms object to object" do
+      object = build(:object, transforms_to: {:object, :bonfire})
+      assert Object.transform(object) == @bonfire
+    end
+
     test "returns unchanged object if not transformable" do
-      object = build(:object, transforms_to_tile: nil)
+      object = build(:object, transforms_to: nil)
       assert Object.transform(object) == object
     end
   end

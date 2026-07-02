@@ -840,7 +840,7 @@ defmodule Europa.Server do
 
   defp add_player_items(%Player{} = player, items) when is_list(items) do
     Enum.reduce(items, player, fn item, player ->
-      {:ok, updated_player} = Player.add_item(player, item)
+      {:ok, updated_player} = PlayerManager.add_item(player, item)
       updated_player
     end)
   end
@@ -848,7 +848,7 @@ defmodule Europa.Server do
   defp equip_player_items(%Player{} = player, items) when is_list(items) do
     Enum.reduce(items, player, fn item, player ->
       if Loot.Item.equipable?(item) do
-        {:ok, updated_player} = Player.equip_item(player, item.uuid)
+        {:ok, updated_player} = PlayerManager.equip_item(player, item.uuid)
         updated_player
       else
         player
@@ -864,14 +864,14 @@ defmodule Europa.Server do
 
           player
           |> PlayerManager.take_damage(enemy.damage)
-          |> Player.stand_on(blood_tile)
+          |> PlayerManager.stand_on(blood_tile)
           |> maybe_add_radiation(enemy)
 
         %Action{action_type: :warm_up, subject: :player} ->
           PlayerManager.warm_up(player, @warm_up_quantity)
 
         %Action{action_type: :radiation_contamination, subject: :player} ->
-          PlayerManager.increase_radiation(player, 1)
+          PlayerManager.increase_radiation(player, 3)
 
         _ ->
           player
@@ -889,6 +889,12 @@ defmodule Europa.Server do
   end
 
   defp maybe_add_radiation(player, _), do: player
+
+  # this is for "skip" object, see Objects module
+  defp blood_tile(%Object{name: "", image_name: "", stand_on: tile} = object) do
+    blood_tile = blood_tile(tile)
+    Object.stand_on(object, blood_tile)
+  end
 
   defp blood_tile(tile) do
     case Tiles.tile_by_atom_value(tile) do

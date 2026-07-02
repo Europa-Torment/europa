@@ -3,8 +3,11 @@ defmodule Europa.Server.Planet.Tiles.Objects do
 
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
+  alias Europa.Server.Loot.Tool
 
   @objects %{
+    # object used to leave space unoccupied
+    skip: %Object{name: gettext(""), image_name: "", high?: false, movable?: true},
     wall_up: %Object{name: gettext("wall"), image_name: "wall_up", high?: true},
     wall_down: %Object{name: gettext("wall"), image_name: "wall_down", high?: true},
     wall_right: %Object{name: gettext("wall"), image_name: "wall_right", high?: true},
@@ -19,35 +22,44 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       high?: true,
       stand_on: Tiles.tile(:floor).atom_value
     },
+    broken_wall: %Object{name: gettext("broken wall"), image_name: "broken_wall", high?: false, movable?: true},
     door_up: %Object{
       name: gettext("door"),
       image_name: "door_horizontal",
       high?: true,
-      transforms_to_tile: :open_up_door,
+      transforms_to: {:tile, :open_up_door},
       transform_sound_name: "open_door"
     },
     door_down: %Object{
       name: gettext("door"),
       image_name: "door_horizontal",
       high?: true,
-      transforms_to_tile: :open_down_door,
+      transforms_to: {:tile, :open_down_door},
       transform_sound_name: "open_door"
     },
     door_left: %Object{
       name: gettext("door"),
       image_name: "door_left",
       high?: true,
-      transforms_to_tile: :open_left_door,
+      transforms_to: {:tile, :open_left_door},
       transform_sound_name: "open_door"
     },
     door_right: %Object{
       name: gettext("door"),
       image_name: "door_right",
       high?: true,
-      transforms_to_tile: :open_right_door,
+      transforms_to: {:tile, :open_right_door},
       transform_sound_name: "open_door"
     },
-    bonefire: %Object{name: gettext("bonefire"), image_name: "bonefire", warm?: true},
+    bonfire: %Object{name: gettext("bonfire"), image_name: "bonfire", warm?: true, gif_tile?: true},
+    bonfire_base: %Object{
+      name: gettext("extinguished bonfire"),
+      image_name: "bonfire_base",
+      warm?: false,
+      transforms_to: {:object, :bonfire},
+      transform_requirements: [Tool.generate_matches()],
+      transform_sound_name: "matches"
+    },
     fire_shuttle: %Object{name: gettext("burning shuttle"), image_name: "fire_shuttle", gif_tile?: true, warm?: true}
   }
 

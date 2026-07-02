@@ -75,12 +75,21 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   @spec composed_name(Supply.t()) :: String.t()
   def composed_name(%Supply{} = supply) do
+    properties =
+      if significant_properties(supply.properties) |> Enum.empty?() do
+        " "
+      else
+        [
+          " (",
+          properties_for_composed_name(supply.properties),
+          ") "
+        ]
+        |> Enum.join("")
+      end
+
     [
       supply.name,
-      " (",
-      properties_for_composed_name(supply.properties),
-      " CC:#{supply.consume_cost}",
-      ") ",
+      properties,
       "(#{supply.count})"
     ]
     |> to_string()

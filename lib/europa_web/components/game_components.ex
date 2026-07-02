@@ -6,6 +6,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
+  alias Europa.Server.PlayerManager
   alias Europa.Server.Player
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
@@ -548,7 +549,7 @@ defmodule EuropaWeb.GameCompotents do
     <ul class="list-disc list-inside space-y-2 text-sm">
       <%= for tool <- @tools do %>
         <li class={required_tool_class(@player, tool)}>
-          {Loot.Item.composed_name(tool)}
+          {Loot.Item.composed_name(tool)}, {gettext("you have")}: {PlayerManager.tools_amount(@player, tool)}
         </li>
       <% end %>
     </ul>
@@ -683,7 +684,7 @@ defmodule EuropaWeb.GameCompotents do
                     data-tooltip={craft_item_tooltip(item, required_tools, @player)}
                   >
                     {craft_item_name(item)}
-                    <%= if Player.enough_tools?(@player, required_tools) do %>
+                    <%= if PlayerManager.enough_tools?(@player, required_tools) do %>
                       <div class="tooltip" data-tip={"#{gettext("Create")}"}>
                         <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>
                           🛠️ <.moves_count moves_count={@craft_moves_count} />
@@ -745,7 +746,7 @@ defmodule EuropaWeb.GameCompotents do
   defp craft_tools_requirements(tools, %Player{} = player) when is_list(tools) do
     tools
     |> Enum.map(fn required_tool ->
-      player_tools_count = Player.tools_amount(player, required_tool)
+      player_tools_count = PlayerManager.tools_amount(player, required_tool)
       count = "#{player_tools_count}/#{required_tool.count}"
       count_class = required_tool_class(player_tools_count, required_tool)
 
@@ -756,7 +757,7 @@ defmodule EuropaWeb.GameCompotents do
 
   defp required_tool_class(%Player{} = player, required_tool) do
     player
-    |> Player.tools_amount(required_tool)
+    |> PlayerManager.tools_amount(required_tool)
     |> required_tool_class(required_tool)
   end
 
@@ -858,7 +859,7 @@ defmodule EuropaWeb.GameCompotents do
     case tile do
       @player ->
         player
-        |> Player.readable_stats()
+        |> PlayerManager.readable_stats()
         |> to_ul()
 
       %Enemy{} = enemy ->
@@ -868,6 +869,10 @@ defmodule EuropaWeb.GameCompotents do
 
       %Npc{} = npc ->
         Npc.readable_stats(npc) |> to_ul()
+
+      # this is for "skip" object, see Objects module
+      %Object{name: "", image_name: "", stand_on: tile} ->
+        tile_tooltip(tile, player)
 
       tile ->
         Planet.readable_tile_name(tile)
@@ -893,8 +898,8 @@ defmodule EuropaWeb.GameCompotents do
     "player_#{view_direction}_#{landscape_name(stand_on)}.png"
   end
 
-  defp get_image_name(%ItemBox{type: :bunch, stand_on: stand_on}, _) do
-    "monster_corpse_#{landscape_name(stand_on)}.png"
+  defp get_image_name(%ItemBox{type: :bag, stand_on: stand_on}, _) do
+    "bag_#{landscape_name(stand_on)}.png"
   end
 
   defp get_image_name(%ItemBox{type: :monster_body, stand_on: stand_on}, _) do
@@ -929,6 +934,11 @@ defmodule EuropaWeb.GameCompotents do
     "player_down_#{landscape_name(stand_on)}.png"
   end
 
+  # this is for "skip" object, see Objects module
+  defp get_image_name(%Object{name: "", image_name: "", stand_on: tile}, player) do
+    get_image_name(tile, player)
+  end
+
   defp get_image_name(%Object{gif_tile?: true, image_name: image_name, stand_on: stand_on}, _) do
     "#{image_name}_#{landscape_name(stand_on)}.gif"
   end
@@ -945,43 +955,54 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp landscape_name(%ItemBox{stand_on: stand_on}),
+  # this is for "skip" object, see Objects module
+  defp landscape_name(%Object{name: "", image_name: "", stand_on: tile}) do
+    landscape_name(tile)
+  end
+
+  defp landscape_name(%Object{movable?: true, image_name: image_name, stand_on: stand_on}),
+    do: "#{image_name}_#{landscape_name(stand_on)}"
+
+  defp landscape_name(%ItemBox{type: :monster_body, stand_on: stand_on}),
     do: "monster_corpse_#{landscape_name(stand_on)}"
+
+  defp landscape_name(%ItemBox{type: :bag, stand_on: stand_on}),
+    do: "bag_#{landscape_name(stand_on)}"
 
   defp landscape_name(tile) do
     Map.get(@tiles_image_names, tile)
   end
 
   defp get_player_weapon(player) do
-    case Player.get_equiped_weapon(player) do
+    case PlayerManager.get_equiped_weapon(player) do
       {:ok, weapon} -> weapon
       _ -> nil
     end
   end
 
   defp get_player_melee_weapon(player) do
-    case Player.get_equiped_melee_weapon(player) do
+    case PlayerManager.get_equiped_melee_weapon(player) do
       {:ok, melee_weapon} -> melee_weapon
       _ -> nil
     end
   end
 
   defp get_player_helmet(player) do
-    case Player.get_equiped_helmet(player) do
+    case PlayerManager.get_equiped_helmet(player) do
       {:ok, helmet} -> helmet
       _ -> nil
     end
   end
 
   defp get_player_suit(player) do
-    case Player.get_equiped_suit(player) do
+    case PlayerManager.get_equiped_suit(player) do
       {:ok, suit} -> suit
       _ -> nil
     end
   end
 
   defp get_player_boots(player) do
-    case Player.get_equiped_boots(player) do
+    case PlayerManager.get_equiped_boots(player) do
       {:ok, boots} -> boots
       _ -> nil
     end
@@ -1170,7 +1191,7 @@ defmodule EuropaWeb.GameCompotents do
   defp interaction_requires_tools?(_), do: false
 
   defp interaction_allowed?({:required_tools, requirements}, player) when is_list(requirements) do
-    Player.enough_tools?(player, requirements)
+    PlayerManager.enough_tools?(player, requirements)
   end
 
   defp interaction_allowed?(_, _), do: true

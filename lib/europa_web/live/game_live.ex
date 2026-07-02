@@ -593,7 +593,8 @@ defmodule EuropaWeb.GameLive do
         injured: %{name: ~p"/sounds/injured.mp3", volume: 0.05},
         dead: %{name: ~p"/sounds/dead.mp3", volume: 0.2},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1},
-        open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03}
+        open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
+        matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3}
       })
 
     assign(socket, :sounds, json)

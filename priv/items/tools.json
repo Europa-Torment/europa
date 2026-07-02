@@ -63,5 +63,16 @@
         "stackable": true,
         "weight": 0.01, 
         "random_weight": 1.0
+    },
+    {
+        "name": "Matches", 
+        "description": "Good matches that burn even in a thin atmosphere.",
+        "type": "matches",
+        "count": {"from": 1, "to": 20},
+        "sound_name": "matches",
+        "properties": {},
+        "stackable": true,
+        "weight": 0.01, 
+        "random_weight": 1.0
     }
 ]

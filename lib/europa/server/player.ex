@@ -491,7 +491,7 @@ defmodule Europa.Server.Player do
     stand_on = stand_on_tile.atom_value
 
     item_box =
-      Loot.new_item_box(:bunch, [item])
+      Loot.new_item_box(:bag, [item])
       |> Loot.ItemBox.stand_on(stand_on)
 
     stand_on(player, item_box)

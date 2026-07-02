@@ -16,7 +16,7 @@ And that's it!
 
 ## Buildings/game situations
 
-The game features a system of pre-generated map sections. You can add [buildings](/priv/planet/buildings/) and [game situations](/priv/planet/situations/) (for example, [an NPC standing next to a bonefire](/priv/planet/situations/npc_bonefire.txt)).
+The game features a system of pre-generated map sections. You can add [buildings](/priv/planet/buildings/) and [game situations](/priv/planet/situations/) (for example, [an NPC standing next to a bonfire](/priv/planet/situations/npc_bonfire.txt)).
 
 Each building/situation is a separate `.txt` file in which, using special symbols, a section of the map is described, which will then be converted into game tiles.
 

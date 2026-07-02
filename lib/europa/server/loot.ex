@@ -42,7 +42,7 @@ defmodule Europa.Server.Loot do
     monster_body: %{max_items: 4, item_types: [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots]},
     human_body: %{max_items: 4, item_types: :all},
     crashed_shuttle: %{max_items: 4, item_types: :all},
-    bunch: %{max_items: 2, item_types: :all}
+    bag: %{max_items: 2, item_types: :all}
   }
 
   @furniture_item_boxes %{
@@ -150,7 +150,7 @@ defmodule Europa.Server.Loot do
         :monster_body -> gettext("Monster body")
         :human_body -> gettext("Human body")
         :crashed_shuttle -> gettext("Crashed shuttle")
-        :bunch -> gettext("Bunch of items")
+        :bag -> gettext("Bag")
         :cupboard -> gettext("Cupboard")
         :refrigerator -> gettext("Refrigerator")
       end

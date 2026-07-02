@@ -6,7 +6,7 @@ defmodule Europa.Server.Loot.Tool do
   alias Europa.Server.Loot.Weapon
   alias Europa.Tools.AttrsDeterminator
 
-  @allowed_tool_types [:weapon_parts, :key]
+  @allowed_tool_types [:weapon_parts, :key, :matches]
 
   @type tool_type() :: unquote(Types.one_of(@allowed_tool_types))
 
@@ -79,6 +79,16 @@ defmodule Europa.Server.Loot.Tool do
     |> new()
   end
 
+  @spec generate_matches() :: t()
+  def generate_matches do
+    Loot.get_items(:tool)
+    |> Enum.filter(fn {tool, _} -> tool.type == "matches" end)
+    |> WeightedRandom.take_one()
+    |> AttrsDeterminator.determine_attrs()
+    |> Map.put(:count, 1)
+    |> new()
+  end
+
   defp validate_type!(type) when type in @allowed_tool_types, do: type
 
   defp validate_type!(type) do
@@ -110,11 +120,21 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
 
   @spec composed_name(Tool.t()) :: String.t()
   def composed_name(%Tool{} = tool) do
+    properties =
+      if significant_properties(tool.properties) |> Enum.empty?() do
+        " "
+      else
+        [
+          " (",
+          properties_for_composed_name(tool.properties),
+          ") "
+        ]
+        |> Enum.join("")
+      end
+
     [
       tool.name,
-      " (",
-      properties_for_composed_name(tool.properties),
-      ") ",
+      properties,
       "(#{tool.count})"
     ]
     |> to_string()

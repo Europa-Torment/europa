@@ -39,6 +39,8 @@ defmodule Europa.ServerTest do
       build(:player, character: character, stand_on: @player_stand_on_tile, max_weight: 20.0)
     end)
     |> stub(:stand_on, fn player, @snow -> Player.change_view_direction(player, @direction) end)
+    |> stub(:add_item, fn player, _ -> {:ok, player} end)
+    |> stub(:equip_item, fn player, _ -> {:ok, player} end)
 
     {:ok, server} = Server.start_link(Ecto.UUID.generate())
     planet = build(:planet)
@@ -189,8 +191,8 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
-      |> expect(:stand_on, fn %Player{} = player, @snow ->
-        struct!(player, stand_on: @snow)
+      |> stub(:stand_on, fn %Player{} = player, tile ->
+        struct!(player, stand_on: tile)
       end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
         assert damage == action.subject.damage
@@ -320,8 +322,8 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
-      |> expect(:stand_on, fn %Player{} = player, @snow ->
-        struct!(player, stand_on: @snow)
+      |> stub(:stand_on, fn %Player{} = player, tile ->
+        struct!(player, stand_on: tile)
       end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
         assert damage == action.subject.damage

@@ -212,6 +212,8 @@ defmodule Europa.Server.PlayerManager do
 
   def new(character), do: manager_impl().new(character)
 
+  def readable_stats(player), do: manager_impl().readable_stats(player)
+
   def change_view_direction(player, view_direction), do: manager_impl().change_view_direction(player, view_direction)
 
   def stand_on(player, tile), do: manager_impl().stand_on(player, tile)

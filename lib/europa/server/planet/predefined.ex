@@ -37,14 +37,16 @@ defmodule Europa.Server.Planet.Predefined do
   @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
   @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
   @locked_door_possibility fetch_config!([__MODULE__, :building, :locked_door_possibility])
+  @broken_building_possibility fetch_config!([__MODULE__, :building, :broken_building_possibility])
+  @broken_wall_possibility fetch_config!([__MODULE__, :building, :broken_wall_possibility])
 
   @npc_generate_possibility fetch_config!([Planet, :npc_generate_possibility])
 
-  @skip :skip
+  @skip Objects.object(:skip)
 
   @type category() :: unquote(@categories |> Map.keys() |> Types.one_of())
   @type npc :: {:npc, Tiles.Tile.t() | nil}
-  @type template() :: list(list(Tiles.Tile.t() | :skip | npc()))
+  @type template() :: list(list(Planet.tile()))
 
   @spec generate_random() :: template()
   def generate_random do
@@ -56,6 +58,8 @@ defmodule Europa.Server.Planet.Predefined do
 
   @spec generate(category()) :: template()
   def generate(category) do
+    opts = opts_for_category(category)
+
     @templates
     |> Map.fetch!(category)
     |> Enum.random()
@@ -64,31 +68,31 @@ defmodule Europa.Server.Planet.Predefined do
       row
       |> String.graphemes()
       |> Enum.filter(fn e -> String.trim(e) != "" end)
-      |> Enum.map(fn e -> elem_to_tile(category, e) end)
+      |> Enum.map(fn e -> elem_to_tile(category, e, opts) end)
     end)
     |> Enum.filter(fn r -> r != [] end)
     |> add_borders()
   end
 
   # common
-  defp elem_to_tile(_, "*"), do: @skip
+  defp elem_to_tile(_, "*", _), do: @skip
 
   # buildings
-  defp elem_to_tile(:building, "l"), do: Objects.object(:wall_left)
-  defp elem_to_tile(:building, "r"), do: Objects.object(:wall_right)
-  defp elem_to_tile(:building, "u"), do: Objects.object(:wall_up)
-  defp elem_to_tile(:building, "d"), do: Objects.object(:wall_down)
-  defp elem_to_tile(:building, "I"), do: Objects.object(:wall_vertical_inside)
-  defp elem_to_tile(:building, "i"), do: Objects.object(:wall_left_up)
-  defp elem_to_tile(:building, "!"), do: Objects.object(:wall_left_down)
-  defp elem_to_tile(:building, "^"), do: Objects.object(:wall_right_up)
-  defp elem_to_tile(:building, "v"), do: Objects.object(:wall_right_down)
-  defp elem_to_tile(:building, "("), do: Objects.object(:door_left) |> maybe_lock_door()
-  defp elem_to_tile(:building, ")"), do: Objects.object(:door_right) |> maybe_lock_door()
-  defp elem_to_tile(:building, "1"), do: Objects.object(:door_up) |> maybe_lock_door()
-  defp elem_to_tile(:building, "2"), do: Objects.object(:door_down) |> maybe_lock_door()
+  defp elem_to_tile(:building, "l", opts), do: Objects.object(:wall_left) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "r", opts), do: Objects.object(:wall_right) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "u", opts), do: Objects.object(:wall_up) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "d", opts), do: Objects.object(:wall_down) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "I", _), do: Objects.object(:wall_vertical_inside)
+  defp elem_to_tile(:building, "i", opts), do: Objects.object(:wall_left_up) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "!", opts), do: Objects.object(:wall_left_down) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "^", opts), do: Objects.object(:wall_right_up) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "v", opts), do: Objects.object(:wall_right_down) |> or_broken_wall(opts)
+  defp elem_to_tile(:building, "(", _), do: Objects.object(:door_left) |> maybe_lock_door()
+  defp elem_to_tile(:building, ")", _), do: Objects.object(:door_right) |> maybe_lock_door()
+  defp elem_to_tile(:building, "1", _), do: Objects.object(:door_up) |> maybe_lock_door()
+  defp elem_to_tile(:building, "2", _), do: Objects.object(:door_down) |> maybe_lock_door()
 
-  defp elem_to_tile(:building, "f") do
+  defp elem_to_tile(:building, "f", _) do
     cond do
       m_to_n?(1, @building_enemy_generate_possibility) ->
         Enemy.generate_enemy()
@@ -102,7 +106,7 @@ defmodule Europa.Server.Planet.Predefined do
     end
   end
 
-  defp elem_to_tile(:building, "N") do
+  defp elem_to_tile(:building, "N", _) do
     if m_to_n?(1, @npc_generate_possibility) do
       {:npc, @floor}
     else
@@ -110,7 +114,7 @@ defmodule Europa.Server.Planet.Predefined do
     end
   end
 
-  defp elem_to_tile(:building, "L") do
+  defp elem_to_tile(:building, "L", _) do
     if m_to_n?(1, @building_loot_generate_possibility) do
       type = Enum.random(@futniture_item_box_types)
       item_box = Loot.generate_item_box(type, @floor)
@@ -121,7 +125,7 @@ defmodule Europa.Server.Planet.Predefined do
     end
   end
 
-  defp elem_to_tile(:building, "c") do
+  defp elem_to_tile(:building, "c", _) do
     if m_to_n?(1, 10) do
       Loot.generate_item_box(:human_body, @floor)
     else
@@ -130,13 +134,20 @@ defmodule Europa.Server.Planet.Predefined do
   end
 
   # situations
-  defp elem_to_tile(:situation, "e"), do: Enemy.generate_enemy()
-  defp elem_to_tile(:situation, "c"), do: Loot.generate_item_box(:human_body)
-  defp elem_to_tile(:situation, "m"), do: Loot.generate_item_box(:monster_body)
-  defp elem_to_tile(:situation, "b"), do: Loot.generate_item_box(:box)
-  defp elem_to_tile(:situation, "f"), do: Objects.object(:bonefire)
+  defp elem_to_tile(:situation, "e", _), do: Enemy.generate_enemy()
+  defp elem_to_tile(:situation, "c", _), do: Loot.generate_item_box(:human_body)
+  defp elem_to_tile(:situation, "m", _), do: Loot.generate_item_box(:monster_body)
+  defp elem_to_tile(:situation, "b", _), do: Loot.generate_item_box(:box)
 
-  defp elem_to_tile(:situation, "N") do
+  defp elem_to_tile(:situation, "f", _) do
+    if m_to_n?(1, 3) do
+      Objects.object(:bonfire)
+    else
+      Objects.object(:bonfire_base)
+    end
+  end
+
+  defp elem_to_tile(:situation, "N", _) do
     if m_to_n?(1, @npc_generate_possibility) do
       {:npc, nil}
     else
@@ -144,12 +155,30 @@ defmodule Europa.Server.Planet.Predefined do
     end
   end
 
-  defp elem_to_tile(:situation, "s") do
+  defp elem_to_tile(:situation, "s", _) do
     crashed_shuttle = Loot.generate_item_box(:crashed_shuttle)
     Enum.random([crashed_shuttle, Objects.object(:fire_shuttle)])
   end
 
   # Helpers
+
+  defp or_broken_wall(tile, opts) do
+    if Keyword.fetch!(opts, :broken) && m_to_n?(1, @broken_wall_possibility) do
+      Objects.object(:broken_wall)
+    else
+      tile
+    end
+  end
+
+  defp opts_for_category(:building) do
+    if m_to_n?(1, @broken_building_possibility) do
+      [broken: true]
+    else
+      [broken: false]
+    end
+  end
+
+  defp opts_for_category(_), do: []
 
   defp add_borders([]), do: []
 

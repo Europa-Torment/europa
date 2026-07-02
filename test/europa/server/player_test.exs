@@ -235,16 +235,14 @@ defmodule Europa.Server.PlayerTest do
     test "drops given item", %{player: player, ammo: ammo, weapon: weapon} do
       player = Player.stand_on(player, @snow)
 
-      assert {:ok,
-              %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{type: :bunch, stand_on: @snow, items: [^weapon]}},
+      assert {:ok, %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{type: :bag, stand_on: @snow, items: [^weapon]}},
               ^weapon} = Player.drop_item(player, weapon.uuid)
     end
 
     test "drops stackable item (all)", %{player: player, ammo: ammo, weapon: weapon} do
       player = Player.stand_on(player, @snow)
 
-      assert {:ok,
-              %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{type: :bunch, stand_on: @snow, items: [^ammo]}},
+      assert {:ok, %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{type: :bag, stand_on: @snow, items: [^ammo]}},
               ^ammo} = Player.drop_item(player, ammo.uuid, ammo.count)
     end
 
@@ -257,7 +255,7 @@ defmodule Europa.Server.PlayerTest do
               %Player{
                 inventory: [^weapon, %Ammo{count: ^new_ammo_count}],
                 stand_on: %Loot.ItemBox{
-                  type: :bunch,
+                  type: :bag,
                   stand_on: @snow,
                   items: [%Ammo{count: ^drop_count} = dropped_ammo]
                 }

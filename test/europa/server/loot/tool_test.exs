@@ -32,7 +32,13 @@ defmodule Europa.Server.Loot.Weapon.ToolTest do
 
   describe "generate_key/0" do
     test "generates key" do
-      assert %Tool{type: :key} = Tool.generate_key()
+      assert %Tool{type: :key, count: 1} = Tool.generate_key()
+    end
+  end
+
+  describe "generate_matches/0" do
+    test "generates matches" do
+      assert %Tool{type: :matches, count: 1} = Tool.generate_matches()
     end
   end
 end

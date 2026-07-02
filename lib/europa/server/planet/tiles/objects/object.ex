@@ -3,19 +3,22 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
 
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Loot.Tool
 
   @type transform_requirements :: list(Tool.t()) | nil
+  @type transforms_to :: {:tile, Planet.tile()} | {:object, object_name :: atom()}
 
   typedstruct do
     field :name, String.t(), enforce: true
     field :high?, boolean(), default: false
     field :warm?, boolean(), default: false
     field :radioactive?, boolean(), default: false
+    field :movable?, boolean(), default: false
     field :gif_tile?, boolean(), default: false
     field :image_name, String.t(), enforce: true
     field :stand_on, Planet.tile()
-    field :transforms_to_tile, Planet.tile()
+    field :transforms_to, transforms_to()
     field :transform_sound_name, String.t()
     field :transform_requirements, transform_requirements()
   end
@@ -26,8 +29,9 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
   end
 
   @spec transform(t()) :: Planet.tile() | t()
-  def transform(%__MODULE__{transforms_to_tile: nil} = object), do: object
-  def transform(%__MODULE__{transforms_to_tile: tile_name}), do: Tiles.tile(tile_name).atom_value
+  def transform(%__MODULE__{transforms_to: nil} = object), do: object
+  def transform(%__MODULE__{transforms_to: {:tile, tile_name}}), do: Tiles.tile(tile_name).atom_value
+  def transform(%__MODULE__{transforms_to: {:object, object_name}}), do: Objects.object(object_name)
 
   @spec set_transform_requirements(t(), transform_requirements()) :: t()
   def set_transform_requirements(%__MODULE__{} = object, required_tools) do
