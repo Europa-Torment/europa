@@ -449,13 +449,17 @@ defmodule Europa.Server.Planet do
          %Player{view_direction: view_direction},
          shooting_distance
        ) do
-    target_coord =
+    coord_fun =
       case view_direction do
-        :right -> Enum.map(1..shooting_distance, fn n -> {x + n, y} end)
-        :left -> Enum.map(1..shooting_distance, fn n -> {x - n, y} end)
-        :up -> Enum.map(1..shooting_distance, fn n -> {x, y - n} end)
-        :down -> Enum.map(1..shooting_distance, fn n -> {x, y + n} end)
+        :right -> fn n -> {x + n, y} end
+        :left -> fn n -> {x - n, y} end
+        :up -> fn n -> {x, y - n} end
+        :down -> fn n -> {x, y + n} end
       end
+
+    target_coord =
+      1..shooting_distance
+      |> Enum.map(fn n -> coord_fun.(n) end)
       |> stop_on_barrier(land)
       |> Enum.find(fn coord ->
         case get_tile(land, coord) do
@@ -472,23 +476,12 @@ defmodule Europa.Server.Planet do
   end
 
   defp find_shotgun_targets(
-         %__MODULE__{land: land, current_coord: {x, y}},
+         %__MODULE__{land: land, current_coord: coord},
          %Player{view_direction: view_direction},
          shooting_distance
        ) do
-    case view_direction do
-      :right ->
-        shotgun_targets_right(x, y, shooting_distance, land)
-
-      :left ->
-        shotgun_targets_left(x, y, shooting_distance, land)
-
-      :up ->
-        shotgun_targets_up(x, y, shooting_distance, land)
-
-      :down ->
-        shotgun_targets_down(x, y, shooting_distance, land)
-    end
+    coord
+    |> shotgun_targets(shooting_distance, land, view_direction)
     |> List.flatten()
     |> Enum.uniq()
     |> Enum.filter(fn coord ->
@@ -500,41 +493,19 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp shotgun_targets_up(x, y, shooting_distance, land) do
-    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
-      Enum.map(1..shooting_distance, fn n ->
-        m = round(m_end * n / shooting_distance)
-        {x + m, y - n}
-      end)
-      |> stop_on_barrier(land)
-    end)
-  end
+  defp shotgun_targets({x, y}, shooting_distance, land, direction) do
+    coord_fun =
+      case direction do
+        :up -> fn m, n -> {x + m, y - n} end
+        :down -> fn m, n -> {x + m, y + n} end
+        :left -> fn m, n -> {x - n, y + m} end
+        :right -> fn m, n -> {x + n, y + m} end
+      end
 
-  defp shotgun_targets_down(x, y, shooting_distance, land) do
     Enum.map(-shooting_distance..shooting_distance, fn m_end ->
       Enum.map(1..shooting_distance, fn n ->
         m = round(m_end * n / shooting_distance)
-        {x + m, y + n}
-      end)
-      |> stop_on_barrier(land)
-    end)
-  end
-
-  defp shotgun_targets_left(x, y, shooting_distance, land) do
-    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
-      Enum.map(1..shooting_distance, fn n ->
-        m = round(m_end * n / shooting_distance)
-        {x - n, y + m}
-      end)
-      |> stop_on_barrier(land)
-    end)
-  end
-
-  defp shotgun_targets_right(x, y, shooting_distance, land) do
-    Enum.map(-shooting_distance..shooting_distance, fn m_end ->
-      Enum.map(1..shooting_distance, fn n ->
-        m = round(m_end * n / shooting_distance)
-        {x + n, y + m}
+        coord_fun.(m, n)
       end)
       |> stop_on_barrier(land)
     end)
@@ -1155,7 +1126,7 @@ defmodule Europa.Server.Planet do
     around_water_count =
       planet.land
       |> get_neighbors(coord, 3)
-      |> Enum.count(fn tile -> tile == @water end)
+      |> Enum.count(fn tile -> tile in @water_tiles end)
 
     moves_count_factor = div(planet.moves_count, 500) * 5
     great_red_spots_factor = planet.great_red_spots * 10
