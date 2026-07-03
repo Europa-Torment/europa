@@ -80,7 +80,7 @@ defmodule Europa.Server.PlanetManager do
   where `[{enemy, damage}]` - list of damaged enemies.
   """
   @callback move(Planet.t(), Planet.direction(), Player.t()) ::
-              {:moved, Planet.t(), Server.move_cost(), Planet.tile()}
+              {:moved, Planet.t(), Server.move_cost(), Planet.tile(), next_to_interactive_tile :: boolean()}
               | {:stay, Planet.tile()}
               | {:attack, Planet.t(), list({Enemy.t(), damage :: pos_integer()}), Server.move_cost()}
 
@@ -129,7 +129,7 @@ defmodule Europa.Server.PlanetManager do
               | {:error, :nothing}
               | {:error, Errors.NotApplicableError.t()}
 
-  @callback interact(Planet.t(), Player.t(), opts :: keyword()) ::
+  @callback interact(Planet.t(), Planet.direction(), opts :: keyword()) ::
               {:ok, Planet.t(), Planet.interaction()} | {:error, :nothing}
 
   @doc """
@@ -169,7 +169,7 @@ defmodule Europa.Server.PlanetManager do
 
   def crop_land(planet), do: manager_impl().crop_land(planet)
 
-  def interact(planet, player, opts), do: manager_impl().interact(planet, player, opts)
+  def interact(planet, direction, opts), do: manager_impl().interact(planet, direction, opts)
 
   ### PRIVATE ###
 

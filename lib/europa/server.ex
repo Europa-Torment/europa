@@ -101,6 +101,11 @@ defmodule Europa.Server do
     GenServer.call(server, :get_player)
   end
 
+  @spec make_player_not_interested(pid()) :: Player.t()
+  def make_player_not_interested(server) do
+    GenServer.call(server, :make_player_not_interested)
+  end
+
   @spec get_planet(pid()) :: Planet.t()
   def get_planet(server) do
     GenServer.call(server, :get_planet)
@@ -279,6 +284,11 @@ defmodule Europa.Server do
 
   def handle_call(:get_player, _from, state) do
     {:reply, state.player, state, @inactivity_timeout_ms}
+  end
+
+  def handle_call(:make_player_not_interested, _from, state) do
+    updated_player = PlayerManager.interested(state.player, false)
+    {:reply, updated_player, struct!(state, player: updated_player), @inactivity_timeout_ms}
   end
 
   def handle_call(:get_chat, _from, state) do
@@ -570,7 +580,7 @@ defmodule Europa.Server do
   end
 
   def handle_call({:interact, opts}, _from, state) do
-    case PlanetManager.interact(state.planet, state.player, opts) do
+    case PlanetManager.interact(state.planet, state.player.view_direction, opts) do
       {:ok, updated_planet, {:drink, :radioactive_water} = interaction} ->
         updated_player =
           state.player
@@ -736,7 +746,7 @@ defmodule Europa.Server do
 
   defp do_move(direction, state, caller_pid) do
     case PlanetManager.move(state.planet, direction, state.player) do
-      {:moved, updated_planet, moves_count, step_on_tile} ->
+      {:moved, updated_planet, moves_count, step_on_tile, next_to_interactive?} ->
         weight_ratio = PlayerManager.weight_ratio(state.player)
         status = if weight_ratio < 1.0, do: :normal, else: :overloaded
 
@@ -754,6 +764,7 @@ defmodule Europa.Server do
         updated_player =
           state.player
           |> PlayerManager.stand_on(step_on_tile)
+          |> PlayerManager.interested(next_to_interactive?)
 
         {:reply, {:moved, status},
          struct!(state,

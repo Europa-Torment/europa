@@ -42,6 +42,8 @@ defmodule EuropaWeb.GameLive do
 
   @game_over_redirect_delay_ms 8950
 
+  @make_player_not_iterested_delay_ms 1500
+
   @view_distance fetch_config!([Planet, :view_distance])
 
   @impl true
@@ -120,6 +122,7 @@ defmodule EuropaWeb.GameLive do
           |> damaged_sound(player_before.health)
           |> overloaded_sound(move_status)
           |> low_health_sound(socket.assigns.player)
+          |> make_player_not_interested_after_delay()
 
         {:noreply, socket}
 
@@ -505,6 +508,11 @@ defmodule EuropaWeb.GameLive do
     {:noreply, play_sound(socket, sound_name)}
   end
 
+  def handle_info(:make_player_not_interested, socket) do
+    updated_player = Server.make_player_not_interested(socket.assigns.server)
+    {:noreply, assign(socket, player: updated_player)}
+  end
+
   def handle_info(_, socket) do
     {:noreply, socket}
   end
@@ -701,6 +709,14 @@ defmodule EuropaWeb.GameLive do
 
   defp redirect_to_game_over_page(socket, game_uuid) do
     redirect(socket, to: ~p"/games/#{game_uuid}/game-over")
+  end
+
+  defp make_player_not_interested_after_delay(socket) do
+    if socket.assigns.player.interested? do
+      self() |> Process.send_after(:make_player_not_interested, @make_player_not_iterested_delay_ms)
+    end
+
+    socket
   end
 
   defp reload_weapon(socket, item_uuid \\ :equiped) do

@@ -764,7 +764,7 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@i)
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _} =
+      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _, _next_to_interactive = false} =
                Planet.move(planet, :right, player)
 
       assert x2 == x + 1
@@ -788,7 +788,7 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@s)
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _} =
+      assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _, _next_to_interactive = false} =
                Planet.move(planet, :left, player)
 
       assert x2 == x - 1
@@ -812,7 +812,7 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@s)
 
-      assert {:moved, %Planet{current_coord: {^x, y2}} = updated_planet, move_cost, _} =
+      assert {:moved, %Planet{current_coord: {^x, y2}} = updated_planet, move_cost, _, _next_to_interactive = false} =
                Planet.move(planet, :up, player)
 
       assert y2 == y - 1
@@ -833,7 +833,10 @@ defmodule Europa.Server.PlanetTest do
     test "moves at monster body" do
       planet = build(:planet, land: @land_player_look_right_at_monster_body, current_coord: {4, 4})
       player = build_player_stand_on(@s)
-      assert {:moved, %Planet{}, move_cost, stand_on_tile} = Planet.move(planet, :right, player)
+
+      assert {:moved, %Planet{}, move_cost, stand_on_tile, _next_to_interactive = false} =
+               Planet.move(planet, :right, player)
+
       assert stand_on_tile == @ib2
       assert move_cost == Map.fetch!(@move_costs, @ib2.stand_on)
     end
@@ -851,7 +854,8 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@s)
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _} = Planet.move(planet, :left, player)
+      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _, _next_to_interactive = false} =
+               Planet.move(planet, :left, player)
 
       assert x - x2 == 1
       assert updated_land.min_x == land.min_x - 1
@@ -864,7 +868,9 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@s)
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _} = Planet.move(planet, :right, player)
+      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _, _next_to_interactive = false} =
+               Planet.move(planet, :right, player)
+
       assert x2 == x + 1
 
       assert updated_land.max_x - land.max_x == 1
@@ -877,7 +883,9 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@s)
 
-      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _} = Planet.move(planet, :up, player)
+      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _, _next_to_interactive = false} =
+               Planet.move(planet, :up, player)
+
       assert y2 == y - 1
 
       assert updated_land.min_y == land.min_y - 1
@@ -890,7 +898,9 @@ defmodule Europa.Server.PlanetTest do
 
       player = build_player_stand_on(@s)
 
-      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _} = Planet.move(planet, :down, player)
+      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _, _next_to_interactive = false} =
+               Planet.move(planet, :down, player)
+
       assert y2 == y + 1
 
       assert updated_land.max_y == land.max_y + 1
@@ -1236,55 +1246,63 @@ defmodule Europa.Server.PlanetTest do
     test "returns talk with up npc" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
-      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player.view_direction)
     end
 
     test "returns talk with down npc" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player.view_direction)
     end
 
     test "returns talk with left npc" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_npc, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player.view_direction)
     end
 
     test "returns talk with right npc" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:talk, @n}} = Planet.interact(planet, player.view_direction)
     end
 
     test "returns drink radioactive water (up)" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_water, current_coord: {4, 7})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
+
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} =
+               Planet.interact(planet, player.view_direction, forced: true)
     end
 
     test "returns drink radioactive water (down)" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
+
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} =
+               Planet.interact(planet, player.view_direction, forced: true)
     end
 
     test "returns drink radioactive water (left)" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
+
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} =
+               Planet.interact(planet, player.view_direction, forced: true)
     end
 
     test "returns drink radioactive water (right)" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:drink, :radioactive_water}} = Planet.interact(planet, player, forced: true)
+
+      assert {:ok, %Planet{}, {:drink, :radioactive_water}} =
+               Planet.interact(planet, player.view_direction, forced: true)
     end
 
     test "returns danger_action confirmation when trying to drink radioactive water" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_water, current_coord: {4, 1})
-      assert {:ok, %Planet{}, {:confirmation, :danger_action}} = Planet.interact(planet, player)
+      assert {:ok, %Planet{}, {:confirmation, :danger_action}} = Planet.interact(planet, player.view_direction)
     end
 
     test "opens right door" do
@@ -1292,7 +1310,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_left_close_to_door, current_coord: {4, 1})
 
       assert {:ok, %Planet{land: @land_player_left_close_to_open_door}, {:transform, @dl}} =
-               Planet.interact(planet, player)
+               Planet.interact(planet, player.view_direction)
     end
 
     test "opens left door" do
@@ -1300,7 +1318,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_right_close_to_door, current_coord: {4, 1})
 
       assert {:ok, %Planet{land: @land_player_right_close_to_open_door}, {:transform, @dr}} =
-               Planet.interact(planet, player)
+               Planet.interact(planet, player.view_direction)
     end
 
     test "opens bottom door" do
@@ -1308,7 +1326,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_down_close_to_door, current_coord: {4, 1})
 
       assert {:ok, %Planet{land: @land_player_down_close_to_open_door}, {:transform, @du}} =
-               Planet.interact(planet, player)
+               Planet.interact(planet, player.view_direction)
     end
 
     test "opens top door" do
@@ -1316,7 +1334,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_up_close_to_door, current_coord: {4, 7})
 
       assert {:ok, %Planet{land: @land_player_up_close_to_open_door}, {:transform, @dd}} =
-               Planet.interact(planet, player)
+               Planet.interact(planet, player.view_direction)
     end
 
     test "opens locked door" do
@@ -1327,13 +1345,13 @@ defmodule Europa.Server.PlanetTest do
 
       assert {:ok, %Planet{land: @land_player_left_close_to_locked_door},
               {:confirmation, {:required_tools, ^required_tools}}} =
-               Planet.interact(planet, player)
+               Planet.interact(planet, player.view_direction)
     end
 
     test "closes right door" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4 + 1, 1})
     end
@@ -1341,7 +1359,7 @@ defmodule Europa.Server.PlanetTest do
     test "closes left door" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4 - 1, 1})
     end
@@ -1349,7 +1367,7 @@ defmodule Europa.Server.PlanetTest do
     test "closes bottom door" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4, 1 + 1})
     end
@@ -1357,7 +1375,7 @@ defmodule Europa.Server.PlanetTest do
     test "closes top door" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_open_door, current_coord: {4, 7})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player)
+      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4, 7 - 1})
     end
@@ -1365,7 +1383,7 @@ defmodule Europa.Server.PlanetTest do
     test "returns error when there is nothing to interact with" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_left_close_to_npc, current_coord: {4, 1})
-      assert {:error, :nothing} = Planet.interact(planet, player)
+      assert {:error, :nothing} = Planet.interact(planet, player.view_direction)
     end
 
     defp test_closes_door(planet, target_coord) do

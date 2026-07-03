@@ -38,6 +38,11 @@ defmodule Europa.Server.PlayerManager do
   @callback stand_on(Player.t(), Planet.tile()) :: Player.t()
 
   @doc """
+  Switches player's interested state.
+  """
+  @callback interested(Player.t(), boolean()) :: Player.t()
+
+  @doc """
   Adds item to player's inventory.
   """
   @callback add_item(Player.t(), Loot.Item.item()) :: {:ok, Player.t()}
@@ -217,6 +222,8 @@ defmodule Europa.Server.PlayerManager do
   def change_view_direction(player, view_direction), do: manager_impl().change_view_direction(player, view_direction)
 
   def stand_on(player, tile), do: manager_impl().stand_on(player, tile)
+
+  def interested(player, is_interested), do: manager_impl().interested(player, is_interested)
 
   def add_item(player, item), do: manager_impl().add_item(player, item)
 

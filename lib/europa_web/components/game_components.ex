@@ -78,7 +78,7 @@ defmodule EuropaWeb.GameCompotents do
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
-            <div class={speech_class(tile)} data-tip={speech(tile)}>
+            <div class={speech_class(tile, @player)} data-tip={speech(tile, @player)}>
               <img
                 id={"tile_#{x}_#{y}"}
                 phx-hook="Tooltip"
@@ -1116,9 +1116,9 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp speech_class(%Npc{character: %Character{short_phrases: []}}), do: ""
+  defp speech_class(%Npc{character: %Character{short_phrases: []}}, _player), do: ""
 
-  defp speech_class(%Npc{}) do
+  defp speech_class(%Npc{}, _player) do
     if m_to_n?(1, 3) do
       @open_tooltip_class
     else
@@ -1126,7 +1126,7 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp speech_class(%Enemy{}) do
+  defp speech_class(%Enemy{}, _player) do
     if m_to_n?(1, 10) do
       @open_tooltip_class
     else
@@ -1134,13 +1134,17 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp speech_class(_), do: ""
+  defp speech_class(:player, %Player{interested?: true}) do
+    @open_tooltip_class
+  end
 
-  defp speech(%Npc{character: character}) do
+  defp speech_class(_, _), do: ""
+
+  defp speech(%Npc{character: character}, _player) do
     Character.short_phrase(character)
   end
 
-  defp speech(%Enemy{}) do
+  defp speech(%Enemy{}, _player) do
     monster_sounds = [
       gettext("Raaaar!"),
       gettext("Grrr!"),
@@ -1151,7 +1155,17 @@ defmodule EuropaWeb.GameCompotents do
     Enum.random(monster_sounds)
   end
 
-  defp speech(_), do: ""
+  defp speech(:player, %Player{interested?: true}) do
+    phrases = [
+      gettext("?"),
+      gettext("Hm.."),
+      gettext("Eh?")
+    ]
+
+    Enum.random(phrases)
+  end
+
+  defp speech(_, _), do: ""
 
   defp maybe_round_number(number) when is_float(number) do
     NumberHelpers.round(number, 2)

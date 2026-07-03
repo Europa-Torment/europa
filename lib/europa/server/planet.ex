@@ -288,11 +288,11 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
-  def interact(%__MODULE__{land: land} = planet, %Player{view_direction: view_direction} = player, opts \\ []) do
-    target_coord = target_coord(planet, view_direction)
+  def interact(%__MODULE__{land: land} = planet, direction, opts \\ []) do
+    target_coord = target_coord(planet, direction)
     target_tile = get_tile(land, target_coord)
 
-    do_interact(target_tile, planet, player, opts)
+    do_interact(target_tile, planet, direction, opts)
   end
 
   @impl true
@@ -327,11 +327,22 @@ defmodule Europa.Server.Planet do
     struct!(planet, land: land)
   end
 
-  defp do_interact(%Npc{} = npc, planet, _player, _opts) do
+  # todo
+  defp next_to_interactive_tile?(%__MODULE__{} = planet) do
+    Enum.any?(@directions, fn direction ->
+      # Just checking for the possibility of interaction without planet updation.
+      case interact(planet, direction, check: true) do
+        {:error, :nothing} -> false
+        _ -> true
+      end
+    end)
+  end
+
+  defp do_interact(%Npc{} = npc, planet, _view_direction, _opts) do
     {:ok, planet, {:talk, npc}}
   end
 
-  defp do_interact(@water, planet, _player, opts) do
+  defp do_interact(@water, planet, _view_direction, opts) do
     if forced_interaction?(opts) do
       {:ok, planet, {:drink, :radioactive_water}}
     else
@@ -339,10 +350,10 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp do_interact(%Object{transforms_to: transforms_to} = object, planet, player, opts)
+  defp do_interact(%Object{transforms_to: transforms_to} = object, planet, view_direction, opts)
        when not is_nil(transforms_to) do
     if (object.transform_requirements && forced_interaction?(opts)) || is_nil(object.transform_requirements) do
-      target_coord = target_coord(planet, player.view_direction)
+      target_coord = target_coord(planet, view_direction)
 
       transformed_tile =
         Object.transform(object)
@@ -358,19 +369,23 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp do_interact(tile, planet, player, _opts) do
+  defp do_interact(tile, planet, view_direction, opts) do
     object = Map.get(@transforms, tile)
 
     if object do
-      target_coord = target_coord(planet, player.view_direction)
-      stand_on_tile = predefined_stand_on_tile(planet.land, target_coord)
-      object = Object.stand_on(object, stand_on_tile)
+      if just_check_interact?(opts) do
+        {:ok, planet, {:transform, object}}
+      else
+        target_coord = target_coord(planet, view_direction)
+        stand_on_tile = predefined_stand_on_tile(planet.land, target_coord)
+        object = Object.stand_on(object, stand_on_tile)
 
-      updated_land =
-        planet.land
-        |> change_tile(target_coord, object)
+        updated_land =
+          planet.land
+          |> change_tile(target_coord, object)
 
-      {:ok, struct!(planet, land: updated_land), {:transform, object}}
+        {:ok, struct!(planet, land: updated_land), {:transform, object}}
+      end
     else
       {:error, :nothing}
     end
@@ -378,6 +393,10 @@ defmodule Europa.Server.Planet do
 
   defp forced_interaction?(opts) do
     Keyword.get(opts, :forced, false)
+  end
+
+  defp just_check_interact?(opts) do
+    Keyword.get(opts, :check, false)
   end
 
   defp do_tick(%__MODULE__{} = planet, 0, actions) do
@@ -914,7 +933,7 @@ defmodule Europa.Server.Planet do
 
     move_cost = move_cost(tile)
 
-    {:moved, updated_planet, move_cost, tile}
+    {:moved, updated_planet, move_cost, tile, next_to_interactive_tile?(updated_planet)}
   end
 
   defp attack_with_melee_weapon_or_stay(planet, player, target_coord, %Enemy{} = enemy) do

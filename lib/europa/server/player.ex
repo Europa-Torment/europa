@@ -52,6 +52,7 @@ defmodule Europa.Server.Player do
     field :suit_uuid, Loot.uuid()
     field :boots_uuid, Loot.uuid()
     field :aim_mode?, boolean(), default: false
+    field :interested?, boolean(), default: false
   end
 
   @impl true
@@ -135,6 +136,12 @@ defmodule Europa.Server.Player do
   def stand_on(%__MODULE__{} = player, tile) do
     player
     |> struct!(stand_on: tile)
+  end
+
+  @impl true
+  def interested(%__MODULE__{} = player, interested?) when is_boolean(interested?) do
+    player
+    |> struct!(interested?: interested?)
   end
 
   @impl true

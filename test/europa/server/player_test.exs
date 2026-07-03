@@ -125,6 +125,17 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "interested/2" do
+    setup do
+      player = build(:player, interested?: false)
+      {:ok, player: player}
+    end
+
+    test "changes interested?", %{player: player} do
+      assert %Player{interested?: true} = Player.interested(player, true)
+    end
+  end
+
   describe "warm_up/2" do
     setup do
       player = build(:player, warm: 10, max_warm: 50)
