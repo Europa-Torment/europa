@@ -22,6 +22,13 @@ defmodule Europa.Server.Loot do
 
   import Europa.Tools.Randomizer
 
+  @item_boxes_filename "item_boxes.json"
+
+  @item_boxes FilesReader.parse_item_boxes_file(@item_boxes_filename)
+  @outdoor_item_boxes Enum.filter(@item_boxes, fn {ib, _random_weight} -> String.to_atom(ib.placing) == :outdoor end)
+
+  @allowed_item_box_types Enum.map(@item_boxes, fn {ib, _random_weight} -> String.to_atom(ib.type) end)
+
   @weighted_item_types [
     {:weapon, gettext("Weapons"), 0.4},
     {:ammo, gettext("Ammo"), 0.7},
@@ -37,31 +44,6 @@ defmodule Europa.Server.Loot do
 
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
-  @outdoor_item_boxes %{
-    box: %{max_items: 7, item_types: :all, movable?: false, image_name: "factory_box"},
-    monster_body: %{
-      max_items: 4,
-      item_types: [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots],
-      movable?: true,
-      image_name: "monster_corpse"
-    },
-    human_body: %{max_items: 4, item_types: :all, movable?: false, image_name: "human_corpse"},
-    crashed_shuttle: %{max_items: 4, item_types: :all, movable?: false, image_name: "crashed_shuttle"},
-    bag: %{max_items: 2, item_types: :all, movable?: true, image_name: "bag"}
-  }
-
-  @furniture_item_boxes %{
-    cupboard: %{max_items: 6, item_types: :all, movable?: false, image_name: "cupboard"},
-    refrigerator: %{max_items: 6, item_types: [:supply], movable?: false, image_name: "refrigerator"}
-  }
-
-  @allowed_item_boxes Map.merge(@outdoor_item_boxes, @furniture_item_boxes)
-
-  @allowed_item_box_types Map.keys(@allowed_item_boxes)
-
-  @item_box_images Enum.map(@allowed_item_boxes, fn {name, %{image_name: image_name}} -> {name, image_name} end)
-                   |> Enum.into(%{})
-
   @filenames %{
     weapon: "weapons.json",
     ammo: "ammo.json",
@@ -73,7 +55,7 @@ defmodule Europa.Server.Loot do
     tool: "tools.json"
   }
 
-  @items_attrs FilesReader.parse_files(@filenames)
+  @items_attrs FilesReader.parse_items_files(@filenames)
 
   @type item_type :: unquote(Types.one_of(@allowed_item_types))
   @type item_box_type :: unquote(Types.one_of(@allowed_item_box_types))
@@ -145,23 +127,49 @@ defmodule Europa.Server.Loot do
 
     alias Europa.Server.Loot
 
+    @allowed_placing [:outdoor, :furniture]
+
+    @type placing :: unquote(Types.one_of(@allowed_placing))
+
     typedstruct do
       field :type, Loot.item_box_type(), enforce: true
+      field :readable_name, String.t(), enforce: true
+      field :item_types, list(Loot.item_type()) | :all, enforce: true
       field :items, list(Loot.Item.item()), enforce: true
+      field :max_items, pos_integer()
+      field :movable?, boolean(), enforce: true, default: false
+      field :placing, placing(), enforce: true
       field :stand_on, Planet.tile()
+      field :image_name, String.t()
+    end
+
+    @spec from_map(map()) :: t()
+    def from_map(attrs) when is_map(attrs) do
+      item_types =
+        case Map.fetch!(attrs, :item_types) do
+          "all" -> :all
+          types when is_list(types) -> Enum.map(types, &String.to_atom/1)
+        end
+
+      %__MODULE__{
+        type: Map.fetch!(attrs, :type) |> String.to_atom(),
+        readable_name: Map.fetch!(attrs, :readable_name),
+        item_types: item_types,
+        items: [],
+        max_items: Map.fetch!(attrs, :max_items),
+        movable?: Map.fetch!(attrs, :movable),
+        placing: Map.fetch!(attrs, :placing) |> String.to_atom(),
+        stand_on: nil,
+        image_name: Map.fetch!(attrs, :image_name)
+      }
     end
 
     @spec readable_name(t()) :: String.t()
-    def readable_name(%ItemBox{type: type}) do
-      case type do
-        :box -> gettext("Factory box")
-        :monster_body -> gettext("Monster body")
-        :human_body -> gettext("Human body")
-        :crashed_shuttle -> gettext("Crashed shuttle")
-        :bag -> gettext("Bag")
-        :cupboard -> gettext("Cupboard")
-        :refrigerator -> gettext("Refrigerator")
-      end
+    def readable_name(%ItemBox{readable_name: readable_name}) do
+      Gettext.gettext(
+        Europa.Gettext,
+        readable_name
+      )
     end
 
     @spec add_item(ItemBox.t(), Item.item()) :: ItemBox.t()
@@ -256,21 +264,16 @@ defmodule Europa.Server.Loot do
   @spec allowed_item_box_types() :: list(item_box_type())
   def allowed_item_box_types, do: @allowed_item_box_types
 
-  @spec furniture_item_box_types() :: list(item_box_type())
-  def furniture_item_box_types do
-    Map.keys(@furniture_item_boxes)
-  end
-
   @spec movable_item_box_types() :: list(item_box_type())
   def movable_item_box_types do
-    @allowed_item_boxes
-    |> Enum.filter(fn {_, ib} -> ib.movable? end)
-    |> Enum.map(fn {name, _} -> name end)
+    @item_boxes
+    |> Enum.filter(fn {ib, _} -> ib.movable end)
+    |> Enum.map(fn {ib, _} -> String.to_atom(ib.type) end)
   end
 
   @spec item_box_image(item_box_type()) :: image_name :: String.t()
   def item_box_image(item_box_type) when item_box_type in @allowed_item_box_types do
-    Map.fetch!(@item_box_images, item_box_type)
+    get_item_box(item_box_type).image_name
   end
 
   @spec new_item(item_type(), attrs()) :: Item.t()
@@ -296,11 +299,8 @@ defmodule Europa.Server.Loot do
   @spec new_item_box(item_box_type(), list(Item.t()), Planet.tile()) :: ItemBox.t()
   def new_item_box(item_box_type, items, stand_on)
       when item_box_type in @allowed_item_box_types and is_list(items) do
-    %ItemBox{
-      type: item_box_type,
-      items: items,
-      stand_on: stand_on
-    }
+    generate_item_box(item_box_type, stand_on)
+    |> struct!(items: items)
   end
 
   @spec generate_item_for_types(list() | :all) :: Item.t()
@@ -332,25 +332,27 @@ defmodule Europa.Server.Loot do
   @spec generate_item_box() :: ItemBox.t()
   def generate_item_box do
     @outdoor_item_boxes
-    |> Map.keys()
-    |> Enum.random()
-    |> generate_item_box()
+    |> WeightedRandom.take_one()
+    |> ItemBox.from_map()
+    |> add_items()
   end
 
   @spec generate_item_box(item_box_type(), Planet.tile()) :: ItemBox.t()
   def generate_item_box(item_box_type, stand_on \\ nil) when item_box_type in @allowed_item_box_types do
-    item_box_params = Map.fetch!(@allowed_item_boxes, item_box_type)
-    allowed_item_types = item_box_params.item_types
-    max_items = item_box_params.max_items
+    item_box_type
+    |> get_item_box()
+    |> add_items()
+    |> ItemBox.stand_on(stand_on)
+  end
 
-    items =
-      case random_number(max_items + 1) - 1 do
-        0 -> []
-        1 -> [generate_item_for_types(allowed_item_types)]
-        n -> Enum.map(1..n, fn _ -> generate_item_for_types(allowed_item_types) end)
-      end
-
-    new_item_box(item_box_type, items, stand_on)
+  @spec generate_item_box_by_placing(ItemBox.placing(), Planet.tile()) :: ItemBox.t()
+  def generate_item_box_by_placing(placing, stand_on \\ nil) do
+    @item_boxes
+    |> Enum.filter(fn {ib, _} -> String.to_atom(ib.placing) == placing end)
+    |> WeightedRandom.take_one()
+    |> ItemBox.from_map()
+    |> add_items()
+    |> ItemBox.stand_on(stand_on)
   end
 
   @spec get_items(item_type()) :: list()
@@ -366,6 +368,24 @@ defmodule Europa.Server.Loot do
       :all -> blueprints
       type -> Enum.filter(blueprints, &(Item.item_type(&1.item) == type))
     end
+  end
+
+  defp get_item_box(type) do
+    @item_boxes
+    |> Enum.find(fn {ib, _} -> String.to_atom(ib.type) == type end)
+    |> elem(0)
+    |> ItemBox.from_map()
+  end
+
+  defp add_items(%ItemBox{} = item_box) do
+    items =
+      case random_number(item_box.max_items + 1) - 1 do
+        0 -> []
+        1 -> [generate_item_for_types(item_box.item_types)]
+        n -> Enum.map(1..n, fn _ -> generate_item_for_types(item_box.item_types) end)
+      end
+
+    struct!(item_box, items: items)
   end
 
   defp weapon_blueprints do

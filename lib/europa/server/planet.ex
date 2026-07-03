@@ -89,7 +89,6 @@ defmodule Europa.Server.Planet do
   @high_tiles Tiles.high_tiles()
   @warm_tiles Tiles.warm_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
-  @movable_item_boxes Loot.movable_item_box_types()
 
   @water_tiles [@water, @radioactive_water, @warm_water]
 
@@ -838,7 +837,7 @@ defmodule Europa.Server.Planet do
       tile when tile in @movable_tiles ->
         true
 
-      %Loot.ItemBox{type: type} when type in @movable_item_boxes ->
+      %Loot.ItemBox{movable?: true} ->
         true
 
       %Object{movable?: true} ->
@@ -954,7 +953,7 @@ defmodule Europa.Server.Planet do
     struct!(land, tiles: tiles)
   end
 
-  defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in @movable_item_boxes do
+  defp move_cost(%Loot.ItemBox{stand_on: tile, movable?: true}) do
     move_cost(tile)
   end
 

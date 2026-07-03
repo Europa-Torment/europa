@@ -50,7 +50,7 @@ defmodule Europa.Server.PlanetTest do
   @dll Objects.object(:door_left) |> Object.set_transform_requirements(build_list(2, :tool))
 
   @ib build(:loot_item_box, items: [build(:weapon)])
-  @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)])
+  @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)], movable?: true)
 
   @en build(:enemy, name: "E1", move_distance: 2, health: @initial_enemy_health)
   @en2 build(:enemy, name: "E2", move_distance: 2, health: @initial_enemy_health)

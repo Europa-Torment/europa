@@ -898,8 +898,7 @@ defmodule EuropaWeb.GameCompotents do
     "player_#{view_direction}_#{landscape_name(stand_on)}.png"
   end
 
-  defp get_image_name(%ItemBox{type: type, stand_on: stand_on}, _) do
-    image_name = Loot.item_box_image(type)
+  defp get_image_name(%ItemBox{stand_on: stand_on, image_name: image_name}, _) do
     "#{image_name}_#{landscape_name(stand_on)}.png"
   end
 
@@ -940,8 +939,7 @@ defmodule EuropaWeb.GameCompotents do
   defp landscape_name(%Object{movable?: true, image_name: image_name, stand_on: stand_on}),
     do: "#{image_name}_#{landscape_name(stand_on)}"
 
-  defp landscape_name(%ItemBox{type: type, stand_on: stand_on}) do
-    image_name = Loot.item_box_image(type)
+  defp landscape_name(%ItemBox{image_name: image_name, stand_on: stand_on}) do
     "#{image_name}_#{landscape_name(stand_on)}"
   end
 

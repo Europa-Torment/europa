@@ -1,0 +1,72 @@
+[
+    {
+        "type": "box", 
+        "readable_name": "Factory box", 
+        "max_items": 7, 
+        "item_types": "all", 
+        "movable": false, 
+        "image_name": "factory_box",
+        "placing": "outdoor",
+        "random_weight": 0.4
+    },
+    {
+        "type": "monster_body",
+        "readable_name": "Monster corpse",
+        "max_items": 4,
+        "item_types": ["weapon", "ammo", "melee_weapon", "helmet", "suit", "boots"],
+        "movable": true,
+        "image_name": "monster_corpse",
+        "placing": "outdoor",
+        "random_weight": 1.0
+    },
+    {
+        "type": "human_body", 
+        "readable_name": "Human corpse", 
+        "max_items": 4, 
+        "item_types": "all", 
+        "movable": false, 
+        "image_name": "human_corpse",
+        "placing": "outdoor",
+        "random_weight": 1.0
+    },
+    {
+        "type": "crashed_shuttle",
+        "readable_name": "Crashed shuttle",
+        "max_items": 4, 
+        "item_types": "all", 
+        "movable": false, 
+        "image_name": "crashed_shuttle",
+        "placing": "outdoor",
+        "random_weight": 0.4
+    },
+    {
+        "type": "bag",
+        "readable_name": "Bag",
+        "max_items": 2, 
+        "item_types": "all", 
+        "movable": true, 
+        "image_name": "bag",
+        "placing": "outdoor",
+        "random_weight": 0.2
+    },
+    {
+        "type": "cupboard",
+        "readable_name": "Cupboard",
+        "max_items": 6, 
+        "item_types": "all", 
+        "movable": false, 
+        "image_name": "cupboard",
+        "placing": "furniture",
+        "random_weight": 0.5
+    },
+    {
+        "type": "refrigerator",
+        "readable_name": "Refrigerator",
+        "max_items": 6, 
+        "item_types": ["supply"], 
+        "movable": false, 
+        "image_name": "refrigerator",
+        "placing": "furniture",
+        "random_weight": 0.3
+    }
+]

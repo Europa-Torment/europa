@@ -56,7 +56,13 @@ defmodule Europa.Support.Factory do
   def loot_item_box_factory do
     %Loot.ItemBox{
       type: :box,
+      readable_name: "box",
       items: [build(:weapon), build(:ammo)],
+      item_types: :all,
+      movable?: false,
+      max_items: 10,
+      image_name: "test",
+      placing: :outdoor,
       stand_on: Tiles.tile(:snow).atom_value
     }
   end

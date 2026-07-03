@@ -26,8 +26,6 @@ defmodule Europa.Server.Planet.Predefined do
 
   @templates FilesReader.parse_files(@tempaltes_path, @categories)
 
-  @futniture_item_box_types Loot.furniture_item_box_types()
-
   @floor Tiles.tile(:floor).atom_value
   @litter_floor Tiles.tile(:litter_floor).atom_value
   @bloody_floor Tiles.tile(:bloody_floor).atom_value
@@ -116,10 +114,7 @@ defmodule Europa.Server.Planet.Predefined do
 
   defp elem_to_tile(:building, "L", _) do
     if m_to_n?(1, @building_loot_generate_possibility) do
-      type = Enum.random(@futniture_item_box_types)
-      item_box = Loot.generate_item_box(type, @floor)
-
-      item_box
+      Loot.generate_item_box_by_placing(:furniture, @floor)
     else
       @floor
     end

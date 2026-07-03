@@ -424,6 +424,44 @@ defmodule Europa.Server.Loot.ItemBoxTest do
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Errors
 
+  describe "from_map/1" do
+    test "parses item box from map" do
+      attrs = %{
+        type: "monster_body",
+        readable_name: "Monster corpse",
+        max_items: 4,
+        item_types: ["weapon", "ammo", "melee_weapon", "helmet", "suit", "boots"],
+        movable: true,
+        image_name: "monster_corpse",
+        placing: "furniture",
+        random_weight: 1.0
+      }
+
+      assert %ItemBox{} = item_box = ItemBox.from_map(attrs)
+      assert item_box.type == :monster_body
+      assert item_box.readable_name == "Monster corpse"
+      assert item_box.max_items == 4
+      assert item_box.item_types == [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots]
+      assert item_box.image_name == "monster_corpse"
+      assert item_box.placing == :furniture
+    end
+
+    test "parses item box from map (all item types allowed)" do
+      attrs = %{
+        type: "monster_body",
+        readable_name: "Monster corpse",
+        max_items: 4,
+        item_types: "all",
+        movable: true,
+        image_name: "monster_corpse",
+        placing: "outdoor",
+        random_weight: 1.0
+      }
+
+      assert %ItemBox{item_types: :all} = ItemBox.from_map(attrs)
+    end
+  end
+
   describe "readable_name/1" do
     test "returns string with item box name" do
       for type <- Loot.allowed_item_box_types() do
