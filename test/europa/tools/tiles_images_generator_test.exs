@@ -10,6 +10,8 @@ defmodule Europa.Tools.TilesImagesGeneratorTest do
   @landscape "/landscape"
   @objects "/objects"
   @ready "/ready"
+  @enemies "/enemies"
+  @loot "/loot"
 
   @tmp_base "/tmp"
 
@@ -29,99 +31,120 @@ defmodule Europa.Tools.TilesImagesGeneratorTest do
     File.mkdir!(Path.join([@root_dir, @base_dir, @over_landscape]))
     File.mkdir!(Path.join([@root_dir, @base_dir, @landscape]))
     File.mkdir!(Path.join([@root_dir, @base_dir, @objects]))
+    File.mkdir!(Path.join([@root_dir, @base_dir, @enemies]))
+    File.mkdir!(Path.join([@root_dir, @base_dir, @loot]))
     File.mkdir!(Path.join([@root_dir, @base_dir, @ready]))
 
-    over_landscape = ["ol_1", "ol_2", "ol_3"]
+    over_landscape = ["ol1", "ol2", "ol3"]
     landscape = ["l1", "l2", "l3"]
     objects = ["o1", "o2", "o3"]
+    movable_objects = ["broken_wall"]
     ready = ["r1", "r2", "r3"]
+    enemies = ["e1", "e2", "e3"]
+    loot = ["l1", "l2", "l3"]
+    movable_loot = ["bag"]
 
-    generate_files!(%{@over_landscape => over_landscape, @landscape => landscape, @objects => objects, @ready => ready})
+    generate_files!(%{
+      @over_landscape => over_landscape,
+      @landscape => landscape,
+      @objects => objects ++ movable_objects,
+      @ready => ready,
+      @enemies => enemies,
+      @loot => loot ++ movable_loot
+    })
 
     on_exit(fn ->
       File.rm_rf!(@root_dir)
     end)
 
-    {:ok, over_landscape: over_landscape, landscape: landscape, objects: objects, ready: ready}
+    {:ok,
+     over_landscape: over_landscape,
+     landscape: landscape,
+     objects: objects,
+     movable_objects: movable_objects,
+     ready: ready,
+     enemies: enemies,
+     loot: loot,
+     movable_loot: movable_loot}
   end
 
   describe "generate_tiles!/1" do
-    test "generates expected amount of tiles", %{
+    test "generates landscapes", %{
+      over_landscape: over_landscape,
+      landscape: landscape,
+      movable_objects: movable_objects
+    } do
+      assert_generated_tiles([landscape])
+      assert_generated_tiles([over_landscape, landscape])
+      assert_generated_tiles([movable_objects, over_landscape, landscape])
+    end
+
+    test "generates ready", %{ready: ready} do
+      assert_generated_tiles([ready])
+    end
+
+    test "generates objects", %{
       over_landscape: over_landscape,
       landscape: landscape,
       objects: objects,
-      ready: ready
+      movable_objects: movable_objects,
+      movable_loot: movable_loot
     } do
-      assert TilesImagesGenerator.generate_tiles!(@root_dir) == :ok
-
-      generated_files_count =
-        @final_tiles_path
-        |> File.ls!()
-        |> Enum.count()
-
-      over_landscape_count = Enum.count(over_landscape)
-      landscape_count = Enum.count(landscape)
-      objects_count = Enum.count(objects)
-      ready_count = Enum.count(ready)
-
-      expected_count =
-        ready_count + landscape_count +
-          over_landscape_count * landscape_count +
-          landscape_count * objects_count +
-          over_landscape_count * landscape_count * objects_count
-
-      assert generated_files_count == expected_count
+      assert_generated_tiles([objects, landscape])
+      assert_generated_tiles([objects, over_landscape, landscape])
+      assert_generated_tiles([objects, movable_objects, over_landscape, landscape])
+      assert_generated_tiles([objects, movable_loot, over_landscape, landscape])
+      assert_generated_tiles([objects, movable_loot, landscape])
+      assert_generated_tiles([objects, movable_loot, movable_objects, over_landscape, landscape])
     end
 
-    test "generates expected tiles", %{
+    test "generates loot", %{
       over_landscape: over_landscape,
       landscape: landscape,
-      objects: objects,
-      ready: ready
+      movable_objects: movable_objects,
+      loot: loot
     } do
-      assert TilesImagesGenerator.generate_tiles!(@root_dir) == :ok
-
-      generated_tiles =
-        @final_tiles_path
-        |> File.ls!()
-
-      expected_ready = Enum.map(ready, &(&1 <> @ext))
-      expected_landscape = Enum.map(landscape, &(&1 <> @ext))
-
-      expected_overlandscape_plus_landscape =
-        Enum.map(over_landscape, fn ol ->
-          Enum.map(landscape, fn l ->
-            ol <> "_" <> l <> @ext
-          end)
-        end)
-        |> List.flatten()
-
-      expected_landscape_plus_objects =
-        Enum.map(landscape, fn l ->
-          Enum.map(objects, fn o ->
-            o <> "_" <> l <> @ext
-          end)
-        end)
-        |> List.flatten()
-
-      expected_overlandscape_plus_landscape_plus_objects =
-        Enum.map(over_landscape, fn ol ->
-          Enum.map(landscape, fn l ->
-            Enum.map(objects, fn o ->
-              o <> "_" <> ol <> "_" <> l <> @ext
-            end)
-          end)
-        end)
-        |> List.flatten()
-
-      assert Enum.sort(generated_tiles) ==
-               Enum.sort(
-                 expected_ready ++
-                   expected_landscape ++
-                   expected_overlandscape_plus_landscape ++
-                   expected_landscape_plus_objects ++ expected_overlandscape_plus_landscape_plus_objects
-               )
+      assert_generated_tiles([loot, landscape])
+      assert_generated_tiles([loot, over_landscape, landscape])
+      assert_generated_tiles([loot, movable_objects, over_landscape, landscape])
     end
+
+    test "generates enemies", %{
+      over_landscape: over_landscape,
+      landscape: landscape,
+      movable_objects: movable_objects,
+      enemies: enemies,
+      movable_loot: movable_loot
+    } do
+      assert_generated_tiles([enemies, landscape])
+      assert_generated_tiles([enemies, over_landscape, landscape])
+      assert_generated_tiles([enemies, movable_objects, landscape])
+      assert_generated_tiles([enemies, movable_loot, movable_objects, landscape])
+    end
+  end
+
+  def assert_generated_tiles(lists) when is_list(lists) do
+    assert TilesImagesGenerator.generate_tiles!(@root_dir) == :ok
+    do_assert_generated_tiles(lists, [])
+  end
+
+  defp do_assert_generated_tiles([], acc) do
+    generated_tiles = File.ls!(@final_tiles_path)
+    assert file(Enum.reverse(acc)) in generated_tiles
+  end
+
+  defp do_assert_generated_tiles([list | rest], acc) do
+    Enum.each(list, fn elem ->
+      do_assert_generated_tiles(rest, [elem | acc])
+    end)
+  end
+
+  defp file(filename) when is_binary(filename) do
+    filename <> @ext
+  end
+
+  defp file(parts) when is_list(parts) do
+    Enum.join(parts, "_") <> @ext
   end
 
   defp generate_files!(files_to_create) when is_map(files_to_create) do

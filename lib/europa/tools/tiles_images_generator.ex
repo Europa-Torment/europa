@@ -9,9 +9,13 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
   `over_landscape` - tiles that should be overlayed on `landscape` tiles, example: bloody versions of each landscape tile
 
-  `objects` - tiles that represents some object such as `player`, `enemy`, `loot_box`.
-  Each `object` should be overlayed on each `landscape` and `over_landscape + landscape` tile.
-  Example: enemy stands on bloody snow.
+  `objects` - tiles that represents some object such as `player`, `wall`.
+  Each `object` should be overlayed on each `landscape` (and overlayed `landscape`).
+  Example: "enemy stands on bloody snow" or "player stands on monster body stands on snow".
+
+  `enemies` - tiles that represents enemies. Files will be copied to `objects`.
+
+  `loot` - tiles that represents loot item boxes. Files will be copied to `objects`.
 
   `ready` - not changable tiles, i.e. tiles that shouldn't overlayed with any other tile.
   Example: water.
@@ -19,6 +23,9 @@ defmodule Europa.Tools.TilesImagesGenerator do
   Initial tiles images should be placed in appropriate folder at `priv/tile_images/` dir,
   then after running the module all ready tiles will be placed at `priv/tile_images/tmp/ready`.
   """
+  alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Loot
+
   require Logger
 
   @priv_dir Path.join([File.cwd!(), "priv"])
@@ -28,6 +35,8 @@ defmodule Europa.Tools.TilesImagesGenerator do
   @over_landscape "/over_landscape"
   @landscape "/landscape"
   @objects "/objects"
+  @enemies "/enemies"
+  @loot "/loot"
   @ready "/ready"
 
   @tmp_base "/tmp"
@@ -49,18 +58,37 @@ defmodule Europa.Tools.TilesImagesGenerator do
   end
 
   defp generate_landscape!(root_dir) do
-    over_landscapes = get_files(root_dir, @over_landscape)
-    landscapes = get_files(root_dir, @landscape)
-
-    for landscape <- landscapes do
+    # copy base landscape tiles to tmp dir
+    for landscape <- get_files(root_dir, @landscape) do
       filename = get_filename(landscape)
       tmp_landscape_path = Path.join([root_dir, @base_dir, @tmp_base, @landscape, filename])
-      tmp_ready_path = Path.join([root_dir, @base_dir, @tmp_base, @ready, filename])
 
       File.cp!(landscape, tmp_landscape_path)
-      File.cp!(landscape, tmp_ready_path)
+    end
 
-      for over_landscape <- over_landscapes do
+    files = [
+      get_files(root_dir, @over_landscape),
+      get_movable_object_files(root_dir),
+      get_movable_loot_files(root_dir)
+    ]
+
+    generate_landscape!(root_dir, files)
+  end
+
+  defp generate_landscape!(root_dir, []) do
+    tmp_landscapes = Path.join([@tmp_base, @landscape])
+
+    for landscape <- get_files(root_dir, tmp_landscapes) do
+      ready_path = Path.join([root_dir, @base_dir, @tmp_base, @ready, get_filename(landscape)])
+      File.cp!(landscape, ready_path)
+    end
+  end
+
+  defp generate_landscape!(root_dir, [files | rest]) do
+    tmp_landscapes = Path.join([@tmp_base, @landscape])
+
+    for landscape <- get_files(root_dir, tmp_landscapes) do
+      for over_landscape <- files do
         over_landscape_filename = get_filename_without_ext(over_landscape)
         landscape_filename = get_filename_without_ext(landscape)
         filename = "#{over_landscape_filename}_#{landscape_filename}.png"
@@ -69,18 +97,57 @@ defmodule Europa.Tools.TilesImagesGenerator do
         {:ok, landscape_img} = Image.open(landscape)
 
         path = Path.join([root_dir, @base_dir, @tmp_base, @landscape, filename])
-        tmp_ready_path = Path.join([root_dir, @base_dir, @tmp_base, @ready, filename])
 
         Image.compose!(landscape_img, over_landscape_img, x: :middle, y: :middle)
         |> write_image!(path)
-
-        File.cp!(path, tmp_ready_path)
       end
     end
+
+    generate_landscape!(root_dir, rest)
+  end
+
+  defp get_movable_loot_files(root_dir) do
+    movable_loot =
+      Loot.movable_item_box_types()
+      |> Enum.map(&Loot.item_box_image/1)
+
+    get_files(root_dir, @loot)
+    |> Enum.filter(fn loot -> get_filename_without_ext(loot) in movable_loot end)
+  end
+
+  defp get_not_movable_loot_files(root_dir) do
+    movable_loot =
+      Loot.movable_item_box_types()
+      |> Enum.map(&Loot.item_box_image/1)
+
+    get_files(root_dir, @loot)
+    |> Enum.filter(fn loot -> get_filename_without_ext(loot) not in movable_loot end)
+  end
+
+  defp get_movable_object_files(root_dir) do
+    movable_objects =
+      Objects.objects()
+      |> Enum.filter(fn {_, object} -> object.movable? end)
+      |> Enum.map(fn {_, object} -> object.image_name end)
+
+    get_files(root_dir, @objects)
+    |> Enum.filter(fn object -> get_filename_without_ext(object) in movable_objects end)
+  end
+
+  defp get_not_movable_object_files(root_dir) do
+    movable_objects =
+      Objects.objects()
+      |> Enum.filter(fn {_, object} -> object.movable? end)
+      |> Enum.map(fn {_, object} -> object.image_name end)
+
+    get_files(root_dir, @objects)
+    |> Enum.filter(fn object -> get_filename_without_ext(object) not in movable_objects end)
   end
 
   defp generate_objects!(root_dir) do
-    objects = get_files(root_dir, @objects)
+    objects =
+      get_not_movable_object_files(root_dir) ++ get_files(root_dir, @enemies) ++ get_not_movable_loot_files(root_dir)
+
     tmp_landscapes = get_tmp_files(root_dir, @landscape)
 
     for object <- objects do

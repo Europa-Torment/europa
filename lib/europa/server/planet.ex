@@ -89,6 +89,7 @@ defmodule Europa.Server.Planet do
   @high_tiles Tiles.high_tiles()
   @warm_tiles Tiles.warm_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
+  @movable_item_boxes Loot.movable_item_box_types()
 
   @water_tiles [@water, @radioactive_water, @warm_water]
 
@@ -600,8 +601,10 @@ defmodule Europa.Server.Planet do
     struct!(monster_body, items: items ++ monster_body.items)
   end
 
-  defp generate_monster_body(%Enemy{stand_on: %Object{stand_on: stand_on}}) do
-    Loot.generate_item_box(:monster_body, tile_without_blood(stand_on))
+  defp generate_monster_body(%Enemy{stand_on: %Object{stand_on: stand_on} = object}) do
+    tile_without_blood = tile_without_blood(stand_on)
+    object = Object.stand_on(object, tile_without_blood)
+    Loot.generate_item_box(:monster_body, object)
   end
 
   defp generate_monster_body(%Enemy{} = enemy) do
@@ -835,7 +838,7 @@ defmodule Europa.Server.Planet do
       tile when tile in @movable_tiles ->
         true
 
-      %Loot.ItemBox{type: type} when type in [:monster_body, :bag] ->
+      %Loot.ItemBox{type: type} when type in @movable_item_boxes ->
         true
 
       %Object{movable?: true} ->
@@ -951,7 +954,7 @@ defmodule Europa.Server.Planet do
     struct!(land, tiles: tiles)
   end
 
-  defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in [:monster_body, :bag] do
+  defp move_cost(%Loot.ItemBox{type: type, stand_on: tile}) when type in @movable_item_boxes do
     move_cost(tile)
   end
 

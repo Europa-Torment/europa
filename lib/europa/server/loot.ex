@@ -38,21 +38,29 @@ defmodule Europa.Server.Loot do
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
 
   @outdoor_item_boxes %{
-    box: %{max_items: 7, item_types: :all},
-    monster_body: %{max_items: 4, item_types: [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots]},
-    human_body: %{max_items: 4, item_types: :all},
-    crashed_shuttle: %{max_items: 4, item_types: :all},
-    bag: %{max_items: 2, item_types: :all}
+    box: %{max_items: 7, item_types: :all, movable?: false, image_name: "factory_box"},
+    monster_body: %{
+      max_items: 4,
+      item_types: [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots],
+      movable?: true,
+      image_name: "monster_corpse"
+    },
+    human_body: %{max_items: 4, item_types: :all, movable?: false, image_name: "human_corpse"},
+    crashed_shuttle: %{max_items: 4, item_types: :all, movable?: false, image_name: "crashed_shuttle"},
+    bag: %{max_items: 2, item_types: :all, movable?: true, image_name: "bag"}
   }
 
   @furniture_item_boxes %{
-    cupboard: %{max_items: 6, item_types: :all},
-    refrigerator: %{max_items: 6, item_types: [:supply]}
+    cupboard: %{max_items: 6, item_types: :all, movable?: false, image_name: "cupboard"},
+    refrigerator: %{max_items: 6, item_types: [:supply], movable?: false, image_name: "refrigerator"}
   }
 
   @allowed_item_boxes Map.merge(@outdoor_item_boxes, @furniture_item_boxes)
 
   @allowed_item_box_types Map.keys(@allowed_item_boxes)
+
+  @item_box_images Enum.map(@allowed_item_boxes, fn {name, %{image_name: image_name}} -> {name, image_name} end)
+                   |> Enum.into(%{})
 
   @filenames %{
     weapon: "weapons.json",
@@ -245,12 +253,24 @@ defmodule Europa.Server.Loot do
   @spec allowed_item_types() :: list()
   def allowed_item_types, do: @item_types
 
-  @spec allowed_item_box_types() :: [item_box_type(), ...]
+  @spec allowed_item_box_types() :: list(item_box_type())
   def allowed_item_box_types, do: @allowed_item_box_types
 
-  @spec furniture_item_box_types() :: [item_box_type(), ...]
+  @spec furniture_item_box_types() :: list(item_box_type())
   def furniture_item_box_types do
     Map.keys(@furniture_item_boxes)
+  end
+
+  @spec movable_item_box_types() :: list(item_box_type())
+  def movable_item_box_types do
+    @allowed_item_boxes
+    |> Enum.filter(fn {_, ib} -> ib.movable? end)
+    |> Enum.map(fn {name, _} -> name end)
+  end
+
+  @spec item_box_image(item_box_type()) :: image_name :: String.t()
+  def item_box_image(item_box_type) when item_box_type in @allowed_item_box_types do
+    Map.fetch!(@item_box_images, item_box_type)
   end
 
   @spec new_item(item_type(), attrs()) :: Item.t()

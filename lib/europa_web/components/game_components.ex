@@ -898,32 +898,9 @@ defmodule EuropaWeb.GameCompotents do
     "player_#{view_direction}_#{landscape_name(stand_on)}.png"
   end
 
-  defp get_image_name(%ItemBox{type: :bag, stand_on: stand_on}, _) do
-    "bag_#{landscape_name(stand_on)}.png"
-  end
-
-  defp get_image_name(%ItemBox{type: :monster_body, stand_on: stand_on}, _) do
-    "monster_corpse_#{landscape_name(stand_on)}.png"
-  end
-
-  defp get_image_name(%ItemBox{type: :human_body, stand_on: stand_on}, _) do
-    "human_corpse_#{landscape_name(stand_on)}.png"
-  end
-
-  defp get_image_name(%ItemBox{type: :crashed_shuttle, stand_on: stand_on}, _) do
-    "crashed_shuttle_#{landscape_name(stand_on)}.png"
-  end
-
-  defp get_image_name(%ItemBox{type: :cupboard, stand_on: stand_on}, _) do
-    "cupboard_#{landscape_name(stand_on)}.png"
-  end
-
-  defp get_image_name(%ItemBox{type: :refrigerator, stand_on: stand_on}, _) do
-    "refrigerator_#{landscape_name(stand_on)}.png"
-  end
-
-  defp get_image_name(%ItemBox{stand_on: stand_on}, _) do
-    "factory_box_#{landscape_name(stand_on)}.png"
+  defp get_image_name(%ItemBox{type: type, stand_on: stand_on}, _) do
+    image_name = Loot.item_box_image(type)
+    "#{image_name}_#{landscape_name(stand_on)}.png"
   end
 
   defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on}, _) do
@@ -963,11 +940,10 @@ defmodule EuropaWeb.GameCompotents do
   defp landscape_name(%Object{movable?: true, image_name: image_name, stand_on: stand_on}),
     do: "#{image_name}_#{landscape_name(stand_on)}"
 
-  defp landscape_name(%ItemBox{type: :monster_body, stand_on: stand_on}),
-    do: "monster_corpse_#{landscape_name(stand_on)}"
-
-  defp landscape_name(%ItemBox{type: :bag, stand_on: stand_on}),
-    do: "bag_#{landscape_name(stand_on)}"
+  defp landscape_name(%ItemBox{type: type, stand_on: stand_on}) do
+    image_name = Loot.item_box_image(type)
+    "#{image_name}_#{landscape_name(stand_on)}"
+  end
 
   defp landscape_name(tile) do
     Map.get(@tiles_image_names, tile)

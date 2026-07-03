@@ -552,6 +552,21 @@ defmodule Europa.Server.LootTest do
     end
   end
 
+  describe "movable_item_box_types/0" do
+    test "returns list of item_box types" do
+      assert Loot.movable_item_box_types() |> Enum.any?(&is_atom/1)
+    end
+  end
+
+  describe "item_box_image" do
+    test "returns item_box image" do
+      Loot.allowed_item_box_types()
+      |> Enum.each(fn ib ->
+        assert Loot.item_box_image(ib) |> is_binary()
+      end)
+    end
+  end
+
   defp item?(%Helmet{}), do: true
   defp item?(%Suit{}), do: true
   defp item?(%Boots{}), do: true

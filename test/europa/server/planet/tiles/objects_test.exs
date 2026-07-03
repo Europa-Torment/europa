@@ -9,4 +9,14 @@ defmodule Europa.Server.Planet.Tiles.ObjectsTest do
       assert %Object{} = Objects.object(:door_up)
     end
   end
+
+  describe "objects/0" do
+    test "returns objects" do
+      objects = Objects.objects()
+      assert Enum.all?(objects, fn {name, object} -> assert is_atom(name) && object?(object) end)
+    end
+  end
+
+  defp object?(%Object{}), do: true
+  defp object?(_), do: false
 end

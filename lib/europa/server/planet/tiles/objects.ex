@@ -63,6 +63,11 @@ defmodule Europa.Server.Planet.Tiles.Objects do
     fire_shuttle: %Object{name: gettext("burning shuttle"), image_name: "fire_shuttle", gif_tile?: true, warm?: true}
   }
 
+  @spec objects() :: %{required(atom()) => Object.t()}
+  def objects do
+    @objects
+  end
+
   @spec object(atom()) :: Object.t()
   def object(name), do: Map.fetch!(@objects, name)
 end

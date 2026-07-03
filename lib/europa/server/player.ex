@@ -7,6 +7,7 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Characters.Character
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Action
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
@@ -479,6 +480,14 @@ defmodule Europa.Server.Player do
       |> do_drop_item(dropped_item)
 
     {updated_player, dropped_item}
+  end
+
+  defp do_drop_item(%__MODULE__{stand_on: %Object{movable?: true} = object} = player, item) do
+    item_box =
+      Loot.new_item_box(:bag, [item])
+      |> Loot.ItemBox.stand_on(object)
+
+    stand_on(player, item_box)
   end
 
   defp do_drop_item(%__MODULE__{stand_on: %Loot.ItemBox{} = item_box} = player, item) do
