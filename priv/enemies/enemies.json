@@ -19,5 +19,27 @@
         "move_distance": 1,
         "image_name": "monster_semiworm",
         "random_weight": 0.5
+    },
+    {
+        "type": "monster",
+        "name": "Stinking Toad",
+        "health": {"from": 10, "to": 30},
+        "damage": {"from": 2, "to": 5},
+        "accuracy": {"from": 20, "to": 40},
+        "radioactive": true,
+        "move_distance": 2,
+        "image_name": "toad",
+        "random_weight": 1.0
+    },
+    {
+        "type": "monster",
+        "name": "Human race betrayer",
+        "health": {"from": 80, "to": 150},
+        "damage": {"from": 10, "to": 20},
+        "accuracy": {"from": 20, "to": 40},
+        "radioactive": true,
+        "move_distance": 1,
+        "image_name": "race_betrayer",
+        "random_weight": 0.1
     }
 ]
