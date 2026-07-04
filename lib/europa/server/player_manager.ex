@@ -9,6 +9,7 @@ defmodule Europa.Server.PlayerManager do
   alias Europa.Server.Player
   alias Europa.Server.Planet
   alias Europa.Server.Loot
+  alias Europa.Server.Event
   alias Europa.Server.Characters.Character
   alias Europa.Server.Errors
 
@@ -38,9 +39,14 @@ defmodule Europa.Server.PlayerManager do
   @callback stand_on(Player.t(), Planet.tile()) :: Player.t()
 
   @doc """
-  Switches player's interested state.
+  Adds given events.
   """
-  @callback interested(Player.t(), boolean()) :: Player.t()
+  @callback add_events(Player.t(), list(Event.t())) :: Player.t()
+
+  @doc """
+  Removes first event from player's events list.
+  """
+  @callback remove_last_event(Player.t()) :: Player.t()
 
   @doc """
   Adds item to player's inventory.
@@ -223,7 +229,9 @@ defmodule Europa.Server.PlayerManager do
 
   def stand_on(player, tile), do: manager_impl().stand_on(player, tile)
 
-  def interested(player, is_interested), do: manager_impl().interested(player, is_interested)
+  def add_events(player, events), do: manager_impl().add_events(player, events)
+
+  def remove_last_event(player), do: manager_impl().remove_last_event(player)
 
   def add_item(player, item), do: manager_impl().add_item(player, item)
 

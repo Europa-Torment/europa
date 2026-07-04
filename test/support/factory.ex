@@ -11,6 +11,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
   alias Europa.Server.Action
+  alias Europa.Server.Event
   alias Europa.Server.Characters
   alias Europa.Server.Characters.Character
   alias Europa.Users.User
@@ -272,6 +273,14 @@ defmodule Europa.Support.Factory do
     %Action{
       subject: build(:enemy),
       action_type: :attack
+    }
+  end
+
+  @spec event_factory() :: Event.t()
+  def event_factory do
+    %Event{
+      uuid: Ecto.UUID.generate(),
+      type: {:damaged, 10}
     }
   end
 

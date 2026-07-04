@@ -2,6 +2,7 @@ defmodule Europa.Server.EnemyTest do
   use Europa.DataCase, async: true
 
   alias Europa.Server.Enemy
+  alias Europa.Server.Event
   alias Europa.Server.Planet.Tiles
 
   @snow Tiles.tile(:snow).atom_value
@@ -73,12 +74,27 @@ defmodule Europa.Server.EnemyTest do
     test "decreases enemy health", %{enemy: enemy} do
       damage = 10
       expected_health = enemy.health - damage
-      assert %Enemy{health: ^expected_health} = Enemy.take_damage(enemy, damage)
+
+      assert %Enemy{health: ^expected_health, events: [%Event{type: {:damaged, ^damage}}]} =
+               Enemy.take_damage(enemy, damage)
     end
 
     test "no negative health", %{enemy: enemy} do
       damage = enemy.health * 2
       assert %Enemy{health: 0} = Enemy.take_damage(enemy, damage)
+    end
+  end
+
+  describe "add_events/2" do
+    setup do
+      enemy = build(:enemy, events: [])
+      {:ok, enemy: enemy}
+    end
+
+    test "add events", %{enemy: enemy} do
+      event = build(:event)
+      assert %Enemy{events: [added_event]} = Enemy.add_events(enemy, [event])
+      assert added_event.type == event.type
     end
   end
 

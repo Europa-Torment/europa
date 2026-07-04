@@ -5,6 +5,7 @@ defmodule Europa.ServerTest do
   alias Europa.Server
   alias Europa.Server.Player
   alias Europa.Server.Planet
+  alias Europa.Server.Event
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Chat
   alias Europa.Server.PlanetManagerMock
@@ -55,15 +56,6 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "make_player_not_interested/1" do
-    test "returns player", %{server: server} do
-      PlayerManagerMock
-      |> expect(:interested, fn %Player{} = player, false -> player end)
-
-      assert %Player{} = Server.make_player_not_interested(server)
-    end
-  end
-
   describe "get_planet/1" do
     test "returns planet", %{server: server} do
       assert %Planet{} = Server.get_planet(server)
@@ -109,6 +101,22 @@ defmodule Europa.ServerTest do
       assert is_integer(year)
       assert is_integer(days)
       assert [_, _] = String.split(time, ":")
+    end
+  end
+
+  describe "events_tick/1" do
+    test "remove player and planet last events", %{server: server} do
+      PlayerManagerMock
+      |> expect(:remove_last_event, fn %Player{} = player ->
+        player
+      end)
+
+      PlanetManagerMock
+      |> expect(:remove_last_events, fn %Planet{} = planet ->
+        planet
+      end)
+
+      assert :ok = Server.events_tick(server)
     end
   end
 
@@ -191,7 +199,9 @@ defmodule Europa.ServerTest do
       action2 = build(:action, subject: :player, action_type: :get_cold)
 
       PlanetManagerMock
-      |> expect(:move, fn _planet, @direction, %Player{} -> {:moved, planet, moves_count, @snow, false} end)
+      |> expect(:move, fn _planet, @direction, %Player{} ->
+        {:moved, planet, moves_count, @snow, _next_to_interactive? = true}
+      end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
       |> expect(:tick, fn %Planet{}, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
@@ -200,10 +210,10 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
+      |> expect(:add_events, fn %Player{} = player, [%Event{type: :interested}] -> player end)
       |> stub(:stand_on, fn %Player{} = player, tile ->
         struct!(player, stand_on: tile)
       end)
-      |> expect(:interested, fn %Player{} = player, false -> player end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
         assert damage == action.subject.damage
         player
@@ -335,7 +345,6 @@ defmodule Europa.ServerTest do
       |> stub(:stand_on, fn %Player{} = player, tile ->
         struct!(player, stand_on: tile)
       end)
-      |> expect(:interested, fn %Player{} = player, false -> player end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
         assert damage == action.subject.damage
         struct!(player, health: 0)
@@ -365,7 +374,6 @@ defmodule Europa.ServerTest do
       |> expect(:crop_land, fn %Planet{} = planet -> {:ok, planet} end)
 
       PlayerManagerMock
-      |> expect(:interested, fn %Player{} = player, false -> player end)
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
       |> expect(:tick, fn %Player{} = player, _tick_moves_count ->
         {:ok, player, []}
@@ -388,7 +396,6 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> weight_ratio end)
-      |> expect(:interested, fn %Player{} = player, false -> player end)
       |> expect(:stand_on, fn %Player{} = player, @snow ->
         struct!(player, stand_on: @snow)
       end)

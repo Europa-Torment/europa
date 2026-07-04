@@ -8,6 +8,7 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Characters.Character
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Loot
+  alias Europa.Server.Event
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
@@ -125,14 +126,45 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  describe "interested/2" do
+  describe "add_events/2" do
     setup do
-      player = build(:player, interested?: false)
+      player = build(:player, events: [])
       {:ok, player: player}
     end
 
-    test "changes interested?", %{player: player} do
-      assert %Player{interested?: true} = Player.interested(player, true)
+    test "add events", %{player: player} do
+      event = build(:event)
+      assert %Player{events: [added_event]} = Player.add_events(player, [event])
+      assert added_event.type == event.type
+    end
+
+    test "adds only one :interested event", %{player: player} do
+      initial_event = build(:event, type: :interested)
+      player = struct!(player, events: [initial_event])
+      new_events = build_list(10, :event, type: :interested)
+
+      assert %Player{events: events} = Player.add_events(player, new_events)
+      assert events == player.events
+    end
+  end
+
+  describe "remove_last_event/1" do
+    setup do
+      event1 = build(:event, type: :interested)
+      event2 = build(:event, type: {:damaged, 10})
+
+      player = build(:player, events: [event1, event2])
+
+      {:ok, player: player, event1: event1, event2: event2}
+    end
+
+    test "removes last event", %{player: player, event2: event2} do
+      assert %Player{events: [^event2]} = Player.remove_last_event(player)
+    end
+
+    test "does nothing when no events", %{player: player} do
+      player = struct!(player, events: [])
+      assert %Player{events: []} = Player.remove_last_event(player)
     end
   end
 
@@ -636,7 +668,8 @@ defmodule Europa.Server.PlayerTest do
       damage = 50
       expected_health = player.health - damage
 
-      assert %Player{health: ^expected_health} = Player.take_damage(player, damage)
+      assert %Player{health: ^expected_health, events: [%Event{type: {:damaged, ^damage}}]} =
+               Player.take_damage(player, damage)
     end
 
     test "no negative health", %{player: player} do
@@ -655,7 +688,8 @@ defmodule Europa.Server.PlayerTest do
       radiation = 20
       expected_radiation = player.radiation + radiation
 
-      assert %Player{radiation: ^expected_radiation} = Player.increase_radiation(player, radiation)
+      assert %Player{radiation: ^expected_radiation, events: [%Event{type: {:radiation, ^radiation}}]} =
+               Player.increase_radiation(player, radiation)
     end
 
     test "not increases max radiation", %{player: player} do
@@ -665,7 +699,7 @@ defmodule Europa.Server.PlayerTest do
 
     test "no negative radiation", %{player: player} do
       radiation = -100_000
-      assert %Player{radiation: 0} = Player.increase_radiation(player, radiation)
+      assert %Player{radiation: 0, events: []} = Player.increase_radiation(player, radiation)
     end
   end
 

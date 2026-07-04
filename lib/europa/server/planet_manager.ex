@@ -141,6 +141,11 @@ defmodule Europa.Server.PlanetManager do
   @callback tick(Planet.t(), Server.move_cost()) :: {:ok, Planet.t(), list(Action.t())}
 
   @doc """
+  Removes last event from every struct that has :events field with list of Event.t() in visible part of planet.
+  """
+  @callback remove_last_events(Planet.t()) :: Planet.t()
+
+  @doc """
   Сrops land to size of visible land.
   """
   @callback crop_land(Planet.t()) :: {:ok, Planet.t()}
@@ -162,6 +167,7 @@ defmodule Europa.Server.PlanetManager do
 
   def drop_item(planet, player, item_uuid), do: manager_impl().drop_item(planet, player, item_uuid)
   def tick(planet, moves_count), do: manager_impl().tick(planet, moves_count)
+  def remove_last_events(planet), do: manager_impl().remove_last_events(planet)
   def shoot(planet, player), do: manager_impl().shoot(planet, player)
 
   def unload_item_box_weapon(planet, player, item_uuid),

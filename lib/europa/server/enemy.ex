@@ -3,6 +3,7 @@ defmodule Europa.Server.Enemy do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet
+  alias Europa.Server.Event
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Enemy.Utils.FilesReader
   alias Europa.Tools.AttrsDeterminator
@@ -25,6 +26,7 @@ defmodule Europa.Server.Enemy do
     field :radioactive?, boolean()
     field :stand_on, Planet.tile()
     field :image_name, String.t()
+    field :events, list(Event.t()), default: []
   end
 
   @spec new(attrs()) :: t()
@@ -64,11 +66,22 @@ defmodule Europa.Server.Enemy do
   @spec take_damage(t(), damage :: pos_integer) :: t()
   def take_damage(%__MODULE__{} = enemy, damage) when is_integer(damage) and damage > 0 do
     updated_health = max(0, enemy.health - damage)
-    struct!(enemy, health: updated_health)
+
+    enemy
+    |> struct!(health: updated_health)
+    |> add_events([Event.new({:damaged, damage})])
   end
 
   @spec stand_on(t(), Planet.tile()) :: t()
   def stand_on(%__MODULE__{} = enemy, tile) do
     struct!(enemy, stand_on: tile)
+  end
+
+  @spec add_events(t(), list(Event.t())) :: t()
+  def add_events(enemy, []), do: enemy
+
+  def add_events(%__MODULE__{} = enemy, events) when is_list(events) do
+    events = Event.stack_events(enemy.events ++ events)
+    struct!(enemy, events: events)
   end
 end

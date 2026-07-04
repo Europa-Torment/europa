@@ -19,6 +19,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
   alias Europa.Server.Action
+  alias Europa.Server.Event
   alias Europa.Server.Characters
   alias Europa.Server.Npc
 
@@ -306,6 +307,18 @@ defmodule Europa.Server.Planet do
 
   def tick(%__MODULE__{} = planet, _) do
     {:ok, planet, []}
+  end
+
+  @impl true
+  def remove_last_events(%__MODULE__{} = planet) do
+    coords = get_coords_of_structs_with_events_list(planet)
+
+    Enum.reduce(coords, planet, fn coord, pl ->
+      %{events: [_ | rest_events]} = tile = get_tile(pl.land, coord)
+      updated_tile = struct!(tile, events: rest_events)
+      updated_land = change_tile(pl.land, coord, updated_tile)
+      struct!(planet, land: updated_land)
+    end)
   end
 
   ### PRIVATE ###
@@ -712,9 +725,9 @@ defmodule Europa.Server.Planet do
   end
 
   defp maybe_perform_enemies_actions(%__MODULE__{} = planet) do
-    enemies = get_visible_enemies(planet)
+    enemies_coords = get_coords_of_enemies_which_see_player(planet)
 
-    Enum.reduce(enemies, {planet, []}, fn enemy_coord, {pl, act} ->
+    Enum.reduce(enemies_coords, {planet, []}, fn enemy_coord, {pl, act} ->
       enemy = get_tile(pl.land, enemy_coord)
       {updated_pl, actions} = move_enemy(pl, enemy_coord, enemy)
       {updated_pl, act ++ actions}
@@ -867,21 +880,43 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp get_visible_enemies(%__MODULE__{current_coord: current_coord, land: land}) do
-    land.tiles
-    |> Enum.filter(fn {enemy_coord, tile} ->
-      case tile do
-        %Enemy{} ->
-          enemy_visible?(current_coord, enemy_coord)
+  defp get_coords_of_structs_with_events_list(%__MODULE__{land: land} = planet) do
+    not_empty_events? =
+      fn events ->
+        Enum.all?(events, fn
+          %Event{} -> true
+          _ -> false
+        end) && not Enum.empty?(events)
+      end
+
+    planet
+    |> visible_land_coords()
+    |> Enum.filter(fn coord ->
+      case get_tile(land, coord) do
+        %{events: events} = tile when is_struct(tile) and is_list(events) ->
+          not_empty_events?.(events)
 
         _ ->
           false
       end
     end)
-    |> Enum.map(fn {enemy_coord, _} -> enemy_coord end)
   end
 
-  defp enemy_visible?(coord1, coord2) do
+  defp get_coords_of_enemies_which_see_player(%__MODULE__{current_coord: current_coord, land: land} = planet) do
+    planet
+    |> visible_land_coords()
+    |> Enum.filter(fn coord ->
+      case get_tile(land, coord) do
+        %Enemy{} ->
+          enemy_see_player?(current_coord, coord)
+
+        _ ->
+          false
+      end
+    end)
+  end
+
+  defp enemy_see_player?(coord1, coord2) do
     coords_distance(coord1, coord2) <= @enemy_view_distance
   end
 
@@ -997,6 +1032,17 @@ defmodule Europa.Server.Planet do
     y_to = min(y + n, land.max_y)
 
     {{x_from, x_to}, {y_from, y_to}}
+  end
+
+  defp visible_land_coords(%__MODULE__{} = planet) do
+    {{x_from, x_to}, {y_from, y_to}} = visible_land_intervals(planet)
+
+    for y <- y_from..y_to do
+      for x <- x_from..x_to do
+        {x, y}
+      end
+    end
+    |> List.flatten()
   end
 
   defp target_coord(planet, direction) do

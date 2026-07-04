@@ -26,6 +26,8 @@ defmodule Europa.Server.PlanetTest do
 
   @predefined_cluster_update_distance fetch_config!([Planet, :predefined_cluster_update_distance])
 
+  @view_distance fetch_config!([Planet, :view_distance])
+
   @initial_enemy_health 100
 
   @s Tiles.tile(:snow).atom_value
@@ -52,13 +54,50 @@ defmodule Europa.Server.PlanetTest do
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)], movable?: true)
 
-  @en build(:enemy, name: "E1", move_distance: 2, health: @initial_enemy_health)
-  @en2 build(:enemy, name: "E2", move_distance: 2, health: @initial_enemy_health)
-  @en3 build(:enemy, name: "E3", move_distance: 2, health: @initial_enemy_health)
-  @en4 build(:enemy, name: "E4", move_distance: 2, health: @initial_enemy_health)
-  @en5 build(:enemy, name: "E5", move_distance: 2, health: @initial_enemy_health)
-  @en6 build(:enemy, name: "E6", move_distance: 2, health: @initial_enemy_health)
-  @en7 build(:enemy, name: "E7", move_distance: 2, health: @initial_enemy_health)
+  @enemy_events_count 5
+
+  @en build(:enemy,
+        name: "E1",
+        move_distance: 2,
+        health: @initial_enemy_health,
+        events: build_list(@enemy_events_count, :event)
+      )
+  @en2 build(:enemy,
+         name: "E2",
+         move_distance: 2,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event)
+       )
+  @en3 build(:enemy,
+         name: "E3",
+         move_distance: 2,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event)
+       )
+  @en4 build(:enemy,
+         name: "E4",
+         move_distance: 2,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event)
+       )
+  @en5 build(:enemy,
+         name: "E5",
+         move_distance: 2,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event)
+       )
+  @en6 build(:enemy,
+         name: "E6",
+         move_distance: 2,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event)
+       )
+  @en7 build(:enemy,
+         name: "E7",
+         move_distance: 2,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event)
+       )
 
   @n build(:npc)
 
@@ -205,8 +244,8 @@ defmodule Europa.Server.PlanetTest do
                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                  [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                   [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -232,8 +271,8 @@ defmodule Europa.Server.PlanetTest do
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
+                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -258,7 +297,7 @@ defmodule Europa.Server.PlanetTest do
 
   @land_player_look_right_at_enemy [
                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @pl, @s, @s, @en, @s, @s],
+                                     [@s, @s, @s, @s, @pl, @s, @en, @s, @s, @s],
                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -286,7 +325,7 @@ defmodule Europa.Server.PlanetTest do
 
   @land_player_look_left_at_enemy [
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @en, @s, @s, @pl, @s, @s, @s, @s, @s],
+                                    [@s, @s, @en, @s, @pl, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
@@ -1009,7 +1048,7 @@ defmodule Europa.Server.PlanetTest do
       assert {:ok, %Planet{land: updated_land}, [%Action{subject: @en, action_type: :chasing}]} =
                Planet.tick(planet, 1)
 
-      assert updated_land == @land_player_left_close_to_enemy
+      assert updated_land.tiles == @land_player_left_close_to_enemy.tiles
     end
 
     test "enemy moves right to player" do
@@ -1110,6 +1149,26 @@ defmodule Europa.Server.PlanetTest do
       IO.puts("Tick (#{moves_count} moves) in #{cols}x#{rows} land took #{exact_time_ms} ms")
 
       assert rounded_time_ms in 0..acceptable_time_ms
+    end
+  end
+
+  describe "remove_last_events/1" do
+    test "removes enemies events" do
+      current_coord = {2, 4}
+      planet = build(:planet, land: @land_player_look_right_at_enemies, current_coord: current_coord)
+
+      assert %Planet{land: land} = Planet.remove_last_events(planet)
+
+      assert Enum.all?(land.tiles, fn {coord, tile} ->
+               if coords_distance(coord, current_coord) > div(@view_distance, 2) do
+                 true
+               else
+                 case tile do
+                   %Enemy{events: events} -> Enum.count(events) == @enemy_events_count - 1
+                   _ -> true
+                 end
+               end
+             end)
     end
   end
 
@@ -2229,4 +2288,8 @@ defmodule Europa.Server.PlanetTest do
   end
 
   defp build_player_stand_on(tile), do: build(:player, stand_on: tile)
+
+  defp coords_distance({x1, y1}, {x2, y2}) do
+    abs(x1 - x2) + abs(y1 - y2)
+  end
 end

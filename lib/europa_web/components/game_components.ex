@@ -10,6 +10,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Player
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
+  alias Europa.Server.Event
   alias Europa.Server.Characters.Character
   alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
@@ -49,7 +50,9 @@ defmodule EuropaWeb.GameCompotents do
 
   @gif_tiles Tiles.gif_tiles()
 
-  @open_tooltip_class "tooltip tooltip-open"
+  @base_tooltip_class "tooltip tooltip-open"
+  @player_tooltip_class "tooltip tooltip-sm tooltip-open tooltip-warning"
+  @enemy_tooltip_class "tooltip tooltip-sm tooltip-open tooltip-error"
 
   def start_screen(assigns) do
     ~H"""
@@ -1120,22 +1123,24 @@ defmodule EuropaWeb.GameCompotents do
 
   defp speech_class(%Npc{}, _player) do
     if m_to_n?(1, 3) do
-      @open_tooltip_class
+      @base_tooltip_class
     else
       ""
     end
   end
+
+  defp speech_class(%Enemy{events: [_ | _]}, _player), do: @enemy_tooltip_class
 
   defp speech_class(%Enemy{}, _player) do
     if m_to_n?(1, 10) do
-      @open_tooltip_class
+      @enemy_tooltip_class
     else
       ""
     end
   end
 
-  defp speech_class(:player, %Player{interested?: true}) do
-    @open_tooltip_class
+  defp speech_class(:player, %Player{events: [_ | _]}) do
+    @player_tooltip_class
   end
 
   defp speech_class(_, _), do: ""
@@ -1144,7 +1149,7 @@ defmodule EuropaWeb.GameCompotents do
     Character.short_phrase(character)
   end
 
-  defp speech(%Enemy{}, _player) do
+  defp speech(%Enemy{events: []}, _player) do
     monster_sounds = [
       gettext("Raaaar!"),
       gettext("Grrr!"),
@@ -1155,17 +1160,31 @@ defmodule EuropaWeb.GameCompotents do
     Enum.random(monster_sounds)
   end
 
-  defp speech(:player, %Player{interested?: true}) do
-    phrases = [
-      gettext("?"),
-      gettext("Hm.."),
-      gettext("Eh?")
-    ]
+  defp speech(%Enemy{events: [%Event{} = event | _]}, _player) do
+    event_speech(event)
+  end
 
-    Enum.random(phrases)
+  defp speech(:player, %Player{events: [%Event{} = event | _]}) do
+    event_speech(event)
   end
 
   defp speech(_, _), do: ""
+
+  defp event_speech(%Event{type: :interested}) do
+    "?"
+  end
+
+  defp event_speech(%Event{type: {:damaged, damage}}) do
+    "💔 #{damage}"
+  end
+
+  defp event_speech(%Event{type: {:healed, health_change}}) do
+    "💊 #{health_change}"
+  end
+
+  defp event_speech(%Event{type: {:radiation, radiation}}) do
+    "☢️ #{radiation}"
+  end
 
   defp maybe_round_number(number) when is_float(number) do
     NumberHelpers.round(number, 2)

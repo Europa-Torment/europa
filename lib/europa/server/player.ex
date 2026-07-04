@@ -15,6 +15,7 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
+  alias Europa.Server.Event
   alias Europa.Tools.NumberHelpers
 
   import Europa.Tools.Randomizer
@@ -52,7 +53,7 @@ defmodule Europa.Server.Player do
     field :suit_uuid, Loot.uuid()
     field :boots_uuid, Loot.uuid()
     field :aim_mode?, boolean(), default: false
-    field :interested?, boolean(), default: false
+    field :events, list(Event.t()), default: []
   end
 
   @impl true
@@ -139,9 +140,26 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def interested(%__MODULE__{} = player, interested?) when is_boolean(interested?) do
-    player
-    |> struct!(interested?: interested?)
+  def add_events(player, []), do: player
+
+  def add_events(%__MODULE__{} = player, events) when is_list(events) do
+    events =
+      Enum.uniq_by(player.events ++ events, fn event ->
+        case event.type do
+          :interested -> event.type
+          _ -> event.uuid
+        end
+      end)
+      |> Event.stack_events()
+
+    struct!(player, events: events)
+  end
+
+  @impl true
+  def remove_last_event(%__MODULE__{events: []} = player), do: player
+
+  def remove_last_event(%__MODULE__{events: [_ | rest_events]} = player) do
+    struct!(player, events: rest_events)
   end
 
   @impl true
@@ -354,13 +372,19 @@ defmodule Europa.Server.Player do
   @impl true
   def take_damage(%__MODULE__{} = player, damage) when is_integer(damage) and damage > 0 do
     updated_health = max(0, player.health - damage)
-    struct!(player, health: updated_health)
+
+    player
+    |> struct!(health: updated_health)
+    |> add_events([Event.new({:damaged, damage})])
   end
 
   @impl true
   def increase_radiation(%__MODULE__{} = player, radiation) when is_integer(radiation) do
     updated_radiation = min(player.radiation + radiation, @max_radiation) |> max(0)
-    struct!(player, radiation: updated_radiation)
+
+    player
+    |> struct!(radiation: updated_radiation)
+    |> maybe_add_radiation_event(radiation)
   end
 
   @impl true
@@ -829,17 +853,40 @@ defmodule Europa.Server.Player do
   defp increase_attrs(player, attrs) do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
-        :max_weight -> struct!(player, max_weight: player.max_weight + attr_value)
-        :accuracy -> struct!(player, accuracy: player.accuracy + attr_value)
-        :efficiency -> struct!(player, efficiency: player.efficiency + attr_value)
-        :max_health -> struct!(player, max_health: player.max_health + attr_value)
-        :health -> struct!(player, health: min(player.max_health, player.health + attr_value) |> max(0))
-        :max_warm -> struct!(player, max_warm: player.max_warm + attr_value)
-        :warm -> struct!(player, warm: min(player.max_warm, player.warm + attr_value) |> max(0))
-        :hunger -> struct!(player, hunger: max(0, player.hunger + attr_value) |> min(@max_hunger))
-        :thirst -> struct!(player, thirst: max(0, player.thirst + attr_value) |> min(@max_thirst))
-        :radiation -> struct!(player, radiation: max(0, player.radiation + attr_value) |> min(@max_radiation))
-        _ -> player
+        :max_weight ->
+          struct!(player, max_weight: player.max_weight + attr_value)
+
+        :accuracy ->
+          struct!(player, accuracy: player.accuracy + attr_value)
+
+        :efficiency ->
+          struct!(player, efficiency: player.efficiency + attr_value)
+
+        :max_health ->
+          struct!(player, max_health: player.max_health + attr_value)
+
+        :health ->
+          player
+          |> struct!(health: min(player.max_health, player.health + attr_value) |> max(0))
+          |> add_health_changed_event(attr_value)
+
+        :max_warm ->
+          struct!(player, max_warm: player.max_warm + attr_value)
+
+        :warm ->
+          struct!(player, warm: min(player.max_warm, player.warm + attr_value) |> max(0))
+
+        :hunger ->
+          struct!(player, hunger: max(0, player.hunger + attr_value) |> min(@max_hunger))
+
+        :thirst ->
+          struct!(player, thirst: max(0, player.thirst + attr_value) |> min(@max_thirst))
+
+        :radiation ->
+          increase_radiation(player, attr_value)
+
+        _ ->
+          player
       end
     end)
   end
@@ -859,6 +906,24 @@ defmodule Europa.Server.Player do
       _ -> %{}
     end
   end
+
+  defp add_health_changed_event(player, health_value) do
+    event =
+      if health_value < 0 do
+        Event.new({:damaged, abs(health_value)})
+      else
+        Event.new({:healed, health_value})
+      end
+
+    add_events(player, [event])
+  end
+
+  defp maybe_add_radiation_event(player, radiation_value) when radiation_value > 0 do
+    event = Event.new({:radiation, radiation_value})
+    add_events(player, [event])
+  end
+
+  defp maybe_add_radiation_event(player, _), do: player
 
   defp max_weight do
     from = fetch_config!([:game_params, :player, :max_weight, :from])

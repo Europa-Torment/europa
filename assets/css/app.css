@@ -138,3 +138,8 @@ body {
   0% { opacity: 0.3; }
   100% { opacity: 0.8; }
 }
+
+.tooltip-sm::before {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+}

@@ -15,6 +15,7 @@ defmodule Europa.Server do
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
   alias Europa.Server.Action
+  alias Europa.Server.Event
   alias Europa.Server.Errors
   alias Europa.Tools.TextGenerator
   alias Europa.Server.Characters
@@ -101,9 +102,13 @@ defmodule Europa.Server do
     GenServer.call(server, :get_player)
   end
 
-  @spec make_player_not_interested(pid()) :: Player.t()
-  def make_player_not_interested(server) do
-    GenServer.call(server, :make_player_not_interested)
+  @spec events_tick(pid()) :: :ok
+  def events_tick(server) do
+    if Process.alive?(server) do
+      GenServer.call(server, :events_tick)
+    else
+      :ok
+    end
   end
 
   @spec get_planet(pid()) :: Planet.t()
@@ -286,9 +291,11 @@ defmodule Europa.Server do
     {:reply, state.player, state, @inactivity_timeout_ms}
   end
 
-  def handle_call(:make_player_not_interested, _from, state) do
-    updated_player = PlayerManager.interested(state.player, false)
-    {:reply, updated_player, struct!(state, player: updated_player), @inactivity_timeout_ms}
+  def handle_call(:events_tick, _from, state) do
+    updated_player = PlayerManager.remove_last_event(state.player)
+    updated_planet = PlanetManager.remove_last_events(state.planet)
+
+    {:reply, :ok, struct!(state, player: updated_player, planet: updated_planet), @inactivity_timeout_ms}
   end
 
   def handle_call(:get_chat, _from, state) do
@@ -764,7 +771,7 @@ defmodule Europa.Server do
         updated_player =
           state.player
           |> PlayerManager.stand_on(step_on_tile)
-          |> PlayerManager.interested(next_to_interactive?)
+          |> maybe_add_interested_event(next_to_interactive?)
 
         {:reply, {:moved, status},
          struct!(state,
@@ -900,6 +907,13 @@ defmodule Europa.Server do
   end
 
   defp maybe_add_radiation(player, _), do: player
+
+  defp maybe_add_interested_event(%Player{} = player, true = _next_to_interactive_event?) do
+    interested_event = Event.new(:interested)
+    PlayerManager.add_events(player, [interested_event])
+  end
+
+  defp maybe_add_interested_event(player, _), do: player
 
   # this is for "skip" object, see Objects module
   defp blood_tile(%Object{name: "", image_name: "", stand_on: tile} = object) do

@@ -4,8 +4,6 @@ defmodule EuropaWeb.GameLive do
   use EuropaWeb, :live_view
   use Gettext, backend: Europa.Gettext
 
-  import EuropaWeb.GameCompotents
-
   alias Europa.Games
   alias Europa.Games.Game
   alias Europa.Server
@@ -13,9 +11,11 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
+  alias Europa.Server.Event
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Planet.Tiles.Objects.Object
 
+  import EuropaWeb.GameCompotents
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
 
@@ -42,7 +42,8 @@ defmodule EuropaWeb.GameLive do
 
   @game_over_redirect_delay_ms 8950
 
-  @make_player_not_iterested_delay_ms 1500
+  @events_tick_delay_ms 1000
+  @processed_player_events_limit 20
 
   @view_distance fetch_config!([Planet, :view_distance])
 
@@ -56,9 +57,12 @@ defmodule EuropaWeb.GameLive do
         socket
         |> assign(
           game: game,
-          server: server
+          server: server,
+          events_tick_timer: schedule_events_tick(),
+          events_tick_timer_reset_at: current_time_ms(),
+          events_tick_timer_reset_skip_count: 0
         )
-        |> base_assign()
+        |> base_assign(events_tick_timer_reset: false)
         |> assign_equipment()
         |> close_all()
 
@@ -76,9 +80,11 @@ defmodule EuropaWeb.GameLive do
           blueprints: nil,
           blueprints_type: nil,
           interaction_confirmation: nil,
-          inventory_type: nil
+          inventory_type: nil,
+          processed_player_events_uuid: []
         )
 
+      schedule_events_tick()
       {:ok, socket}
     else
       {:ok, %Game{state: :finished} = game} ->
@@ -110,7 +116,6 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @move_keys do
     direction = move_key_to_direction(key)
-    player_before = socket.assigns.player
 
     case Server.move(socket.assigns.server, direction) do
       {:moved, move_status} ->
@@ -119,10 +124,8 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> step_sound(socket.assigns.player.stand_on)
-          |> damaged_sound(player_before.health)
           |> overloaded_sound(move_status)
           |> low_health_sound(socket.assigns.player)
-          |> make_player_not_interested_after_delay()
 
         {:noreply, socket}
 
@@ -132,7 +135,6 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> punch_sound(status)
-          |> damaged_sound(player_before.health)
           |> low_health_sound(socket.assigns.player)
 
         {:noreply, socket}
@@ -174,7 +176,6 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", %{"key" => key}, socket) when key in @shoot_keys do
-    player_before = socket.assigns.player
     shoot_result = Server.shoot(socket.assigns.server)
 
     socket =
@@ -182,7 +183,6 @@ defmodule EuropaWeb.GameLive do
       |> base_assign()
       |> assign_equipment()
       |> shoot_sound(shoot_result)
-      |> damaged_sound(player_before.health)
 
     {:noreply, socket}
   end
@@ -331,8 +331,6 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("confirm_item_disassemble", %{"uuid" => item_uuid}, socket) do
-    player_before = socket.assigns.player
-
     case Server.disassemble_item(socket.assigns.server, item_uuid) do
       :ok ->
         socket =
@@ -345,7 +343,6 @@ defmodule EuropaWeb.GameLive do
             disassemble_items: nil
           )
           |> play_sound("assemble")
-          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -399,8 +396,6 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("unload_weapon", %{"uuid" => item_uuid}, socket) do
-    player_before = socket.assigns.player
-
     case Server.unload_weapon(socket.assigns.server, item_uuid) do
       :ok ->
         socket =
@@ -409,7 +404,6 @@ defmodule EuropaWeb.GameLive do
           |> assign_equipment()
           |> assign(inventory: get_player_inventory(socket))
           |> play_sound("unload")
-          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -419,8 +413,6 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("unload_item_box_weapon", %{"uuid" => item_uuid}, socket) do
-    player_before = socket.assigns.player
-
     case Server.unload_item_box_weapon(socket.assigns.server, item_uuid) do
       {:ok, updated_item_box} ->
         socket =
@@ -428,7 +420,6 @@ defmodule EuropaWeb.GameLive do
           |> base_assign()
           |> assign(item_box: updated_item_box)
           |> play_sound("unload")
-          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -438,28 +429,13 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("consume_supply", %{"uuid" => item_uuid}, socket) do
-    player_before = socket.assigns.player
-
     case Server.consume_supply(socket.assigns.server, item_uuid) do
       {:ok, supply} ->
-        socket = base_assign(socket)
-        updated_player = socket.assigns.player
-
-        is_health_not_changed =
-          supply.properties.health && player_before.health != updated_player.health - supply.properties.health
-
-        now_health =
-          cond do
-            is_health_not_changed -> updated_player.health
-            supply.properties.health -> updated_player.health - supply.properties.health
-            true -> updated_player.health
-          end
-
         socket =
           socket
+          |> base_assign()
           |> assign(inventory: get_player_inventory(socket))
           |> play_sound(supply.sound_name)
-          |> damaged_sound(player_before.health, now_health)
 
         {:noreply, socket}
 
@@ -508,9 +484,28 @@ defmodule EuropaWeb.GameLive do
     {:noreply, play_sound(socket, sound_name)}
   end
 
-  def handle_info(:make_player_not_interested, socket) do
-    updated_player = Server.make_player_not_interested(socket.assigns.server)
-    {:noreply, assign(socket, player: updated_player)}
+  def handle_info(:events_tick, socket) do
+    time_diff = current_time_ms() - socket.assigns.events_tick_timer_reset_at
+    skip_count = socket.assigns.events_tick_timer_reset_skip_count
+
+    cond do
+      skip_count >= 10 -> do_events_tick(socket)
+      time_diff >= @events_tick_delay_ms -> do_events_tick(socket)
+      true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
+    end
+  end
+
+  def handle_info(:reset_events_tick_timer, socket) do
+    time_diff = current_time_ms() - socket.assigns.events_tick_timer_reset_at
+    skip_count = socket.assigns.events_tick_timer_reset_skip_count
+
+    if time_diff >= @events_tick_delay_ms do
+      Process.cancel_timer(socket.assigns.events_tick_timer)
+      {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
+    else
+      {:noreply,
+       assign(socket, events_tick_timer_reset_skip_count: skip_count + 1, events_tick_timer_reset_at: current_time_ms())}
+    end
   end
 
   def handle_info(_, socket) do
@@ -519,7 +514,65 @@ defmodule EuropaWeb.GameLive do
 
   ### Private ###
 
-  defp base_assign(socket) do
+  defp do_events_tick(socket) do
+    if Process.alive?(socket.assigns.server) do
+      :ok = Server.events_tick(socket.assigns.server)
+
+      socket =
+        socket
+        |> assign(
+          events_tick_timer: schedule_events_tick(),
+          events_tick_timer_reset_at: current_time_ms(),
+          events_tick_timer_reset_skip_count: 0
+        )
+        |> base_assign(events_tick_timer_reset: false)
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp play_sounds_from_player_events(socket) do
+    Enum.reduce(socket.assigns.player.events, socket, fn event, socket ->
+      if event.uuid in socket.assigns.processed_player_events_uuid do
+        socket
+      else
+        socket
+        |> remember_player_event(event.uuid)
+        |> play_player_event_sound(event)
+      end
+    end)
+  end
+
+  defp remember_player_event(socket, event_uuid) do
+    processed_uuids = socket.assigns.processed_player_events_uuid
+
+    updated_processed_uuids =
+      if Enum.count(processed_uuids) == @processed_player_events_limit do
+        List.delete_at(processed_uuids, 0) ++ [event_uuid]
+      else
+        processed_uuids ++ [event_uuid]
+      end
+
+    assign(socket, processed_player_events_uuid: updated_processed_uuids)
+  end
+
+  defp play_player_event_sound(socket, %Event{type: {:damaged, _}}) do
+    damaged_sound(socket)
+  end
+
+  defp play_player_event_sound(socket, %Event{type: {:radiation, _}}) do
+    radiation_sound(socket)
+  end
+
+  defp play_player_event_sound(socket, _), do: socket
+
+  defp base_assign(socket, opts \\ []) do
+    if Keyword.get(opts, :events_tick_timer_reset, true) do
+      self() |> Process.send_after(:reset_events_tick_timer, 1)
+    end
+
     player = Server.get_player(socket.assigns.server)
     visible_planet = Server.get_visible_planet(socket.assigns.server)
 
@@ -532,6 +585,7 @@ defmodule EuropaWeb.GameLive do
       current_time: get_current_time(socket.assigns.server),
       aim: get_aim(visible_planet, player)
     )
+    |> play_sounds_from_player_events()
   end
 
   defp assign_equipment(socket) do
@@ -602,7 +656,8 @@ defmodule EuropaWeb.GameLive do
         dead: %{name: ~p"/sounds/dead.mp3", volume: 0.2},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1},
         open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
-        matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3}
+        matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3},
+        radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1}
       })
 
     assign(socket, :sounds, json)
@@ -638,20 +693,13 @@ defmodule EuropaWeb.GameLive do
     play_sound(socket, sound)
   end
 
-  defp damaged_sound(socket, health_before, current_health \\ nil) do
-    current_health =
-      if current_health do
-        current_health
-      else
-        socket.assigns.player.health
-      end
+  defp damaged_sound(socket) do
+    sound = Enum.random(["damage1", "damage2", "damage3"])
+    play_sound_with_delay(socket, sound)
+  end
 
-    if health_before > current_health do
-      sound = Enum.random(["damage1", "damage2", "damage3"])
-      play_sound_with_delay(socket, sound)
-    else
-      socket
-    end
+  defp radiation_sound(socket) do
+    play_sound_with_delay(socket, "radiation")
   end
 
   defp overloaded_sound(socket, :overloaded) do
@@ -711,16 +759,7 @@ defmodule EuropaWeb.GameLive do
     redirect(socket, to: ~p"/games/#{game_uuid}/game-over")
   end
 
-  defp make_player_not_interested_after_delay(socket) do
-    if socket.assigns.player.interested? do
-      self() |> Process.send_after(:make_player_not_interested, @make_player_not_iterested_delay_ms)
-    end
-
-    socket
-  end
-
   defp reload_weapon(socket, item_uuid \\ :equiped) do
-    player_before = socket.assigns.player
     result = Server.reload(socket.assigns.server, item_uuid)
 
     socket = base_assign(socket)
@@ -737,7 +776,6 @@ defmodule EuropaWeb.GameLive do
       |> assign(inventory: inventory)
       |> assign_equipment()
       |> reload_sound(result)
-      |> damaged_sound(player_before.health)
 
     {:noreply, socket}
   end
@@ -849,8 +887,6 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp do_craft_item(blueprint, socket) do
-    player_before = socket.assigns.player
-
     case Server.craft_item(socket.assigns.server, blueprint) do
       :ok ->
         socket =
@@ -861,7 +897,6 @@ defmodule EuropaWeb.GameLive do
             inventory: get_player_inventory(socket)
           )
           |> play_sound("assemble")
-          |> damaged_sound(player_before.health)
 
         {:noreply, socket}
 
@@ -996,6 +1031,14 @@ defmodule EuropaWeb.GameLive do
   defp move_key_to_direction(key) when key in @move_down_keys, do: :down
   defp move_key_to_direction(key) when key in @move_left_keys, do: :left
   defp move_key_to_direction(key) when key in @move_right_keys, do: :right
+
+  defp schedule_events_tick do
+    self() |> Process.send_after(:events_tick, @events_tick_delay_ms)
+  end
+
+  defp current_time_ms do
+    System.system_time(:millisecond)
+  end
 
   # coveralls-ignore-stop
 end
