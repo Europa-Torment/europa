@@ -84,7 +84,6 @@ defmodule EuropaWeb.GameLive do
           inventory_type: nil
         )
 
-      schedule_events_tick()
       {:ok, socket}
     else
       {:ok, %Game{state: :finished} = game} ->
