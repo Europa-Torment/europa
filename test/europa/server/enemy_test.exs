@@ -26,17 +26,19 @@ defmodule Europa.Server.EnemyTest do
 
   describe "readable_stats/1" do
     test "returns stats" do
-      enemy = build(:enemy)
+      for {move_distance, damage_factor} <- [{1, ""}, {2, "x2"}, {10, "x10"}] do
+        enemy = build(:enemy, move_distance: move_distance)
 
-      expected_stats = [
-        {"Name", enemy.name},
-        {"Health", enemy.health},
-        {"Accuracy", enemy.accuracy},
-        {"Damage", enemy.damage},
-        {"Move distance", enemy.move_distance}
-      ]
+        expected_stats = [
+          {"Name", enemy.name},
+          {"Health", enemy.health},
+          {"Accuracy", enemy.accuracy},
+          {"Damage", "#{enemy.damage}" <> damage_factor},
+          {"Move distance", enemy.move_distance}
+        ]
 
-      assert Enemy.readable_stats(enemy) == expected_stats
+        assert Enemy.readable_stats(enemy) == expected_stats
+      end
     end
   end
 

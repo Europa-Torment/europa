@@ -21,6 +21,7 @@ defmodule Europa.Server.Enemy do
   typedstruct enforce: true do
     field :type, enemy_type()
     field :name, String.t()
+    field :description, String.t()
     field :health, non_neg_integer()
     field :damage, pos_integer()
     field :move_distance, pos_integer()
@@ -38,6 +39,7 @@ defmodule Europa.Server.Enemy do
     %__MODULE__{
       type: Map.fetch!(attrs, :type) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
+      description: Map.fetch!(attrs, :description),
       health: Map.fetch!(attrs, :health),
       damage: Map.fetch!(attrs, :damage),
       move_distance: Map.fetch!(attrs, :move_distance),
@@ -51,13 +53,20 @@ defmodule Europa.Server.Enemy do
   end
 
   @spec readable_stats(t()) :: list({String.t(), String.t() | integer()})
-  def readable_stats(%__MODULE__{} = enemy) do
+  def readable_stats(%__MODULE__{move_distance: move_distance} = enemy) do
+    damage =
+      if move_distance > 1 do
+        "#{enemy.damage}x#{move_distance}"
+      else
+        "#{enemy.damage}"
+      end
+
     [
       {gettext("Name"), enemy.name},
       {gettext("Health"), enemy.health},
       {gettext("Accuracy"), enemy.accuracy},
-      {gettext("Damage"), enemy.damage},
-      {gettext("Move distance"), enemy.move_distance}
+      {gettext("Damage"), damage},
+      {gettext("Move distance"), move_distance}
     ]
   end
 

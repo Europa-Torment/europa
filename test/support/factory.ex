@@ -289,6 +289,7 @@ defmodule Europa.Support.Factory do
     %Enemy{
       type: :monster,
       name: sequence(:name, &"Enemy #{&1 + 1}"),
+      description: "description",
       health: 20,
       damage: 5,
       move_distance: 1,

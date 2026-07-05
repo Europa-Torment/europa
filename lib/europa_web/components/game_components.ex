@@ -858,6 +858,15 @@ defmodule EuropaWeb.GameCompotents do
     [item_description(item) | requirements]
   end
 
+  defp enemy_tooltip(%Enemy{} = enemy) do
+    stats =
+      enemy
+      |> Enemy.readable_stats()
+      |> to_ul()
+
+    [enemy_description(enemy) | stats]
+  end
+
   defp tile_tooltip(tile, player) do
     case tile do
       @player ->
@@ -866,9 +875,7 @@ defmodule EuropaWeb.GameCompotents do
         |> to_ul()
 
       %Enemy{} = enemy ->
-        enemy
-        |> Enemy.readable_stats()
-        |> to_ul()
+        enemy_tooltip(enemy)
 
       %Npc{} = npc ->
         Npc.readable_stats(npc) |> to_ul()
@@ -883,7 +890,17 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp item_description(item) do
-    ~s|<span class="italic text-base-content">| <> Loot.Item.description(item) <> ~s|</span><br/><br/>|
+    item
+    |> Loot.Item.description()
+    |> description()
+  end
+
+  defp enemy_description(%Enemy{description: description}) do
+    description(description)
+  end
+
+  defp description(text) do
+    ~s|<span class="italic text-base-content">| <> text <> ~s|</span><br/><br/>|
   end
 
   defp to_ul(list) do

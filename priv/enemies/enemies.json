@@ -2,6 +2,7 @@
     {
         "type": "monster",
         "name": "Fishlike ghoul",
+        "description": "A foul-smelling monster resembling an anthropomorphic deep-sea fish from Earth. The first creature to emerge onto the surface.",
         "health": {"from": 30, "to": 45},
         "damage": {"from": 2, "to": 5},
         "accuracy": {"from": 10, "to": 20},
@@ -14,6 +15,7 @@
     {
         "type": "monster",
         "name": "Deep-sea semi-worm",
+        "description": "Something that looks like a cross between a giant slimy worm and a seal. The Geiger counter goes off the charts next to them.",
         "health": {"from": 60, "to": 100},
         "damage": {"from": 3, "to": 10},
         "accuracy": {"from": 15, "to": 25},
@@ -27,8 +29,9 @@
     {
         "type": "monster",
         "name": "Stinking Toad",
+        "description": "A nauseating ocean toad. It moves in sudden jerks.",
         "health": {"from": 10, "to": 30},
-        "damage": {"from": 2, "to": 5},
+        "damage": {"from": 2, "to": 4},
         "accuracy": {"from": 20, "to": 40},
         "radioactive": false,
         "move_distance": 2,
@@ -40,6 +43,7 @@
     {
         "type": "monster",
         "name": "Human race betrayer",
+        "description": "A hybrid of a human and a local underwater monster. Rumor has it that some people, for some reason, deliberately dived into the ocean and subsequently became like this.",
         "health": {"from": 80, "to": 150},
         "damage": {"from": 10, "to": 15},
         "accuracy": {"from": 20, "to": 35},

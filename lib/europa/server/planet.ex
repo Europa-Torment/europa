@@ -721,32 +721,33 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp move_enemy(%__MODULE__{current_coord: current_coord} = planet, enemy_coord, enemy) do
-    if coords_distance(current_coord, enemy_coord) <= 1 do
-      {planet, attack_or_miss(enemy)}
-    else
-      # Give player chance to run away
-      if m_to_n?(@enemy_move_possibility_from, @enemy_move_possibility_to) do
-        do_move_enemy(planet, enemy_coord, enemy)
-      else
-        {planet, [Action.new(enemy, :stay)]}
-      end
-    end
-  end
-
-  defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, %Enemy{} = enemy) do
-    {updated_planet, actions, _} =
-      Enum.reduce(1..enemy.move_distance, {planet, [], enemy_coord}, fn _, {pl, acc_actions, enemy_coord} ->
-        do_move_enemy_step(pl, acc_actions, enemy_coord, enemy)
+  defp move_enemy(%__MODULE__{} = planet, enemy_coord, enemy) do
+    {updated_planet, actions, _, _} =
+      Enum.reduce(1..enemy.move_distance, {planet, [], enemy_coord, enemy}, fn _,
+                                                                               {planet, actions, enemy_coord, enemy} ->
+        move_enemy_step(planet, actions, enemy_coord, enemy)
       end)
 
     {updated_planet, actions}
   end
 
-  defp do_move_enemy_step(planet, acc_actions, enemy_coord, enemy) do
+  defp move_enemy_step(%__MODULE__{current_coord: current_coord} = planet, actions, enemy_coord, enemy) do
+    if coords_distance(current_coord, enemy_coord) <= 1 do
+      {planet, actions ++ attack_or_miss(enemy), enemy_coord, enemy}
+    else
+      # Give player chance to run away
+      if m_to_n?(@enemy_move_possibility_from, @enemy_move_possibility_to) do
+        do_move_enemy(planet, enemy_coord, enemy)
+      else
+        {planet, actions ++ [Action.new(enemy, :stay)], enemy_coord, enemy}
+      end
+    end
+  end
+
+  defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy) do
     case calculate_enemy_move_coord(planet, enemy_coord) do
       :stay ->
-        {planet, [Action.new(enemy, :stay)], enemy_coord}
+        {planet, [Action.new(enemy, :stay)], enemy_coord, enemy}
 
       new_enemy_coord ->
         target_tile = get_tile(planet.land, new_enemy_coord)
@@ -762,7 +763,7 @@ defmodule Europa.Server.Planet do
         updated_land =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
-          |> change_tile(new_enemy_coord, Enemy.stand_on(enemy, target_tile) |> Enemy.maybe_add_speech_event())
+          |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile))
 
         updated_land =
           Enum.reduce(neighbor_npc, updated_land, fn {npc_coord, npc}, land ->
@@ -773,7 +774,7 @@ defmodule Europa.Server.Planet do
         actions = move_enemy_actions(enemy, neighbor_npc)
 
         updated_planet = struct!(planet, land: updated_land)
-        {updated_planet, acc_actions ++ actions, new_enemy_coord}
+        {updated_planet, actions, new_enemy_coord, enemy}
     end
   end
 
