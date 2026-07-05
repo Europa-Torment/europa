@@ -9,6 +9,8 @@ defmodule Europa.Server.Enemy do
   alias Europa.Tools.AttrsDeterminator
   alias Europa.Tools.Types
 
+  import Europa.Tools.Randomizer
+
   @enemies_attrs FilesReader.parse_file()
 
   @allowed_enemy_types [:monster]
@@ -27,6 +29,7 @@ defmodule Europa.Server.Enemy do
     field :stand_on, Planet.tile()
     field :image_name, String.t()
     field :events, list(Event.t()), default: []
+    field :phrases, list(String.t()), default: []
   end
 
   @spec new(attrs()) :: t()
@@ -39,6 +42,7 @@ defmodule Europa.Server.Enemy do
       move_distance: Map.fetch!(attrs, :move_distance),
       accuracy: Map.fetch!(attrs, :accuracy),
       radioactive?: Map.get(attrs, :radioactive, false),
+      phrases: Map.fetch!(attrs, :phrases),
       image_name: Map.fetch!(attrs, :image_name),
       stand_on: Tiles.tile(:snow).atom_value
     }
@@ -83,5 +87,27 @@ defmodule Europa.Server.Enemy do
   def add_events(%__MODULE__{} = enemy, events) when is_list(events) do
     events = Event.stack_events(enemy.events ++ events)
     struct!(enemy, events: events)
+  end
+
+  @spec maybe_add_speech_event(t()) :: t()
+  def maybe_add_speech_event(%__MODULE__{phrases: []} = enemy), do: enemy
+
+  def maybe_add_speech_event(%__MODULE__{phrases: phrases} = enemy) do
+    if m_to_n?(1, 5) && dont_have_speech_event?(enemy) do
+      phrase = Enum.random(phrases)
+      event = Event.new({:speech, phrase})
+      add_events(enemy, [event])
+    else
+      enemy
+    end
+  end
+
+  defp dont_have_speech_event?(%__MODULE__{events: []}), do: true
+
+  defp dont_have_speech_event?(%__MODULE__{events: events}) do
+    not Enum.any?(events, fn %Event{type: {:speech, _}} ->
+      true
+      false
+    end)
   end
 end

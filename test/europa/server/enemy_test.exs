@@ -1,5 +1,6 @@
 defmodule Europa.Server.EnemyTest do
   use Europa.DataCase, async: true
+  use ExUnitProperties
 
   alias Europa.Server.Enemy
   alias Europa.Server.Event
@@ -95,6 +96,34 @@ defmodule Europa.Server.EnemyTest do
       event = build(:event)
       assert %Enemy{events: [added_event]} = Enemy.add_events(enemy, [event])
       assert added_event.type == event.type
+    end
+  end
+
+  describe "maybe_add_speech_event/1" do
+    property "adds speech event" do
+      enemy = build(:enemy, phrases: ["one", "two"])
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Enemy.maybe_add_speech_event(enemy) end)
+
+          with_event_count =
+            Enum.count(results, fn %Enemy{events: events} ->
+              Enum.find(events, fn
+                %Event{type: {:speech, text}} -> text in enemy.phrases
+                _ -> false
+              end)
+            end)
+
+          with_event_proportion = with_event_count / num_runs
+
+          assert with_event_proportion >= 0.01
+          assert with_event_proportion <= 0.4
+        end
+      end
     end
   end
 

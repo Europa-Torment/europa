@@ -6,7 +6,11 @@ defmodule Europa.Server.Event do
   @type radiation_change :: pos_integer()
 
   @type event_type ::
-          {:damaged, health_change()} | {:healed, health_change()} | {:radiation, radiation_change()} | :interested
+          {:damaged, health_change()}
+          | {:healed, health_change()}
+          | {:radiation, radiation_change()}
+          | {:speech, text :: String.t()}
+          | :interested
 
   typedstruct enforce: true do
     field :uuid, uuid()

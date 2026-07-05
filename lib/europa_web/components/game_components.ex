@@ -1131,14 +1131,6 @@ defmodule EuropaWeb.GameCompotents do
 
   defp speech_class(%Enemy{events: [_ | _]}, _player), do: @enemy_tooltip_class
 
-  defp speech_class(%Enemy{}, _player) do
-    if m_to_n?(1, 10) do
-      @enemy_tooltip_class
-    else
-      ""
-    end
-  end
-
   defp speech_class(:player, %Player{events: [_ | _]}) do
     @player_tooltip_class
   end
@@ -1147,17 +1139,6 @@ defmodule EuropaWeb.GameCompotents do
 
   defp speech(%Npc{character: character}, _player) do
     Character.short_phrase(character)
-  end
-
-  defp speech(%Enemy{events: []}, _player) do
-    monster_sounds = [
-      gettext("Raaaar!"),
-      gettext("Grrr!"),
-      gettext("Grrraaah!"),
-      gettext("#&^!&#")
-    ]
-
-    Enum.random(monster_sounds)
   end
 
   defp speech(%Enemy{events: [%Event{} = event | _]}, _player) do
@@ -1185,6 +1166,10 @@ defmodule EuropaWeb.GameCompotents do
   defp event_speech(%Event{type: {:radiation, radiation}}) do
     "☢️ #{radiation}"
   end
+
+  defp event_speech(%Event{type: {:speech, phrase}}), do: phrase
+
+  defp event_speech(_), do: "..."
 
   defp maybe_round_number(number) when is_float(number) do
     NumberHelpers.round(number, 2)

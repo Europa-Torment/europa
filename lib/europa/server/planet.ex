@@ -766,7 +766,7 @@ defmodule Europa.Server.Planet do
         updated_land =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
-          |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile))
+          |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile) |> Enemy.maybe_add_speech_event())
 
         updated_land =
           Enum.reduce(neighbor_npc, updated_land, fn {npc_coord, npc}, land ->

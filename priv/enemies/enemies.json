@@ -6,6 +6,7 @@
         "damage": {"from": 2, "to": 5},
         "accuracy": {"from": 10, "to": 20},
         "move_distance": 1,
+        "phrases": ["Raaaar!", "Grrr!", "Grrraaah!"],
         "image_name": "monster_fish_ghoul",
         "random_weight": 2.0
     },
@@ -17,6 +18,7 @@
         "accuracy": {"from": 15, "to": 25},
         "radioactive": true,
         "move_distance": 1,
+        "phrases": ["#&^!&#", "*@%#"],
         "image_name": "monster_semiworm",
         "random_weight": 0.5
     },
@@ -28,6 +30,7 @@
         "accuracy": {"from": 20, "to": 40},
         "radioactive": true,
         "move_distance": 2,
+        "phrases": ["Сroak!", "WoaAaA!"],
         "image_name": "toad",
         "random_weight": 1.0
     },
@@ -39,6 +42,7 @@
         "accuracy": {"from": 20, "to": 40},
         "radioactive": true,
         "move_distance": 1,
+        "phrases": ["S..tay he#&%..", "Hel... Ghaaa#&^&", "Mother..", "Enter..#%@ the..$&#&@ ocean!", "Submit..to me!", "Fin...&*^#ers.."],
         "image_name": "race_betrayer",
         "random_weight": 0.1
     }
