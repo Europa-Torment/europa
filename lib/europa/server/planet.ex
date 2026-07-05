@@ -627,23 +627,12 @@ defmodule Europa.Server.Planet do
     {npc, change_tile(land, coord, generate_human_body(npc))}
   end
 
-  defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}}) do
-    monster_body = Loot.generate_item_box(:monster_body, tile_without_blood(stand_on))
-    struct!(monster_body, items: items ++ monster_body.items)
-  end
-
-  defp generate_monster_body(%Enemy{stand_on: %Object{stand_on: stand_on} = object}) do
-    tile_without_blood = tile_without_blood(stand_on)
-    object = Object.stand_on(object, tile_without_blood)
-    Loot.generate_item_box(:monster_body, object)
-  end
-
   defp generate_monster_body(%Enemy{} = enemy) do
-    Loot.generate_item_box(:monster_body, tile_without_blood(enemy.stand_on))
+    Loot.generate_item_box_from_enemy(enemy)
   end
 
   defp generate_human_body(%Npc{} = npc) do
-    Loot.generate_item_box(:human_body, tile_without_blood(npc.stand_on))
+    Loot.generate_item_box(:human_body, npc.stand_on)
   end
 
   # this is for "skip" object, see Objects module
@@ -655,17 +644,6 @@ defmodule Europa.Server.Planet do
   defp blood_tile(tile) do
     case Tiles.tile_by_atom_value(tile) do
       %Tile{blood_version: blood_tile} when not is_nil(blood_tile) -> blood_tile
-      _ -> tile
-    end
-  end
-
-  defp tile_without_blood(%Loot.ItemBox{type: :monster_body, stand_on: stand_on}) do
-    tile_without_blood(stand_on)
-  end
-
-  defp tile_without_blood(tile) do
-    case Tiles.tile_by_blood_version(tile) do
-      %Tiles.Tile{atom_value: atom_value} -> atom_value
       _ -> tile
     end
   end
@@ -747,10 +725,19 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy) do
-    case calculate_enemy_move_coord(planet, enemy_coord, enemy) do
+  defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, %Enemy{} = enemy) do
+    {updated_planet, actions, _} =
+      Enum.reduce(1..enemy.move_distance, {planet, [], enemy_coord}, fn _, {pl, acc_actions, enemy_coord} ->
+        do_move_enemy_step(pl, acc_actions, enemy_coord, enemy)
+      end)
+
+    {updated_planet, actions}
+  end
+
+  defp do_move_enemy_step(planet, acc_actions, enemy_coord, enemy) do
+    case calculate_enemy_move_coord(planet, enemy_coord) do
       :stay ->
-        {planet, [Action.new(enemy, :stay)]}
+        {planet, [Action.new(enemy, :stay)], enemy_coord}
 
       new_enemy_coord ->
         target_tile = get_tile(planet.land, new_enemy_coord)
@@ -766,7 +753,7 @@ defmodule Europa.Server.Planet do
         updated_land =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
-          |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile) |> Enemy.maybe_add_speech_event())
+          |> change_tile(new_enemy_coord, Enemy.stand_on(enemy, target_tile) |> Enemy.maybe_add_speech_event())
 
         updated_land =
           Enum.reduce(neighbor_npc, updated_land, fn {npc_coord, npc}, land ->
@@ -777,7 +764,7 @@ defmodule Europa.Server.Planet do
         actions = move_enemy_actions(enemy, neighbor_npc)
 
         updated_planet = struct!(planet, land: updated_land)
-        {updated_planet, actions}
+        {updated_planet, acc_actions ++ actions, new_enemy_coord}
     end
   end
 
@@ -789,44 +776,29 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp calculate_enemy_move_coord(%__MODULE__{current_coord: {px, py}} = planet, {ex, ey}, %Enemy{move_distance: md}) do
+  defp calculate_enemy_move_coord(%__MODULE__{current_coord: {px, py}} = planet, {ex, ey}) do
     x_diff = abs(ex - px)
     y_diff = abs(ey - py)
 
-    md_x = min(x_diff, md)
-    md_y = min(y_diff, md)
+    new_ex = if ex > px, do: ex - 1, else: ex + 1
+    new_ey = if ey > py, do: ey - 1, else: ey + 1
+
+    move_x_coord = {new_ex, ey}
+    move_y_coord = {ex, new_ey}
 
     move_x =
-      Enum.reduce(md_x..1//-1, nil, fn
-        md, nil ->
-          new_ex = if ex > px, do: ex - md, else: ex + md
-          coord = {new_ex, ey}
-
-          if movable_tile?(planet.land, coord) do
-            coord
-          else
-            nil
-          end
-
-        _, coord ->
-          coord
-      end)
+      if movable_tile?(planet.land, move_x_coord) do
+        move_x_coord
+      else
+        nil
+      end
 
     move_y =
-      Enum.reduce(md_y..1//-1, nil, fn
-        md, nil ->
-          new_ey = if ey > py, do: ey - md, else: ey + md
-          coord = {ex, new_ey}
-
-          if movable_tile?(planet.land, coord) do
-            coord
-          else
-            nil
-          end
-
-        _, coord ->
-          coord
-      end)
+      if movable_tile?(planet.land, move_y_coord) do
+        move_y_coord
+      else
+        nil
+      end
 
     desperate_moves =
       [{ex + 1, ey}, {ex - 1, ey}, {ex, ey + 1}, {ex, ey - 1}]

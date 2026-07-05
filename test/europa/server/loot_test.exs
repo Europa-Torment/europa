@@ -540,7 +540,7 @@ defmodule Europa.Server.Loot.ItemBoxTest do
 end
 
 defmodule Europa.Server.LootTest do
-  use ExUnit.Case
+  use Europa.DataCase, async: true
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Item
@@ -565,6 +565,19 @@ defmodule Europa.Server.LootTest do
     test "generates random item box" do
       assert %Loot.ItemBox{items: items} = Loot.generate_item_box()
       assert is_list(items)
+
+      assert Enum.all?(items, fn item -> item?(item) end)
+    end
+  end
+
+  describe "generate_item_box_from_enemy/1" do
+    test "generates monster_body item box" do
+      max_items = 20
+      enemy = build(:enemy, max_items: max_items)
+
+      assert %Loot.ItemBox{items: items} = Loot.generate_item_box_from_enemy(enemy)
+      assert is_list(items)
+      assert Enum.count(items) in 0..max_items
 
       assert Enum.all?(items, fn item -> item?(item) end)
     end

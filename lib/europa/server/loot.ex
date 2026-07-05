@@ -18,6 +18,7 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Loot.Utils.FilesReader
+  alias Europa.Server.Enemy
   alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
@@ -355,6 +356,14 @@ defmodule Europa.Server.Loot do
     |> ItemBox.stand_on(stand_on)
   end
 
+  @spec generate_item_box_from_enemy(Enemy.t()) :: ItemBox.t()
+  def generate_item_box_from_enemy(%Enemy{} = enemy) do
+    :monster_body
+    |> get_item_box()
+    |> add_items(enemy.max_items)
+    |> ItemBox.stand_on(enemy.stand_on)
+  end
+
   @spec get_items(item_type()) :: list()
   def get_items(category) do
     Map.fetch!(@items_attrs, category)
@@ -377,9 +386,11 @@ defmodule Europa.Server.Loot do
     |> ItemBox.from_map()
   end
 
-  defp add_items(%ItemBox{} = item_box) do
+  defp add_items(%ItemBox{} = item_box, max_items \\ nil) do
+    max_items = max_items || item_box.max_items
+
     items =
-      case random_number(item_box.max_items + 1) - 1 do
+      case random_number(max_items + 1) - 1 do
         0 -> []
         1 -> [generate_item_for_types(item_box.item_types)]
         n -> Enum.map(1..n, fn _ -> generate_item_for_types(item_box.item_types) end)

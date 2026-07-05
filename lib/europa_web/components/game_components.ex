@@ -51,8 +51,8 @@ defmodule EuropaWeb.GameCompotents do
   @gif_tiles Tiles.gif_tiles()
 
   @base_tooltip_class "tooltip tooltip-open"
-  @player_tooltip_class "tooltip tooltip-sm tooltip-open tooltip-warning z-100"
-  @enemy_tooltip_class "tooltip tooltip-sm tooltip-open tooltip-error z-99"
+  @player_tooltip_class "tooltip tooltip-events tooltip-open tooltip-warning"
+  @enemy_tooltip_class "tooltip tooltip-events tooltip-open tooltip-error"
 
   def start_screen(assigns) do
     ~H"""

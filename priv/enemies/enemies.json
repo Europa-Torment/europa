@@ -6,6 +6,7 @@
         "damage": {"from": 2, "to": 5},
         "accuracy": {"from": 10, "to": 20},
         "move_distance": 1,
+        "max_items": 2,
         "phrases": ["Raaaar!", "Grrr!", "Grrraaah!"],
         "image_name": "monster_fish_ghoul",
         "random_weight": 2.0
@@ -18,6 +19,7 @@
         "accuracy": {"from": 15, "to": 25},
         "radioactive": true,
         "move_distance": 1,
+        "max_items": 4,
         "phrases": ["#&^!&#", "*@%#"],
         "image_name": "monster_semiworm",
         "random_weight": 0.5
@@ -28,8 +30,9 @@
         "health": {"from": 10, "to": 30},
         "damage": {"from": 2, "to": 5},
         "accuracy": {"from": 20, "to": 40},
-        "radioactive": true,
+        "radioactive": false,
         "move_distance": 2,
+        "max_items": 2,
         "phrases": ["Сroak!", "WoaAaA!"],
         "image_name": "toad",
         "random_weight": 1.0
@@ -38,10 +41,11 @@
         "type": "monster",
         "name": "Human race betrayer",
         "health": {"from": 80, "to": 150},
-        "damage": {"from": 10, "to": 20},
-        "accuracy": {"from": 20, "to": 40},
+        "damage": {"from": 10, "to": 15},
+        "accuracy": {"from": 20, "to": 35},
         "radioactive": true,
         "move_distance": 1,
+        "max_items": 10,
         "phrases": ["S..tay he#&%..", "Hel... Ghaaa#&^&", "Mother..", "Enter..#%@ the..$&#&@ ocean!", "Submit..to me!", "Fin...&*^#ers.."],
         "image_name": "race_betrayer",
         "random_weight": 0.1

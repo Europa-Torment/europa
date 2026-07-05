@@ -483,14 +483,19 @@ defmodule EuropaWeb.GameLive do
     {:noreply, play_sound(socket, sound_name)}
   end
 
-  def handle_info(:events_tick, socket) do
-    time_diff = current_time_ms() - socket.assigns.events_tick_timer_reset_at
-    skip_count = socket.assigns.events_tick_timer_reset_skip_count
+  def handle_info({:timeout, timer_ref, :events_tick}, socket) do
+    if connected?(socket) do
+      time_diff = current_time_ms() - socket.assigns.events_tick_timer_reset_at
+      skip_count = socket.assigns.events_tick_timer_reset_skip_count
 
-    cond do
-      skip_count >= 10 -> do_events_tick(socket)
-      time_diff >= @events_tick_delay_ms -> do_events_tick(socket)
-      true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
+      cond do
+        timer_ref != socket.assigns.events_tick_timer -> {:noreply, socket}
+        skip_count >= 10 -> do_events_tick(socket)
+        time_diff >= @events_tick_delay_ms -> do_events_tick(socket)
+        true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
+      end
+    else
+      {:stop, :shutdown, socket}
     end
   end
 
@@ -500,7 +505,7 @@ defmodule EuropaWeb.GameLive do
 
     if time_diff >= @events_tick_delay_ms do
       Process.cancel_timer(socket.assigns.events_tick_timer)
-      {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
+      {:noreply, assign(socket, events_tick_timer: schedule_events_tick(), events_tick_timer_reset_skip_count: 0)}
     else
       {:noreply,
        assign(socket, events_tick_timer_reset_skip_count: skip_count + 1, events_tick_timer_reset_at: current_time_ms())}
@@ -1032,7 +1037,7 @@ defmodule EuropaWeb.GameLive do
   defp move_key_to_direction(key) when key in @move_right_keys, do: :right
 
   defp schedule_events_tick do
-    self() |> Process.send_after(:events_tick, @events_tick_delay_ms)
+    :erlang.start_timer(@events_tick_delay_ms, self(), :events_tick)
   end
 
   defp current_time_ms do

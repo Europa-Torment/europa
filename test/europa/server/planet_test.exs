@@ -58,43 +58,43 @@ defmodule Europa.Server.PlanetTest do
 
   @en build(:enemy,
         name: "E1",
-        move_distance: 2,
+        move_distance: 1,
         health: @initial_enemy_health,
         events: build_list(@enemy_events_count, :event)
       )
   @en2 build(:enemy,
          name: "E2",
-         move_distance: 2,
+         move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
        )
   @en3 build(:enemy,
          name: "E3",
-         move_distance: 2,
+         move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
        )
   @en4 build(:enemy,
          name: "E4",
-         move_distance: 2,
+         move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
        )
   @en5 build(:enemy,
          name: "E5",
-         move_distance: 2,
+         move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
        )
   @en6 build(:enemy,
          name: "E6",
-         move_distance: 2,
+         move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
        )
   @en7 build(:enemy,
          name: "E7",
-         move_distance: 2,
+         move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
        )

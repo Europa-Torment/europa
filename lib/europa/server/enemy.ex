@@ -30,6 +30,7 @@ defmodule Europa.Server.Enemy do
     field :image_name, String.t()
     field :events, list(Event.t()), default: []
     field :phrases, list(String.t()), default: []
+    field :max_items, pos_integer()
   end
 
   @spec new(attrs()) :: t()
@@ -43,6 +44,7 @@ defmodule Europa.Server.Enemy do
       accuracy: Map.fetch!(attrs, :accuracy),
       radioactive?: Map.get(attrs, :radioactive, false),
       phrases: Map.fetch!(attrs, :phrases),
+      max_items: Map.fetch!(attrs, :max_items),
       image_name: Map.fetch!(attrs, :image_name),
       stand_on: Tiles.tile(:snow).atom_value
     }

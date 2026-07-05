@@ -291,9 +291,10 @@ defmodule Europa.Support.Factory do
       name: sequence(:name, &"Enemy #{&1 + 1}"),
       health: 20,
       damage: 5,
-      move_distance: 2,
+      move_distance: 1,
       accuracy: 5,
       radioactive?: false,
+      max_items: 5,
       stand_on: Tiles.tile(:snow).atom_value,
       image_name: "monster_semiworm"
     }
