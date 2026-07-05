@@ -105,9 +105,9 @@ defmodule Europa.Server.Enemy do
   defp dont_have_speech_event?(%__MODULE__{events: []}), do: true
 
   defp dont_have_speech_event?(%__MODULE__{events: events}) do
-    not Enum.any?(events, fn %Event{type: {:speech, _}} ->
-      true
-      false
+    not Enum.any?(events, fn
+      %Event{type: {:speech, _}} -> true
+      _ -> false
     end)
   end
 end
