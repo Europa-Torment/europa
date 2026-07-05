@@ -60,7 +60,8 @@ defmodule EuropaWeb.GameLive do
           server: server,
           events_tick_timer: schedule_events_tick(),
           events_tick_timer_reset_at: current_time_ms(),
-          events_tick_timer_reset_skip_count: 0
+          events_tick_timer_reset_skip_count: 0,
+          processed_player_events_uuid: []
         )
         |> base_assign(events_tick_timer_reset: false)
         |> assign_equipment()
@@ -80,8 +81,7 @@ defmodule EuropaWeb.GameLive do
           blueprints: nil,
           blueprints_type: nil,
           interaction_confirmation: nil,
-          inventory_type: nil,
-          processed_player_events_uuid: []
+          inventory_type: nil
         )
 
       schedule_events_tick()
