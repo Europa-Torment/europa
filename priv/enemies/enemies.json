@@ -33,9 +33,9 @@
         "radioactive": false,
         "move_distance": 2,
         "max_items": 2,
-        "phrases": ["Сroak!", "WoaAaA!"],
+        "phrases": ["Ribbit!", "WoaAaA!"],
         "image_name": "toad",
-        "random_weight": 1.0
+        "random_weight": 0.5
     },
     {
         "type": "monster",
@@ -48,6 +48,6 @@
         "max_items": 10,
         "phrases": ["S..tay he#&%..", "Hel... Ghaaa#&^&", "Mother..", "Enter..#%@ the..$&#&@ ocean!", "Submit..to me!", "Fin...&*^#ers.."],
         "image_name": "race_betrayer",
-        "random_weight": 0.1
+        "random_weight": 0.09
     }
 ]
