@@ -627,6 +627,15 @@ defmodule Europa.Server.Planet do
     {npc, change_tile(land, coord, generate_human_body(npc))}
   end
 
+  defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = enemy) do
+    monster_body =
+      enemy
+      |> Enemy.stand_on(stand_on)
+      |> Loot.generate_item_box_from_enemy()
+
+    struct!(monster_body, items: items ++ monster_body.items)
+  end
+
   defp generate_monster_body(%Enemy{} = enemy) do
     Loot.generate_item_box_from_enemy(enemy)
   end
