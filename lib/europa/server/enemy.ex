@@ -92,10 +92,8 @@ defmodule Europa.Server.Enemy do
   end
 
   @spec maybe_add_speech_event(t()) :: t()
-  def maybe_add_speech_event(%__MODULE__{phrases: []} = enemy), do: enemy
-
-  def maybe_add_speech_event(%__MODULE__{phrases: phrases} = enemy) do
-    if m_to_n?(1, 5) && dont_have_speech_event?(enemy) do
+  def maybe_add_speech_event(%__MODULE__{phrases: [_ | _] = phrases, events: []} = enemy) do
+    if m_to_n?(1, 5) do
       phrase = Enum.random(phrases)
       event = Event.new({:speech, phrase})
       add_events(enemy, [event])
@@ -104,12 +102,5 @@ defmodule Europa.Server.Enemy do
     end
   end
 
-  defp dont_have_speech_event?(%__MODULE__{events: []}), do: true
-
-  defp dont_have_speech_event?(%__MODULE__{events: events}) do
-    not Enum.any?(events, fn
-      %Event{type: {:speech, _}} -> true
-      _ -> false
-    end)
-  end
+  def maybe_add_speech_event(%__MODULE__{} = enemy), do: enemy
 end
