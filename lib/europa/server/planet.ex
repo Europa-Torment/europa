@@ -1093,7 +1093,7 @@ defmodule Europa.Server.Planet do
 
     cond do
       noise < -0.4 ->
-        # do not stack diff water tiles
+        # try to not stack diff water tiles
         neighbor_water_type(land, {x, y}, region.water_tile) || region.water_tile
 
       noise >= -0.5 && noise <= 0.2 ->
@@ -1106,7 +1106,7 @@ defmodule Europa.Server.Planet do
 
   defp neighbor_water_type(land, coord, current_region_water) do
     land
-    |> get_neighbors(coord, 4)
+    |> get_neighbors(coord, 3)
     |> Enum.find(fn tile -> tile in @water_tiles && tile != current_region_water end)
   end
 
