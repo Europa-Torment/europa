@@ -49,15 +49,16 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "thin_ice",
       gif_tile?: true,
       changes_to: :thin_ice_cracked,
-      change_possibility: 30,
+      # Possibility for overloaded player
+      change_possibility: 5,
       high_loot_possibility?: true
     },
     thin_ice_cracked: %Tile{
       atom_value: :tic,
-      blood_version: nil,
+      blood_version: :ticb,
       readable_name: gettext("cracked thin ice"),
-      move_cost: nil,
-      movable?: false,
+      move_cost: 1,
+      movable?: true,
       image_name: "thin_ice_cracked",
       gif_tile?: true,
       lethal?: true,
@@ -258,6 +259,18 @@ defmodule Europa.Server.Planet.Tiles do
     |> Enum.filter(fn tile -> not is_nil(tile) end)
   end
 
+  @spec potential_lethal_tiles() :: list(atom())
+  def potential_lethal_tiles do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if changes_to_lethal?(tile) do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
+  end
+
   @spec changeable_tiles() :: list(atom())
   def changeable_tiles do
     Enum.reduce(@tiles, [], fn {_, tile}, acc ->
@@ -331,5 +344,11 @@ defmodule Europa.Server.Planet.Tiles do
       {_, tile} -> tile
       _ -> nil
     end
+  end
+
+  defp changes_to_lethal?(%Tile{changes_to: nil}), do: false
+
+  defp changes_to_lethal?(%Tile{changes_to: tile}) do
+    tile(tile).lethal?
   end
 end

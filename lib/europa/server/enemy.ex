@@ -4,7 +4,6 @@ defmodule Europa.Server.Enemy do
 
   alias Europa.Server.Planet
   alias Europa.Server.Event
-  alias Europa.Server.Planet.Tiles
   alias Europa.Server.Enemy.Utils.FilesReader
   alias Europa.Tools.AttrsDeterminator
   alias Europa.Tools.Types
@@ -18,20 +17,20 @@ defmodule Europa.Server.Enemy do
   @type attrs :: map()
   @type enemy_type :: unquote(Types.one_of(@allowed_enemy_types))
 
-  typedstruct enforce: true do
-    field :type, enemy_type()
-    field :name, String.t()
-    field :description, String.t()
-    field :health, non_neg_integer()
-    field :damage, pos_integer()
-    field :move_distance, pos_integer()
-    field :accuracy, pos_integer()
-    field :radioactive?, boolean()
+  typedstruct do
+    field :type, enemy_type(), enforce: true
+    field :name, String.t(), enforce: true
+    field :description, String.t(), enforce: true
+    field :health, non_neg_integer(), enforce: true
+    field :damage, pos_integer(), enforce: true
+    field :move_distance, pos_integer(), enforce: true
+    field :accuracy, pos_integer(), enforce: true
+    field :radioactive?, boolean(), enforce: true
     field :stand_on, Planet.tile()
-    field :image_name, String.t()
+    field :image_name, String.t(), enforce: true
     field :events, list(Event.t()), default: []
     field :phrases, list(String.t()), default: []
-    field :max_items, pos_integer()
+    field :max_items, pos_integer(), enforce: true
   end
 
   @spec new(attrs()) :: t()
@@ -48,7 +47,7 @@ defmodule Europa.Server.Enemy do
       phrases: Map.fetch!(attrs, :phrases),
       max_items: Map.fetch!(attrs, :max_items),
       image_name: Map.fetch!(attrs, :image_name),
-      stand_on: Tiles.tile(:snow).atom_value
+      stand_on: nil
     }
   end
 

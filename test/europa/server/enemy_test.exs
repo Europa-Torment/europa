@@ -9,11 +9,9 @@ defmodule Europa.Server.EnemyTest do
   @snow Tiles.tile(:snow).atom_value
   @snow_blood Tiles.tile(:snow).blood_version
 
-  @initial_stand_on_tile @snow
-
   describe "new/1" do
     test "builds enemy struct" do
-      expected_enemy = build(:enemy, stand_on: @snow)
+      expected_enemy = build(:enemy, stand_on: nil)
 
       attrs =
         expected_enemy
@@ -48,7 +46,7 @@ defmodule Europa.Server.EnemyTest do
 
       assert is_binary(enemy.name)
 
-      assert enemy.stand_on == @initial_stand_on_tile
+      assert is_nil(enemy.stand_on)
 
       assert_pos_integer(enemy.health)
       assert_pos_integer(enemy.damage)

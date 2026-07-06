@@ -25,6 +25,8 @@ defmodule Europa.Server.PlayerTest do
   @path Tiles.tile(:path).atom_value
   @path_blood Tiles.tile(:path).blood_version
 
+  @thin_ice_cracked Tiles.tile(:thin_ice_cracked).atom_value
+
   @max_radiation fetch_config!([:game_params, :player, :max_radiation])
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @aim_accuracy fetch_config!([:game_params, :player, :aim_accuracy])
@@ -140,6 +142,18 @@ defmodule Europa.Server.PlayerTest do
       assert %Player{stand_on: @path_blood} = Player.stand_on(player, @snow_blood)
       assert %Player{stand_on: %Object{stand_on: @path}} = Player.stand_on(player, object1)
       assert %Player{stand_on: %Object{stand_on: @path_blood}} = Player.stand_on(player, object2)
+    end
+  end
+
+  describe "stand_on_lethal_tile?/1" do
+    test "returns false if player not stand on lethal tile" do
+      player = build(:player, stand_on: @ice)
+      assert Player.stand_on_lethal_tile?(player) == false
+    end
+
+    test "returns true if player stand on lethal tile" do
+      player = build(:player, stand_on: @thin_ice_cracked)
+      assert Player.stand_on_lethal_tile?(player) == true
     end
   end
 

@@ -142,6 +142,7 @@ defmodule Europa.Server.Loot do
       field :placing, placing(), enforce: true
       field :stand_on, Planet.tile()
       field :image_name, String.t()
+      field :empty_image_name, String.t()
     end
 
     @spec from_map(map()) :: t()
@@ -161,7 +162,8 @@ defmodule Europa.Server.Loot do
         movable?: Map.fetch!(attrs, :movable),
         placing: Map.fetch!(attrs, :placing) |> String.to_atom(),
         stand_on: nil,
-        image_name: Map.fetch!(attrs, :image_name)
+        image_name: Map.fetch!(attrs, :image_name),
+        empty_image_name: Map.get(attrs, :empty_image_name)
       }
     end
 

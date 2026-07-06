@@ -68,5 +68,36 @@
         "image_name": "refrigerator",
         "placing": "furniture",
         "random_weight": 0.3
+    },
+    {
+        "type": "bed",
+        "readable_name": "Bed",
+        "max_items": 1, 
+        "item_types": ["supply"], 
+        "movable": false, 
+        "image_name": "bed",
+        "placing": "furniture",
+        "random_weight": 0.3
+    },
+    {
+        "type": "table",
+        "readable_name": "Table",
+        "max_items": 4, 
+        "item_types": ["supply"], 
+        "movable": false, 
+        "image_name": "table",
+        "empty_image_name": "empty_table",
+        "placing": "furniture",
+        "random_weight": 0.5
+    },
+    {
+        "type": "furniture",
+        "readable_name": "Furniture",
+        "max_items": 3, 
+        "item_types": "all", 
+        "movable": false, 
+        "image_name": "furniture",
+        "placing": "furniture",
+        "random_weight": 0.5
     }
 ]

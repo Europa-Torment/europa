@@ -39,6 +39,11 @@ defmodule Europa.Server.PlayerManager do
   @callback stand_on(Player.t(), Planet.tile()) :: Player.t()
 
   @doc """
+  Checks if player stand on lethal tile.
+  """
+  @callback stand_on_lethal_tile?(Player.t()) :: boolean()
+
+  @doc """
   Adds given events.
   """
   @callback add_events(Player.t(), list(Event.t())) :: Player.t()
@@ -228,6 +233,8 @@ defmodule Europa.Server.PlayerManager do
   def change_view_direction(player, view_direction), do: manager_impl().change_view_direction(player, view_direction)
 
   def stand_on(player, tile), do: manager_impl().stand_on(player, tile)
+
+  def stand_on_lethal_tile?(player), do: manager_impl().stand_on_lethal_tile?(player)
 
   def add_events(player, events), do: manager_impl().add_events(player, events)
 

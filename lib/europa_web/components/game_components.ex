@@ -918,9 +918,18 @@ defmodule EuropaWeb.GameCompotents do
     get_image_name(stand_on, player)
   end
 
-  defp get_image_name(:player, %Player{view_direction: view_direction, stand_on: stand_on}) do
-    view_direction = Atom.to_string(view_direction)
-    "player_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
+  defp get_image_name(:player, %Player{view_direction: view_direction, stand_on: stand_on} = player) do
+    if PlayerManager.stand_on_lethal_tile?(player) do
+      recursive_get_image_name(stand_on, player)
+    else
+      view_direction = Atom.to_string(view_direction)
+      "player_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
+    end
+  end
+
+  defp get_image_name(%ItemBox{items: [], stand_on: stand_on, empty_image_name: image_name}, _)
+       when not is_nil(image_name) do
+    "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   defp get_image_name(%ItemBox{stand_on: stand_on, image_name: image_name}, _) do
@@ -952,6 +961,9 @@ defmodule EuropaWeb.GameCompotents do
     landscape_name(tile) <> ext_by_stand_on(tile)
   end
 
+  defp recursive_get_image_name(%{stand_on: tile}, player), do: recursive_get_image_name(tile, player)
+  defp recursive_get_image_name(tile, player), do: get_image_name(tile, player)
+
   # this is for "skip" object, see Objects module
   defp landscape_name(%Object{name: "", image_name: "", stand_on: tile}) do
     landscape_name(tile)
@@ -959,6 +971,11 @@ defmodule EuropaWeb.GameCompotents do
 
   defp landscape_name(%Object{movable?: true, image_name: image_name, stand_on: stand_on}),
     do: "#{image_name}_#{landscape_name(stand_on)}"
+
+  defp landscape_name(%ItemBox{items: [], empty_image_name: image_name, stand_on: stand_on})
+       when not is_nil(image_name) do
+    "#{image_name}_#{landscape_name(stand_on)}"
+  end
 
   defp landscape_name(%ItemBox{image_name: image_name, stand_on: stand_on}) do
     "#{image_name}_#{landscape_name(stand_on)}"

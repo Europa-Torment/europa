@@ -7,6 +7,7 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Characters.Character
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Tile
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Action
   alias Europa.Server.Loot
@@ -33,6 +34,9 @@ defmodule Europa.Server.Player do
   @warm_tiles Tiles.warm_tiles()
   @lethal_tiles Tiles.lethal_tiles()
   @changeable_tiles Tiles.changeable_tiles()
+
+  @thin_ice Tiles.tile(:thin_ice)
+  @thin_ices [@thin_ice.atom_value, @thin_ice.blood_version]
 
   typedstruct do
     field :character, Character.t(), enforce: true
@@ -141,6 +145,11 @@ defmodule Europa.Server.Player do
     |> struct!(stand_on: tile)
     |> maybe_change_tile()
     |> maybe_dead_if_tile_is_lethal()
+  end
+
+  @impl true
+  def stand_on_lethal_tile?(%__MODULE__{} = player) do
+    do_stand_on_lethal_tile?(player.stand_on)
   end
 
   @impl true
@@ -454,16 +463,26 @@ defmodule Europa.Server.Player do
 
   ### PRIVATE ###
 
+  defp do_stand_on_lethal_tile?(%{stand_on: stand_on} = tile) when is_struct(tile) do
+    do_stand_on_lethal_tile?(stand_on)
+  end
+
+  defp do_stand_on_lethal_tile?(tile) when tile in @lethal_tiles do
+    true
+  end
+
+  defp do_stand_on_lethal_tile?(_), do: false
+
   defp maybe_change_tile(%__MODULE__{stand_on: tile} = player) do
-    new_tile = do_maybe_change_tile(tile)
+    new_tile = do_maybe_change_tile(player, tile)
     struct!(player, stand_on: new_tile)
   end
 
-  defp do_maybe_change_tile(%{stand_on: stand_on} = tile) when is_struct(tile) do
-    struct!(tile, stand_on: do_maybe_change_tile(stand_on))
+  defp do_maybe_change_tile(player, %{stand_on: stand_on} = tile) when is_struct(tile) do
+    struct!(tile, stand_on: do_maybe_change_tile(player, stand_on))
   end
 
-  defp do_maybe_change_tile(tile_atom_value) when tile_atom_value in @changeable_tiles do
+  defp do_maybe_change_tile(player, tile_atom_value) when tile_atom_value in @changeable_tiles do
     regular_tile = Tiles.tile_by_atom_value(tile_atom_value)
     blood_tile = Tiles.tile_by_blood_version(tile_atom_value)
 
@@ -474,24 +493,51 @@ defmodule Europa.Server.Player do
         {regular_tile, Tiles.tile(regular_tile.changes_to).atom_value}
       end
 
-    if tile.changes_to && tile.change_possibility && m_to_n?(1, tile.change_possibility) do
+    change_possibility = tile_change_possibility(tile, player)
+
+    if tile.changes_to && change_possibility && m_to_n?(1, change_possibility) do
       changes_to
     else
       tile_atom_value
     end
   end
 
-  defp do_maybe_change_tile(tile), do: tile
+  defp do_maybe_change_tile(_player, tile), do: tile
 
-  defp maybe_dead_if_tile_is_lethal(%__MODULE__{stand_on: tile} = player) when tile in @lethal_tiles do
+  defp tile_change_possibility(%Tile{atom_value: tile_value} = tile, player) when tile_value in @thin_ices do
+    inventory_loaded_percent = inventory_loaded_percent(player)
+
+    if inventory_loaded_percent >= 100 do
+      tile.change_possibility
+    else
+      100 - inventory_loaded_percent
+    end
+  end
+
+  defp tile_change_possibility(tile, _player), do: tile.change_possibility
+
+  defp inventory_loaded_percent(player) do
+    percent = inventory_weight(player) / player.max_weight * 100
+    round(percent)
+  end
+
+  defp maybe_dead_if_tile_is_lethal(%__MODULE__{stand_on: stand_on} = player) do
+    maybe_dead_if_tile_is_lethal(player, stand_on)
+  end
+
+  defp maybe_dead_if_tile_is_lethal(%__MODULE__{} = player, %{stand_on: stand_on} = tile) when is_struct(tile) do
+    maybe_dead_if_tile_is_lethal(player, stand_on)
+  end
+
+  defp maybe_dead_if_tile_is_lethal(%__MODULE__{} = player, tile) when tile in @lethal_tiles do
     tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
 
     player
     |> take_damage(player.max_health)
-    |> add_events([Event.new({:dead, tile.lethal_event})])
+    |> struct!(events: [Event.new({:dead, tile.lethal_event})])
   end
 
-  defp maybe_dead_if_tile_is_lethal(player), do: player
+  defp maybe_dead_if_tile_is_lethal(player, _tile), do: player
 
   defp do_use_tools(%__MODULE__{} = player, tools) when is_list(tools) do
     Enum.reduce(tools, player, fn tool, player ->
