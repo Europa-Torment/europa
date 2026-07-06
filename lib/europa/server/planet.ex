@@ -120,11 +120,11 @@ defmodule Europa.Server.Planet do
   # Follow the ordering by noise_threshold to not get unexpected tiles stacking
   # If there is water in region then next one should be without water
   @regions [
-    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.37},
+    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.10},
     %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.04},
     %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: 0.0},
-    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.04},
-    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.37},
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.12},
+    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.44},
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
 
@@ -1080,7 +1080,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp region_by_perlin_noise(x, y, %Land{} = land) do
-    freq = 0.01
+    freq = 0.002
 
     x = x + land.region_x_offset
     y = y + land.region_y_offset
