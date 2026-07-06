@@ -772,6 +772,7 @@ defmodule Europa.Server do
           state.player
           |> PlayerManager.stand_on(step_on_tile)
           |> maybe_add_interested_event(next_to_interactive?)
+          |> maybe_finish_game(state.game_uuid, caller_pid)
 
         {:reply, {:moved, status},
          struct!(state,

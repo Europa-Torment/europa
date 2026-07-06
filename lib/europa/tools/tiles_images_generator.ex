@@ -17,7 +17,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
   `loot` - tiles that represents loot item boxes. Files will be copied to `objects`.
 
-  `ready` - not changable tiles, i.e. tiles that shouldn't overlayed with any other tile.
+  `ready` - not changeable tiles, i.e. tiles that shouldn't overlayed with any other tile.
   Example: water.
 
   Initial tiles images should be placed in appropriate folder at `priv/tile_images/` dir,
@@ -89,21 +89,26 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
     for landscape <- get_files(root_dir, tmp_landscapes) do
       for over_landscape <- files do
-        over_landscape_filename = get_filename_without_ext(over_landscape)
-        landscape_filename = get_filename_without_ext(landscape)
-        filename = "#{over_landscape_filename}_#{landscape_filename}.png"
-
-        {:ok, over_landscape_img} = Image.open(over_landscape)
-        {:ok, landscape_img} = Image.open(landscape)
-
-        path = Path.join([root_dir, @base_dir, @tmp_base, @landscape, filename])
-
-        Image.compose!(landscape_img, over_landscape_img, x: :middle, y: :middle)
-        |> write_image!(path)
+        do_generate_landscape(root_dir, landscape, over_landscape)
       end
     end
 
     generate_landscape!(root_dir, rest)
+  end
+
+  defp do_generate_landscape(root_dir, landscape, over_landscape) do
+    over_landscape_filename = get_filename_without_ext(over_landscape)
+    landscape_filename = get_filename_without_ext(landscape)
+
+    if get_ext(landscape) == "gif" do
+      filename = "#{over_landscape_filename}_#{landscape_filename}.gif"
+      path = Path.join([root_dir, @base_dir, @tmp_base, @landscape, filename])
+      write_gif(landscape, over_landscape, path)
+    else
+      filename = "#{over_landscape_filename}_#{landscape_filename}.png"
+      path = Path.join([root_dir, @base_dir, @tmp_base, @landscape, filename])
+      write_png(landscape, over_landscape, path)
+    end
   end
 
   defp get_movable_loot_files(root_dir) do
@@ -172,23 +177,23 @@ defmodule Europa.Tools.TilesImagesGenerator do
     end
   end
 
-  defp write_gif(landscape, object, path) do
-    {:ok, landscape_img} = Image.open(landscape)
-    {:ok, object_img} = Image.open(object, pages: :all)
+  defp write_gif(first, second, path) do
+    {:ok, first_img} = Image.open(first)
+    {:ok, second_img} = Image.open(second, pages: :all)
 
     {:ok, result} =
-      Image.map_join_pages(object_img, fn frame ->
-        Image.compose(landscape_img, frame, mode: :over)
+      Image.map_join_pages(second_img, fn frame ->
+        Image.compose(first_img, frame, mode: :over)
       end)
 
     write_image!(result, path)
   end
 
-  defp write_png(landscape, object, path) do
-    {:ok, object_img} = Image.open(object)
-    {:ok, landscape_img} = Image.open(landscape)
+  defp write_png(first, second, path) do
+    {:ok, second_img} = Image.open(second)
+    {:ok, first_img} = Image.open(first)
 
-    Image.compose!(landscape_img, object_img, x: :middle, y: :middle)
+    Image.compose!(first_img, second_img, x: :middle, y: :middle)
     |> write_image!(path)
   end
 

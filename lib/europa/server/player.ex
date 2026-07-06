@@ -31,6 +31,8 @@ defmodule Europa.Server.Player do
   @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
 
   @warm_tiles Tiles.warm_tiles()
+  @lethal_tiles Tiles.lethal_tiles()
+  @changeable_tiles Tiles.changeable_tiles()
 
   typedstruct do
     field :character, Character.t(), enforce: true
@@ -137,6 +139,8 @@ defmodule Europa.Server.Player do
   def stand_on(%__MODULE__{} = player, tile) do
     player
     |> struct!(stand_on: tile)
+    |> maybe_change_tile()
+    |> maybe_dead_if_tile_is_lethal()
   end
 
   @impl true
@@ -449,6 +453,39 @@ defmodule Europa.Server.Player do
   def tick(player, _), do: {:ok, player, []}
 
   ### PRIVATE ###
+
+  defp maybe_change_tile(%__MODULE__{stand_on: %{stand_on: tile}} = player) when tile in @changeable_tiles do
+    do_maybe_change_tile(player, tile)
+  end
+
+  defp maybe_change_tile(%__MODULE__{stand_on: tile} = player) when tile in @changeable_tiles do
+    do_maybe_change_tile(player, tile)
+  end
+
+  defp maybe_change_tile(player), do: player
+
+  defp do_maybe_change_tile(%__MODULE__{} = player, tile) do
+    tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
+
+    if tile.changes_to && tile.change_possibility && m_to_n?(1, tile.change_possibility) do
+      new_tile = Tiles.tile(tile.changes_to).atom_value
+
+      player
+      |> stand_on(new_tile)
+    else
+      player
+    end
+  end
+
+  defp maybe_dead_if_tile_is_lethal(%__MODULE__{stand_on: tile} = player) when tile in @lethal_tiles do
+    tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
+
+    player
+    |> take_damage(player.max_health)
+    |> add_events([Event.new({:dead, tile.lethal_event})])
+  end
+
+  defp maybe_dead_if_tile_is_lethal(player), do: player
 
   defp do_use_tools(%__MODULE__{} = player, tools) when is_list(tools) do
     Enum.reduce(tools, player, fn tool, player ->

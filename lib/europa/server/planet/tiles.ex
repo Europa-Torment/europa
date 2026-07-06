@@ -29,6 +29,46 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: true,
       image_name: "ice"
     },
+    ice_cracked: %Tile{
+      atom_value: :ic,
+      blood_version: nil,
+      readable_name: gettext("cracked ice"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "ice_cracked",
+      gif_tile?: true
+    },
+    thin_ice: %Tile{
+      atom_value: :ti,
+      blood_version: :tib,
+      readable_name: gettext("thin ice"),
+      move_cost: 1,
+      movable?: true,
+      image_name: "thin_ice",
+      gif_tile?: true,
+      changes_to: :thin_ice_cracked,
+      change_possibility: 30
+    },
+    thin_ice_cracked: %Tile{
+      atom_value: :tic,
+      blood_version: nil,
+      readable_name: gettext("cracked thin ice"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "thin_ice_cracked",
+      gif_tile?: true,
+      lethal?: true,
+      lethal_event: :ice_cracked
+    },
+    ice_spikes: %Tile{
+      atom_value: :is,
+      blood_version: nil,
+      readable_name: gettext("ice spikes"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "ice_spikes",
+      gif_tile?: false
+    },
     water: %Tile{
       atom_value: :w,
       blood_version: nil,
@@ -195,6 +235,30 @@ defmodule Europa.Server.Planet.Tiles do
   def radioactive_tiles do
     Enum.reduce(@tiles, [], fn {_, tile}, acc ->
       if tile.radioactive? do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
+  end
+
+  @spec lethal_tiles() :: list(atom())
+  def lethal_tiles do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if tile.lethal? do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
+  end
+
+  @spec changeable_tiles() :: list(atom())
+  def changeable_tiles do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if tile.changes_to && tile.change_possibility do
         acc ++ [tile.atom_value, tile.blood_version]
       else
         acc

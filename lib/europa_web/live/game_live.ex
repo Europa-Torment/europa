@@ -495,6 +495,7 @@ defmodule EuropaWeb.GameLive do
         true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
       end
     else
+      Process.cancel_timer(socket.assigns.events_tick_timer)
       {:stop, :shutdown, socket}
     end
   end
@@ -568,6 +569,10 @@ defmodule EuropaWeb.GameLive do
 
   defp play_player_event_sound(socket, %Event{type: {:radiation, _}}) do
     radiation_sound(socket)
+  end
+
+  defp play_player_event_sound(socket, %Event{type: {:dead, :ice_cracked}}) do
+    ice_cracked_sound(socket)
   end
 
   defp play_player_event_sound(socket, _), do: socket
@@ -661,7 +666,8 @@ defmodule EuropaWeb.GameLive do
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1},
         open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
         matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3},
-        radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1}
+        radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1},
+        ice_cracked: %{name: ~p"/sounds/ice_cracked.mp3", volume: 0.1}
       })
 
     assign(socket, :sounds, json)
@@ -704,6 +710,10 @@ defmodule EuropaWeb.GameLive do
 
   defp radiation_sound(socket) do
     play_sound_with_delay(socket, "radiation")
+  end
+
+  defp ice_cracked_sound(socket) do
+    play_sound(socket, "ice_cracked")
   end
 
   defp overloaded_sound(socket, :overloaded) do

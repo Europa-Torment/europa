@@ -40,6 +40,18 @@ defmodule Europa.Server.Planet.TilesTest do
     end
   end
 
+  describe "lethal_tiles/0" do
+    test "returns list of lethal tiles atom values" do
+      assert Tiles.lethal_tiles() |> Enum.all?(&lethal_tile?/1)
+    end
+  end
+
+  describe "changeable_tiles/0" do
+    test "returns list of changeable tiles atom values" do
+      assert Tiles.changeable_tiles() |> Enum.all?(&changeable_tile?/1)
+    end
+  end
+
   describe "move_cots/0" do
     test "returns tiles move costs" do
       assert Tiles.move_costs() |> valid_move_costs?()
@@ -129,6 +141,16 @@ defmodule Europa.Server.Planet.TilesTest do
   defp radioactive_tile?(tile) do
     tile = from_atom_value(tile)
     tile.radioactive?
+  end
+
+  defp lethal_tile?(tile) do
+    tile = from_atom_value(tile)
+    tile.lethal?
+  end
+
+  defp changeable_tile?(tile) do
+    tile = from_atom_value(tile)
+    tile.changes_to && tile.change_possibility
   end
 
   defp from_atom_value(tile) do

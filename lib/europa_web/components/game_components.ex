@@ -49,6 +49,7 @@ defmodule EuropaWeb.GameCompotents do
   @tiles_image_names Tiles.image_names()
 
   @gif_tiles Tiles.gif_tiles()
+  @lethal_tiles Tiles.lethal_tiles()
 
   @base_tooltip_class "tooltip tooltip-open"
   @player_tooltip_class "tooltip tooltip-events tooltip-open tooltip-warning"
@@ -913,21 +914,25 @@ defmodule EuropaWeb.GameCompotents do
     ~s|<ul class="list-disc list-inside space-y-2">| <> attrs <> ~s|</ul>|
   end
 
+  defp get_image_name(:player, %Player{stand_on: stand_on} = player) when stand_on in @lethal_tiles do
+    get_image_name(stand_on, player)
+  end
+
   defp get_image_name(:player, %Player{view_direction: view_direction, stand_on: stand_on}) do
     view_direction = Atom.to_string(view_direction)
-    "player_#{view_direction}_#{landscape_name(stand_on)}.png"
+    "player_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   defp get_image_name(%ItemBox{stand_on: stand_on, image_name: image_name}, _) do
-    "#{image_name}_#{landscape_name(stand_on)}.png"
+    "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on}, _) do
-    "#{image_name}_#{landscape_name(stand_on)}.png"
+    "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   defp get_image_name(%Npc{stand_on: stand_on}, _) do
-    "player_down_#{landscape_name(stand_on)}.png"
+    "player_down_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   # this is for "skip" object, see Objects module
@@ -940,15 +945,11 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_image_name(%Object{image_name: image_name, stand_on: stand_on}, _) do
-    "#{image_name}_#{landscape_name(stand_on)}.png"
+    "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   defp get_image_name(tile, _) do
-    if tile in @gif_tiles do
-      landscape_name(tile) <> ".gif"
-    else
-      landscape_name(tile) <> ".png"
-    end
+    landscape_name(tile) <> ext_by_stand_on(tile)
   end
 
   # this is for "skip" object, see Objects module
@@ -965,6 +966,16 @@ defmodule EuropaWeb.GameCompotents do
 
   defp landscape_name(tile) do
     Map.get(@tiles_image_names, tile)
+  end
+
+  defp ext_by_stand_on(%{stand_on: stand_on}), do: ext_by_stand_on(stand_on)
+
+  defp ext_by_stand_on(stand_on) do
+    if stand_on in @gif_tiles do
+      ".gif"
+    else
+      ".png"
+    end
   end
 
   defp get_player_weapon(player) do
@@ -1185,6 +1196,8 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp event_speech(%Event{type: {:speech, phrase}}), do: phrase
+
+  defp event_speech(%Event{type: {:dead, _}}), do: "💀"
 
   defp event_speech(_), do: "..."
 

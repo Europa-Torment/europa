@@ -38,8 +38,6 @@ defmodule Europa.Server.Planet do
   @base_enemy_generate_possibility fetch_config!([__MODULE__, :base_enemy_generate_possibility])
   @enemy_view_distance fetch_config!([__MODULE__, :enemy_view_distance])
 
-  @region_switch_possibility fetch_config!([__MODULE__, :region_switch_possibility])
-
   @enemy_move_possibility_from fetch_config!([__MODULE__, :enemy_move_possibility, :from])
   @enemy_move_possibility_to fetch_config!([__MODULE__, :enemy_move_possibility, :to])
 
@@ -76,11 +74,16 @@ defmodule Europa.Server.Planet do
           | {:transform, Object.t()}
 
   @ice Tiles.tile(:ice).atom_value
+  @ice_spikes Tiles.tile(:ice_spikes).atom_value
+  @thin_ice Tiles.tile(:thin_ice).atom_value
+
   @water Tiles.tile(:water).atom_value
   @radioactive_water Tiles.tile(:radioactive_water).atom_value
   @warm_water Tiles.tile(:warm_water).atom_value
+
   @snow Tiles.tile(:snow).atom_value
   @path Tiles.tile(:path).atom_value
+
   @snow_blood Tiles.tile(:snow).blood_version
   @path_blood Tiles.tile(:path).blood_version
 
@@ -91,7 +94,7 @@ defmodule Europa.Server.Planet do
   @warm_tiles Tiles.warm_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
 
-  @water_tiles [@water, @radioactive_water, @warm_water]
+  @water_tiles [@water, @radioactive_water, @warm_water, @ice_spikes]
 
   @move_costs Tiles.move_costs()
 
@@ -114,17 +117,15 @@ defmodule Europa.Server.Planet do
   }
 
   @regions [
-    {{:regular, %Region{water_tile: @water}}, _random_weight = 1.5},
-    {{:radioactive, %Region{water_tile: @radioactive_water}}, _random_weight = 1.0},
-    {{:warm, %Region{water_tile: @warm_water}}, _random_weight = 0.4}
+    %Region{water_tile: @water},
+    %Region{water_tile: @radioactive_water},
+    %Region{water_tile: @warm_water, ice_tile: @thin_ice, not_spawnable?: true},
+    %Region{ice_tile: @thin_ice, not_spawnable?: true},
+    %Region{water_tile: @ice_spikes}
   ]
 
-  @region_names Enum.map(@regions, fn {{name, _}, _} -> name end)
-
-  @type region :: unquote(Types.one_of(@region_names))
-
   typedstruct module: Land, enforce: true do
-    alias Europa.Server.Planet
+    alias Europa.Server.Planet.Region
 
     field :tiles, map(), default: %{}
     field :min_x, integer()
@@ -132,7 +133,8 @@ defmodule Europa.Server.Planet do
     field :min_y, integer()
     field :max_y, integer()
     field :noise_coef, number()
-    field :region, Planet.region()
+    field :region_noise_coef, number()
+    field :regions, list(Region.t())
   end
 
   typedstruct enforce: true do
@@ -152,10 +154,12 @@ defmodule Europa.Server.Planet do
     year = Keyword.fetch!(options, :year)
     characters_pid = Keyword.fetch!(options, :characters_pid)
 
+    {x, y} = initial_coord = initial_coord()
+
     planet =
       %__MODULE__{
         land: generate_land(),
-        current_coord: initial_coord(),
+        current_coord: initial_coord,
         predefined_cluster_coord: initial_coord(),
         year: year,
         moves_count: 0,
@@ -163,8 +167,9 @@ defmodule Europa.Server.Planet do
         characters_pid: characters_pid
       }
 
-    # Re-generate planet if player spawned on non movable tile
-    if player_initial_stand_on_tile(planet) in @movable_tiles do
+    # Re-generate planet if player spawned on non movable tile or in non spawnable region
+    if player_initial_stand_on_tile(planet) in @movable_tiles &&
+         not region_by_perlin_noise(x, y, planet.land).not_spawnable? do
       planet
     else
       new(options)
@@ -300,7 +305,6 @@ defmodule Europa.Server.Planet do
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
     planet
     |> maybe_set_new_predefined_cluster_coord()
-    |> maybe_switch_region()
     |> increment_moves_count(moves_count)
     |> do_tick(moves_count, [])
   end
@@ -323,24 +327,6 @@ defmodule Europa.Server.Planet do
 
   ### PRIVATE ###
 
-  defp pick_region do
-    {region_name, _} = WeightedRandom.take_one(@regions)
-    region_name
-  end
-
-  defp fetch_region(region_name) do
-    {{_, region}, _} = Enum.find(@regions, fn {{name, _}, _} -> name == region_name end)
-    region
-  end
-
-  defp switch_region(%__MODULE__{} = planet) do
-    region = pick_region()
-    land = struct!(planet.land, region: region)
-
-    struct!(planet, land: land)
-  end
-
-  # todo
   defp next_to_interactive_tile?(%__MODULE__{} = planet) do
     Enum.any?(@directions, fn direction ->
       # Just checking for the possibility of interaction without planet updation.
@@ -654,14 +640,6 @@ defmodule Europa.Server.Planet do
     case Tiles.tile_by_atom_value(tile) do
       %Tile{blood_version: blood_tile} when not is_nil(blood_tile) -> blood_tile
       _ -> tile
-    end
-  end
-
-  defp maybe_switch_region(%__MODULE__{} = planet) do
-    if m_to_n?(1, @region_switch_possibility) do
-      switch_region(planet)
-    else
-      planet
     end
   end
 
@@ -1043,6 +1021,7 @@ defmodule Europa.Server.Planet do
     max_y = @initial_game_field_width - 1
 
     noise_coef = :rand.uniform()
+    region_noise_coef = :rand.uniform()
 
     %Land{
       min_x: 0,
@@ -1050,7 +1029,8 @@ defmodule Europa.Server.Planet do
       min_y: 0,
       max_y: max_y,
       noise_coef: noise_coef,
-      region: :regular
+      region_noise_coef: region_noise_coef,
+      regions: Enum.shuffle(@regions)
     }
     |> generate_initial_tiles()
   end
@@ -1087,27 +1067,31 @@ defmodule Europa.Server.Planet do
   end
 
   defp tile_by_perlin_noise(x, y, %Land{} = land) do
-    region = fetch_region(land.region)
+    region = region_by_perlin_noise(x, y, land)
     noise_coef = land.noise_coef
     noise = PerlinNoise.noise(x * 0.1 + noise_coef, y * 0.1 + noise_coef)
 
     cond do
       noise < -0.4 ->
-        # try to not stack diff water tiles
-        neighbor_water_type(land, {x, y}, region.water_tile) || region.water_tile
+        region.water_tile || @water
 
       noise >= -0.5 && noise <= 0.2 ->
-        @ice
+        region.ice_tile || @ice
 
       true ->
-        @snow
+        region.snow_tile || @snow
     end
   end
 
-  defp neighbor_water_type(land, coord, current_region_water) do
-    land
-    |> get_neighbors(coord, 3)
-    |> Enum.find(fn tile -> tile in @water_tiles && tile != current_region_water end)
+  defp region_by_perlin_noise(x, y, %Land{regions: regions} = land) do
+    noise_coef = land.region_noise_coef
+    freq = 1.0 / 250
+
+    noise = PerlinNoise.noise(x * freq + noise_coef, y * freq + noise_coef)
+    normalized = ((noise + 1.0) / 2.0) |> min(0.999999)
+
+    region_index = floor(normalized * length(@regions))
+    Enum.at(regions, region_index) || List.first(regions)
   end
 
   defp generate_tile(%__MODULE__{} = planet, {x, y} = coord) do

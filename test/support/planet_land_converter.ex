@@ -1,5 +1,11 @@
 defmodule Europa.Support.PlanetLandConverter do
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Region
+  alias Europa.Server.Planet.Tiles
+
+  @ice Tiles.tile(:ice).atom_value
+  @snow Tiles.tile(:snow).atom_value
+  @water Tiles.tile(:water).atom_value
 
   @doc """
   Converts matrix (list of lists) to planet land.
@@ -25,8 +31,9 @@ defmodule Europa.Support.PlanetLandConverter do
       max_y: Enum.count(matrix) - 1,
       min_x: 0,
       max_x: Enum.count(List.first(matrix)) - 1,
+      regions: [%Region{snow_tile: @snow, ice_tile: @ice, water_tile: @water}],
       noise_coef: 0.1,
-      region: :regular
+      region_noise_coef: 0.1
     }
   end
 
