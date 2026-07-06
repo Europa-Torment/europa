@@ -705,7 +705,7 @@ defmodule Europa.Server.PlayerTest do
 
     test "no negative health", %{player: player} do
       damage = player.health * 2
-      assert %Player{health: 0} = Player.take_damage(player, damage)
+      assert %Player{health: 0, events: [%Event{type: {:dead, :regular}}]} = Player.take_damage(player, damage)
     end
   end
 

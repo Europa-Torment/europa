@@ -470,7 +470,6 @@ defmodule EuropaWeb.GameLive do
       socket
       |> assign(game_over: true)
       |> stop_sound("background_music")
-      |> play_sound("dead")
       |> play_sound_with_delay("game_over", @game_over_sound_delay_ms)
 
     self() |> Process.send_after(:game_over_redirect, @game_over_redirect_delay_ms)
@@ -567,6 +566,10 @@ defmodule EuropaWeb.GameLive do
 
   defp play_player_event_sound(socket, %Event{type: {:radiation, _}}) do
     radiation_sound(socket)
+  end
+
+  defp play_player_event_sound(socket, %Event{type: {:dead, :regular}}) do
+    dead_sound(socket)
   end
 
   defp play_player_event_sound(socket, %Event{type: {:dead, :ice_cracked}}) do
@@ -714,6 +717,10 @@ defmodule EuropaWeb.GameLive do
 
   defp ice_cracked_sound(socket) do
     play_sound(socket, "ice_cracked")
+  end
+
+  defp dead_sound(socket) do
+    play_sound(socket, "dead")
   end
 
   defp overloaded_sound(socket, :overloaded) do

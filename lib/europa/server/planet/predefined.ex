@@ -85,10 +85,10 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:building, "!", opts), do: Objects.object(:wall_left_down) |> or_broken_wall(opts)
   defp elem_to_tile(:building, "^", opts), do: Objects.object(:wall_right_up) |> or_broken_wall(opts)
   defp elem_to_tile(:building, "v", opts), do: Objects.object(:wall_right_down) |> or_broken_wall(opts)
-  defp elem_to_tile(:building, "(", _), do: Objects.object(:door_left) |> maybe_lock_door()
-  defp elem_to_tile(:building, ")", _), do: Objects.object(:door_right) |> maybe_lock_door()
-  defp elem_to_tile(:building, "1", _), do: Objects.object(:door_up) |> maybe_lock_door()
-  defp elem_to_tile(:building, "2", _), do: Objects.object(:door_down) |> maybe_lock_door()
+  defp elem_to_tile(:building, "<", _), do: Objects.object(:door_left) |> maybe_lock_door()
+  defp elem_to_tile(:building, ">", _), do: Objects.object(:door_right) |> maybe_lock_door()
+  defp elem_to_tile(:building, "#", _), do: Objects.object(:door_up) |> maybe_lock_door()
+  defp elem_to_tile(:building, "@", _), do: Objects.object(:door_down) |> maybe_lock_door()
 
   defp elem_to_tile(:building, "f", _) do
     cond do

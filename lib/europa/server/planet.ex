@@ -117,15 +117,15 @@ defmodule Europa.Server.Planet do
     @open_down_door.blood_version => Objects.object(:door_down)
   }
 
-  # Follow the ordering to not get unexpected tiles stacking
+  # Follow the ordering by noise_threshold to not get unexpected tiles stacking
   # If there is water in region then next one should be without water
   @regions [
-    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow},
-    %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow},
-    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow},
-    %Region{water_tile: @ice_spikes, ice_tile: @ice, snow_tile: @snow},
-    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice},
-    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice}
+    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.37},
+    %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.04},
+    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: 0.0},
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.04},
+    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.37},
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
 
   typedstruct module: Land, enforce: true do
@@ -136,7 +136,8 @@ defmodule Europa.Server.Planet do
     field :max_y, integer()
     field :noise_coef, number()
     field :region_noise_coef, number()
-    field :region_coord_offset, number()
+    field :region_x_offset, number()
+    field :region_y_offset, number()
   end
 
   typedstruct enforce: true do
@@ -1014,7 +1015,8 @@ defmodule Europa.Server.Planet do
 
     noise_coef = :rand.uniform()
     region_noise_coef = :rand.uniform()
-    region_coord_offset = :rand.uniform() * 1000
+    region_x_offset = round(:rand.uniform() * Enum.random(1..1000))
+    region_y_offset = round(:rand.uniform() * Enum.random(1..1000))
 
     %Land{
       min_x: 0,
@@ -1023,7 +1025,8 @@ defmodule Europa.Server.Planet do
       max_y: max_y,
       noise_coef: noise_coef,
       region_noise_coef: region_noise_coef,
-      region_coord_offset: region_coord_offset
+      region_x_offset: region_x_offset,
+      region_y_offset: region_y_offset
     }
     |> generate_initial_tiles()
   end
@@ -1077,17 +1080,18 @@ defmodule Europa.Server.Planet do
   end
 
   defp region_by_perlin_noise(x, y, %Land{} = land) do
-    noise_coef = land.region_noise_coef
-    freq = 1.0 / 250
+    freq = 0.01
 
-    x = x + land.region_coord_offset
-    y = y + land.region_coord_offset
+    x = x + land.region_x_offset
+    y = y + land.region_y_offset
 
-    noise = PerlinNoise.noise(x * freq + noise_coef, y * freq + noise_coef)
-    normalized = ((noise + 1.0) / 2.0) |> min(0.999999)
+    noise =
+      PerlinNoise.noise(
+        x * freq + land.region_noise_coef,
+        y * freq + land.region_noise_coef
+      )
 
-    region_index = floor(normalized * length(@regions))
-    Enum.at(@regions, region_index) || List.first(@regions)
+    Enum.find(@regions, fn region -> noise <= region.noise_threshold end)
   end
 
   defp generate_tile(%__MODULE__{} = planet, {x, y} = coord) do

@@ -8,5 +8,6 @@ defmodule Europa.Server.Planet.Region do
     field :ice_tile, Planet.tile()
     field :snow_tile, Planet.tile()
     field :not_spawnable?, boolean(), default: false
+    field :noise_threshold, number()
   end
 end

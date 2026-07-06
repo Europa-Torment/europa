@@ -389,6 +389,7 @@ defmodule Europa.Server.Player do
     player
     |> struct!(health: updated_health)
     |> add_events([Event.new({:damaged, damage})])
+    |> maybe_add_dead_event()
   end
 
   @impl true
@@ -532,12 +533,33 @@ defmodule Europa.Server.Player do
   defp maybe_dead_if_tile_is_lethal(%__MODULE__{} = player, tile) when tile in @lethal_tiles do
     tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
 
+    # add custom dead event
     player
     |> take_damage(player.max_health)
-    |> struct!(events: [Event.new({:dead, tile.lethal_event})])
+    |> replace_events_with_new_event(Event.new({:dead, tile.lethal_event}))
   end
 
   defp maybe_dead_if_tile_is_lethal(player, _tile), do: player
+
+  defp maybe_add_dead_event(%__MODULE__{health: 0, events: events} = player) do
+    has_dead_event? =
+      Enum.find(events, fn
+        {:dead, _} -> true
+        _ -> false
+      end)
+
+    if has_dead_event? do
+      player
+    else
+      replace_events_with_new_event(player, Event.new({:dead, :regular}))
+    end
+  end
+
+  defp maybe_add_dead_event(%__MODULE__{} = player), do: player
+
+  defp replace_events_with_new_event(%__MODULE__{} = player, %Event{} = event) do
+    struct!(player, events: [event])
+  end
 
   defp do_use_tools(%__MODULE__{} = player, tools) when is_list(tools) do
     Enum.reduce(tools, player, fn tool, player ->
@@ -958,6 +980,7 @@ defmodule Europa.Server.Player do
           player
           |> struct!(health: min(player.max_health, player.health + attr_value) |> max(0))
           |> add_health_changed_event(attr_value)
+          |> maybe_add_dead_event()
 
         :max_warm ->
           struct!(player, max_warm: player.max_warm + attr_value)
