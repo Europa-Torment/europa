@@ -1145,7 +1145,7 @@ defmodule Europa.Server.Planet do
   defp tile_or_loot(tile) do
     possibility =
       if tile in @high_loot_possibility_tiles do
-        div(@base_enemy_generate_possibility, 30) |> max(100)
+        div(@base_enemy_generate_possibility, 10) |> max(300)
       else
         @base_loot_generate_possibility
       end
