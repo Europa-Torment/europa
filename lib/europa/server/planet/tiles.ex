@@ -11,7 +11,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("snow"),
       move_cost: 2,
       movable?: true,
-      image_name: "snow"
+      image_name: "snow",
+      changes_to: :path,
+      change_possibility: 1
     },
     path: %Tile{
       atom_value: :p,

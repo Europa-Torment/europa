@@ -13,7 +13,7 @@ defmodule Europa.Server.EnemyTest do
 
   describe "new/1" do
     test "builds enemy struct" do
-      expected_enemy = build(:enemy)
+      expected_enemy = build(:enemy, stand_on: @snow)
 
       attrs =
         expected_enemy

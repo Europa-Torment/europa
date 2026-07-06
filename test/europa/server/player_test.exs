@@ -7,6 +7,7 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Planet
   alias Europa.Server.Characters.Character
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Loot
   alias Europa.Server.Event
   alias Europa.Server.Loot.Weapon.Ammo
@@ -15,8 +16,14 @@ defmodule Europa.Server.PlayerTest do
 
   import Europa.Tools.Conf
 
+  @ice Tiles.tile(:ice).atom_value
+  @ice_blood Tiles.tile(:ice).blood_version
+
   @snow Tiles.tile(:snow).atom_value
   @snow_blood Tiles.tile(:snow).blood_version
+
+  @path Tiles.tile(:path).atom_value
+  @path_blood Tiles.tile(:path).blood_version
 
   @max_radiation fetch_config!([:game_params, :player, :max_radiation])
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
@@ -117,12 +124,22 @@ defmodule Europa.Server.PlayerTest do
 
   describe "stand_on/2" do
     setup do
-      player = build(:player, stand_on: @snow)
+      player = build(:player, stand_on: @ice)
       {:ok, player: player}
     end
 
     test "changes stand_on", %{player: player} do
-      assert %Player{stand_on: @snow_blood} = Player.stand_on(player, @snow_blood)
+      assert %Player{stand_on: @ice_blood} = Player.stand_on(player, @ice_blood)
+    end
+
+    test "changes snow to path", %{player: player} do
+      object1 = build(:object, stand_on: @snow)
+      object2 = build(:object, stand_on: @snow_blood)
+
+      assert %Player{stand_on: @path} = Player.stand_on(player, @snow)
+      assert %Player{stand_on: @path_blood} = Player.stand_on(player, @snow_blood)
+      assert %Player{stand_on: %Object{stand_on: @path}} = Player.stand_on(player, object1)
+      assert %Player{stand_on: %Object{stand_on: @path_blood}} = Player.stand_on(player, object2)
     end
   end
 
@@ -276,21 +293,21 @@ defmodule Europa.Server.PlayerTest do
     end
 
     test "drops given item", %{player: player, ammo: ammo, weapon: weapon} do
-      player = Player.stand_on(player, @snow)
+      player = Player.stand_on(player, @ice)
 
-      assert {:ok, %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{type: :bag, stand_on: @snow, items: [^weapon]}},
+      assert {:ok, %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{type: :bag, stand_on: @ice, items: [^weapon]}},
               ^weapon} = Player.drop_item(player, weapon.uuid)
     end
 
     test "drops stackable item (all)", %{player: player, ammo: ammo, weapon: weapon} do
-      player = Player.stand_on(player, @snow)
+      player = Player.stand_on(player, @ice)
 
-      assert {:ok, %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{type: :bag, stand_on: @snow, items: [^ammo]}},
+      assert {:ok, %Player{inventory: [^weapon], stand_on: %Loot.ItemBox{type: :bag, stand_on: @ice, items: [^ammo]}},
               ^ammo} = Player.drop_item(player, ammo.uuid, ammo.count)
     end
 
     test "drops stackable item (partly)", %{player: player, ammo: ammo, weapon: weapon} do
-      player = Player.stand_on(player, @snow)
+      player = Player.stand_on(player, @ice)
       drop_count = ammo.count - 5
       new_ammo_count = ammo.count - drop_count
 
@@ -299,7 +316,7 @@ defmodule Europa.Server.PlayerTest do
                 inventory: [^weapon, %Ammo{count: ^new_ammo_count}],
                 stand_on: %Loot.ItemBox{
                   type: :bag,
-                  stand_on: @snow,
+                  stand_on: @ice,
                   items: [%Ammo{count: ^drop_count} = dropped_ammo]
                 }
               }, dropped_ammo} = Player.drop_item(player, ammo.uuid, drop_count)

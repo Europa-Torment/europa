@@ -82,10 +82,6 @@ defmodule Europa.Server.Planet do
   @warm_water Tiles.tile(:warm_water).atom_value
 
   @snow Tiles.tile(:snow).atom_value
-  @path Tiles.tile(:path).atom_value
-
-  @snow_blood Tiles.tile(:snow).blood_version
-  @path_blood Tiles.tile(:path).blood_version
 
   @darkness Tiles.tile(:darkness).atom_value
 
@@ -919,7 +915,7 @@ defmodule Europa.Server.Planet do
   defp do_move(planet, tile, target_coord, direction, player_stand_on) do
     updated_land =
       planet.land
-      |> maybe_make_path(planet.current_coord, player_stand_on)
+      |> change_tile(planet.current_coord, player_stand_on)
       |> change_tile(target_coord, @player)
 
     updated_planet =
@@ -949,28 +945,6 @@ defmodule Europa.Server.Planet do
 
   defp attack_with_melee_weapon_or_stay(_planet, _player, _target_coord, tile) do
     {:stay, tile}
-  end
-
-  defp maybe_make_path(land, current_coord, @snow) do
-    change_tile(land, current_coord, @path)
-  end
-
-  defp maybe_make_path(land, current_coord, @snow_blood) do
-    change_tile(land, current_coord, @path_blood)
-  end
-
-  defp maybe_make_path(land, current_coord, %{stand_on: @snow} = tile) when is_struct(tile) do
-    tile = struct!(tile, stand_on: @path)
-    change_tile(land, current_coord, tile)
-  end
-
-  defp maybe_make_path(land, current_coord, %{stand_on: @snow_blood} = tile) when is_struct(tile) do
-    tile = struct!(tile, stand_on: @path_blood)
-    change_tile(land, current_coord, tile)
-  end
-
-  defp maybe_make_path(land, current_coord, tile) do
-    change_tile(land, current_coord, tile)
   end
 
   defp change_tile(land, {_x, _y} = coord, new_tile) do

@@ -30,7 +30,6 @@ defmodule Europa.Server.PlanetTest do
 
   @initial_enemy_health 100
 
-  @s Tiles.tile(:snow).atom_value
   @i Tiles.tile(:ice).atom_value
   @p Tiles.tile(:path).atom_value
   @w Tiles.tile(:water).atom_value
@@ -104,7 +103,7 @@ defmodule Europa.Server.PlanetTest do
   @move_costs Tiles.move_costs()
 
   @tiles [
-    @s,
+    @i,
     @w,
     @i,
     @p,
@@ -114,604 +113,604 @@ defmodule Europa.Server.PlanetTest do
   @midday Timex.parse!("2016-02-29T12:00:00-06:00", "{ISO:Extended}")
 
   @land_player_look_up_at_loot [
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @ib, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @pl, @i, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @ib, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                ]
                                |> PlanetLandConverter.from_matrix()
 
   @land_player_look_down_at_loot [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @pl, @i, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @ib, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @ib, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_look_right_at_loot [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @pl, @ib, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @pl, @ib, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_look_right_at_monster_body [
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @pl, @ib2, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                            [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @pl, @ib2, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                           ]
                                           |> PlanetLandConverter.from_matrix()
 
   @land_player_look_left_at_loot [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @ib, @pl, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @ib, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_near_left_border [
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @pl, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @pl, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                 ]
                                 |> PlanetLandConverter.from_matrix()
 
   @land_player_near_right_border [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @pl, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @pl, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_near_top_border [
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                ]
                                |> PlanetLandConverter.from_matrix()
 
   @land_player_near_down_border [
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                 ]
                                 |> PlanetLandConverter.from_matrix()
 
   @land_player_look_up_at_enemy [
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @en, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                 ]
                                 |> PlanetLandConverter.from_matrix()
 
   @land_player_up_close_to_enemy [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @en, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_look_down_at_enemy [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @en, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_down_close_to_enemy [
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @en, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                    ]
                                    |> PlanetLandConverter.from_matrix()
 
   @land_player_look_right_at_enemy [
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @pl, @s, @en, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @pl, @i, @en, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                    ]
                                    |> PlanetLandConverter.from_matrix()
 
   @land_player_left_close_to_enemy [
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @pl, @en, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @pl, @en, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                    ]
                                    |> PlanetLandConverter.from_matrix()
 
   @land_player_look_left_at_enemy [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @en, @s, @pl, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @en, @i, @pl, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_right_close_to_enemy [
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @en, @pl, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @en, @pl, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
 
   @land_player_look_up_at_enemies [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @en, @en2, @en3, @en4, @en5, @en6, @en7, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @en, @en2, @en3, @en4, @en5, @en6, @en7, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_look_down_at_enemies [
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @en, @en2, @en3, @en4, @en5, @en6, @en7, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @en, @en2, @en3, @en4, @en5, @en6, @en7, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
 
   @land_player_look_right_at_enemies [
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @en2, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @en3, @s, @s, @s, @s, @s],
-                                       [@s, @s, @pl, @s, @en4, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @en5, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @en6, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @en7, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @en, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @en2, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @en3, @i, @i, @i, @i, @i],
+                                       [@i, @i, @pl, @i, @en4, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @en5, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @en6, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @en7, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                      ]
                                      |> PlanetLandConverter.from_matrix()
 
   @land_player_look_left_at_enemies [
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @en, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @en2, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @en3, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @en4, @s, @s, @pl, @s, @s],
-                                      [@s, @s, @s, @s, @en5, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @en6, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @en7, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @en, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @en2, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @en3, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @en4, @i, @i, @pl, @i, @i],
+                                      [@i, @i, @i, @i, @en5, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @en6, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @en7, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
 
   @land_player_look_up_at_enemies_behind_wall [
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                [@s, @en, @en2, @en3, @en4, @en5, @en6, @en7, @s, @s],
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                [@i, @en, @en2, @en3, @en4, @en5, @en6, @en7, @i, @i],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
                                                 [@wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl],
-                                                [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                               ]
                                               |> PlanetLandConverter.from_matrix()
 
   @land_player_look_down_at_enemies_behind_wall [
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl],
-                                                  [@s, @en, @en2, @en3, @en4, @en5, @en6, @en7, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl, @wl],
+                                                  [@i, @en, @en2, @en3, @en4, @en5, @en6, @en7, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                                 ]
                                                 |> PlanetLandConverter.from_matrix()
 
   @land_player_look_right_at_enemies_behind_wall [
-                                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @wl, @en, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @wl, @en2, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @wl, @en3, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @pl, @wl, @en4, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @wl, @en5, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @wl, @en6, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @wl, @en7, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @wl, @en, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @wl, @en2, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @wl, @en3, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @pl, @wl, @en4, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @wl, @en5, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @wl, @en6, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @wl, @en7, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                                  ]
                                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_look_left_at_enemies_behind_wall [
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @en, @wl, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @en2, @wl, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @en3, @wl, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @en4, @wl, @s, @pl, @s, @s],
-                                                  [@s, @s, @s, @s, @en5, @wl, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @en6, @wl, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @en7, @wl, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en, @wl, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en2, @wl, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en3, @wl, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en4, @wl, @i, @pl, @i, @i],
+                                                  [@i, @i, @i, @i, @en5, @wl, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en6, @wl, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en7, @wl, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                                 ]
                                                 |> PlanetLandConverter.from_matrix()
 
   @land_player_up_close_to_npc [
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @n, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                 [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @n, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                ]
                                |> PlanetLandConverter.from_matrix()
 
   @land_player_down_close_to_npc [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @n, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @n, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_left_close_to_npc [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @pl, @n, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @pl, @n, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_right_close_to_npc [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @n, @pl, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @n, @pl, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_up_close_to_water [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @w, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @w, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_down_close_to_water [
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @w, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @w, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                    ]
                                    |> PlanetLandConverter.from_matrix()
 
   @land_player_left_close_to_water [
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @pl, @w, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @pl, @w, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                    ]
                                    |> PlanetLandConverter.from_matrix()
 
   @land_player_right_close_to_water [
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @w, @pl, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                      [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @w, @pl, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
 
   @land_player_up_close_to_door [
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @dd, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                  [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @dd, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                 ]
                                 |> PlanetLandConverter.from_matrix()
 
   @land_player_down_close_to_door [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @du, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @du, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_left_close_to_door [
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @pl, @dl, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                    [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @pl, @dl, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_right_close_to_door [
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @dr, @pl, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                     [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @dr, @pl, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                    ]
                                    |> PlanetLandConverter.from_matrix()
 
   @land_player_up_close_to_open_door [
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @ddo, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                       [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @ddo, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                      ]
                                      |> PlanetLandConverter.from_matrix()
 
   @land_player_down_close_to_open_door [
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @pl, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @duo, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @duo, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                        ]
                                        |> PlanetLandConverter.from_matrix()
 
   @land_player_left_close_to_open_door [
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @pl, @dlo, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                         [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @pl, @dlo, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                         [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                        ]
                                        |> PlanetLandConverter.from_matrix()
 
   @land_player_right_close_to_open_door [
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @dro, @pl, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                          [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @dro, @pl, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                         ]
                                         |> PlanetLandConverter.from_matrix()
 
   @land_player_left_close_to_locked_door [
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @pl, @dll, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                           [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @pl, @dll, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                          ]
                                          |> PlanetLandConverter.from_matrix()
 
   @land_enemy_right_close_to_npc [
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @en, @n, @pl, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s],
-                                   [@s, @s, @s, @s, @s, @s, @s, @s, @s, @s]
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @en, @n, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
@@ -771,11 +770,11 @@ defmodule Europa.Server.PlanetTest do
     test "returns visible part of land (full view distance)", %{planet: planet} do
       expected_visible_land =
         [
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @ib, @s, @s],
-          [@s, @s, @pl, @i, @s],
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @s, @s, @s]
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @ib, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i]
         ]
 
       assert Planet.get_visible_land(planet, @midday) == expected_visible_land
@@ -784,11 +783,11 @@ defmodule Europa.Server.PlanetTest do
     test "returns visible part of land (with darkness)", %{planet: planet} do
       expected_visible_land =
         [
-          [@d, @s, @s, @s, @d],
-          [@s, @s, @ib, @s, @s],
-          [@s, @s, @pl, @i, @s],
-          [@s, @s, @s, @s, @s],
-          [@d, @s, @s, @s, @d]
+          [@d, @i, @i, @i, @d],
+          [@i, @i, @ib, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@d, @i, @i, @i, @d]
         ]
 
       evening = Timex.parse!("2016-02-29T20:00:00-06:00", "{ISO:Extended}")
@@ -811,11 +810,11 @@ defmodule Europa.Server.PlanetTest do
 
       expected_visible_land =
         [
-          [@s, @s, @s, @s, @s],
-          [@s, @ib, @s, @s, @s],
-          [@s, @i, @pl, @s, @s],
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @s, @s, @s]
+          [@i, @i, @i, @i, @i],
+          [@i, @ib, @i, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i]
         ]
 
       assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
@@ -825,21 +824,21 @@ defmodule Europa.Server.PlanetTest do
       planet =
         %Planet{current_coord: {x, y}} = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
 
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{current_coord: {x2, ^y}} = updated_planet, move_cost, _, _next_to_interactive = false} =
                Planet.move(planet, :left, player)
 
       assert x2 == x - 1
-      assert move_cost == Map.fetch!(@move_costs, @s)
+      assert move_cost == Map.fetch!(@move_costs, @i)
 
       expected_visible_land =
         [
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @s, @ib, @s],
-          [@s, @s, @pl, @p, @i],
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @s, @s, @s]
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @i, @ib, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i]
         ]
 
       assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
@@ -849,21 +848,21 @@ defmodule Europa.Server.PlanetTest do
       planet =
         %Planet{current_coord: {x, y}} = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
 
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{current_coord: {^x, y2}} = updated_planet, move_cost, _, _next_to_interactive = false} =
                Planet.move(planet, :up, player)
 
       assert y2 == y - 1
-      assert move_cost == Map.fetch!(@move_costs, @s)
+      assert move_cost == Map.fetch!(@move_costs, @i)
 
       expected_visible_land =
         [
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @s, @s, @s],
-          [@s, @s, @pl, @s, @s],
-          [@s, @s, @p, @ib, @s],
-          [@s, @s, @s, @s, @s]
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @ib, @i],
+          [@i, @i, @i, @i, @i]
         ]
 
       assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
@@ -871,7 +870,7 @@ defmodule Europa.Server.PlanetTest do
 
     test "moves at monster body" do
       planet = build(:planet, land: @land_player_look_right_at_monster_body, current_coord: {4, 4})
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{}, move_cost, stand_on_tile, _next_to_interactive = false} =
                Planet.move(planet, :right, player)
@@ -882,7 +881,7 @@ defmodule Europa.Server.PlanetTest do
 
     test "not moves in not movable tile" do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
       assert {:stay, @ib} = Planet.move(planet, :right, player)
     end
 
@@ -891,7 +890,7 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_left_border, current_coord: {2, 4})
 
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :left, player)
@@ -905,7 +904,7 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_right_border, current_coord: {7, 4})
 
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :right, player)
@@ -920,7 +919,7 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_top_border, current_coord: {4, 2})
 
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :up, player)
@@ -935,7 +934,7 @@ defmodule Europa.Server.PlanetTest do
         %Planet{current_coord: {x, y}, land: land} =
         build(:planet, land: @land_player_near_down_border, current_coord: {4, 7})
 
-      player = build_player_stand_on(@s)
+      player = build_player_stand_on(@i)
 
       assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :down, player)
@@ -1129,7 +1128,7 @@ defmodule Europa.Server.PlanetTest do
       land =
         for _ <- 1..cols do
           for _ <- 1..rows do
-            @s
+            @i
           end
         end
         |> change_tile(player_coord, @pl)

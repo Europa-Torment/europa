@@ -454,28 +454,34 @@ defmodule Europa.Server.Player do
 
   ### PRIVATE ###
 
-  defp maybe_change_tile(%__MODULE__{stand_on: %{stand_on: tile}} = player) when tile in @changeable_tiles do
-    do_maybe_change_tile(player, tile)
+  defp maybe_change_tile(%__MODULE__{stand_on: tile} = player) do
+    new_tile = do_maybe_change_tile(tile)
+    struct!(player, stand_on: new_tile)
   end
 
-  defp maybe_change_tile(%__MODULE__{stand_on: tile} = player) when tile in @changeable_tiles do
-    do_maybe_change_tile(player, tile)
+  defp do_maybe_change_tile(%{stand_on: stand_on} = tile) when is_struct(tile) do
+    struct!(tile, stand_on: do_maybe_change_tile(stand_on))
   end
 
-  defp maybe_change_tile(player), do: player
+  defp do_maybe_change_tile(tile_atom_value) when tile_atom_value in @changeable_tiles do
+    regular_tile = Tiles.tile_by_atom_value(tile_atom_value)
+    blood_tile = Tiles.tile_by_blood_version(tile_atom_value)
 
-  defp do_maybe_change_tile(%__MODULE__{} = player, tile) do
-    tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
+    {tile, changes_to} =
+      if blood_tile do
+        {blood_tile, Tiles.tile(blood_tile.changes_to).blood_version}
+      else
+        {regular_tile, Tiles.tile(regular_tile.changes_to).atom_value}
+      end
 
     if tile.changes_to && tile.change_possibility && m_to_n?(1, tile.change_possibility) do
-      new_tile = Tiles.tile(tile.changes_to).atom_value
-
-      player
-      |> stand_on(new_tile)
+      changes_to
     else
-      player
+      tile_atom_value
     end
   end
+
+  defp do_maybe_change_tile(tile), do: tile
 
   defp maybe_dead_if_tile_is_lethal(%__MODULE__{stand_on: tile} = player) when tile in @lethal_tiles do
     tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)

@@ -64,7 +64,7 @@ defmodule Europa.Support.Factory do
       max_items: 10,
       image_name: "test",
       placing: :outdoor,
-      stand_on: Tiles.tile(:snow).atom_value
+      stand_on: Tiles.tile(:ice).atom_value
     }
   end
 
@@ -239,7 +239,7 @@ defmodule Europa.Support.Factory do
       hunger: 0,
       thirst: 0,
       radiation: 0,
-      stand_on: Tiles.tile(:snow).atom_value,
+      stand_on: Tiles.tile(:ice).atom_value,
       aim_mode?: false
     }
   end
@@ -296,7 +296,7 @@ defmodule Europa.Support.Factory do
       accuracy: 5,
       radioactive?: false,
       max_items: 5,
-      stand_on: Tiles.tile(:snow).atom_value,
+      stand_on: Tiles.tile(:ice).atom_value,
       image_name: "monster_semiworm"
     }
   end
@@ -323,7 +323,7 @@ defmodule Europa.Support.Factory do
     %Npc{
       character: character,
       story: Character.random_story(character),
-      stand_on: Tiles.tile(:snow).atom_value
+      stand_on: Tiles.tile(:ice).atom_value
     }
   end
 
