@@ -43,6 +43,8 @@ defmodule EuropaWeb.GameLive do
   @game_over_redirect_delay_ms 8950
 
   @events_tick_delay_ms 1000
+  @events_tick_max_resets 10
+
   @processed_player_events_limit 20
 
   @view_distance fetch_config!([Planet, :view_distance])
@@ -490,7 +492,7 @@ defmodule EuropaWeb.GameLive do
 
       cond do
         timer_ref != socket.assigns.events_tick_timer -> {:noreply, socket}
-        skip_count >= 10 -> do_events_tick(socket)
+        skip_count >= @events_tick_max_resets -> do_events_tick(socket)
         time_diff >= @events_tick_delay_ms -> do_events_tick(socket)
         true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
       end
@@ -578,8 +580,10 @@ defmodule EuropaWeb.GameLive do
   defp play_player_event_sound(socket, _), do: socket
 
   defp base_assign(socket, opts \\ []) do
-    if Keyword.get(opts, :events_tick_timer_reset, true) do
-      self() |> Process.send_after(:reset_events_tick_timer, 1)
+    resets_count = socket.assigns.events_tick_timer_reset_skip_count
+
+    if Keyword.get(opts, :events_tick_timer_reset, true) && resets_count <= @events_tick_max_resets do
+      self() |> send(:reset_events_tick_timer)
     end
 
     player = Server.get_player(socket.assigns.server)
