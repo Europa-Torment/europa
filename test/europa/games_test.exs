@@ -62,6 +62,7 @@ defmodule Europa.GamesTest do
       |> expect(:stand_on, fn player, ^tile -> player end)
       |> stub(:add_item, fn player, _ -> {:ok, player} end)
       |> stub(:equip_item, fn player, _ -> {:ok, player} end)
+      |> stub(:warm_up, fn player, _warm_units -> player end)
 
       PlanetManagerMock
       |> allow_server_mock(user.id)

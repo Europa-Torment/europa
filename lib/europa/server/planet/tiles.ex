@@ -47,7 +47,8 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "thin_ice",
       gif_tile?: true,
       changes_to: :thin_ice_cracked,
-      change_possibility: 30
+      change_possibility: 30,
+      high_loot_possibility?: true
     },
     thin_ice_cracked: %Tile{
       atom_value: :tic,
@@ -259,6 +260,18 @@ defmodule Europa.Server.Planet.Tiles do
   def changeable_tiles do
     Enum.reduce(@tiles, [], fn {_, tile}, acc ->
       if tile.changes_to && tile.change_possibility do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
+  end
+
+  @spec high_loot_possibility_tiles() :: list(atom())
+  def high_loot_possibility_tiles do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if tile.high_loot_possibility? do
         acc ++ [tile.atom_value, tile.blood_version]
       else
         acc

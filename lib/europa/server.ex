@@ -246,14 +246,19 @@ defmodule Europa.Server do
 
     supplies = initial_supplies()
     ammo = initial_ammo()
+    melee_weapon = initial_melee_weapon()
 
-    items = [weapon, helmet, suit, boots] ++ supplies ++ ammo
+    items =
+      ([weapon, helmet, suit, boots, melee_weapon] ++ supplies ++ ammo)
+      |> Enum.filter(&(not is_nil(&1)))
 
     player =
       PlayerManager.new(current_character)
       |> PlayerManager.stand_on(player_initial_stand_on_tile)
       |> add_player_items(items)
       |> equip_player_items(items)
+
+    player = PlayerManager.warm_up(player, player.max_warm)
 
     [bio_message, story_message] = initial_messages(current_year_after_disaster, current_character)
 
@@ -1217,5 +1222,13 @@ defmodule Europa.Server do
     Enum.map(1..random_number, fn _ ->
       Loot.generate_item(:ammo)
     end)
+  end
+
+  defp initial_melee_weapon do
+    if m_to_n?(1, 10) do
+      Loot.generate_item(:melee_weapon)
+    else
+      nil
+    end
   end
 end

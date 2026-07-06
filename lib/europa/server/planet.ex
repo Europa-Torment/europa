@@ -93,6 +93,7 @@ defmodule Europa.Server.Planet do
   @high_tiles Tiles.high_tiles()
   @warm_tiles Tiles.warm_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
+  @high_loot_possibility_tiles Tiles.high_loot_possibility_tiles()
 
   @water_tiles [@water, @radioactive_water, @warm_water, @ice_spikes]
 
@@ -958,6 +959,16 @@ defmodule Europa.Server.Planet do
     change_tile(land, current_coord, @path_blood)
   end
 
+  defp maybe_make_path(land, current_coord, %{stand_on: @snow} = tile) when is_struct(tile) do
+    tile = struct!(tile, stand_on: @path)
+    change_tile(land, current_coord, tile)
+  end
+
+  defp maybe_make_path(land, current_coord, %{stand_on: @snow_blood} = tile) when is_struct(tile) do
+    tile = struct!(tile, stand_on: @path_blood)
+    change_tile(land, current_coord, tile)
+  end
+
   defp maybe_make_path(land, current_coord, tile) do
     change_tile(land, current_coord, tile)
   end
@@ -1132,7 +1143,14 @@ defmodule Europa.Server.Planet do
   end
 
   defp tile_or_loot(tile) do
-    if m_to_n?(1, @base_loot_generate_possibility) && tile in @movable_tiles do
+    possibility =
+      if tile in @high_loot_possibility_tiles do
+        div(@base_enemy_generate_possibility, 30) |> max(100)
+      else
+        @base_loot_generate_possibility
+      end
+
+    if m_to_n?(1, possibility) && tile in @movable_tiles do
       Loot.generate_item_box()
       |> Loot.ItemBox.stand_on(tile)
     else

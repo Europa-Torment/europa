@@ -42,6 +42,7 @@ defmodule Europa.ServerTest do
     |> stub(:stand_on, fn player, @snow -> Player.change_view_direction(player, @direction) end)
     |> stub(:add_item, fn player, _ -> {:ok, player} end)
     |> stub(:equip_item, fn player, _ -> {:ok, player} end)
+    |> stub(:warm_up, fn player, _warm_units -> player end)
 
     {:ok, server} = Server.start_link(Ecto.UUID.generate())
     planet = build(:planet)

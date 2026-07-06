@@ -43,7 +43,7 @@ defmodule EuropaWeb.GameLive do
   @game_over_redirect_delay_ms 8950
 
   @events_tick_delay_ms 1000
-  @events_tick_max_resets 10
+  @events_tick_max_resets 5
 
   @processed_player_events_limit 20
 
@@ -503,16 +503,12 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_info(:reset_events_tick_timer, socket) do
-    time_diff = current_time_ms() - socket.assigns.events_tick_timer_reset_at
     skip_count = socket.assigns.events_tick_timer_reset_skip_count
 
-    if time_diff >= @events_tick_delay_ms do
-      Process.cancel_timer(socket.assigns.events_tick_timer)
-      {:noreply, assign(socket, events_tick_timer: schedule_events_tick(), events_tick_timer_reset_skip_count: 0)}
-    else
-      {:noreply,
-       assign(socket, events_tick_timer_reset_skip_count: skip_count + 1, events_tick_timer_reset_at: current_time_ms())}
-    end
+    Process.cancel_timer(socket.assigns.events_tick_timer)
+
+    {:noreply,
+     assign(socket, events_tick_timer: schedule_events_tick(), events_tick_timer_reset_skip_count: skip_count + 1)}
   end
 
   def handle_info(_, socket) do

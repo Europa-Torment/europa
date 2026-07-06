@@ -52,6 +52,12 @@ defmodule Europa.Server.Planet.TilesTest do
     end
   end
 
+  describe "high_loot_possibility_tiles/0" do
+    test "returns list of atom values of tiles with high loot possibility" do
+      assert Tiles.high_loot_possibility_tiles() |> Enum.all?(&high_loot_possibility_tile?/1)
+    end
+  end
+
   describe "move_cots/0" do
     test "returns tiles move costs" do
       assert Tiles.move_costs() |> valid_move_costs?()
@@ -151,6 +157,11 @@ defmodule Europa.Server.Planet.TilesTest do
   defp changeable_tile?(tile) do
     tile = from_atom_value(tile)
     tile.changes_to && tile.change_possibility
+  end
+
+  defp high_loot_possibility_tile?(tile) do
+    tile = from_atom_value(tile)
+    tile.high_loot_possibility?
   end
 
   defp from_atom_value(tile) do

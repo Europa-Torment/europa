@@ -16,5 +16,6 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :change_possibility, pos_integer()
     field :lethal?, boolean(), default: false
     field :lethal_event, atom()
+    field :high_loot_possibility?, boolean(), default: false
   end
 end
