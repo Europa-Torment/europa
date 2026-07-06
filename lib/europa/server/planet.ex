@@ -122,10 +122,10 @@ defmodule Europa.Server.Planet do
   @regions [
     %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow},
     %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow},
-    %Region{water_tile: @warm_water, ice_tile: @snow, snow_tile: @ice},
+    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow},
     %Region{water_tile: @ice_spikes, ice_tile: @ice, snow_tile: @snow},
     %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice},
-    %Region{water_tile: @ice, ice_tile: @snow, snow_tile: @ice}
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice}
   ]
 
   typedstruct module: Land, enforce: true do
