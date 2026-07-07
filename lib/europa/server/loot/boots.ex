@@ -89,6 +89,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
   @spec consumable?(Boots.t()) :: false
   def consumable?(%Boots{}), do: false
 
+  @spec usable?(Boots.t()) :: false
+  def usable?(%Boots{}), do: false
+
   @spec stackable?(Boots.t()) :: false
   def stackable?(%Boots{}), do: false
 

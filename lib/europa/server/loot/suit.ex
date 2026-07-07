@@ -93,6 +93,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
   @spec consumable?(Suit.t()) :: false
   def consumable?(%Suit{}), do: false
 
+  @spec usable?(Suit.t()) :: false
+  def usable?(%Suit{}), do: false
+
   @spec stackable?(Suit.t()) :: false
   def stackable?(%Suit{}), do: false
 

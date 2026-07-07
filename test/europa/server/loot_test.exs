@@ -222,6 +222,51 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "usable?/1" do
+    test "returns false for weapon" do
+      weapon = build(:weapon)
+      assert Item.usable?(weapon) == false
+    end
+
+    test "returns false for ammo" do
+      ammo = build(:ammo)
+      assert Item.usable?(ammo) == false
+    end
+
+    test "returns true or false for tool" do
+      tool1 = build(:tool, using_type: nil)
+      tool2 = build(:tool, using_type: {:put_object, :bonfire})
+
+      assert Item.usable?(tool1) == false
+      assert Item.usable?(tool2) == true
+    end
+
+    test "returns false for melee weapon" do
+      melee_weapon = build(:melee_weapon)
+      assert Item.usable?(melee_weapon) == false
+    end
+
+    test "returns false for helmet" do
+      helmet = build(:helmet)
+      assert Item.usable?(helmet) == false
+    end
+
+    test "returns false for suit" do
+      suit = build(:suit)
+      assert Item.usable?(suit) == false
+    end
+
+    test "returns false for boots" do
+      boots = build(:boots)
+      assert Item.usable?(boots) == false
+    end
+
+    test "returns false for supply" do
+      supply = build(:supply)
+      assert Item.usable?(supply) == false
+    end
+  end
+
   describe "equipable?/1" do
     test "returns true for weapon" do
       weapon = build(:weapon)

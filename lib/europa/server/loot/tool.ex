@@ -4,11 +4,15 @@ defmodule Europa.Server.Loot.Tool do
   alias Europa.Tools.Types
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
+  alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Tools.AttrsDeterminator
 
-  @allowed_tool_types [:weapon_parts, :key, :matches]
+  @allowed_tool_types [:weapon_parts, :key, :matches, :bonfire_starter_kit]
 
   @type tool_type() :: unquote(Types.one_of(@allowed_tool_types))
+
+  @type using_type() :: {:put_object, Objects.name()} | nil
 
   defmodule Properties do
     typedstruct do
@@ -23,20 +27,24 @@ defmodule Europa.Server.Loot.Tool do
     end
   end
 
-  typedstruct enforce: true do
-    field :uuid, Loot.uuid()
-    field :name, String.t()
-    field :description, String.t()
-    field :type, tool_type()
-    field :count, pos_integer()
-    field :properties, Properties.t()
-    field :stackable?, boolean()
-    field :weight, Loot.Item.weight()
-    field :sound_name, String.t()
+  typedstruct do
+    field :uuid, Loot.uuid(), enforce: true
+    field :name, String.t(), enforce: true
+    field :description, String.t(), enforce: true
+    field :type, tool_type(), enforce: true
+    field :count, pos_integer(), enforce: true
+    field :properties, Properties.t(), enforce: true
+    field :stackable?, boolean(), enforce: true
+    field :using_type, using_type()
+    field :use_cost, pos_integer() | nil
+    field :weight, Loot.Item.weight(), enforce: true
+    field :sound_name, String.t(), enforce: true
   end
 
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
+    use_cost = Map.get(attrs, :use_cost)
+
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
       type: Map.fetch!(attrs, :type) |> to_atom() |> validate_type!(),
@@ -45,6 +53,8 @@ defmodule Europa.Server.Loot.Tool do
       count: Map.fetch!(attrs, :count),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
       stackable?: Map.fetch!(attrs, :stackable),
+      use_cost: use_cost,
+      using_type: Map.get(attrs, :using_type) |> parse_and_validate_using_type(use_cost),
       weight: Map.fetch!(attrs, :weight),
       sound_name: Map.fetch!(attrs, :sound_name)
     }
@@ -89,6 +99,18 @@ defmodule Europa.Server.Loot.Tool do
     |> new()
   end
 
+  defp parse_and_validate_using_type(%{put_object: object_name}, use_cost) do
+    if is_integer(use_cost) and use_cost > 0 do
+      object_name = String.to_atom(object_name)
+      %Object{} = Objects.object(object_name)
+      {:put_object, object_name}
+    else
+      raise "use_cost is requred for usable tools"
+    end
+  end
+
+  defp parse_and_validate_using_type(nil, _), do: nil
+
   defp validate_type!(type) when type in @allowed_tool_types, do: type
 
   defp validate_type!(type) do
@@ -120,13 +142,24 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
 
   @spec composed_name(Tool.t()) :: String.t()
   def composed_name(%Tool{} = tool) do
+    no_significant_properties? = significant_properties(tool.properties) |> Enum.empty?()
+    use_cost = "UC:#{tool.use_cost}"
+
+    use_cost =
+      cond do
+        not usable?(tool) -> ""
+        no_significant_properties? -> use_cost
+        true -> ", #{use_cost}"
+      end
+
     properties =
-      if significant_properties(tool.properties) |> Enum.empty?() do
+      if no_significant_properties? && not usable?(tool) do
         " "
       else
         [
           " (",
           properties_for_composed_name(tool.properties),
+          use_cost,
           ") "
         ]
         |> Enum.join("")
@@ -158,7 +191,15 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
         {property, name, value}
       end)
 
+    use_cost =
+      if usable?(tool) do
+        [{:use_cost, gettext("Use cost"), tool.use_cost}]
+      else
+        []
+      end
+
     properties_attrs ++
+      use_cost ++
       [
         {:count, gettext("Count"), tool.count},
         {:weight, gettext("Weight"), NumberHelpers.round(tool.count * tool.weight, 2)}
@@ -180,6 +221,10 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
 
   @spec consumable?(Tool.t()) :: false
   def consumable?(%Tool{}), do: false
+
+  @spec usable?(Tool.t()) :: boolean()
+  def usable?(%Tool{using_type: nil}), do: false
+  def usable?(%Tool{}), do: true
 
   @spec stackable?(Tool.t()) :: boolean()
   def stackable?(%Tool{stackable?: stackable?}), do: stackable?

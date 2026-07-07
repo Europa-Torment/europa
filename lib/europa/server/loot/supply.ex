@@ -141,6 +141,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   @spec consumable?(Supply.t()) :: true
   def consumable?(%Supply{}), do: true
 
+  @spec usable?(Supply.t()) :: false
+  def usable?(%Supply{}), do: false
+
   @spec stackable?(Supply.t()) :: true
   def stackable?(%Supply{}), do: true
 

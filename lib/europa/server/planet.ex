@@ -4,6 +4,7 @@ defmodule Europa.Server.Planet do
   use TypedStruct
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Tile
   alias Europa.Server.Planet.Tiles.Objects
@@ -17,6 +18,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Enemy
   alias Europa.Server.Action
   alias Europa.Server.Event
@@ -70,7 +72,9 @@ defmodule Europa.Server.Planet do
   @type interaction ::
           {:talk, Npc.t()}
           | {:drink, :radioactive_water}
-          | {:confirmation, {:required_tools, list(Loot.Tool.t())} | :danger_action}
+          | {:confirmation, {:required_tools, list(Loot.Tool.t())}}
+          | {:confirmation, :danger_action}
+          | {:confirmation, {:change, current_tile_name :: String.t(), new_tile_name :: String.t()}}
           | {:transform, Object.t()}
 
   @ice Tiles.tile(:ice).atom_value
@@ -284,6 +288,23 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
+  def use_tool(%__MODULE__{land: land} = planet, %Tool{using_type: {:put_object, object_name}}, direction)
+      when direction in @directions do
+    target_coord = target_coord(planet, direction)
+    target_tile = get_tile(land, target_coord)
+
+    if movable_tile?(land, target_coord) && target_tile in Tiles.tiles_values() do
+      object = Objects.object(object_name) |> Object.stand_on(target_tile)
+      updated_land = change_tile(land, target_coord, object)
+      {:ok, struct!(planet, land: updated_land)}
+    else
+      {:error, %NotApplicableError{}}
+    end
+  end
+
+  def use_tool(_, _, _), do: {:error, %NotApplicableError{}}
+
+  @impl true
   def shoot(%__MODULE__{} = planet, %Player{} = player) do
     with {:ok, weapon} <- PlayerManager.get_equiped_weapon(player) do
       do_shoot(planet, player, weapon)
@@ -369,7 +390,7 @@ defmodule Europa.Server.Planet do
 
       {:ok, struct!(planet, land: updated_land), {:transform, object}}
     else
-      {:ok, planet, {:confirmation, {:required_tools, object.transform_requirements}}}
+      {:ok, planet, {:confirmation, Object.transform_confirmation(object)}}
     end
   end
 

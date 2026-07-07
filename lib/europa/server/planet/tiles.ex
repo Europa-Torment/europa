@@ -3,6 +3,7 @@ defmodule Europa.Server.Planet.Tiles do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet.Tiles.Tile
+  alias Europa.Tools.Types
 
   @tiles %{
     snow: %Tile{
@@ -176,7 +177,10 @@ defmodule Europa.Server.Planet.Tiles do
     }
   }
 
-  @spec tiles() :: %{required(atom()) => Tile.t()}
+  @tile_names Enum.map(@tiles, fn {name, _} -> name end)
+  @type name :: unquote(Types.one_of(@tile_names))
+
+  @spec tiles() :: %{required(name()) => Tile.t()}
   def tiles, do: @tiles
 
   @spec tiles_values() :: atom()
@@ -264,7 +268,7 @@ defmodule Europa.Server.Planet.Tiles do
     |> Enum.into(%{})
   end
 
-  @spec tile(atom()) :: Tile.t()
+  @spec tile(name()) :: Tile.t()
   def tile(name), do: Map.fetch!(@tiles, name)
 
   @spec tile_by_atom_value(atom()) :: Tile.t() | nil

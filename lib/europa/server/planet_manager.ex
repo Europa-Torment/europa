@@ -5,6 +5,7 @@ defmodule Europa.Server.PlanetManager do
   Planet manager interface.
   """
 
+  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Server
   alias Europa.Server.Planet
   alias Europa.Server.Loot
@@ -133,6 +134,12 @@ defmodule Europa.Server.PlanetManager do
               {:ok, Planet.t(), Planet.interaction()} | {:error, :nothing}
 
   @doc """
+  Uses given tool or returns NotApplicable error.
+  """
+  @callback use_tool(Planet.t(), Loot.Item.item(), Planet.direction()) ::
+              {:ok, Planet.t()} | {:error, NotApplicableError.t()}
+
+  @doc """
   Runs planet activities such as enemies moving and attacking. Takes current `planet` and `moves_count`.
   Returns updated planet and list of performed actions.
 
@@ -164,6 +171,7 @@ defmodule Europa.Server.PlanetManager do
   def move(planet, direction, player), do: manager_impl().move(planet, direction, player)
   def loot(planet, direction), do: manager_impl().loot(planet, direction)
   def take_loot(planet, player, item_uuid), do: manager_impl().take_loot(planet, player, item_uuid)
+  def use_tool(planet, tool, view_direction), do: manager_impl().use_tool(planet, tool, view_direction)
 
   def drop_item(planet, player, item_uuid), do: manager_impl().drop_item(planet, player, item_uuid)
   def tick(planet, moves_count), do: manager_impl().tick(planet, moves_count)

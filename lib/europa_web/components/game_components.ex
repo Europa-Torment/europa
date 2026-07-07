@@ -513,13 +513,7 @@ defmodule EuropaWeb.GameCompotents do
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
           <h3 class="text-lg font-bold pb-3">{gettext("Confirm action")}</h3>
 
-          <%= if interaction_requires_tools?(@interaction_confirmation) do %>
-            <.interact_required_tools interaction_confirmation={@interaction_confirmation} player={@player} />
-          <% end %>
-
-          <%= if @interaction_confirmation == :danger_action do %>
-            <span class="text-md">{gettext("Commit a dangerous act?")}</span>
-          <% end %>
+          <.interaction_confirmation_text interaction_confirmation={@interaction_confirmation} player={@player} />
 
           <div class="modal-action">
             <%= if @interaction_allowed? do %>
@@ -542,16 +536,47 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
-  def interact_required_tools(assigns) do
-    {:required_tools, tools} = assigns.interaction_confirmation
-    assigns = assign(assigns, tools: tools)
+  def interaction_confirmation_text(assigns) do
+    case assigns.interaction_confirmation do
+      :danger_action ->
+        ~H"""
+        <span class="text-md">{gettext("Commit a dangerous act?")}</span>
+        """
 
+      {:required_tools, tools} ->
+        assigns = assign(assigns, required_tools: tools)
+
+        ~H"""
+        <.interaction_required_tools required_tools={@required_tools} player={@player} />
+        """
+
+      {:change, from, :delete} ->
+        assigns = assign(assigns, from: from)
+
+        ~H"""
+        <span class="text-md">{gettext("%{from_name} will be delted", from_name: @from)}</span>
+        """
+
+      {:change, from, to} ->
+        assigns = assign(assigns, from: from, to: to)
+
+        ~H"""
+        <span class="text-md">{gettext("%{from_name} will change to %{to_name}", from_name: @from, to_name: @to)}</span>
+        """
+
+      _ ->
+        ~H"""
+        """
+    end
+  end
+
+  def interaction_required_tools(assigns) do
     ~H"""
     <span class="text-md">{gettext("The action requires following items")}:</span>
     <br />
 
     <ul class="list-disc list-inside space-y-2 text-sm">
-      <%= for tool <- @tools do %>
+      <%= for tool <- @required_tools do %>
         <li class={required_tool_class(@player, tool)}>
           {Loot.Item.composed_name(tool)}, {gettext("you have")}: {PlayerManager.tools_amount(@player, tool)}
         </li>
@@ -719,6 +744,13 @@ defmodule EuropaWeb.GameCompotents do
       <div class="tooltip" data-tip={"#{gettext("Consume")}"}>
         <.link phx-click="consume_supply" phx-value-uuid={"#{@item.uuid}"}>
           💊 <.moves_count moves_count={@item.consume_cost} />
+        </.link>
+      </div>
+    <% end %>
+    <%= if Item.usable?(@item) do %>
+      <div class="tooltip" data-tip={"#{gettext("Use")}"}>
+        <.link phx-click="use_tool" phx-value-uuid={"#{@item.uuid}"}>
+          🔨 <.moves_count moves_count={@item.use_cost} />
         </.link>
       </div>
     <% end %>
@@ -1234,9 +1266,6 @@ defmodule EuropaWeb.GameCompotents do
   defp maybe_round_number(number) do
     number
   end
-
-  defp interaction_requires_tools?({:required_tools, requirements}) when is_list(requirements), do: true
-  defp interaction_requires_tools?(_), do: false
 
   defp interaction_allowed?({:required_tools, requirements}, player) when is_list(requirements) do
     PlayerManager.enough_tools?(player, requirements)

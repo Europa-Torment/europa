@@ -4,6 +4,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Loot.Tool
+  alias Europa.Tools.Types
 
   @objects %{
     # object used to leave space unoccupied
@@ -51,23 +52,34 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       transforms_to: {:tile, :open_right_door},
       transform_sound_name: "open_door"
     },
-    bonfire: %Object{name: gettext("bonfire"), image_name: "bonfire", warm?: true, gif_tile?: true},
+    bonfire: %Object{
+      name: gettext("bonfire"),
+      image_name: "bonfire",
+      warm?: true,
+      gif_tile?: true,
+      transforms_to: :nothing,
+      transform_requirements: :change_confirmation,
+      transform_sound_name: "equip"
+    },
     bonfire_base: %Object{
       name: gettext("extinguished bonfire"),
       image_name: "bonfire_base",
       warm?: false,
       transforms_to: {:object, :bonfire},
-      transform_requirements: [Tool.generate_matches()],
+      transform_requirements: {:tools, [Tool.generate_matches()]},
       transform_sound_name: "matches"
     },
     fire_shuttle: %Object{name: gettext("burning shuttle"), image_name: "fire_shuttle", gif_tile?: true, warm?: true}
   }
 
-  @spec objects() :: %{required(atom()) => Object.t()}
+  @object_names Enum.map(@objects, fn {name, _} -> name end)
+  @type name :: unquote(Types.one_of(@object_names))
+
+  @spec objects() :: %{required(name()) => Object.t()}
   def objects do
     @objects
   end
 
-  @spec object(atom()) :: Object.t()
+  @spec object(name()) :: Object.t()
   def object(name), do: Map.fetch!(@objects, name)
 end

@@ -445,6 +445,22 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
+  def handle_event("use_tool", %{"uuid" => item_uuid}, socket) do
+    case Server.use_tool(socket.assigns.server, item_uuid) do
+      {:ok, tool} ->
+        socket =
+          socket
+          |> base_assign()
+          |> close_all()
+          |> play_sound(tool.sound_name)
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, close_all(socket)}
+    end
+  end
+
   def handle_event("craft_item", %{"uuid" => item_uuid}, socket) do
     case socket.assigns.blueprints do
       nil -> {:noreply, socket}
@@ -899,7 +915,7 @@ defmodule EuropaWeb.GameLive do
 
         {:noreply, socket}
 
-      {:ok, {:transform, %Object{transform_sound_name: sound_name}}} ->
+      {:ok, {:transform, %Object{transform_sound_name: sound_name}}} when not is_nil(sound_name) ->
         socket =
           socket
           |> base_assign()

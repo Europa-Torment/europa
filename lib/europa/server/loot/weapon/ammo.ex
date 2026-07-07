@@ -79,6 +79,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   @spec consumable?(Ammo.t()) :: false
   def consumable?(%Ammo{}), do: false
 
+  @spec usable?(Ammo.t()) :: false
+  def usable?(%Ammo{}), do: false
+
   @spec stackable?(Ammo.t()) :: true
   def stackable?(%Ammo{}), do: true
 

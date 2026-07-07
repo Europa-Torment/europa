@@ -16,6 +16,7 @@ defmodule Europa.Server.PlanetTest do
   alias Europa.Server.Loot.Item
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Support.PlanetLandConverter
 
   import Europa.Tools.Conf
@@ -49,7 +50,9 @@ defmodule Europa.Server.PlanetTest do
   @duo Object.transform(@du)
   @ddo Object.transform(@dd)
 
-  @dll Objects.object(:door_left) |> Object.set_transform_requirements(build_list(2, :tool))
+  @dll Objects.object(:door_left) |> Object.set_transform_requirements({:tools, build_list(2, :tool)})
+
+  @bf Objects.object(:bonfire) |> Object.stand_on(@i)
 
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)], movable?: true)
@@ -192,6 +195,20 @@ defmodule Europa.Server.PlanetTest do
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                  ]
                                  |> PlanetLandConverter.from_matrix()
+
+  @land_player_up_close_to_bonfire [
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @bf, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @ib, @pl, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                   ]
+                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_near_left_border [
                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -1333,6 +1350,23 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
+  describe "use_tool/3" do
+    setup do
+      tool = build(:tool, using_type: {:put_object, :bonfire}, use_cost: 1)
+      {:ok, tool: tool}
+    end
+
+    test "adds object", %{tool: tool} do
+      planet = build(:planet, land: @land_player_look_left_at_loot, current_coord: {4, 4})
+      assert {:ok, %Planet{land: @land_player_up_close_to_bonfire}} = Planet.use_tool(planet, tool, :up)
+    end
+
+    test "returns NotApplicableError", %{tool: tool} do
+      planet = build(:planet, land: @land_player_look_left_at_loot, current_coord: {4, 4})
+      assert {:error, %NotApplicableError{}} = Planet.use_tool(planet, tool, :left)
+    end
+  end
+
   describe "crop_land/1" do
     test "crops planet land to size of visible land" do
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
@@ -1454,7 +1488,7 @@ defmodule Europa.Server.PlanetTest do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_locked_door, current_coord: {4, 1})
 
-      required_tools = @dll.transform_requirements
+      {:tools, required_tools} = @dll.transform_requirements
 
       assert {:ok, %Planet{land: @land_player_left_close_to_locked_door},
               {:confirmation, {:required_tools, ^required_tools}}} =

@@ -74,5 +74,18 @@
         "stackable": true,
         "weight": 0.01, 
         "random_weight": 1.0
+    },
+    {
+        "name": "Bonfire starter kit", 
+        "description": "A set of synthetic wood capable of burning in a rarefied atmosphere.",
+        "type": "bonfire_starter_kit",
+        "count": {"from": 1, "to": 2},
+        "sound_name": "matches",
+        "properties": {},
+        "using_type": {"put_object": "bonfire"},
+        "use_cost": 2,
+        "stackable": true,
+        "weight": 1.0, 
+        "random_weight": 0.05
     }
 ]

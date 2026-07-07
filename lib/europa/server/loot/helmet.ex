@@ -89,6 +89,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
   @spec consumable?(Helmet.t()) :: false
   def consumable?(%Helmet{}), do: false
 
+  @spec usable?(Helmet.t()) :: false
+  def usable?(%Helmet{}), do: false
+
   @spec stackable?(Helmet.t()) :: false
   def stackable?(%Helmet{}), do: false
 

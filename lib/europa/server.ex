@@ -12,6 +12,7 @@ defmodule Europa.Server do
   alias Europa.Server.PlayerManager
   alias Europa.Server.Chat
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
   alias Europa.Server.Action
@@ -211,6 +212,11 @@ defmodule Europa.Server do
           {:ok, Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
   def consume_supply(server, item_uuid) do
     GenServer.call(server, {:consume_supply, item_uuid})
+  end
+
+  @spec use_tool(pid(), Loot.uuid()) :: {:ok, Loot.Item.item()} | {:error, :cant_use}
+  def use_tool(server, item_uuid) do
+    GenServer.call(server, {:use_tool, item_uuid})
   end
 
   @spec interact(pid(), opts :: keyword()) :: {:ok, Planet.interaction()} | {:error, :nothing}
@@ -588,6 +594,18 @@ defmodule Europa.Server do
     end
   end
 
+  def handle_call({:use_tool, item_uuid}, {caller_pid, _}, state) do
+    case PlayerManager.get_item(state.player, item_uuid) do
+      {:ok, tool} ->
+        tool
+        |> struct!(count: 1)
+        |> do_use_tool(state, caller_pid)
+
+      _error ->
+        process_cannot_use_tool(state)
+    end
+  end
+
   def handle_call({:get_inventory, type}, _from, state) do
     {:reply, PlayerManager.get_inventory(state.player, type), state, @inactivity_timeout_ms}
   end
@@ -611,7 +629,7 @@ defmodule Europa.Server do
         {:reply, {:ok, interaction}, struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
          @inactivity_timeout_ms}
 
-      {:ok, updated_planet, {:transform, %Object{transform_requirements: required_tools}} = interaction}
+      {:ok, updated_planet, {:transform, %Object{transform_requirements: {:tools, required_tools}}} = interaction}
       when is_list(required_tools) ->
         case PlayerManager.use_tools(state.player, required_tools) do
           {:ok, updated_player} ->
@@ -699,6 +717,39 @@ defmodule Europa.Server do
   end
 
   ### PRIVATE ###
+
+  defp do_use_tool(%Tool{using_type: {:put_object, _}} = tool, state, caller_pid) do
+    with {:ok, updated_player} <- PlayerManager.use_tools(state.player, [tool]),
+         {:ok, updated_planet} <- PlanetManager.use_tool(state.planet, tool, updated_player.view_direction) do
+      moves_count = tool.use_cost
+
+      tool_used_message = tool_used_message(tool)
+
+      updated_chat =
+        state.chat
+        |> Chat.add_message(tool_used_message)
+
+      {:reply, {:ok, tool}, struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
+       {:continue, {:tick, moves_count, caller_pid}}}
+    else
+      _error ->
+        process_cannot_use_tool(state)
+    end
+  end
+
+  defp do_use_tool(_, state, _) do
+    process_cannot_use_tool(state)
+  end
+
+  defp process_cannot_use_tool(state) do
+    cant_do_it_message = cant_do_it_message()
+
+    updated_chat =
+      state.chat
+      |> Chat.add_message(cant_do_it_message)
+
+    {:reply, {:error, :cant_use}, struct!(state, chat: updated_chat)}
+  end
 
   defp do_get_current_time(state) do
     current_year = @disaster_year + (state.player.character.current_age - state.player.character.age_at_disaster)
@@ -1002,6 +1053,18 @@ defmodule Europa.Server do
       )
 
     Chat.Message.new(msg, :regular)
+  end
+
+  defp tool_used_message(tool) do
+    msg =
+      gettext("You used %{tool_name}, it took %{moves_count} step(s)", tool_name: tool.name, moves_count: tool.use_cost)
+
+    Chat.Message.new(msg, :regular)
+  end
+
+  def cant_do_it_message do
+    msg = gettext("It's not possible to do this now.")
+    Chat.Message.new(msg, :danger)
   end
 
   defp cant_move_message(tile) do

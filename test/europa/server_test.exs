@@ -840,17 +840,15 @@ defmodule Europa.ServerTest do
       |> expect(:consume_supply, fn %Player{} = player, ^supply_uuid ->
         {:ok, player, supply}
       end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
 
       PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
         {:ok, planet, []}
-      end)
-
-      PlayerManagerMock
-      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
-        assert_moves_count(moves_count, tick_moves_count)
-        {:ok, player, []}
       end)
 
       assert {:ok, ^supply} = Server.consume_supply(server, supply_uuid)
@@ -879,6 +877,46 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.consume_supply(server, supply.uuid) == error
+    end
+  end
+
+  describe "use_tool/2" do
+    test "handles success response", %{server: server} do
+      tool = build(:tool, using_type: {:put_object, :bonfire}, use_cost: 1, count: 10)
+      expected_tool = struct!(tool, count: 1)
+      tool_uuid = tool.uuid
+      moves_count = tool.use_cost
+
+      PlayerManagerMock
+      |> expect(:get_item, fn %Player{}, ^tool_uuid -> {:ok, tool} end)
+      |> expect(:use_tools, fn %Player{} = player, [^expected_tool] ->
+        {:ok, player}
+      end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      PlanetManagerMock
+      |> expect(:use_tool, fn %Planet{} = planet, ^expected_tool, _direction -> {:ok, planet} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      assert {:ok, ^expected_tool} = Server.use_tool(server, tool_uuid)
+      :timer.sleep(100)
+    end
+
+    test "handles not_found response", %{server: server} do
+      tool = build(:tool)
+
+      PlayerManagerMock
+      |> expect(:get_item, fn _player, _tool_uuid ->
+        {:error, :not_found}
+      end)
+
+      assert Server.use_tool(server, tool.uuid) == {:error, :cant_use}
     end
   end
 
