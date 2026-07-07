@@ -62,18 +62,18 @@
         "type": "monster",
         "name": "Blistered Ghoul",
         "description": "A hideous, foul-smelling, fish-like monster exuding a strange energy.",
-        "max_health": {"from": 10, "to": 20},
-        "health": {"from": 10, "to": {"attr": "max_health"}},
+        "max_health": {"from": 15, "to": 35},
+        "health": {"from": 15, "to": {"attr": "max_health"}},
         "damage": {"from": 1, "to": 2},
-        "accuracy": {"from": 20, "to": 30},
+        "accuracy": {"from": 10, "to": 25},
         "radioactive": false,
         "healer": true,
-        "heal_possibility": 7,
+        "heal_possibility": 5,
         "heal_unit": 4,
         "move_distance": 1,
         "max_items": 2,
         "phrases": ["Bluah!", "Bluen!"],
         "image_name": "blistered_ghoul",
-        "random_weight": 0.5
+        "random_weight": 0.9
     }
 ]
