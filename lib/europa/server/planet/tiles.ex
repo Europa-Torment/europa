@@ -189,110 +189,47 @@ defmodule Europa.Server.Planet.Tiles do
 
   @spec movable_tiles() :: list(atom())
   def movable_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.movable? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.movable? end)
   end
 
   @spec gif_tiles() :: list(atom())
   def gif_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.gif_tile? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.gif_tile? end)
   end
 
   @spec high_tiles() :: list(atom())
   def high_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.high? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.high? end)
   end
 
   @spec warm_tiles() :: list(atom())
   def warm_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.warm? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.warm? end)
   end
 
   @spec radioactive_tiles() :: list(atom())
   def radioactive_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.radioactive? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.radioactive? end)
   end
 
   @spec lethal_tiles() :: list(atom())
   def lethal_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.lethal? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.lethal? end)
   end
 
   @spec potential_lethal_tiles() :: list(atom())
   def potential_lethal_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if changes_to_lethal?(tile) do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> changes_to_lethal?(tile) end)
   end
 
   @spec changeable_tiles() :: list(atom())
   def changeable_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.changes_to && tile.change_possibility do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.changes_to && tile.change_possibility end)
   end
 
   @spec high_loot_possibility_tiles() :: list(atom())
   def high_loot_possibility_tiles do
-    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
-      if tile.high_loot_possibility? do
-        acc ++ [tile.atom_value, tile.blood_version]
-      else
-        acc
-      end
-    end)
-    |> Enum.filter(fn tile -> not is_nil(tile) end)
+    find_tiles(fn tile -> tile.high_loot_possibility? end)
   end
 
   @spec move_costs() :: %{required(atom()) => pos_integer()}
@@ -344,6 +281,17 @@ defmodule Europa.Server.Planet.Tiles do
       {_, tile} -> tile
       _ -> nil
     end
+  end
+
+  defp find_tiles(condition) do
+    Enum.reduce(@tiles, [], fn {_, tile}, acc ->
+      if condition.(tile) do
+        acc ++ [tile.atom_value, tile.blood_version]
+      else
+        acc
+      end
+    end)
+    |> Enum.filter(fn tile -> not is_nil(tile) end)
   end
 
   defp changes_to_lethal?(%Tile{changes_to: nil}), do: false
