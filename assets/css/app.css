@@ -140,7 +140,11 @@ body {
 }
 
 .tooltip-events::before {
-  opacity: 0.8;
-  font-size: 0.60rem;
+  opacity: 0.7;
+  font-size: 0.65rem;
   padding: 0.2rem 0.5rem;
+}
+
+.tooltip-events::after {
+  opacity: 0.7;
 }
