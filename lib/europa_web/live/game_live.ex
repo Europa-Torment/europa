@@ -19,21 +19,21 @@ defmodule EuropaWeb.GameLive do
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
 
-  @move_up_keys fetch_config!([:control_bindings, :move_up])
-  @move_down_keys fetch_config!([:control_bindings, :move_down])
-  @move_left_keys fetch_config!([:control_bindings, :move_left])
-  @move_right_keys fetch_config!([:control_bindings, :move_right])
+  @move_up_codes fetch_config!([:control_bindings, :move_up]).codes
+  @move_down_codes fetch_config!([:control_bindings, :move_down]).codes
+  @move_left_codes fetch_config!([:control_bindings, :move_left]).codes
+  @move_right_codes fetch_config!([:control_bindings, :move_right]).codes
 
-  @move_keys @move_up_keys ++ @move_down_keys ++ @move_left_keys ++ @move_right_keys
+  @move_codes @move_up_codes ++ @move_down_codes ++ @move_left_codes ++ @move_right_codes
 
-  @interact_keys fetch_config!([:control_bindings, :interact])
-  @loot_keys fetch_config!([:control_bindings, :loot])
-  @inventory_keys fetch_config!([:control_bindings, :inventory])
-  @reload_keys fetch_config!([:control_bindings, :reload])
-  @control_hints_keys fetch_config!([:control_bindings, :control_hints])
-  @close_keys fetch_config!([:control_bindings, :close])
-  @shoot_keys fetch_config!([:control_bindings, :shoot])
-  @aim_keys fetch_config!([:control_bindings, :aim])
+  @interact_codes fetch_config!([:control_bindings, :interact]).codes
+  @loot_codes fetch_config!([:control_bindings, :loot]).codes
+  @inventory_codes fetch_config!([:control_bindings, :inventory]).codes
+  @reload_codes fetch_config!([:control_bindings, :reload]).codes
+  @control_hints_codes fetch_config!([:control_bindings, :control_hints]).codes
+  @close_codes fetch_config!([:control_bindings, :close]).codes
+  @shoot_codes fetch_config!([:control_bindings, :shoot]).codes
+  @aim_codes fetch_config!([:control_bindings, :aim]).codes
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -115,8 +115,8 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @move_keys do
-    direction = move_key_to_direction(key)
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @move_codes do
+    direction = move_code_to_direction(code)
 
     case Server.move(socket.assigns.server, direction) do
       {:moved, move_status} ->
@@ -145,11 +145,11 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("key_pressed", %{"key" => key} = params, socket) when key in @interact_keys do
+  def handle_event("key_pressed", %{"code" => code} = params, socket) when code in @interact_codes do
     interact(socket, params)
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @loot_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @loot_codes do
     if socket.assigns.item_box do
       close_item_box(socket)
     else
@@ -157,7 +157,7 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @inventory_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @inventory_codes do
     if socket.assigns.inventory do
       close_inventory(socket)
     else
@@ -167,16 +167,16 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @control_hints_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @control_hints_codes do
     socket
     |> toggle_control_hints()
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @close_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @close_codes do
     {:noreply, close_all(socket)}
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @shoot_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @shoot_codes do
     shoot_result = Server.shoot(socket.assigns.server)
 
     socket =
@@ -188,11 +188,11 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @reload_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @reload_codes do
     reload_weapon(socket)
   end
 
-  def handle_event("key_pressed", %{"key" => key}, socket) when key in @aim_keys do
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @aim_codes do
     case Server.toggle_aim_mode(socket.assigns.server) do
       :ok ->
         socket =
@@ -208,7 +208,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", _params, socket) do
-    message = gettext("This button doesn't do anything. Perhaps you forgot to switch the keyboard layout to English?")
+    message = gettext("This key doesn't do anything. Press H to get control hints.")
     socket = put_flash(socket, :error, message)
 
     {:noreply, socket}
@@ -1061,10 +1061,10 @@ defmodule EuropaWeb.GameLive do
 
   defp maybe_add_shotgun_aims(aims, _, _), do: aims
 
-  defp move_key_to_direction(key) when key in @move_up_keys, do: :up
-  defp move_key_to_direction(key) when key in @move_down_keys, do: :down
-  defp move_key_to_direction(key) when key in @move_left_keys, do: :left
-  defp move_key_to_direction(key) when key in @move_right_keys, do: :right
+  defp move_code_to_direction(code) when code in @move_up_codes, do: :up
+  defp move_code_to_direction(code) when code in @move_down_codes, do: :down
+  defp move_code_to_direction(code) when code in @move_left_codes, do: :left
+  defp move_code_to_direction(code) when code in @move_right_codes, do: :right
 
   defp schedule_events_tick do
     :erlang.start_timer(@events_tick_delay_ms, self(), :events_tick)

@@ -113,18 +113,18 @@ config :europa, Europa.Server.Characters, filename: "characters.json"
 config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/"
 
 config :europa, :control_bindings,
-  move_up: ["ArrowUp", "W", "w"],
-  move_down: ["ArrowDown", "S", "s"],
-  move_left: ["ArrowLeft", "A", "a"],
-  move_right: ["ArrowRight", "D", "d"],
-  interact: ["E", "e"],
-  loot: ["L", "l"],
-  inventory: ["I", "i"],
-  control_hints: ["H", "h"],
-  shoot: [" ", "Space"],
-  reload: ["R", "r"],
-  aim: ["V", "v"],
-  close: ["Escape"]
+  move_up: %{keys: ["ArrowUp", "W", "w"], codes: ["KeyW"]},
+  move_down: %{keys: ["ArrowDown", "S", "s"], codes: ["KeyS"]},
+  move_left: %{keys: ["ArrowLeft", "A", "a"], codes: ["KeyA"]},
+  move_right: %{keys: ["ArrowRight", "D", "d"], codes: ["KeyD"]},
+  interact: %{keys: ["E", "e"], codes: ["KeyE"]},
+  loot: %{keys: ["L", "l"], codes: ["KeyL"]},
+  inventory: %{keys: ["I", "i"], codes: ["KeyI"]},
+  control_hints: %{keys: ["H", "h"], codes: ["KeyH"]},
+  shoot: %{keys: [" ", "Space"], codes: ["Space"]},
+  reload: %{keys: ["R", "r"], codes: ["KeyR"]},
+  aim: %{keys: ["V", "v"], codes: ["KeyV"]},
+  close: %{keys: ["Escape"], codes: ["Escape"]}
 
 # Configure esbuild (the version is required)
 config :esbuild,

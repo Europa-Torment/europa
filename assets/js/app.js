@@ -45,6 +45,14 @@ const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
   hooks: {...colocatedHooks},
+  metadata: {
+    keyup: (e, el) => {
+      return {
+        key: e.key,
+        code: e.code
+      }
+    }
+  }
 })
 
 // Show progress bar on live navigation and form submits

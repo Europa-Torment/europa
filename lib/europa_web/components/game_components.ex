@@ -25,19 +25,19 @@ defmodule EuropaWeb.GameCompotents do
 
   @game_version Mix.Project.config()[:version] |> to_string()
 
-  @move_up_keys fetch_config!([:control_bindings, :move_up])
-  @move_down_keys fetch_config!([:control_bindings, :move_down])
-  @move_left_keys fetch_config!([:control_bindings, :move_left])
-  @move_right_keys fetch_config!([:control_bindings, :move_right])
+  @move_up_keys fetch_config!([:control_bindings, :move_up]).keys
+  @move_down_keys fetch_config!([:control_bindings, :move_down]).keys
+  @move_left_keys fetch_config!([:control_bindings, :move_left]).keys
+  @move_right_keys fetch_config!([:control_bindings, :move_right]).keys
 
-  @interact_keys fetch_config!([:control_bindings, :interact])
-  @loot_keys fetch_config!([:control_bindings, :loot])
-  @inventory_keys fetch_config!([:control_bindings, :inventory])
-  @reload_keys fetch_config!([:control_bindings, :reload])
-  @control_hints_keys fetch_config!([:control_bindings, :control_hints])
-  @close_keys fetch_config!([:control_bindings, :close])
-  @shoot_keys fetch_config!([:control_bindings, :shoot])
-  @aim_keys fetch_config!([:control_bindings, :aim])
+  @interact_keys fetch_config!([:control_bindings, :interact]).keys
+  @loot_keys fetch_config!([:control_bindings, :loot]).keys
+  @inventory_keys fetch_config!([:control_bindings, :inventory]).keys
+  @reload_keys fetch_config!([:control_bindings, :reload]).keys
+  @control_hints_keys fetch_config!([:control_bindings, :control_hints]).keys
+  @close_keys fetch_config!([:control_bindings, :close]).keys
+  @shoot_keys fetch_config!([:control_bindings, :shoot]).keys
+  @aim_keys fetch_config!([:control_bindings, :aim]).keys
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
