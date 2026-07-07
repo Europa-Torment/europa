@@ -15,9 +15,11 @@ defmodule Europa.Tools.TilesImagesGeneratorTest do
 
   @tmp_base "/tmp"
 
-  @ext ".png"
+  @png_ext ".png"
+  @gif_ext ".gif"
 
-  @fixture_tile_path "test/fixtures/tiles/tile.png"
+  @png_fixture_tile_path "test/fixtures/tiles/tile.png"
+  @gif_fixture_tile_path "test/fixtures/tiles/tile.gif"
 
   @final_tiles_path Path.join([@root_dir, @base_dir, @tmp_base, @ready])
 
@@ -35,29 +37,30 @@ defmodule Europa.Tools.TilesImagesGeneratorTest do
     File.mkdir!(Path.join([@root_dir, @base_dir, @loot]))
     File.mkdir!(Path.join([@root_dir, @base_dir, @ready]))
 
-    over_landscape = ["ol1", "ol2", "ol3"]
-    landscape = ["l1", "l2", "l3"]
-    objects = ["o1", "o2", "o3"]
+    over_landscape = ["ol1", "ol2"]
+    landscape = ["l1", "l2"]
+    objects = ["o1", "o2"]
     movable_objects = ["broken_wall"]
-    ready = ["r1", "r2", "r3"]
-    enemies = ["e1", "e2", "e3"]
-    loot = ["l1", "l2", "l3"]
+    ready = ["r1", "r2"]
+    enemies = ["e1", "e2"]
+    loot = ["l1", "l2"]
     movable_loot = ["bag"]
 
-    generate_files!(%{
+    files_to_generate = %{
       @over_landscape => over_landscape,
       @landscape => landscape,
       @objects => objects ++ movable_objects,
       @ready => ready,
       @enemies => enemies,
       @loot => loot ++ movable_loot
-    })
+    }
 
     on_exit(fn ->
       File.rm_rf!(@root_dir)
     end)
 
     {:ok,
+     files_to_generate: files_to_generate,
      over_landscape: over_landscape,
      landscape: landscape,
      objects: objects,
@@ -69,89 +72,113 @@ defmodule Europa.Tools.TilesImagesGeneratorTest do
   end
 
   describe "generate_tiles!/1" do
-    test "generates landscapes", %{
-      over_landscape: over_landscape,
-      landscape: landscape,
-      movable_objects: movable_objects
-    } do
-      assert_generated_tiles([landscape])
-      assert_generated_tiles([over_landscape, landscape])
-      assert_generated_tiles([movable_objects, over_landscape, landscape])
-    end
+    for {fixture_tile_path, ext} <- [{@png_fixture_tile_path, @png_ext}, {@gif_fixture_tile_path, @gif_ext}] do
+      @fixture_tile_path fixture_tile_path
+      @ext ext
 
-    test "generates ready", %{ready: ready} do
-      assert_generated_tiles([ready])
-    end
+      @tag slow: true
+      test "generates landscapes (#{@ext})", %{
+        files_to_generate: files_to_generate,
+        over_landscape: over_landscape,
+        landscape: landscape,
+        movable_objects: movable_objects
+      } do
+        generate_files!(files_to_generate, @fixture_tile_path)
 
-    test "generates objects", %{
-      over_landscape: over_landscape,
-      landscape: landscape,
-      objects: objects,
-      movable_objects: movable_objects,
-      movable_loot: movable_loot
-    } do
-      assert_generated_tiles([objects, landscape])
-      assert_generated_tiles([objects, over_landscape, landscape])
-      assert_generated_tiles([objects, movable_objects, over_landscape, landscape])
-      assert_generated_tiles([objects, movable_loot, over_landscape, landscape])
-      assert_generated_tiles([objects, movable_loot, landscape])
-      assert_generated_tiles([objects, movable_loot, movable_objects, over_landscape, landscape])
-    end
+        assert_generated_tiles([landscape], @ext)
+        assert_generated_tiles([over_landscape, landscape], @ext)
+        assert_generated_tiles([movable_objects, over_landscape, landscape], @ext)
+      end
 
-    test "generates loot", %{
-      over_landscape: over_landscape,
-      landscape: landscape,
-      movable_objects: movable_objects,
-      loot: loot
-    } do
-      assert_generated_tiles([loot, landscape])
-      assert_generated_tiles([loot, over_landscape, landscape])
-      assert_generated_tiles([loot, movable_objects, over_landscape, landscape])
-    end
+      @tag slow: true
+      test "generates ready (#{@ext})", %{ready: ready, files_to_generate: files_to_generate} do
+        generate_files!(files_to_generate, @fixture_tile_path)
+        assert_generated_tiles([ready], @ext)
+      end
 
-    test "generates enemies", %{
-      over_landscape: over_landscape,
-      landscape: landscape,
-      movable_objects: movable_objects,
-      enemies: enemies,
-      movable_loot: movable_loot
-    } do
-      assert_generated_tiles([enemies, landscape])
-      assert_generated_tiles([enemies, over_landscape, landscape])
-      assert_generated_tiles([enemies, movable_objects, landscape])
-      assert_generated_tiles([enemies, movable_loot, movable_objects, landscape])
+      @tag slow: true
+      test "generates objects (#{@ext})", %{
+        files_to_generate: files_to_generate,
+        over_landscape: over_landscape,
+        landscape: landscape,
+        objects: objects,
+        movable_objects: movable_objects,
+        movable_loot: movable_loot
+      } do
+        generate_files!(files_to_generate, @fixture_tile_path)
+
+        assert_generated_tiles([objects, landscape], @ext)
+        assert_generated_tiles([objects, over_landscape, landscape], @ext)
+        assert_generated_tiles([objects, movable_objects, over_landscape, landscape], @ext)
+        assert_generated_tiles([objects, movable_loot, over_landscape, landscape], @ext)
+        assert_generated_tiles([objects, movable_loot, landscape], @ext)
+        assert_generated_tiles([objects, movable_loot, movable_objects, over_landscape, landscape], @ext)
+      end
+
+      @tag slow: true
+      test "generates loot (#{@ext})", %{
+        files_to_generate: files_to_generate,
+        over_landscape: over_landscape,
+        landscape: landscape,
+        movable_objects: movable_objects,
+        loot: loot
+      } do
+        generate_files!(files_to_generate, @fixture_tile_path)
+
+        assert_generated_tiles([loot, landscape], @ext)
+        assert_generated_tiles([loot, over_landscape, landscape], @ext)
+        assert_generated_tiles([loot, movable_objects, over_landscape, landscape], @ext)
+      end
+
+      @tag slow: true
+      test "generates enemies (#{@ext})", %{
+        files_to_generate: files_to_generate,
+        over_landscape: over_landscape,
+        landscape: landscape,
+        movable_objects: movable_objects,
+        enemies: enemies,
+        movable_loot: movable_loot
+      } do
+        generate_files!(files_to_generate, @fixture_tile_path)
+
+        assert_generated_tiles([enemies, landscape], @ext)
+        assert_generated_tiles([enemies, over_landscape, landscape], @ext)
+        assert_generated_tiles([enemies, movable_objects, landscape], @ext)
+        assert_generated_tiles([enemies, movable_loot, movable_objects, landscape], @ext)
+      end
     end
   end
 
-  def assert_generated_tiles(lists) when is_list(lists) do
+  def assert_generated_tiles(lists, ext \\ @png_ext) when is_list(lists) do
     assert TilesImagesGenerator.generate_tiles!(@root_dir) == :ok
-    do_assert_generated_tiles(lists, [])
+    do_assert_generated_tiles(lists, ext, [])
   end
 
-  defp do_assert_generated_tiles([], acc) do
+  defp do_assert_generated_tiles([], ext, acc) do
     generated_tiles = File.ls!(@final_tiles_path)
-    assert file(Enum.reverse(acc)) in generated_tiles
+    assert file(Enum.reverse(acc), ext) in generated_tiles
   end
 
-  defp do_assert_generated_tiles([list | rest], acc) do
+  defp do_assert_generated_tiles([list | rest], ext, acc) do
     Enum.each(list, fn elem ->
-      do_assert_generated_tiles(rest, [elem | acc])
+      do_assert_generated_tiles(rest, ext, [elem | acc])
     end)
   end
 
-  defp file(filename) when is_binary(filename) do
-    filename <> @ext
+  defp file(filename, ext) when is_binary(filename) do
+    filename <> ext
   end
 
-  defp file(parts) when is_list(parts) do
-    Enum.join(parts, "_") <> @ext
+  defp file(parts, ext) when is_list(parts) do
+    Enum.join(parts, "_") <> ext
   end
 
-  defp generate_files!(files_to_create) when is_map(files_to_create) do
+  defp generate_files!(files_to_create, fixture_tile_path) when is_map(files_to_create) do
     Enum.each(files_to_create, fn {category, filenames} ->
       Enum.each(filenames, fn filename ->
-        path = Path.join([@root_dir, @base_dir, category, filename <> @ext])
-        File.cp!(@fixture_tile_path, path)
+        ext = String.split(fixture_tile_path, ".") |> List.last()
+        path = Path.join([@root_dir, @base_dir, category, filename <> ".#{ext}"])
+        File.cp!(fixture_tile_path, path)
       end)
     end)
   end

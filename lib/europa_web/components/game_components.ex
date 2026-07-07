@@ -919,11 +919,16 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_image_name(:player, %Player{view_direction: view_direction, stand_on: stand_on} = player) do
-    if PlayerManager.stand_on_lethal_tile?(player) do
-      recursive_get_image_name(stand_on, player)
-    else
-      view_direction = Atom.to_string(view_direction)
-      "player_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
+    cond do
+      PlayerManager.stand_on_lethal_tile?(player) ->
+        recursive_get_image_name(stand_on, player)
+
+      player.health == 0 ->
+        "player_dead_#{landscape_name(stand_on)}.gif"
+
+      true ->
+        view_direction = Atom.to_string(view_direction)
+        "player_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
     end
   end
 

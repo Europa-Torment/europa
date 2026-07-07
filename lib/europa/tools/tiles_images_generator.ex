@@ -178,15 +178,44 @@ defmodule Europa.Tools.TilesImagesGenerator do
   end
 
   defp write_gif(first, second, path) do
+    second_looping? = gif_loops_forever?(second)
+
     {:ok, first_img} = Image.open(first)
     {:ok, second_img} = Image.open(second, pages: :all)
+
+    total_height = Image.height(second_img)
+    pages_count = Image.pages(second_img)
+    single_frame_height = div(total_height, pages_count)
 
     {:ok, result} =
       Image.map_join_pages(second_img, fn frame ->
         Image.compose(first_img, frame, mode: :over)
       end)
 
+    {:ok, result} =
+      Vix.Vips.Image.mutate(result, fn mut_img ->
+        :ok = Vix.Vips.MutableImage.set(mut_img, "page-height", :gint, single_frame_height)
+
+        loop_count = if second_looping?, do: 0, else: 1
+        :ok = Vix.Vips.MutableImage.set(mut_img, "loop", :gint, loop_count)
+      end)
+
     write_image!(result, path)
+  end
+
+  defp gif_loops_forever?(path) do
+    {:ok, binary} = File.read(path)
+
+    case :binary.split(binary, "NETSCAPE2.0") do
+      [_before, <<3, 1, 0, 0, _rest::binary>>] ->
+        true
+
+      [_before, <<3, 1, loop_count::16-little, _rest::binary>>] when loop_count > 0 ->
+        false
+
+      _ ->
+        false
+    end
   end
 
   defp write_png(first, second, path) do
@@ -197,8 +226,8 @@ defmodule Europa.Tools.TilesImagesGenerator do
     |> write_image!(path)
   end
 
-  defp write_image!(image, path) do
-    Image.write!(image, path)
+  defp write_image!(image, path, opts \\ []) do
+    Image.write!(image, path, opts)
     Logger.info("Generated tile #{path}")
   end
 
