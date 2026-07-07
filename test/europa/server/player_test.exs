@@ -691,7 +691,7 @@ defmodule Europa.Server.PlayerTest do
 
   describe "take_damage/2" do
     setup do
-      player = build(:player, health: 100, max_health: 200)
+      player = build(:player, health: 100, max_health: 200, aim_mode?: true)
       {:ok, player: player}
     end
 
@@ -699,13 +699,15 @@ defmodule Europa.Server.PlayerTest do
       damage = 50
       expected_health = player.health - damage
 
-      assert %Player{health: ^expected_health, events: [%Event{type: {:damaged, ^damage}}]} =
+      assert %Player{health: ^expected_health, events: [%Event{type: {:damaged, ^damage}}], aim_mode?: true} =
                Player.take_damage(player, damage)
     end
 
-    test "no negative health", %{player: player} do
+    test "make player dead", %{player: player} do
       damage = player.health * 2
-      assert %Player{health: 0, events: [%Event{type: {:dead, :regular}}]} = Player.take_damage(player, damage)
+
+      assert %Player{health: 0, events: [%Event{type: {:dead, :regular}}], aim_mode?: false} =
+               Player.take_damage(player, damage)
     end
   end
 
