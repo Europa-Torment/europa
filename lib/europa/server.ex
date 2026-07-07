@@ -1130,6 +1130,20 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :danger)
   end
 
+  defp action_message(%Action{
+         subject: %Enemy{} = healer_enemy,
+         action_type: {:healed, %Enemy{} = healed_enemy, heal_unit}
+       }) do
+    msg =
+      gettext("%{healer_name} healed %{healed_name} for %{units} HP",
+        healer_name: healer_enemy.name,
+        healed_name: healed_enemy.name,
+        units: heal_unit
+      )
+
+    Chat.Message.new(msg, :warning)
+  end
+
   defp action_message(%Action{subject: :player, action_type: :dehydration}) do
     msg = gettext("You are dying of dehydration!")
     Chat.Message.new(msg, :danger)

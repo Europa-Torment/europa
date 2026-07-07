@@ -22,10 +22,14 @@ defmodule Europa.Server.Enemy do
     field :name, String.t(), enforce: true
     field :description, String.t(), enforce: true
     field :health, non_neg_integer(), enforce: true
+    field :max_health, pos_integer(), enforce: true
     field :damage, pos_integer(), enforce: true
     field :move_distance, pos_integer(), enforce: true
     field :accuracy, pos_integer(), enforce: true
     field :radioactive?, boolean(), enforce: true
+    field :healer?, boolean(), enforce: true
+    field :heal_possibility, non_neg_integer(), enforce: true
+    field :heal_unit, non_neg_integer(), enforce: true
     field :stand_on, Planet.tile()
     field :image_name, String.t(), enforce: true
     field :events, list(Event.t()), default: []
@@ -39,11 +43,15 @@ defmodule Europa.Server.Enemy do
       type: Map.fetch!(attrs, :type) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
+      max_health: Map.fetch!(attrs, :max_health),
       health: Map.fetch!(attrs, :health),
       damage: Map.fetch!(attrs, :damage),
       move_distance: Map.fetch!(attrs, :move_distance),
       accuracy: Map.fetch!(attrs, :accuracy),
       radioactive?: Map.get(attrs, :radioactive, false),
+      healer?: Map.get(attrs, :healer, false),
+      heal_possibility: Map.get(attrs, :heal_possibility, 0),
+      heal_unit: Map.get(attrs, :heal_unit, 0),
       phrases: Map.fetch!(attrs, :phrases),
       max_items: Map.fetch!(attrs, :max_items),
       image_name: Map.fetch!(attrs, :image_name),
@@ -77,13 +85,27 @@ defmodule Europa.Server.Enemy do
     |> new()
   end
 
-  @spec take_damage(t(), damage :: pos_integer) :: t()
+  @spec take_damage(t(), damage :: pos_integer()) :: t()
   def take_damage(%__MODULE__{} = enemy, damage) when is_integer(damage) and damage > 0 do
     updated_health = max(0, enemy.health - damage)
 
     enemy
     |> struct!(health: updated_health)
     |> add_events([Event.new({:damaged, damage})])
+  end
+
+  @spec heal(t(), health :: pos_integer()) :: t()
+  def heal(%__MODULE__{} = enemy, health) when is_integer(health) and health > 0 do
+    updated_health = min(enemy.max_health, enemy.health + health)
+
+    enemy
+    |> struct!(health: updated_health)
+    |> add_events([Event.new({:healed, health})])
+  end
+
+  @spec healer?(t()) :: boolean()
+  def healer?(%__MODULE__{} = enemy) do
+    enemy.healer? && enemy.heal_possibility > 0 && enemy.heal_unit > 0
   end
 
   @spec stand_on(t(), Planet.tile()) :: t()

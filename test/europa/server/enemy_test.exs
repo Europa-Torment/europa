@@ -86,6 +86,40 @@ defmodule Europa.Server.EnemyTest do
     end
   end
 
+  describe "heal/2" do
+    setup do
+      enemy = build(:enemy, health: 100, max_health: 150)
+      {:ok, enemy: enemy}
+    end
+
+    test "increases enemy health", %{enemy: enemy} do
+      health = 10
+      expected_health = enemy.health + health
+
+      assert %Enemy{health: ^expected_health, events: [%Event{type: {:healed, ^health}}]} =
+               Enemy.heal(enemy, health)
+    end
+
+    test "health not increases max_health", %{enemy: enemy} do
+      health = enemy.max_health * 2
+      enemy = Enemy.heal(enemy, health)
+
+      assert enemy.health == enemy.max_health
+    end
+  end
+
+  describe "healer?/1" do
+    test "returns true if enemy is healer" do
+      assert build(:enemy, healer?: true, heal_possibility: 1, heal_unit: 1) |> Enemy.healer?() == true
+    end
+
+    test "returns false if enemy is not healer" do
+      assert build(:enemy, healer?: true, heal_possibility: 1, heal_unit: 0) |> Enemy.healer?() == false
+      assert build(:enemy, healer?: true, heal_possibility: 0, heal_unit: 1) |> Enemy.healer?() == false
+      assert build(:enemy, healer?: false, heal_possibility: 1, heal_unit: 1) |> Enemy.healer?() == false
+    end
+  end
+
   describe "add_events/2" do
     setup do
       enemy = build(:enemy, events: [])

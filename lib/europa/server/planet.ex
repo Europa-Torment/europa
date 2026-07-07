@@ -695,8 +695,20 @@ defmodule Europa.Server.Planet do
   end
 
   defp maybe_perform_enemies_actions(%__MODULE__{} = planet) do
-    enemies_coords = get_coords_of_enemies_which_see_player(planet)
+    enemies_actions = [
+      fn enemies_coords, planet -> move_enemies(enemies_coords, planet) end,
+      fn enemies_coords, planet -> heal_enemies(enemies_coords, planet) end
+    ]
 
+    Enum.reduce(enemies_actions, {planet, []}, fn action_fn, {planet, actions} ->
+      enemies_coords = get_coords_of_enemies_which_see_player(planet)
+
+      {updated_planet, new_actions} = action_fn.(enemies_coords, planet)
+      {updated_planet, actions ++ new_actions}
+    end)
+  end
+
+  defp move_enemies(enemies_coords, %__MODULE__{} = planet) do
     Enum.reduce(enemies_coords, {planet, []}, fn enemy_coord, {pl, act} ->
       enemy = get_tile(pl.land, enemy_coord)
       {updated_pl, actions} = move_enemy(pl, enemy_coord, enemy)
@@ -827,6 +839,37 @@ defmodule Europa.Server.Planet do
     else
       [Action.new(enemy, :miss_attack)]
     end
+  end
+
+  defp heal_enemies(enemies_coords, %__MODULE__{} = planet) do
+    Enum.reduce(enemies_coords, {planet, []}, fn enemy_coord, {pl, act} ->
+      enemy = get_tile(pl.land, enemy_coord)
+
+      if Enemy.healer?(enemy) do
+        {updated_pl, actions} = maybe_heal_enemies(pl, enemies_coords -- [enemy_coord], enemy)
+        {updated_pl, act ++ actions}
+      else
+        {pl, act}
+      end
+    end)
+  end
+
+  defp maybe_heal_enemies(%__MODULE__{} = planet, enemies_coords, %Enemy{heal_unit: heal_unit} = healer_enemy) do
+    Enum.reduce(enemies_coords, {planet, []}, fn enemy_coord, {pl, act} ->
+      enemy = get_tile(pl.land, enemy_coord)
+
+      if m_to_n?(1, healer_enemy.heal_possibility) && enemy.health + heal_unit <= enemy.max_health do
+        healed_enemy = Enemy.heal(enemy, heal_unit)
+
+        updated_land =
+          pl.land
+          |> change_tile(enemy_coord, healed_enemy)
+
+        {struct!(pl, land: updated_land), act ++ [Action.new(healer_enemy, {:healed, healed_enemy, heal_unit})]}
+      else
+        {planet, []}
+      end
+    end)
   end
 
   defp movable_tile?(land, coord) do

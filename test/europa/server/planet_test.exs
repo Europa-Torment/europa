@@ -10,6 +10,7 @@ defmodule Europa.Server.PlanetTest do
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Enemy
   alias Europa.Server.Action
+  alias Europa.Server.Event
   alias Europa.Server.Characters
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
@@ -28,7 +29,7 @@ defmodule Europa.Server.PlanetTest do
 
   @view_distance fetch_config!([Planet, :view_distance])
 
-  @initial_enemy_health 100
+  @initial_enemy_health 20
 
   @i Tiles.tile(:ice).atom_value
   @p Tiles.tile(:path).atom_value
@@ -96,6 +97,16 @@ defmodule Europa.Server.PlanetTest do
          move_distance: 1,
          health: @initial_enemy_health,
          events: build_list(@enemy_events_count, :event)
+       )
+
+  @en8 build(:enemy,
+         name: "E8",
+         move_distance: 1,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event),
+         healer?: true,
+         heal_possibility: 1,
+         heal_unit: 2
        )
 
   @n build(:npc)
@@ -405,6 +416,20 @@ defmodule Europa.Server.PlanetTest do
                                       [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                     ]
                                     |> PlanetLandConverter.from_matrix()
+
+  @land_player_look_down_at_enemies_with_healer [
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @en2, @pl, @en4, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @en8, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @en, @i, @en3, @i, @en5, @en6, @en7, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                                ]
+                                                |> PlanetLandConverter.from_matrix()
 
   @land_player_look_up_at_enemies_behind_wall [
                                                 [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -1111,6 +1136,36 @@ defmodule Europa.Server.PlanetTest do
       expected_moves_count = planet.moves_count + moves_count
 
       assert {:ok, %Planet{moves_count: ^expected_moves_count}, _} = Planet.tick(planet, moves_count)
+    end
+
+    test "healer heals other enemies" do
+      moves_count = 1
+
+      planet = build(:planet, land: @land_player_look_down_at_enemies_with_healer, current_coord: {4, 1})
+      assert {:ok, %Planet{land: land}, actions} = Planet.tick(planet, moves_count)
+
+      healed_names = [@en2.name, @en4.name]
+
+      heal_unit = @en8.heal_unit
+      expected_health = @initial_enemy_health + heal_unit
+
+      assert Enum.count(actions, fn
+               %Action{action_type: {:healed, %Enemy{name: name}, ^heal_unit}} -> name in healed_names
+               _ -> false
+             end) == 2
+
+      Enum.each(healed_names, fn name ->
+        assert Enum.find(land.tiles, fn
+                 {_, %Enemy{name: ^name, health: ^expected_health, events: events}} ->
+                   Enum.find(events, fn
+                     %Event{type: {:healed, ^heal_unit}} -> true
+                     _ -> false
+                   end)
+
+                 _ ->
+                   false
+               end)
+      end)
     end
 
     @tag perfomance: true
