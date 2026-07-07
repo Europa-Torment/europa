@@ -12,6 +12,7 @@ defmodule Europa.Server.Event do
           | {:radiation, radiation_change()}
           | {:speech, text :: String.t()}
           | {:dead, death_reason()}
+          | :enemy_killed
           | :interested
 
   typedstruct enforce: true do

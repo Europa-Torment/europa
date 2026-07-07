@@ -159,7 +159,7 @@ defmodule Europa.Server.Player do
     events =
       Enum.uniq_by(player.events ++ events, fn event ->
         case event.type do
-          :interested -> event.type
+          type when is_atom(type) -> type
           _ -> event.uuid
         end
       end)

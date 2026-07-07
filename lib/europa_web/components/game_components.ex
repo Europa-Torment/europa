@@ -1176,8 +1176,12 @@ defmodule EuropaWeb.GameCompotents do
 
   defp speech_class(%Enemy{events: [_ | _]}, _player), do: @enemy_tooltip_class
 
-  defp speech_class(:player, %Player{events: [_ | _]}) do
-    @player_tooltip_class
+  defp speech_class(:player, %Player{events: [_ | _]} = player) do
+    if speech(:player, player) != "" do
+      @player_tooltip_class
+    else
+      ""
+    end
   end
 
   defp speech_class(_, _), do: ""
@@ -1216,7 +1220,7 @@ defmodule EuropaWeb.GameCompotents do
 
   defp event_speech(%Event{type: {:dead, _}}), do: "💀"
 
-  defp event_speech(_), do: "..."
+  defp event_speech(_), do: ""
 
   defp maybe_round_number(number) when is_float(number) do
     NumberHelpers.round(number, 2)

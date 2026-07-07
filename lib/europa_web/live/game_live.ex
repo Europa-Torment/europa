@@ -576,6 +576,10 @@ defmodule EuropaWeb.GameLive do
     ice_cracked_sound(socket)
   end
 
+  defp play_player_event_sound(socket, %Event{type: :enemy_killed}) do
+    enemy_killed_sound(socket)
+  end
+
   defp play_player_event_sound(socket, _), do: socket
 
   defp base_assign(socket, opts \\ []) do
@@ -670,7 +674,11 @@ defmodule EuropaWeb.GameLive do
         open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
         matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3},
         radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1},
-        ice_cracked: %{name: ~p"/sounds/ice_cracked.mp3", volume: 0.1}
+        ice_cracked: %{name: ~p"/sounds/ice_cracked.mp3", volume: 0.1},
+        monster_dead1: %{name: ~p"/sounds/monster_dead1.mp3", volume: 0.2},
+        monster_dead2: %{name: ~p"/sounds/monster_dead2.mp3", volume: 0.2},
+        monster_dead3: %{name: ~p"/sounds/monster_dead3.mp3", volume: 0.2},
+        monster_dead4: %{name: ~p"/sounds/monster_dead4.mp3", volume: 0.2}
       })
 
     assign(socket, :sounds, json)
@@ -717,6 +725,11 @@ defmodule EuropaWeb.GameLive do
 
   defp ice_cracked_sound(socket) do
     play_sound(socket, "ice_cracked")
+  end
+
+  defp enemy_killed_sound(socket) do
+    sound = Enum.random(["monster_dead1", "monster_dead2", "monster_dead3", "monster_dead4"])
+    play_sound(socket, sound)
   end
 
   defp dead_sound(socket) do

@@ -449,6 +449,7 @@ defmodule Europa.Server do
           |> add_damage_messages_to_chat(damaged_enemies)
 
         killed_enemies_count = killed_enemies_count(damaged_enemies)
+        updated_player = maybe_add_killed_enemy_event(updated_player, killed_enemies_count)
 
         {:reply, {:ok, :shot},
          struct!(state,
@@ -815,9 +816,12 @@ defmodule Europa.Server do
 
         killed_enemies_count = killed_enemies_count(damaged_enemies)
 
+        updated_player = maybe_add_killed_enemy_event(state.player, killed_enemies_count)
+
         {:reply, {:attack, status},
          struct!(state,
            planet: updated_planet,
+           player: updated_player,
            chat: updated_chat,
            killed_enemies: state.killed_enemies + killed_enemies_count
          ), {:continue, {:tick, moves_count, caller_pid}}}
@@ -920,6 +924,12 @@ defmodule Europa.Server do
   end
 
   defp maybe_add_interested_event(player, _), do: player
+
+  defp maybe_add_killed_enemy_event(%Player{} = player, 0), do: player
+
+  defp maybe_add_killed_enemy_event(%Player{} = player, _) do
+    PlayerManager.add_events(player, [Event.new(:enemy_killed)])
+  end
 
   # this is for "skip" object, see Objects module
   defp blood_tile(%Object{name: "", image_name: "", stand_on: tile} = object) do
