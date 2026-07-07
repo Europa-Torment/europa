@@ -113,10 +113,10 @@ config :europa, Europa.Server.Characters, filename: "characters.json"
 config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/"
 
 config :europa, :control_bindings,
-  move_up: %{keys: ["ArrowUp", "W", "w"], codes: ["KeyW"]},
-  move_down: %{keys: ["ArrowDown", "S", "s"], codes: ["KeyS"]},
-  move_left: %{keys: ["ArrowLeft", "A", "a"], codes: ["KeyA"]},
-  move_right: %{keys: ["ArrowRight", "D", "d"], codes: ["KeyD"]},
+  move_up: %{keys: ["ArrowUp", "W", "w"], codes: ["KeyW", "ArrowUp"]},
+  move_down: %{keys: ["ArrowDown", "S", "s"], codes: ["KeyS", "ArrowDown"]},
+  move_left: %{keys: ["ArrowLeft", "A", "a"], codes: ["KeyA", "ArrowLeft"]},
+  move_right: %{keys: ["ArrowRight", "D", "d"], codes: ["KeyD", "ArrowRight"]},
   interact: %{keys: ["E", "e"], codes: ["KeyE"]},
   loot: %{keys: ["L", "l"], codes: ["KeyL"]},
   inventory: %{keys: ["I", "i"], codes: ["KeyI"]},
