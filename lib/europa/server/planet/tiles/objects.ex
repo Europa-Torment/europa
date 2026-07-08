@@ -81,6 +81,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("bonfire"),
       image_name: "bonfire",
       warm?: true,
+      bright?: true,
       gif_tile?: true,
       transforms: [
         %Transform{
@@ -133,6 +134,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       image_name: "fire_shuttle",
       gif_tile?: true,
       warm?: true,
+      bright?: true,
       transforms: [
         %Transform{
           name: :extinguish,

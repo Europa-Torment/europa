@@ -216,7 +216,7 @@ defmodule Europa.Server.Planet do
 
     for y <- y_from..y_to do
       for x <- x_from..x_to do
-        get_tile(land, {x, y}) |> tile_or_darkness(current_coord, {x, y}, current_hour)
+        get_tile(land, {x, y}) |> tile_or_darkness(current_coord, {x, y}, current_hour, land)
       end
     end
   end
@@ -1384,7 +1384,7 @@ defmodule Europa.Server.Planet do
     |> Enum.into(%{})
   end
 
-  defp tile_or_darkness(tile, current_coord, tile_coord, current_hour) do
+  defp tile_or_darkness(tile, current_coord, tile_coord, current_hour, land) do
     max_view_distance = @view_distance
 
     view_distance =
@@ -1394,11 +1394,31 @@ defmodule Europa.Server.Planet do
         true -> max_view_distance - (max_view_distance - @min_view_distance) * (current_hour - 18) / 6
       end
 
-    if view_distance < max_view_distance && coords_distance(current_coord, tile_coord) > view_distance do
+    if view_distance < max_view_distance && coords_distance(current_coord, tile_coord) > view_distance &&
+         not bright_tile?(tile, tile_coord, land) do
       @darkness
     else
       tile
     end
+  end
+
+  defp bright_tile?(%Object{bright?: true}, _coord, _land), do: true
+
+  defp bright_tile?(_tile, {x, y} = coord, land) do
+    additional_coords = [
+      {x + 2, y},
+      {x - 2, y},
+      {x, y + 2},
+      {x, y - 2}
+    ]
+
+    (neighbor_coords(coord, 1) ++ additional_coords)
+    |> Enum.any?(fn coord ->
+      case get_tile(land, coord) do
+        %Object{bright?: true} -> true
+        _ -> false
+      end
+    end)
   end
 
   # TODO: figure out how to test this
