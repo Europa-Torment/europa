@@ -124,6 +124,7 @@ config :europa, :control_bindings,
   shoot: %{keys: [" ", "Space"], codes: ["Space"]},
   reload: %{keys: ["R", "r"], codes: ["KeyR"]},
   aim: %{keys: ["V", "v"], codes: ["KeyV"]},
+  zoom: %{keys: ["Z", "z"], codes: ["KeyZ"]},
   close: %{keys: ["Escape"], codes: ["Escape"]}
 
 # Configure esbuild (the version is required)

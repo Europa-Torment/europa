@@ -38,6 +38,7 @@ defmodule EuropaWeb.GameCompotents do
   @close_keys fetch_config!([:control_bindings, :close]).keys
   @shoot_keys fetch_config!([:control_bindings, :shoot]).keys
   @aim_keys fetch_config!([:control_bindings, :aim]).keys
+  @zoom_keys fetch_config!([:control_bindings, :zoom]).keys
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -75,7 +76,14 @@ defmodule EuropaWeb.GameCompotents do
         %{from: "#tile_#{from_y}_#{from_x}", to: "#tile_#{to_y}_#{to_x}"}
       end)
 
-    assigns = assign(assigns, aim: formatted_aim)
+    visible_planet =
+      if assigns.zoom_mode do
+        zoom_visible_planet(assigns.visible_planet, 9)
+      else
+        assigns.visible_planet
+      end
+
+    assigns = assign(assigns, aim: formatted_aim, visible_planet: visible_planet)
 
     ~H"""
     <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
@@ -88,7 +96,7 @@ defmodule EuropaWeb.GameCompotents do
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-                class="w-full h-full max-w-[30px] max-h-[30px] object-contain z-50"
+                class={"w-full h-full max-w-[#{tile_image_size(@zoom_mode)}] max-h-[#{tile_image_size(@zoom_mode)}] object-contain z-50"}
               />
             </div>
           <% end %>
@@ -98,7 +106,7 @@ defmodule EuropaWeb.GameCompotents do
     <div
       id="aim-data"
       phx-hook="Aim"
-      data-show_aim={"#{@player.aim_mode?}"}
+      data-show_aim={"#{@player.aim_mode? && not @zoom_mode}"}
       data-aims={Jason.encode!(@aim)}
       data-stroke-color="black"
       data-stroke-width="2"
@@ -1105,6 +1113,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Shoot"), @shoot_keys),
       control_hint(gettext("Reload weapon"), @reload_keys),
       control_hint(gettext("Aim mode"), @aim_keys),
+      control_hint(gettext("Zoom mode"), @zoom_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
   end
@@ -1299,6 +1308,21 @@ defmodule EuropaWeb.GameCompotents do
   defp interaction_allowed?({:pick_transform, _}, _), do: false
 
   defp interaction_allowed?(_, _), do: true
+
+  defp tile_image_size(false = _zoom_mode), do: "30px"
+  defp tile_image_size(_), do: "64px"
+
+  defp zoom_visible_planet(visible_planet, size) do
+    rows = length(visible_planet)
+    cols = length(hd(visible_planet))
+
+    start_row = div(rows - size, 2)
+    start_col = div(cols - size, 2)
+
+    visible_planet
+    |> Enum.slice(start_row, size)
+    |> Enum.map(fn row -> Enum.slice(row, start_col, size) end)
+  end
 
   # coveralls-ignore-stop
 end

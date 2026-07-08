@@ -34,6 +34,7 @@ defmodule EuropaWeb.GameLive do
   @close_codes fetch_config!([:control_bindings, :close]).codes
   @shoot_codes fetch_config!([:control_bindings, :shoot]).codes
   @aim_codes fetch_config!([:control_bindings, :aim]).codes
+  @zoom_codes fetch_config!([:control_bindings, :zoom]).codes
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -84,7 +85,8 @@ defmodule EuropaWeb.GameLive do
           blueprints_type: nil,
           interaction_confirmation: nil,
           transform_name: nil,
-          inventory_type: nil
+          inventory_type: nil,
+          zoom_mode: false
         )
 
       {:ok, socket}
@@ -144,6 +146,10 @@ defmodule EuropaWeb.GameLive do
       _ ->
         {:noreply, base_assign(socket)}
     end
+  end
+
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @zoom_codes do
+    {:noreply, assign(socket, zoom_mode: !socket.assigns.zoom_mode)}
   end
 
   def handle_event("key_pressed", %{"code" => code} = params, socket) when code in @interact_codes do
