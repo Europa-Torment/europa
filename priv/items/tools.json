@@ -86,7 +86,7 @@
         "use_cost": 2,
         "stackable": true,
         "weight": 1.0, 
-        "random_weight": 0.05
+        "random_weight": 0.08
     },
     {
         "name": "Fire extinguisher", 
