@@ -114,6 +114,7 @@ defmodule EuropaWeb.GameCompotents do
       <%= for message <- Enum.reverse(@chat.messages) do %>
         <p class={"break-words p-1.5 #{chat_color(message)}"}>
           <span class="italic text-gray-400 text-[10px]">{message.id}.</span> {message.text}
+          <.moves_count moves_count={message.moves_count} />
         </p>
       <% end %>
     </div>
@@ -792,7 +793,9 @@ defmodule EuropaWeb.GameCompotents do
 
   def moves_count(assigns) do
     ~H"""
-    <span class="italic text-base-content text-[0.625rem]">🎲{@moves_count}</span>
+    <%= if @moves_count > 0 do %>
+      <span class="italic text-base-content text-[0.625rem]">🎲{@moves_count}</span>
+    <% end %>
     """
   end
 

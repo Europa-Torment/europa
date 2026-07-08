@@ -86,16 +86,20 @@ defmodule Europa.Server.Planet.Tiles.Objects do
         %Transform{
           name: :extinguish,
           readable_name: gettext("Extinguish"),
+          message: gettext("You extinguished the bonfire"),
           transforms_to: {:item_box, :bonefire_base},
           transform_requirements: {:tools, [Tool.generate_fire_extinguisher()]},
-          transform_sound_name: "fire_extinguisher"
+          transform_sound_name: "fire_extinguisher",
+          transform_cost: 1
         },
         %Transform{
           name: :delete,
           readable_name: gettext("Delete"),
+          message: gettext("You removed the bonfire"),
           transforms_to: :nothing,
           transform_requirements: :change_confirmation,
-          transform_sound_name: "equip"
+          transform_sound_name: "equip",
+          transform_cost: 1
         }
       ]
     },
@@ -107,16 +111,20 @@ defmodule Europa.Server.Planet.Tiles.Objects do
         %Transform{
           name: :light,
           readable_name: gettext("Light"),
+          message: gettext("You lit a bonfire"),
           transforms_to: {:object, :bonfire},
           transform_requirements: {:tools, [Tool.generate_matches()]},
-          transform_sound_name: "matches"
+          transform_sound_name: "matches",
+          transform_cost: 1
         },
         %Transform{
           name: :delete,
           readable_name: gettext("Delete"),
+          message: gettext("You removed the bonfire"),
           transforms_to: :nothing,
           transform_requirements: :change_confirmation,
-          transform_sound_name: "equip"
+          transform_sound_name: "equip",
+          transform_cost: 1
         }
       ]
     },
@@ -129,9 +137,11 @@ defmodule Europa.Server.Planet.Tiles.Objects do
         %Transform{
           name: :extinguish,
           readable_name: gettext("Extinguish"),
+          message: gettext("You extinguished the burning shuttle"),
           transforms_to: {:item_box, :crashed_shuttle},
           transform_requirements: {:tools, [Tool.generate_fire_extinguisher()]},
-          transform_sound_name: "fire_extinguisher"
+          transform_sound_name: "fire_extinguisher",
+          transform_cost: 2
         }
       ]
     }

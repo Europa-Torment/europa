@@ -22,13 +22,15 @@ defmodule Europa.Server.Chat do
       field :id, integer()
       field :text, text(), enforce: true
       field :category, category(), enforce: true
+      field :moves_count, non_neg_integer(), default: 0
     end
 
     @spec new(text(), category()) :: t()
-    def new(text, category) when is_binary(text) and category in @allowed_categories do
+    def new(text, category, moves_count \\ 0) when is_binary(text) and category in @allowed_categories do
       %__MODULE__{
         text: text,
-        category: category
+        category: category,
+        moves_count: moves_count
       }
     end
   end

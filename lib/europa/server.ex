@@ -630,12 +630,15 @@ defmodule Europa.Server do
          @inactivity_timeout_ms}
 
       {:ok, updated_planet,
-       {:transform, %Object{}, %Object.Transform{transform_requirements: {:tools, required_tools}}} = interaction}
+       {:transform, %Object{}, %Object.Transform{transform_requirements: {:tools, required_tools}} = transform} =
+           interaction}
       when is_list(required_tools) ->
         case PlayerManager.use_tools(state.player, required_tools) do
           {:ok, updated_player} ->
-            {:reply, {:ok, interaction}, struct!(state, planet: updated_planet, player: updated_player),
-             @inactivity_timeout_ms}
+            updated_chat = maybe_add_transform_message(state.chat, transform)
+
+            {:reply, {:ok, interaction},
+             struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat), @inactivity_timeout_ms}
 
           _ ->
             {:reply, {:error, :nothing}, state}
@@ -853,18 +856,19 @@ defmodule Europa.Server do
 
             {:miss, updated_chat}
           else
+            moves_count =
+              moves_count
+              |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
+              |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
+              |> maybe_increase_moves_count_with_aim_mode(state.player)
+
             updated_chat =
               state.chat
+              |> add_punch_message_to_chat(state.player, moves_count)
               |> add_damage_messages_to_chat(damaged_enemies)
 
             {:hitted, updated_chat}
           end
-
-        moves_count =
-          moves_count
-          |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
-          |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
-          |> maybe_increase_moves_count_with_aim_mode(state.player)
 
         killed_enemies_count = killed_enemies_count(damaged_enemies)
 
@@ -1044,23 +1048,30 @@ defmodule Europa.Server do
     [bio, story]
   end
 
+  defp maybe_add_transform_message(chat, %Object.Transform{message: nil}), do: chat
+
+  defp maybe_add_transform_message(chat, %Object.Transform{transform_cost: moves_count} = transform) do
+    moves_count =
+      if is_integer(moves_count) && moves_count > 0 do
+        moves_count
+      else
+        0
+      end
+
+    message = Chat.Message.new(transform.message, :regular, moves_count)
+    Chat.add_message(chat, message)
+  end
+
   defp moved_message(moves_count, step_on_tile) do
     tile_name = PlanetManager.readable_tile_name(step_on_tile)
+    msg = gettext("You walked at %{tile_name}", tile_name: tile_name)
 
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You walked at #{tile_name}, it took #{moves_count} step(s)"
-      )
-
-    Chat.Message.new(msg, :regular)
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp tool_used_message(tool) do
-    msg =
-      gettext("You used %{tool_name}, it took %{moves_count} step(s)", tool_name: tool.name, moves_count: tool.use_cost)
-
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You used %{tool_name}", tool_name: tool.name)
+    Chat.Message.new(msg, :regular, tool.use_cost)
   end
 
   def cant_do_it_message do
@@ -1070,7 +1081,7 @@ defmodule Europa.Server do
 
   defp cant_move_message(tile) do
     tile_name = PlanetManager.readable_tile_name(tile)
-    msg = Gettext.gettext(Europa.Gettext, "You can't walk through #{tile_name}")
+    msg = gettext("You can't walk through %{tile_name}", tile_name: tile_name)
     Chat.Message.new(msg, :warning)
   end
 
@@ -1115,63 +1126,38 @@ defmodule Europa.Server do
   end
 
   defp reloaded_message(%Loot.Weapon{} = weapon, moves_count) do
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You reloaded #{weapon.name}, it took #{moves_count} step(s)"
-      )
-
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You reloaded %{weapon_name}", weapon_name: weapon.name)
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp unloaded_message(%Loot.Weapon{} = weapon, moves_count) do
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You unloaded #{weapon.name}, it took #{moves_count} step(s)"
-      )
-
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You unloaded %{weapon_name}", weapon_name: weapon.name)
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp shoot_message(moves_count) do
-    msg = gettext("You fired, it took %{count} step(s)", count: moves_count)
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You fired")
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp aim_mode_switched_message(moves_count) do
-    msg = gettext("You have changed the aiming mode, it took %{count} step(s)", count: moves_count)
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You have changed the aiming mode")
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp disassembled_message(item, moves_count) do
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You have disassembled #{Loot.Item.composed_name(item)}, it took #{moves_count} step(s)"
-      )
-
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You have disassembled %{item_name}", item_name: Loot.Item.composed_name(item))
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp crafted_message(item, moves_count) do
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You have crafted #{Loot.Item.composed_name(item)}, it took #{moves_count} step(s)"
-      )
-
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You have crafted %{item_name}", item_name: Loot.Item.composed_name(item))
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp consumed_supply_message(%Loot.Supply{} = supply, moves_count) do
-    msg =
-      Gettext.gettext(
-        Europa.Gettext,
-        "You consumed #{supply.name}, it took #{moves_count} step(s)"
-      )
-
-    Chat.Message.new(msg, :regular)
+    msg = gettext("You consumed %{supply_name}", supply_name: supply.name)
+    Chat.Message.new(msg, :regular, moves_count)
   end
 
   defp radiation_contamination_message do
@@ -1228,22 +1214,22 @@ defmodule Europa.Server do
   end
 
   defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :chasing}) do
-    msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} is chasing you")
+    msg = gettext("%{enemy_name} is chasing you", enemy_name: enemy.name)
     Chat.Message.new(msg, :warning)
   end
 
   defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :attack}) do
-    msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} is attacking you!")
+    msg = gettext("%{enemy_name} attacks you and deals %{damage} damage", enemy_name: enemy.name, damage: enemy.damage)
     Chat.Message.new(msg, :danger)
   end
 
   defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :miss_attack}) do
-    msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} attacks you but misses.")
+    msg = gettext("%{enemy_name} attacks you but misses.", enemy_name: enemy.name)
     Chat.Message.new(msg, :warning)
   end
 
   defp action_message(%Action{subject: {%Enemy{} = enemy, %Npc{} = npc}, action_type: :enemy_killed_npc}) do
-    msg = Gettext.gettext(Europa.Gettext, "#{enemy.name} killed #{npc.character.name}")
+    msg = gettext("%{enemy_name} killed %{character_name}", enemy_name: enemy.name, character_name: npc.character.name)
     Chat.Message.new(msg, :danger)
   end
 
@@ -1263,19 +1249,32 @@ defmodule Europa.Server do
       {%Enemy{} = enemy, damage}, chat ->
         msg =
           if enemy.health > 0 do
-            Gettext.gettext(Europa.Gettext, "You hit #{enemy.name} and dealt #{damage} damage to it!")
+            gettext("You hit %{enemy_name} and dealt %{damage} damage to it!", enemy_name: enemy.name, damage: damage)
           else
-            Gettext.gettext(Europa.Gettext, "You killed #{enemy.name}!")
+            gettext("You killed %{enemy_name}", enemy_name: enemy.name)
           end
 
         message = Chat.Message.new(msg, :regular)
         Chat.add_message(chat, message)
 
       {%Npc{} = npc, _}, chat ->
-        msg = Gettext.gettext(Europa.Gettext, "You killed #{npc.character.name}")
+        msg = gettext("You killed %{character_name}", character_name: npc.character.name)
         message = Chat.Message.new(msg, :danger)
         Chat.add_message(chat, message)
     end)
+  end
+
+  defp add_punch_message_to_chat(%Chat{} = chat, player, moves_count) do
+    melee_weapon_name =
+      case PlayerManager.get_equiped_melee_weapon(player) do
+        {:ok, melee_weapon} -> melee_weapon.name
+        _ -> gettext("fist")
+      end
+
+    msg = gettext("You struck with a %{melee_weapon_name}", melee_weapon_name: melee_weapon_name)
+    message = Chat.Message.new(msg, :regular, moves_count)
+
+    Chat.add_message(chat, message)
   end
 
   defp maybe_add_radiation_contamination_message(%Chat{} = chat, %Player{} = player_before, %Player{} = player_after) do

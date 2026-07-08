@@ -1032,7 +1032,7 @@ defmodule Europa.Server.Planet do
     {damage, move_cost} =
       case PlayerManager.get_equiped_melee_weapon(player) do
         {:ok, %Loot.MeleeWeapon{damage: damage, hit_cost: hit_cost}} -> {damage, hit_cost}
-        _ -> {1, 1}
+        _ -> {1, 2}
       end
 
     if player.accuracy >= @max_accuracy || m_to_n?(player.accuracy, @max_accuracy) do

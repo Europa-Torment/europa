@@ -22,9 +22,11 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
     typedstruct do
       field :name, name(), enforce: true
       field :readable_name, String.t(), enforce: true
+      field :message, String.t()
       field :transforms_to, transforms_to(), enforce: true
       field :transform_sound_name, String.t(), enforce: true
       field :transform_requirements, transform_requirements()
+      field :transform_cost, pos_integer()
     end
 
     @spec set_transform_requirements(t(), transform_requirements()) :: t()

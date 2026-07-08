@@ -225,8 +225,8 @@ defmodule Europa.ServerTest do
       end)
 
       assert {:moved, :normal} = Server.move(server, @direction)
-      assert_chat_message(server, :regular, "You walked at snow, it took")
-      assert_chat_message(server, :danger, "#{action.subject.name} is attacking you!")
+      assert_chat_message(server, :regular, "You walked at snow")
+      assert_chat_message(server, :danger, "#{action.subject.name} attacks you and deals")
     end
 
     test "returns success response (moved, change direction)", %{server: server, planet: planet} do
@@ -249,7 +249,7 @@ defmodule Europa.ServerTest do
       end)
 
       assert {:moved, :normal} = Server.move(server, @direction2)
-      assert_chat_message(server, :regular, "You walked at snow, it took")
+      assert_chat_message(server, :regular, "You walked at snow")
     end
 
     test "returns success response (attack)", %{server: server, planet: planet} do
@@ -268,6 +268,7 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
+      |> expect(:get_equiped_melee_weapon, fn %Player{} -> {:error, :no_melee_weapon} end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
         {:ok, player, []}

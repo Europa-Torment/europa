@@ -1023,7 +1023,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_up_close_to_enemy, current_coord: {4, 7})
       player = build(:player, accuracy: @max_accuracy)
 
-      test_damage_enemy(planet, player, :up, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+      test_damage_enemy(planet, player, :up, _damage = 1, _move_cost = 2, _melee_weapon = nil)
     end
 
     test "damages bottom enemy" do
@@ -1038,7 +1038,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_down_close_to_enemy, current_coord: {4, 1})
       player = build(:player, accuracy: @max_accuracy)
 
-      test_damage_enemy(planet, player, :down, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+      test_damage_enemy(planet, player, :down, _damage = 1, _move_cost = 2, _melee_weapon = nil)
     end
 
     test "damages right enemy" do
@@ -1053,7 +1053,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_left_close_to_enemy, current_coord: {4, 1})
       player = build(:player, accuracy: @max_accuracy)
 
-      test_damage_enemy(planet, player, :right, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+      test_damage_enemy(planet, player, :right, _damage = 1, _move_cost = 2, _melee_weapon = nil)
     end
 
     test "damages left enemy" do
@@ -1068,7 +1068,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_right_close_to_enemy, current_coord: {4, 1})
       player = build(:player, accuracy: @max_accuracy)
 
-      test_damage_enemy(planet, player, :left, _damage = 1, _move_cost = 1, _melee_weapon = nil)
+      test_damage_enemy(planet, player, :left, _damage = 1, _move_cost = 2, _melee_weapon = nil)
     end
 
     defp test_damage_enemy(planet, player, direction, expected_damage, expected_move_cost, melee_weapon) do
