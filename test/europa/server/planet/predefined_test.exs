@@ -5,7 +5,6 @@ defmodule Europa.Server.Planet.PredefinedTest do
   alias Europa.Server.Planet.Predefined
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects
-  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Enemy
 
@@ -125,7 +124,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
     end
 
     defp assert_door_object(object, expected_object) do
-      assert Object.set_transform_requirements(object, nil) == Object.set_transform_requirements(expected_object, nil)
+      assert struct!(object, transforms: []) == struct!(expected_object, transforms: [])
     end
   end
 

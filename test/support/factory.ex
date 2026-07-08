@@ -264,7 +264,19 @@ defmodule Europa.Support.Factory do
     %Object{
       name: "wall",
       high?: true,
-      image_name: "wall"
+      image_name: "wall",
+      transforms: []
+    }
+  end
+
+  @spec object_transform_factory() :: Object.Transform.t()
+  def object_transform_factory do
+    %Object.Transform{
+      name: sequence(:name, &"transform_#{&1 + 1}") |> String.to_atom(),
+      readable_name: "Delete",
+      transforms_to: :nothing,
+      transform_requirements: :change_confirmation,
+      transform_sound_name: "equip"
     }
   end
 

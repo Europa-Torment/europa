@@ -629,7 +629,8 @@ defmodule Europa.Server do
         {:reply, {:ok, interaction}, struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
          @inactivity_timeout_ms}
 
-      {:ok, updated_planet, {:transform, %Object{transform_requirements: {:tools, required_tools}}} = interaction}
+      {:ok, updated_planet,
+       {:transform, %Object{}, %Object.Transform{transform_requirements: {:tools, required_tools}}} = interaction}
       when is_list(required_tools) ->
         case PlayerManager.use_tools(state.player, required_tools) do
           {:ok, updated_player} ->

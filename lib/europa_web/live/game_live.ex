@@ -83,6 +83,7 @@ defmodule EuropaWeb.GameLive do
           blueprints: nil,
           blueprints_type: nil,
           interaction_confirmation: nil,
+          transform_name: nil,
           inventory_type: nil
         )
 
@@ -887,14 +888,14 @@ defmodule EuropaWeb.GameLive do
 
   defp interact(socket, params) do
     opts =
-      case Map.get(params, "type", "regular") do
-        "forced" -> [forced: true]
-        _ -> []
-      end
+      []
+      |> maybe_put_interact_forced_opt(params)
+      |> maybe_put_interact_transform_name_opt(params)
 
     case Server.interact(socket.assigns.server, opts) do
       {:ok, {:confirmation, requirements}} ->
-        {:noreply, assign(socket, interaction_confirmation: requirements)}
+        {:noreply,
+         assign(socket, interaction_confirmation: requirements, transform_name: Keyword.get(opts, :transform_name))}
 
       {:ok, {:talk, npc}} ->
         {:noreply,
@@ -904,29 +905,53 @@ defmodule EuropaWeb.GameLive do
            show_control_hints: false,
            inventory: nil,
            item_box: nil,
-           interaction_confirmation: nil
+           interaction_confirmation: nil,
+           transform_name: nil
          )}
 
       {:ok, {:drink, _}} ->
         socket =
           socket
           |> base_assign()
-          |> assign(interaction_confirmation: nil)
+          |> assign(interaction_confirmation: nil, transform_name: nil)
           |> play_sound("drink")
 
         {:noreply, socket}
 
-      {:ok, {:transform, %Object{transform_sound_name: sound_name}}} when not is_nil(sound_name) ->
+      {:ok, {:transform, _, %Object.Transform{transform_sound_name: sound_name}}} when not is_nil(sound_name) ->
         socket =
           socket
           |> base_assign()
-          |> assign(interaction_confirmation: nil)
+          |> assign(interaction_confirmation: nil, transform_name: nil)
           |> play_sound(sound_name)
 
         {:noreply, socket}
 
       _ ->
-        {:noreply, assign(socket, chat: Server.get_chat(socket.assigns.server), interaction_confirmation: nil)}
+        {:noreply,
+         assign(socket,
+           chat: Server.get_chat(socket.assigns.server),
+           interaction_confirmation: nil,
+           transform_name: nil
+         )}
+    end
+  end
+
+  defp maybe_put_interact_forced_opt(opts, params) do
+    case Map.get(params, "type", "regular") do
+      "forced" -> Keyword.put(opts, :forced, true)
+      _ -> opts
+    end
+  end
+
+  defp maybe_put_interact_transform_name_opt(opts, params) do
+    case Map.get(params, "name") do
+      name when not is_nil(name) ->
+        name = String.to_atom(name)
+        Keyword.put(opts, :transform_name, name)
+
+      _ ->
+        opts
     end
   end
 

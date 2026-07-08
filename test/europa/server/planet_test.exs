@@ -45,12 +45,19 @@ defmodule Europa.Server.PlanetTest do
   @du Objects.object(:door_up)
   @dd Objects.object(:door_down)
 
-  @dlo Object.transform(@dl)
-  @dro Object.transform(@dr)
-  @duo Object.transform(@du)
-  @ddo Object.transform(@dd)
+  @dlo Object.transform(@dl, :open)
+  @dro Object.transform(@dr, :open)
+  @duo Object.transform(@du, :open)
+  @ddo Object.transform(@dd, :open)
 
-  @dll Objects.object(:door_left) |> Object.set_transform_requirements({:tools, build_list(2, :tool)})
+  @dll_transform build(:object_transform, transform_requirements: {:tools, build_list(2, :tool)})
+  @dll_transform2 build(:object_transform, transform_requirements: {:tools, build_list(2, :tool)})
+
+  @dll Objects.object(:door_left) |> struct!(transforms: []) |> Object.add_transform(@dll_transform)
+  @dll2 Objects.object(:door_left)
+        |> struct!(transforms: [])
+        |> Object.add_transform(@dll_transform)
+        |> Object.add_transform(@dll_transform2)
 
   @bf Objects.object(:bonfire) |> Object.stand_on(@i)
   @skip Objects.object(:skip) |> Object.stand_on(@i)
@@ -745,6 +752,20 @@ defmodule Europa.Server.PlanetTest do
                                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                          ]
                                          |> PlanetLandConverter.from_matrix()
+
+  @land_player_left_close_to_locked_door_with_multipe_transforms [
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @pl, @dll2, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                                                 ]
+                                                                 |> PlanetLandConverter.from_matrix()
 
   @land_enemy_right_close_to_npc [
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -1460,49 +1481,83 @@ defmodule Europa.Server.PlanetTest do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_door, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: @land_player_left_close_to_open_door}, {:transform, @dl}} =
+      assert {:ok, %Planet{land: @land_player_left_close_to_open_door}, {:transform, @dl, transform}} =
                Planet.interact(planet, player.view_direction)
+
+      assert transform == List.first(@dl.transforms)
     end
 
     test "opens left door" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_door, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: @land_player_right_close_to_open_door}, {:transform, @dr}} =
+      assert {:ok, %Planet{land: @land_player_right_close_to_open_door}, {:transform, @dr, transform}} =
                Planet.interact(planet, player.view_direction)
+
+      assert transform == List.first(@dr.transforms)
     end
 
     test "opens bottom door" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_door, current_coord: {4, 1})
 
-      assert {:ok, %Planet{land: @land_player_down_close_to_open_door}, {:transform, @du}} =
+      assert {:ok, %Planet{land: @land_player_down_close_to_open_door}, {:transform, @du, transform}} =
                Planet.interact(planet, player.view_direction)
+
+      assert transform == List.first(@du.transforms)
     end
 
     test "opens top door" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_door, current_coord: {4, 7})
 
-      assert {:ok, %Planet{land: @land_player_up_close_to_open_door}, {:transform, @dd}} =
+      assert {:ok, %Planet{land: @land_player_up_close_to_open_door}, {:transform, @dd, transform}} =
                Planet.interact(planet, player.view_direction)
+
+      assert transform == List.first(@dd.transforms)
     end
 
     test "opens locked door" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_locked_door, current_coord: {4, 1})
 
-      {:tools, required_tools} = @dll.transform_requirements
+      {:tools, required_tools} = Object.fetch_transform!(@dll, @dll_transform.name).transform_requirements
 
       assert {:ok, %Planet{land: @land_player_left_close_to_locked_door},
               {:confirmation, {:required_tools, ^required_tools}}} =
                Planet.interact(planet, player.view_direction)
     end
 
+    test "opens locked door (with transform_name)" do
+      player = build(:player, view_direction: :right)
+      planet = build(:planet, land: @land_player_left_close_to_locked_door, current_coord: {4, 1})
+
+      {:tools, required_tools} = Object.fetch_transform!(@dll, @dll_transform.name).transform_requirements
+
+      assert {:ok, %Planet{land: @land_player_left_close_to_locked_door},
+              {:confirmation, {:required_tools, ^required_tools}}} =
+               Planet.interact(planet, player.view_direction, transform_name: @dll_transform.name)
+    end
+
+    test "opens locked door (with transform_name + multiple transforms)" do
+      player = build(:player, view_direction: :right)
+
+      planet =
+        build(:planet, land: @land_player_left_close_to_locked_door_with_multipe_transforms, current_coord: {4, 1})
+
+      {:tools, required_tools} = Object.fetch_transform!(@dll2, @dll_transform2.name).transform_requirements
+
+      assert {:ok, %Planet{land: @land_player_left_close_to_locked_door_with_multipe_transforms},
+              {:confirmation, {:required_tools, ^required_tools}}} =
+               Planet.interact(planet, player.view_direction, transform_name: @dll_transform2.name)
+    end
+
     test "closes right door" do
       player = build(:player, view_direction: :right)
       planet = build(:planet, land: @land_player_left_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
+
+      assert {:ok, planet, {:transform, %Object{}, %Object.Transform{}}} =
+               Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4 + 1, 1})
     end
@@ -1510,7 +1565,9 @@ defmodule Europa.Server.PlanetTest do
     test "closes left door" do
       player = build(:player, view_direction: :left)
       planet = build(:planet, land: @land_player_right_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
+
+      assert {:ok, planet, {:transform, %Object{}, %Object.Transform{}}} =
+               Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4 - 1, 1})
     end
@@ -1518,7 +1575,9 @@ defmodule Europa.Server.PlanetTest do
     test "closes bottom door" do
       player = build(:player, view_direction: :down)
       planet = build(:planet, land: @land_player_down_close_to_open_door, current_coord: {4, 1})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
+
+      assert {:ok, planet, {:transform, %Object{}, %Object.Transform{}}} =
+               Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4, 1 + 1})
     end
@@ -1526,7 +1585,9 @@ defmodule Europa.Server.PlanetTest do
     test "closes top door" do
       player = build(:player, view_direction: :up)
       planet = build(:planet, land: @land_player_up_close_to_open_door, current_coord: {4, 7})
-      assert {:ok, planet, {:transform, %Object{}}} = Planet.interact(planet, player.view_direction)
+
+      assert {:ok, planet, {:transform, %Object{}, %Object.Transform{}}} =
+               Planet.interact(planet, player.view_direction)
 
       test_closes_door(planet, {4, 7 - 1})
     end

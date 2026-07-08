@@ -191,7 +191,13 @@ defmodule Europa.Server.Planet.Predefined do
   defp maybe_lock_door(%Object{} = door) do
     if m_to_n?(1, @locked_door_possibility) do
       key = Tool.generate_key()
-      Object.set_transform_requirements(door, {:tools, [key]})
+
+      transform =
+        door.transforms
+        |> List.first()
+        |> Object.Transform.set_transform_requirements({:tools, [key]})
+
+      struct!(door, transforms: [transform])
     else
       door
     end

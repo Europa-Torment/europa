@@ -131,7 +131,8 @@ defmodule Europa.Server.PlanetManager do
               | {:error, Errors.NotApplicableError.t()}
 
   @callback interact(Planet.t(), Planet.direction(), opts :: keyword()) ::
-              {:ok, Planet.t(), Planet.interaction()} | {:error, :nothing}
+              {:ok, Planet.t(), Planet.interaction()}
+              | {:error, :nothing}
 
   @doc """
   Uses given tool or returns NotApplicable error.

@@ -70,12 +70,13 @@ defmodule Europa.Server.Planet do
   @type land :: list(list(tile()))
 
   @type interaction ::
-          {:talk, Npc.t()}
-          | {:drink, :radioactive_water}
-          | {:confirmation, {:required_tools, list(Loot.Tool.t())}}
+          {:confirmation, Object.transform_confirmation_info()}
           | {:confirmation, :danger_action}
-          | {:confirmation, {:change, current_tile_name :: String.t(), new_tile_name :: String.t()}}
+          | {:confirmation, {:pick_transform, list(Object.Transform.t())}}
+          | {:talk, Npc.t()}
+          | {:drink, :radioactive_water}
           | {:transform, Object.t()}
+          | {:transform, Object.t(), Object.Transform.t()}
 
   @ice Tiles.tile(:ice).atom_value
   @ice_spikes Tiles.tile(:ice_spikes).atom_value
@@ -111,14 +112,14 @@ defmodule Europa.Server.Planet do
   @open_down_door Tiles.tile(:open_down_door)
 
   @transforms %{
-    @open_left_door.atom_value => Objects.object(:door_left),
-    @open_right_door.atom_value => Objects.object(:door_right),
-    @open_up_door.atom_value => Objects.object(:door_up),
-    @open_down_door.atom_value => Objects.object(:door_down),
-    @open_left_door.blood_version => Objects.object(:door_left),
-    @open_right_door.blood_version => Objects.object(:door_right),
-    @open_up_door.blood_version => Objects.object(:door_up),
-    @open_down_door.blood_version => Objects.object(:door_down)
+    @open_left_door.atom_value => {Objects.object(:door_left), :open},
+    @open_right_door.atom_value => {Objects.object(:door_right), :open},
+    @open_up_door.atom_value => {Objects.object(:door_up), :open},
+    @open_down_door.atom_value => {Objects.object(:door_down), :open},
+    @open_left_door.blood_version => {Objects.object(:door_left), :open},
+    @open_right_door.blood_version => {Objects.object(:door_right), :open},
+    @open_up_door.blood_version => {Objects.object(:door_up), :open},
+    @open_down_door.blood_version => {Objects.object(:door_down), :open}
   }
 
   # Follow the ordering by noise_threshold to not get unexpected tiles stacking
@@ -376,31 +377,36 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp do_interact(%Object{transforms_to: transforms_to} = object, planet, view_direction, opts)
-       when not is_nil(transforms_to) do
-    if (object.transform_requirements && forced_interaction?(opts)) || is_nil(object.transform_requirements) do
-      target_coord = target_coord(planet, view_direction)
+  defp do_interact(%Object{transforms: transforms} = object, planet, view_direction, opts) when is_list(transforms) do
+    transform_name = Keyword.get(opts, :transform_name)
+    transforms_count = Enum.count(transforms)
 
-      transformed_tile =
-        Object.transform(object)
-        |> prepare_predefined_tile(planet.land, target_coord, planet.characters_pid, planet.year)
+    cond do
+      transforms_count == 0 ->
+        {:error, :nothing}
 
-      updated_land =
-        planet.land
-        |> change_tile(target_coord, transformed_tile)
+      transforms_count == 1 ->
+        transform_name = List.first(transforms).name
+        opts = Keyword.put(opts, :transform_name, transform_name)
+        do_interact_with_object(object, planet, view_direction, opts)
 
-      {:ok, struct!(planet, land: updated_land), {:transform, object}}
-    else
-      {:ok, planet, {:confirmation, Object.transform_confirmation(object)}}
+      transform_name ->
+        do_interact_with_object(object, planet, view_direction, opts)
+
+      true ->
+        {:ok, planet, {:confirmation, {:pick_transform, transforms}}}
     end
   end
 
   defp do_interact(tile, planet, view_direction, opts) do
-    object = Map.get(@transforms, tile)
+    transform_opts = Map.get(@transforms, tile)
 
-    if object do
+    if transform_opts do
+      {object, transform_name} = transform_opts
+      transform = Object.fetch_transform!(object, transform_name)
+
       if just_check_interact?(opts) do
-        {:ok, planet, {:transform, object}}
+        {:ok, planet, {:transform, object, transform}}
       else
         target_coord = target_coord(planet, view_direction)
         stand_on_tile = predefined_stand_on_tile(planet.land, target_coord)
@@ -410,10 +416,31 @@ defmodule Europa.Server.Planet do
           planet.land
           |> change_tile(target_coord, object)
 
-        {:ok, struct!(planet, land: updated_land), {:transform, object}}
+        {:ok, struct!(planet, land: updated_land), {:transform, object, transform}}
       end
     else
       {:error, :nothing}
+    end
+  end
+
+  defp do_interact_with_object(%Object{} = object, planet, view_direction, opts) do
+    transform_name = Keyword.fetch!(opts, :transform_name)
+    transform = Object.fetch_transform!(object, transform_name)
+
+    if (transform.transform_requirements && forced_interaction?(opts)) || is_nil(transform.transform_requirements) do
+      target_coord = target_coord(planet, view_direction)
+
+      transformed_tile =
+        Object.transform(object, transform_name)
+        |> prepare_predefined_tile(planet.land, target_coord, planet.characters_pid, planet.year)
+
+      updated_land =
+        planet.land
+        |> change_tile(target_coord, transformed_tile)
+
+      {:ok, struct!(planet, land: updated_land), {:transform, object, transform}}
+    else
+      {:ok, planet, {:confirmation, Object.transform_confirmation(object, transform_name)}}
     end
   end
 

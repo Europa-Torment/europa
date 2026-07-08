@@ -520,6 +520,7 @@ defmodule EuropaWeb.GameCompotents do
               <label
                 phx-click="interact"
                 phx-value-type="forced"
+                phx-value-name={@transform_name}
                 for="interaction_confirmation"
                 class="btn btn-secondary"
               >
@@ -564,6 +565,13 @@ defmodule EuropaWeb.GameCompotents do
         <span class="text-md">{gettext("%{from_name} will change to %{to_name}", from_name: @from, to_name: @to)}</span>
         """
 
+      {:pick_transform, transforms} ->
+        assigns = assign(assigns, transforms: transforms)
+
+        ~H"""
+        <.interaction_transforms_picker transforms={@transforms} />
+        """
+
       _ ->
         ~H"""
         """
@@ -579,6 +587,20 @@ defmodule EuropaWeb.GameCompotents do
       <%= for tool <- @required_tools do %>
         <li class={required_tool_class(@player, tool)}>
           {Loot.Item.composed_name(tool)}, {gettext("you have")}: {PlayerManager.tools_amount(@player, tool)}
+        </li>
+      <% end %>
+    </ul>
+    """
+  end
+
+  def interaction_transforms_picker(assigns) do
+    ~H"""
+    <ul class="list-disc list-inside space-y-1 text-sm pt-2">
+      <%= for {transform, index} <- Enum.with_index(@transforms) do %>
+        <li class="text-md font-bold">
+          <.link id={"interact_transform_#{index}"} phx-click="interact" phx-value-name={"#{transform.name}"}>
+            {transform.readable_name}
+          </.link>
         </li>
       <% end %>
     </ul>
@@ -1270,6 +1292,8 @@ defmodule EuropaWeb.GameCompotents do
   defp interaction_allowed?({:required_tools, requirements}, player) when is_list(requirements) do
     PlayerManager.enough_tools?(player, requirements)
   end
+
+  defp interaction_allowed?({:pick_transform, _}, _), do: false
 
   defp interaction_allowed?(_, _), do: true
 

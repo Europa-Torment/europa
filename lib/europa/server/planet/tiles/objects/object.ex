@@ -8,12 +8,30 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Tool
 
-  @type transform_requirements :: {:tools, list(Tool.t())} | :change_confirmation | nil
   @type transform_confirmation_info ::
           {:required_tools, list(Tool.t())} | {:change, from_name :: String.t(), to_name :: String.t() | :delete} | nil
 
-  @type transforms_to ::
-          {:tile, Tiles.name()} | {:object, Objects.name()} | {:item_box, Loot.item_box_type()} | :nothing
+  defmodule Transform do
+    @type transforms_to ::
+            {:tile, Tiles.name()} | {:object, Objects.name()} | {:item_box, Loot.item_box_type()} | :nothing
+
+    @type transform_requirements :: {:tools, list(Tool.t())} | :change_confirmation | nil
+
+    @type name :: atom()
+
+    typedstruct do
+      field :name, name(), enforce: true
+      field :readable_name, String.t(), enforce: true
+      field :transforms_to, transforms_to(), enforce: true
+      field :transform_sound_name, String.t(), enforce: true
+      field :transform_requirements, transform_requirements()
+    end
+
+    @spec set_transform_requirements(t(), transform_requirements()) :: t()
+    def set_transform_requirements(%__MODULE__{} = transform, requirements) do
+      struct!(transform, transform_requirements: requirements)
+    end
+  end
 
   typedstruct do
     field :name, String.t(), enforce: true
@@ -24,9 +42,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
     field :gif_tile?, boolean(), default: false
     field :image_name, String.t(), enforce: true
     field :stand_on, Planet.tile()
-    field :transforms_to, transforms_to()
-    field :transform_sound_name, String.t()
-    field :transform_requirements, transform_requirements()
+    field :transforms, list(Transform.t()), default: []
   end
 
   @spec stand_on(t(), Planet.tile()) :: t()
@@ -34,20 +50,48 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
     struct!(object, stand_on: tile)
   end
 
-  @spec transform(t()) :: Planet.tile() | t()
-  def transform(%__MODULE__{transforms_to: nil} = object), do: object
-  def transform(%__MODULE__{transforms_to: {:tile, tile_name}}), do: Tiles.tile(tile_name).atom_value
-  def transform(%__MODULE__{transforms_to: {:object, object_name}}), do: Objects.object(object_name)
-  def transform(%__MODULE__{transforms_to: {:item_box, item_box_name}}), do: Loot.generate_item_box(item_box_name)
-  def transform(%__MODULE__{transforms_to: :nothing, stand_on: stand_on}), do: stand_on
+  @spec fetch_transform!(t(), Transform.name()) :: Transform.t()
+  def fetch_transform!(%__MODULE__{} = object, transform_name) do
+    %Transform{} = get_transform(object, transform_name)
+  end
 
-  @spec transform_confirmation(t()) :: transform_confirmation_info()
-  def transform_confirmation(%__MODULE__{transform_requirements: {:tools, tools}}), do: {:required_tools, tools}
+  @spec get_transform(t(), Transform.name()) :: Transform.t() | nil
+  def get_transform(%__MODULE__{transforms: transforms}, transform_name) do
+    Enum.find(transforms, fn transform -> transform.name == transform_name end)
+  end
 
-  def transform_confirmation(
-        %__MODULE__{transform_requirements: :change_confirmation, transforms_to: transforms_to} = object
-      )
-      when not is_nil(transforms_to) do
+  @spec transform(t(), name :: atom()) :: Planet.tile() | t()
+  def transform(%__MODULE__{transforms: []} = object, _name), do: object
+
+  def transform(%__MODULE__{stand_on: stand_on} = object, transform_name) do
+    case get_transform(object, transform_name) do
+      %Transform{transforms_to: {:tile, tile_name}} -> Tiles.tile(tile_name).atom_value
+      %Transform{transforms_to: {:object, object_name}} -> Objects.object(object_name)
+      %Transform{transforms_to: {:item_box, item_box_name}} -> Loot.generate_item_box(item_box_name)
+      %Transform{transforms_to: :nothing} -> stand_on
+      _ -> object
+    end
+  end
+
+  @spec transform_confirmation(t(), Transform.name()) :: transform_confirmation_info()
+  def transform_confirmation(%__MODULE__{transforms: []}, _transform_name), do: nil
+
+  def transform_confirmation(%__MODULE__{} = object, transform_name) do
+    case get_transform(object, transform_name) do
+      %Transform{transform_requirements: {:tools, tools}} ->
+        {:required_tools, tools}
+
+      %Transform{transform_requirements: :change_confirmation, transforms_to: transforms_to} ->
+        change_confirmation(object, transforms_to)
+
+      _ ->
+        nil
+    end
+  end
+
+  def transform_confirmation(_, _), do: nil
+
+  defp change_confirmation(%__MODULE__{} = object, transforms_to) do
     transforms_to_name =
       case transforms_to do
         :nothing -> :delete
@@ -59,10 +103,8 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
     {:change, object.name, transforms_to_name}
   end
 
-  def transform_confirmation(_), do: nil
-
-  @spec set_transform_requirements(t(), transform_requirements()) :: t()
-  def set_transform_requirements(%__MODULE__{} = object, requirements) do
-    struct!(object, transform_requirements: requirements)
+  @spec add_transform(t(), Transform.t()) :: t()
+  def add_transform(%__MODULE__{} = object, %Transform{} = transform) do
+    struct!(object, transforms: object.transforms ++ [transform])
   end
 end
