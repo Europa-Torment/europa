@@ -8,7 +8,7 @@ defmodule Europa.Server.Loot.Tool do
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Tools.AttrsDeterminator
 
-  @allowed_tool_types [:weapon_parts, :key, :matches, :bonfire_starter_kit]
+  @allowed_tool_types [:weapon_parts, :key, :matches, :bonfire_starter_kit, :fire_extinguisher]
 
   @type tool_type() :: unquote(Types.one_of(@allowed_tool_types))
 
@@ -81,18 +81,22 @@ defmodule Europa.Server.Loot.Tool do
 
   @spec generate_key() :: t()
   def generate_key do
-    Loot.get_items(:tool)
-    |> Enum.filter(fn {tool, _} -> tool.type == "key" end)
-    |> WeightedRandom.take_one()
-    |> AttrsDeterminator.determine_attrs()
-    |> Map.put(:count, 1)
-    |> new()
+    generate_one_tool("key")
   end
 
   @spec generate_matches() :: t()
   def generate_matches do
+    generate_one_tool("matches")
+  end
+
+  @spec generate_matches() :: t()
+  def generate_fire_extinguisher do
+    generate_one_tool("fire_extinguisher")
+  end
+
+  defp generate_one_tool(type) do
     Loot.get_items(:tool)
-    |> Enum.filter(fn {tool, _} -> tool.type == "matches" end)
+    |> Enum.filter(fn {tool, _} -> tool.type == type end)
     |> WeightedRandom.take_one()
     |> AttrsDeterminator.determine_attrs()
     |> Map.put(:count, 1)

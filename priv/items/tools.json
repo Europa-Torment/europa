@@ -87,5 +87,16 @@
         "stackable": true,
         "weight": 1.0, 
         "random_weight": 0.05
+    },
+    {
+        "name": "Fire extinguisher", 
+        "description": "Carbon dioxide fire extinguisher.",
+        "type": "fire_extinguisher",
+        "count": {"from": 1, "to": 3},
+        "sound_name": "fire_extinguisher",
+        "properties": {},
+        "stackable": true,
+        "weight": 1.2, 
+        "random_weight": 0.4
     }
 ]

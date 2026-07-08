@@ -4,6 +4,8 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Planet.Tiles.Objects.Object
+  alias Europa.Server.Loot
+  alias Europa.Server.Loot.ItemBox
 
   @snow_tile Tiles.tile(:snow)
   @snow @snow_tile.atom_value
@@ -29,6 +31,12 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
     test "transforms object to object" do
       object = build(:object, transforms_to: {:object, :bonfire})
       assert Object.transform(object) == @bonfire
+    end
+
+    test "transforms object to item_box" do
+      item_box_type = :crashed_shuttle
+      object = build(:object, transforms_to: {:item_box, item_box_type})
+      assert %ItemBox{type: ^item_box_type} = Object.transform(object)
     end
 
     test "transforms object to nothing (to object stand_on tile)" do
@@ -68,6 +76,14 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
     test "with change_confirmation (transforms to object)" do
       object = build(:object, transform_requirements: :change_confirmation, transforms_to: {:object, :bonfire})
       assert Object.transform_confirmation(object) == {:change, object.name, @bonfire.name}
+    end
+
+    test "with change_confirmation (transforms to item_box)" do
+      item_box_type = :bag
+      object = build(:object, transform_requirements: :change_confirmation, transforms_to: {:item_box, item_box_type})
+      item_box = Loot.generate_item_box(item_box_type)
+
+      assert Object.transform_confirmation(object) == {:change, object.name, item_box.readable_name}
     end
 
     test "with change_confirmation (transforms to nothing)" do

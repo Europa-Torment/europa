@@ -69,7 +69,15 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       transform_requirements: {:tools, [Tool.generate_matches()]},
       transform_sound_name: "matches"
     },
-    fire_shuttle: %Object{name: gettext("burning shuttle"), image_name: "fire_shuttle", gif_tile?: true, warm?: true}
+    fire_shuttle: %Object{
+      name: gettext("burning shuttle"),
+      image_name: "fire_shuttle",
+      gif_tile?: true,
+      warm?: true,
+      transforms_to: {:item_box, :crashed_shuttle},
+      transform_requirements: {:tools, [Tool.generate_fire_extinguisher()]},
+      transform_sound_name: "fire_extinguisher"
+    }
   }
 
   @object_names Enum.map(@objects, fn {name, _} -> name end)

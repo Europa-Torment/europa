@@ -694,7 +694,8 @@ defmodule EuropaWeb.GameLive do
         monster_dead1: %{name: ~p"/sounds/monster_dead1.mp3", volume: 0.2},
         monster_dead2: %{name: ~p"/sounds/monster_dead2.mp3", volume: 0.2},
         monster_dead3: %{name: ~p"/sounds/monster_dead3.mp3", volume: 0.2},
-        monster_dead4: %{name: ~p"/sounds/monster_dead4.mp3", volume: 0.2}
+        monster_dead4: %{name: ~p"/sounds/monster_dead4.mp3", volume: 0.2},
+        fire_extinguisher: %{name: ~p"/sounds/fire_extinguisher.mp3", volume: 0.2}
       })
 
     assign(socket, :sounds, json)

@@ -53,6 +53,7 @@ defmodule Europa.Server.PlanetTest do
   @dll Objects.object(:door_left) |> Object.set_transform_requirements({:tools, build_list(2, :tool)})
 
   @bf Objects.object(:bonfire) |> Object.stand_on(@i)
+  @skip Objects.object(:skip) |> Object.stand_on(@i)
 
   @ib build(:loot_item_box, items: [build(:weapon)])
   @ib2 build(:loot_item_box, type: :monster_body, items: [build(:weapon)], movable?: true)
@@ -121,7 +122,10 @@ defmodule Europa.Server.PlanetTest do
     @w,
     @i,
     @p,
-    @ib
+    @ib,
+    @en,
+    @bf,
+    @skip
   ]
 
   @midday Timex.parse!("2016-02-29T12:00:00-06:00", "{ISO:Extended}")

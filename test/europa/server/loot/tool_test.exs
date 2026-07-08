@@ -41,4 +41,10 @@ defmodule Europa.Server.Loot.Weapon.ToolTest do
       assert %Tool{type: :matches, count: 1} = Tool.generate_matches()
     end
   end
+
+  describe "generate_fire_extinguisher/0" do
+    test "generates fire extinguisher" do
+      assert %Tool{type: :fire_extinguisher, count: 1} = Tool.generate_fire_extinguisher()
+    end
+  end
 end

@@ -5,13 +5,15 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Loot
   alias Europa.Server.Loot.Tool
 
   @type transform_requirements :: {:tools, list(Tool.t())} | :change_confirmation | nil
   @type transform_confirmation_info ::
           {:required_tools, list(Tool.t())} | {:change, from_name :: String.t(), to_name :: String.t() | :delete} | nil
 
-  @type transforms_to :: {:tile, Tiles.name()} | {:object, Objects.name()} | :nothing
+  @type transforms_to ::
+          {:tile, Tiles.name()} | {:object, Objects.name()} | {:item_box, Loot.item_box_type()} | :nothing
 
   typedstruct do
     field :name, String.t(), enforce: true
@@ -36,6 +38,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
   def transform(%__MODULE__{transforms_to: nil} = object), do: object
   def transform(%__MODULE__{transforms_to: {:tile, tile_name}}), do: Tiles.tile(tile_name).atom_value
   def transform(%__MODULE__{transforms_to: {:object, object_name}}), do: Objects.object(object_name)
+  def transform(%__MODULE__{transforms_to: {:item_box, item_box_name}}), do: Loot.generate_item_box(item_box_name)
   def transform(%__MODULE__{transforms_to: :nothing, stand_on: stand_on}), do: stand_on
 
   @spec transform_confirmation(t()) :: transform_confirmation_info()
@@ -50,6 +53,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
         :nothing -> :delete
         {:tile, tile_name} -> Tiles.tile(tile_name).readable_name
         {:object, object_name} -> Objects.object(object_name).name
+        {:item_box, item_box_name} -> Loot.generate_item_box(item_box_name).readable_name
       end
 
     {:change, object.name, transforms_to_name}
