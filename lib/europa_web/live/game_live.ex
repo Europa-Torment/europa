@@ -489,6 +489,8 @@ defmodule EuropaWeb.GameLive do
 
   @impl true
   def handle_info(:game_over, socket) do
+    cancel_events_tick_timer(socket)
+
     socket =
       socket
       |> assign(game_over: true)
@@ -519,15 +521,14 @@ defmodule EuropaWeb.GameLive do
         true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
       end
     else
-      Process.cancel_timer(socket.assigns.events_tick_timer)
+      cancel_events_tick_timer(socket)
       {:stop, :shutdown, socket}
     end
   end
 
   def handle_info(:reset_events_tick_timer, socket) do
     skip_count = socket.assigns.events_tick_timer_reset_skip_count
-
-    Process.cancel_timer(socket.assigns.events_tick_timer)
+    cancel_events_tick_timer(socket)
 
     {:noreply,
      assign(socket, events_tick_timer: schedule_events_tick(), events_tick_timer_reset_skip_count: skip_count + 1)}
@@ -1116,6 +1117,10 @@ defmodule EuropaWeb.GameLive do
 
   defp schedule_events_tick do
     :erlang.start_timer(@events_tick_delay_ms, self(), :events_tick)
+  end
+
+  defp cancel_events_tick_timer(socket) do
+    Process.cancel_timer(socket.assigns.events_tick_timer)
   end
 
   defp current_time_ms do

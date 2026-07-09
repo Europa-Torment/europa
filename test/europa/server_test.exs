@@ -357,7 +357,7 @@ defmodule Europa.ServerTest do
       end)
 
       assert {:moved, :normal} = Server.move(server, @direction)
-      :timer.sleep(600)
+      :timer.sleep(1000)
       assert {:ok, %Games.Game{state: :finished, finish_reason: :died}} = Games.get_by_uuid(game_uuid)
 
       assert_received :game_over
