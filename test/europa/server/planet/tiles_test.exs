@@ -16,6 +16,12 @@ defmodule Europa.Server.Planet.TilesTest do
     end
   end
 
+  describe "swimable_tiles/0" do
+    test "returns list of swimable tiles atom values" do
+      assert Tiles.swimable_tiles() |> Enum.all?(&swimable_tile?/1)
+    end
+  end
+
   describe "gif_tiles/0" do
     test "returns list of gif tiles atom values" do
       assert Tiles.gif_tiles() |> Enum.all?(&gif_tile?/1)
@@ -133,6 +139,11 @@ defmodule Europa.Server.Planet.TilesTest do
   defp movable_tile?(tile) do
     tile = from_atom_value(tile)
     tile.movable?
+  end
+
+  defp swimable_tile?(tile) do
+    tile = from_atom_value(tile)
+    tile.swimable?
   end
 
   defp gif_tile?(tile) do

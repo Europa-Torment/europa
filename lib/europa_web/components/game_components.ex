@@ -51,7 +51,7 @@ defmodule EuropaWeb.GameCompotents do
 
   @gif_tiles Tiles.gif_tiles()
   @lethal_tiles Tiles.lethal_tiles()
-  @water Tiles.tile(:water).atom_value
+  @swimable_tiles Tiles.swimable_tiles()
 
   @base_tooltip_class "tooltip tooltip-open"
   @player_tooltip_class "tooltip tooltip-events tooltip-open tooltip-warning"
@@ -925,6 +925,10 @@ defmodule EuropaWeb.GameCompotents do
     [item_description(item) | requirements]
   end
 
+  defp enemy_tooltip(%Enemy{stand_on: tile}) when tile in @swimable_tiles do
+    gettext("Something under water")
+  end
+
   defp enemy_tooltip(%Enemy{} = enemy) do
     stats =
       enemy
@@ -1009,7 +1013,7 @@ defmodule EuropaWeb.GameCompotents do
     "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
-  defp get_image_name(%Enemy{stand_on: @water}, _) do
+  defp get_image_name(%Enemy{stand_on: tile}, _) when tile in @swimable_tiles do
     "water_with_monster.gif"
   end
 

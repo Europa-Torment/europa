@@ -80,6 +80,7 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("water"),
       move_cost: nil,
       movable?: false,
+      swimable?: true,
       image_name: "water",
       gif_tile?: true
     },
@@ -194,6 +195,11 @@ defmodule Europa.Server.Planet.Tiles do
   @spec movable_tiles() :: list(atom())
   def movable_tiles do
     find_tiles(fn tile -> tile.movable? end)
+  end
+
+  @spec swimable_tiles() :: list(atom())
+  def swimable_tiles do
+    find_tiles(fn tile -> tile.swimable? end)
   end
 
   @spec gif_tiles() :: list(atom())

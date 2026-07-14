@@ -91,7 +91,8 @@ defmodule Europa.Server.Planet do
   @darkness Tiles.tile(:darkness).atom_value
 
   @movable_tiles Tiles.movable_tiles()
-  @enemy_movable_tiles @movable_tiles ++ [@water]
+  @swimable_tiles Tiles.swimable_tiles()
+  @enemy_movable_tiles @movable_tiles ++ @swimable_tiles
 
   @high_tiles Tiles.high_tiles()
   @warm_tiles Tiles.warm_tiles()
@@ -541,7 +542,7 @@ defmodule Europa.Server.Planet do
       |> stop_on_barrier(land)
       |> Enum.find(fn coord ->
         case get_tile(land, coord) do
-          %Enemy{} -> true
+          %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
           %Npc{} -> true
           _ -> false
         end
@@ -564,7 +565,7 @@ defmodule Europa.Server.Planet do
     |> Enum.uniq()
     |> Enum.filter(fn coord ->
       case get_tile(land, coord) do
-        %Enemy{} -> true
+        %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
         %Npc{} -> true
         _ -> false
       end
@@ -594,7 +595,7 @@ defmodule Europa.Server.Planet do
       Enum.find_index(coords, fn coord ->
         case get_tile(land, coord) do
           nil -> false
-          %Enemy{} -> true
+          %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
           %Npc{} -> true
           %Object{high?: true} -> true
           tile -> tile in @high_tiles
@@ -676,6 +677,10 @@ defmodule Europa.Server.Planet do
       |> Loot.generate_item_box_from_enemy()
 
     struct!(monster_body, items: items ++ monster_body.items)
+  end
+
+  defp generate_monster_body(%Enemy{stand_on: tile}) when tile in @swimable_tiles do
+    tile
   end
 
   defp generate_monster_body(%Enemy{} = enemy) do
@@ -778,7 +783,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp move_enemy_step(%__MODULE__{current_coord: current_coord} = planet, actions, enemy_coord, enemy) do
-    if coords_distance(current_coord, enemy_coord) <= 1 do
+    if coords_distance(current_coord, enemy_coord) <= 1 && enemy.stand_on not in @swimable_tiles do
       {planet, actions ++ attack_or_miss(enemy), enemy_coord, enemy}
     else
       # Give player chance to run away

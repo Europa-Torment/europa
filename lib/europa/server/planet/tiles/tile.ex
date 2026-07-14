@@ -12,6 +12,7 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :high?, boolean(), default: false
     field :warm?, boolean(), default: false
     field :radioactive?, boolean(), default: false
+    field :swimable?, boolean(), default: false
     field :changes_to, atom()
     field :change_possibility, pos_integer()
     field :lethal?, boolean(), default: false
