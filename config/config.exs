@@ -53,7 +53,9 @@ config :europa, Europa.Server.Planet.Predefined,
     loot_generate_possibility: 3,
     locked_door_possibility: 10,
     broken_building_possibility: 10,
-    broken_wall_possibility: 5
+    broken_wall_possibility: 5,
+    burning_building_possibility: 7,
+    burning_floor_possibility: 3
   ]
 
 config :europa, Europa.Games,

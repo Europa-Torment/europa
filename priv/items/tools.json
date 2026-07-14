@@ -97,6 +97,6 @@
         "properties": {},
         "stackable": true,
         "weight": 1.2, 
-        "random_weight": 0.4
+        "random_weight": 0.8
     }
 ]

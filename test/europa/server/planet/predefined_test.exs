@@ -5,6 +5,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
   alias Europa.Server.Planet.Predefined
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects
+  alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Enemy
 
@@ -33,6 +34,8 @@ defmodule Europa.Server.Planet.PredefinedTest do
   @skip Objects.object(:skip)
   @broken_wall Objects.object(:broken_wall)
 
+  @fire Objects.object(:fire)
+
   describe "generate/1" do
     property "generates building" do
       check all(_n <- StreamData.integer(1..100)) do
@@ -59,16 +62,16 @@ defmodule Europa.Server.Planet.PredefinedTest do
               {2, 1} -> assert_door_object(e, @door_left)
               {2, 2} -> assert e in @floors || loot?(e)
               {2, 3} -> assert e == @wall_vertical_inside
-              {2, 4} -> assert e in @floors || enemy?(e)
+              {2, 4} -> assert e in @floors || enemy?(e) || fire?(e)
               {2, 5} -> assert e in @floors || enemy?(e) || {:npc, @floor}
               {2, 6} -> assert_door_object(e, @door_right)
               {2, 7} -> assert e == @skip
               {3, 0} -> assert e == @skip
               {3, 1} -> assert e == @wall_left || e == @broken_wall
-              {3, 2} -> assert e in @floors || loot?(e)
-              {3, 3} -> assert e in @floors || loot?(e)
-              {3, 4} -> assert e in @floors || loot?(e)
-              {3, 5} -> assert e in @floors || loot?(e)
+              {3, 2} -> assert e in @floors || loot?(e) || fire?(e)
+              {3, 3} -> assert e in @floors || loot?(e) || fire?(e)
+              {3, 4} -> assert e in @floors || loot?(e) || fire?(e)
+              {3, 5} -> assert e in @floors || loot?(e) || fire?(e)
               {3, 6} -> assert e == @wall_right || e == @broken_wall
               {3, 7} -> assert e == @skip
               {4, 0} -> assert e == @skip
@@ -139,4 +142,10 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
   defp loot?(%ItemBox{}), do: true
   defp loot?(_), do: false
+
+  defp fire?(%Object{} = object) do
+    Object.stand_on(object, nil) == @fire
+  end
+
+  defp fire?(_), do: false
 end

@@ -34,9 +34,14 @@ defmodule Europa.Server.Planet.Predefined do
 
   @building_enemy_generate_possibility fetch_config!([__MODULE__, :building, :enemy_generate_possibility])
   @building_loot_generate_possibility fetch_config!([__MODULE__, :building, :loot_generate_possibility])
+
   @locked_door_possibility fetch_config!([__MODULE__, :building, :locked_door_possibility])
+
   @broken_building_possibility fetch_config!([__MODULE__, :building, :broken_building_possibility])
   @broken_wall_possibility fetch_config!([__MODULE__, :building, :broken_wall_possibility])
+
+  @burning_building_possibility fetch_config!([__MODULE__, :building, :burning_building_possibility])
+  @burning_floor_possibility fetch_config!([__MODULE__, :building, :burning_floor_possibility])
 
   @npc_generate_possibility fetch_config!([Planet, :npc_generate_possibility])
 
@@ -90,17 +95,17 @@ defmodule Europa.Server.Planet.Predefined do
   defp elem_to_tile(:building, "#", _), do: Objects.object(:door_up) |> maybe_lock_door()
   defp elem_to_tile(:building, "@", _), do: Objects.object(:door_down) |> maybe_lock_door()
 
-  defp elem_to_tile(:building, "f", _) do
+  defp elem_to_tile(:building, "f", opts) do
     cond do
       m_to_n?(1, @building_enemy_generate_possibility) ->
         Enemy.generate_enemy()
         |> Enemy.stand_on(@floor)
 
       m_to_n?(1, 20) ->
-        Enum.random(@dirty_floors)
+        Enum.random(@dirty_floors) |> or_burning_floor(opts)
 
       true ->
-        @floor
+        @floor |> or_burning_floor(opts)
     end
   end
 
@@ -165,12 +170,30 @@ defmodule Europa.Server.Planet.Predefined do
     end
   end
 
-  defp opts_for_category(:building) do
-    if m_to_n?(1, @broken_building_possibility) do
-      [broken: true]
+  defp or_burning_floor(tile, opts) do
+    if Keyword.fetch!(opts, :burning) && m_to_n?(1, @burning_floor_possibility) do
+      Objects.object(:fire) |> Object.stand_on(tile)
     else
-      [broken: false]
+      tile
     end
+  end
+
+  defp opts_for_category(:building) do
+    broken_opts =
+      if m_to_n?(1, @broken_building_possibility) do
+        [broken: true]
+      else
+        [broken: false]
+      end
+
+    burning_opts =
+      if m_to_n?(1, @burning_building_possibility) do
+        [burning: true]
+      else
+        [burning: false]
+      end
+
+    broken_opts ++ burning_opts
   end
 
   defp opts_for_category(_), do: []
