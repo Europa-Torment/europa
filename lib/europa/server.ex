@@ -950,6 +950,7 @@ defmodule Europa.Server do
           |> PlayerManager.take_damage(enemy.damage)
           |> PlayerManager.stand_on(blood_tile)
           |> maybe_add_radiation(enemy)
+          |> maybe_decrease_warm(enemy)
 
         %Action{action_type: :warm_up, subject: :player} ->
           PlayerManager.warm_up(player, @warm_up_quantity)
@@ -973,6 +974,16 @@ defmodule Europa.Server do
   end
 
   defp maybe_add_radiation(player, _), do: player
+
+  defp maybe_decrease_warm(%Player{} = player, %Enemy{cold?: true}) do
+    if m_to_n?(1, 10) do
+      PlayerManager.warm_up(player, -5)
+    else
+      player
+    end
+  end
+
+  defp maybe_decrease_warm(player, _), do: player
 
   defp maybe_add_interested_event(%Player{} = player, true = _next_to_interactive_event?) do
     interested_event = Event.new(:interested)

@@ -27,6 +27,7 @@ defmodule Europa.Server.Enemy do
     field :move_distance, pos_integer(), enforce: true
     field :accuracy, pos_integer(), enforce: true
     field :radioactive?, boolean(), enforce: true
+    field :cold?, boolean(), enforce: true
     field :healer?, boolean(), enforce: true
     field :heal_possibility, non_neg_integer(), enforce: true
     field :heal_unit, non_neg_integer(), enforce: true
@@ -49,6 +50,7 @@ defmodule Europa.Server.Enemy do
       move_distance: Map.fetch!(attrs, :move_distance),
       accuracy: Map.fetch!(attrs, :accuracy),
       radioactive?: Map.get(attrs, :radioactive, false),
+      cold?: Map.get(attrs, :cold, false),
       healer?: Map.get(attrs, :healer, false),
       heal_possibility: Map.get(attrs, :heal_possibility, 0),
       heal_unit: Map.get(attrs, :heal_unit, 0),

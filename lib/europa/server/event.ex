@@ -4,12 +4,14 @@ defmodule Europa.Server.Event do
   @type uuid :: Ecto.UUID.t()
   @type health_change :: pos_integer()
   @type radiation_change :: pos_integer()
+  @type warm_change :: integer()
   @type death_reason :: atom()
 
   @type event_type ::
           {:damaged, health_change()}
           | {:healed, health_change()}
           | {:radiation, radiation_change()}
+          | {:warm_up, warm_change()}
           | {:speech, text :: String.t()}
           | {:dead, death_reason()}
           | :enemy_killed

@@ -210,7 +210,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Increases player's `warm`.
   """
-  @callback warm_up(Player.t(), warm_units :: pos_integer()) :: Player.t()
+  @callback warm_up(Player.t(), warm_units :: integer()) :: Player.t()
 
   @doc """
   Increases player's `thirst`.

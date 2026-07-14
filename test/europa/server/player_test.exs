@@ -211,9 +211,21 @@ defmodule Europa.Server.PlayerTest do
       assert %Player{warm: ^expected_warm} = Player.warm_up(player, warm_units)
     end
 
+    test "decreases warm", %{player: player} do
+      warm_units = -5
+      expected_warm = player.warm + warm_units
+
+      assert %Player{warm: ^expected_warm, events: [%Event{type: {:warm_up, ^warm_units}}]} =
+               Player.warm_up(player, warm_units)
+    end
+
     test "doensn't exceed max_warm", %{player: player} do
       expected_warm = player.max_warm
       assert %Player{warm: ^expected_warm} = Player.warm_up(player, player.max_warm + 100)
+    end
+
+    test "no negative value", %{player: player} do
+      assert %Player{warm: 0} = Player.warm_up(player, (player.max_warm + 100) * -1)
     end
   end
 

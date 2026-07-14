@@ -75,5 +75,20 @@
         "phrases": ["Bluah!", "Bluen!"],
         "image_name": "blistered_ghoul",
         "random_weight": 0.9
+    },
+    {
+        "type": "monster",
+        "name": "Ice Ghoul",
+        "description": "An underwater ghoul that exudes even more cold than everything around it.",
+        "max_health": {"from": 20, "to": 45},
+        "health": {"from": 15, "to": {"attr": "max_health"}},
+        "damage": {"from": 3, "to": 4},
+        "accuracy": {"from": 10, "to": 25},
+        "cold": true,
+        "move_distance": 1,
+        "max_items": 4,
+        "phrases": ["Bluah!", "Bluen!"],
+        "image_name": "ice_ghoul",
+        "random_weight": 0.9
     }
 ]

@@ -91,6 +91,8 @@ defmodule Europa.Server.Planet do
   @darkness Tiles.tile(:darkness).atom_value
 
   @movable_tiles Tiles.movable_tiles()
+  @enemy_movable_tiles @movable_tiles ++ [@water]
+
   @high_tiles Tiles.high_tiles()
   @warm_tiles Tiles.warm_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
@@ -841,14 +843,14 @@ defmodule Europa.Server.Planet do
     move_y_coord = {ex, new_ey}
 
     move_x =
-      if movable_tile?(planet.land, move_x_coord) do
+      if movable_tile?(planet.land, move_x_coord, :enemy) do
         move_x_coord
       else
         nil
       end
 
     move_y =
-      if movable_tile?(planet.land, move_y_coord) do
+      if movable_tile?(planet.land, move_y_coord, :enemy) do
         move_y_coord
       else
         nil
@@ -856,7 +858,7 @@ defmodule Europa.Server.Planet do
 
     desperate_moves =
       [{ex + 1, ey}, {ex - 1, ey}, {ex, ey + 1}, {ex, ey - 1}]
-      |> Enum.filter(fn coord -> movable_tile?(planet.land, coord) end)
+      |> Enum.filter(fn coord -> movable_tile?(planet.land, coord, :enemy) end)
 
     cond do
       x_diff > y_diff && move_x ->
@@ -921,19 +923,22 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp movable_tile?(land, coord) do
-    case get_tile(land, coord) do
-      tile when tile in @movable_tiles ->
-        true
+  defp movable_tile?(land, coord, subject \\ :player) do
+    movable_tiles =
+      case subject do
+        :player -> @movable_tiles
+        :enemy -> @enemy_movable_tiles
+      end
 
+    case get_tile(land, coord) do
       %Loot.ItemBox{movable?: true} ->
         true
 
       %Object{movable?: true} ->
         true
 
-      _ ->
-        false
+      tile ->
+        tile in movable_tiles
     end
   end
 
@@ -1242,7 +1247,7 @@ defmodule Europa.Server.Planet do
   defp tile_or_enemy(tile, %__MODULE__{} = planet, {_x, _y} = coord) do
     {m, n} = generate_enemy_possibility(planet, coord)
 
-    if m_to_n?(m, n) && tile in @movable_tiles do
+    if m_to_n?(m, n) && tile in @enemy_movable_tiles do
       Enemy.generate_enemy()
       |> Enemy.stand_on(tile)
     else

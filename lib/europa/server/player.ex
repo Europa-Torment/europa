@@ -176,8 +176,10 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def warm_up(%__MODULE__{} = player, warm_units) when is_integer(warm_units) and warm_units > 0 do
-    increase_attrs(player, %{warm: warm_units})
+  def warm_up(%__MODULE__{} = player, warm_units) when is_integer(warm_units) do
+    player
+    |> increase_attrs(%{warm: warm_units})
+    |> maybe_add_warm_up_event(warm_units)
   end
 
   @impl true
@@ -1041,6 +1043,13 @@ defmodule Europa.Server.Player do
   end
 
   defp maybe_add_radiation_event(player, _), do: player
+
+  defp maybe_add_warm_up_event(player, warm_value) when warm_value < 0 do
+    event = Event.new({:warm_up, warm_value})
+    add_events(player, [event])
+  end
+
+  defp maybe_add_warm_up_event(player, _), do: player
 
   defp max_weight do
     from = fetch_config!([:game_params, :player, :max_weight, :from])

@@ -51,6 +51,7 @@ defmodule EuropaWeb.GameCompotents do
 
   @gif_tiles Tiles.gif_tiles()
   @lethal_tiles Tiles.lethal_tiles()
+  @water Tiles.tile(:water).atom_value
 
   @base_tooltip_class "tooltip tooltip-open"
   @player_tooltip_class "tooltip tooltip-events tooltip-open tooltip-warning"
@@ -1008,6 +1009,10 @@ defmodule EuropaWeb.GameCompotents do
     "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
+  defp get_image_name(%Enemy{stand_on: @water}, _) do
+    "water_with_monster.gif"
+  end
+
   defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on}, _) do
     "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
@@ -1290,6 +1295,10 @@ defmodule EuropaWeb.GameCompotents do
 
   defp event_speech(%Event{type: {:radiation, radiation}}) do
     "☢️ #{radiation}"
+  end
+
+  defp event_speech(%Event{type: {:warm_up, warm}}) when warm < 0 do
+    "❄️ #{abs(warm)}"
   end
 
   defp event_speech(%Event{type: {:speech, phrase}}), do: phrase

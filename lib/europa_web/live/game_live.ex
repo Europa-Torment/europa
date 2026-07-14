@@ -604,6 +604,10 @@ defmodule EuropaWeb.GameLive do
     enemy_killed_sound(socket)
   end
 
+  defp play_player_event_sound(socket, %Event{type: {:warm_up, warm_units}}) when warm_units < 0 do
+    frostbite_sound(socket)
+  end
+
   defp play_player_event_sound(socket, _), do: socket
 
   defp base_assign(socket, opts \\ []) do
@@ -698,6 +702,7 @@ defmodule EuropaWeb.GameLive do
         open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
         matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3},
         radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1},
+        frostbite: %{name: ~p"/sounds/frostbite.mp3", volume: 0.1},
         ice_cracked: %{name: ~p"/sounds/ice_cracked.mp3", volume: 0.1},
         monster_dead1: %{name: ~p"/sounds/monster_dead1.mp3", volume: 0.2},
         monster_dead2: %{name: ~p"/sounds/monster_dead2.mp3", volume: 0.2},
@@ -746,6 +751,10 @@ defmodule EuropaWeb.GameLive do
 
   defp radiation_sound(socket) do
     play_sound_with_delay(socket, "radiation")
+  end
+
+  defp frostbite_sound(socket) do
+    play_sound_with_delay(socket, "frostbite")
   end
 
   defp ice_cracked_sound(socket) do

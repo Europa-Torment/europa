@@ -308,6 +308,7 @@ defmodule Europa.Support.Factory do
       move_distance: 1,
       accuracy: 5,
       radioactive?: false,
+      cold?: false,
       healer?: false,
       heal_possibility: 0,
       heal_unit: 0,
