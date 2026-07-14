@@ -993,7 +993,9 @@ defmodule EuropaWeb.GameCompotents do
 
       true ->
         view_direction = Atom.to_string(view_direction)
-        "player_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
+
+        "player#{aiming_player_image_prefix(player)}_#{view_direction}_#{landscape_name(stand_on)}" <>
+          ext_by_stand_on(stand_on)
     end
   end
 
@@ -1054,6 +1056,9 @@ defmodule EuropaWeb.GameCompotents do
   defp landscape_name(tile) do
     Map.get(@tiles_image_names, tile)
   end
+
+  defp aiming_player_image_prefix(%Player{aim_mode?: true}), do: "_aiming"
+  defp aiming_player_image_prefix(_), do: ""
 
   defp ext_by_stand_on(%{stand_on: stand_on}), do: ext_by_stand_on(stand_on)
 
