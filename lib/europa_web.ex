@@ -40,7 +40,7 @@ defmodule EuropaWeb do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
 
-      use Gettext, backend: EuropaWeb.Gettext
+      use Gettext, backend: Europa.Gettext
 
       import Plug.Conn
 
@@ -80,7 +80,7 @@ defmodule EuropaWeb do
   defp html_helpers do
     quote do
       # Translation
-      use Gettext, backend: EuropaWeb.Gettext
+      use Gettext, backend: Europa.Gettext
 
       # HTML escaping functionality
       import Phoenix.HTML

@@ -1,6 +1,7 @@
 defmodule Europa.Server.Characters do
   use GenServer
   use TypedStruct
+  use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Characters.Utils.FilesReader
 
@@ -8,6 +9,41 @@ defmodule Europa.Server.Characters do
 
   @filename fetch_config!([__MODULE__, :filename])
   @raw_characters FilesReader.parse_file(@filename)
+
+  for {character, i} <- Enum.with_index(@raw_characters) do
+    fun_name = String.to_atom("__extract_strings_for_#{i}")
+
+    def unquote(fun_name)() do
+      gettext(unquote(character["name"]))
+      gettext(unquote(character["profession"]))
+
+      unquote_splicing(
+        for phrase <- Map.get(character, "short_phrases", []) do
+          quote do
+            gettext(unquote(phrase))
+          end
+        end
+      )
+
+      unquote_splicing(
+        for story <- Map.get(character, "stories", []) do
+          quote do
+            gettext(unquote(story))
+          end
+        end
+      )
+
+      unquote_splicing(
+        for {_, stories} <- Map.get(character, "special_stories", []) do
+          for story <- stories do
+            quote do
+              gettext(unquote(story))
+            end
+          end
+        end
+      )
+    end
+  end
 
   defmodule Character do
     use Gettext, backend: Europa.Gettext

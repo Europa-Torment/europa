@@ -112,8 +112,6 @@ config :europa, :game_params,
 
 config :europa, Europa.Server.Characters, filename: "characters.json"
 
-config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/"
-
 config :europa, :control_bindings,
   move_up: %{keys: ["ArrowUp", "W", "w"], codes: ["KeyW", "ArrowUp"]},
   move_down: %{keys: ["ArrowDown", "S", "s"], codes: ["KeyS", "ArrowDown"]},

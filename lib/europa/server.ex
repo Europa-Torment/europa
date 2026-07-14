@@ -18,7 +18,6 @@ defmodule Europa.Server do
   alias Europa.Server.Action
   alias Europa.Server.Event
   alias Europa.Server.Errors
-  alias Europa.Tools.TextGenerator
   alias Europa.Server.Characters
 
   import Europa.Tools.Conf
@@ -1182,7 +1181,11 @@ defmodule Europa.Server do
   end
 
   defp crop_planet_land_message do
-    msg = TextGenerator.generate_text(:great_red_spot, [])
+    msg =
+      gettext(
+        "Jupiter shows the Great Red Spot, a monstrous storm swept everything around, but you miraculously survived"
+      )
+
     Chat.Message.new(msg, :story)
   end
 

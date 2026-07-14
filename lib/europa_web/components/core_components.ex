@@ -27,7 +27,7 @@ defmodule EuropaWeb.CoreComponents do
 
   """
   use Phoenix.Component
-  use Gettext, backend: EuropaWeb.Gettext
+  use Gettext, backend: Europa.Gettext
 
   alias Phoenix.LiveView.JS
 
@@ -501,9 +501,9 @@ defmodule EuropaWeb.CoreComponents do
     # with our gettext backend as first argument. Translations are
     # available in the errors.po file (as we use the "errors" domain).
     if count = opts[:count] do
-      Gettext.dngettext(EuropaWeb.Gettext, "errors", msg, msg, count, opts)
+      Gettext.dngettext(Europa.Gettext, "errors", msg, msg, count, opts)
     else
-      Gettext.dgettext(EuropaWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(Europa.Gettext, "errors", msg, opts)
     end
   end
 

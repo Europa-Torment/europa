@@ -17,6 +17,23 @@ defmodule Europa.Server.Enemy do
   @type attrs :: map()
   @type enemy_type :: unquote(Types.one_of(@allowed_enemy_types))
 
+  for {{enemy, _}, i} <- Enum.with_index(@enemies_attrs) do
+    fun_name = String.to_atom("__extract_strings_for_#{i}")
+
+    def unquote(fun_name)() do
+      gettext(unquote(enemy.name))
+      gettext(unquote(enemy.description))
+
+      unquote_splicing(
+        for phrase <- enemy.phrases do
+          quote do
+            gettext(unquote(phrase))
+          end
+        end
+      )
+    end
+  end
+
   typedstruct do
     field :type, enemy_type(), enforce: true
     field :name, String.t(), enforce: true

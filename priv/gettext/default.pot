@@ -1,0 +1,2428 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:136
+#, elixir-autogen, elixir-format
+msgid ".. or for starters"
+msgstr ""
+
+#: lib/europa_web/controllers/error_html/500.html.heex:5
+#, elixir-autogen, elixir-format
+msgid "A thermonuclear explosion destroyed game server."
+msgstr ""
+
+#: lib/europa_web/controllers/error_html/404.html.heex:5
+#, elixir-autogen, elixir-format
+msgid "A thermonuclear explosion destroyed this page."
+msgstr ""
+
+#: lib/europa_web/components/core_components.ex:371
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/index.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Active game sessions"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/register.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "Already have an account?"
+msgstr ""
+
+#: lib/europa_web/components/layouts.ex:101
+#: lib/europa_web/components/layouts.ex:113
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:130
+#: lib/europa_web/controllers/user_html/register.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "Become European"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:46
+#, elixir-autogen, elixir-format
+msgid "Browser single player turn-based survival game"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/index.html.heex:35
+#, elixir-autogen, elixir-format
+msgid "Continue game"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Dead"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/login.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "Don't have an account yet?"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "Europa Torment - browser game"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:58
+#, elixir-autogen, elixir-format
+msgid "Explore endless procedural generated Europa"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Game over"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Games"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Great Red Spot"
+msgid_plural "Great Red Spots"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/europa_web/controllers/page_html/lore.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "Humanity, on the brink of extinction, finds a new home on Jupiter's moon. Initially harsh, this new home has adapted to coexistence with humans thanks to thermonuclear terraforming stations. These same stations, in a disaster, destroyed almost all life, unleashing monsters from beneath the ice and revealing the dark side of humanity."
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:18
+#, elixir-autogen, elixir-format
+msgid "In the near future, humans colonized Europa. It was the first and last attempt to colonize another space object: terraforming turned into a disaster and the people with money and power fled the satellite, leaving the rest to their deaths."
+msgstr ""
+
+#: lib/europa_web/controllers/user_controller.ex:23
+#, elixir-autogen, elixir-format
+msgid "Invalid username or password"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/lore.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "Key characters"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:70
+#, elixir-autogen, elixir-format
+msgid "Kill monsters, loot abandoned buildings"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:30
+#: lib/europa_web/controllers/game_html/leaderboard.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Leaderboard"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/login.html.heex:5
+#: lib/europa_web/controllers/user_html/login.html.heex:13
+#: lib/europa_web/controllers/user_html/register.html.heex:33
+#, elixir-autogen, elixir-format
+msgid "Login"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "Lore"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:82
+#, elixir-autogen, elixir-format
+msgid "Manage resources and vital stats"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:41
+#: lib/europa_web/controllers/game_html/index.html.heex:25
+#, elixir-autogen, elixir-format
+msgid "New game"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/lore.html.heex:22
+#, elixir-autogen, elixir-format
+msgid "Organisations"
+msgstr ""
+
+#: lib/europa_web/controllers/error_html/404.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Page not found"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/login.html.heex:10
+#: lib/europa_web/controllers/user_html/register.html.heex:9
+#, elixir-autogen, elixir-format
+msgid "Password"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/register.html.heex:10
+#, elixir-autogen, elixir-format
+msgid "Password confirmation"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:48
+#: lib/europa_web/controllers/page_html/home.html.heex:132
+#, elixir-autogen, elixir-format
+msgid "Play for free right in your browser!"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/lore.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Preamble"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/register.html.heex:16
+#, elixir-autogen, elixir-format
+msgid "Prove that you are a human or other life form with vision"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:60
+#, elixir-autogen, elixir-format
+msgid "Randomized starting conditions in each game session"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:141
+#, elixir-autogen, elixir-format
+msgid "Read lore"
+msgstr ""
+
+#: lib/europa_web/controllers/user_html/login.html.heex:26
+#: lib/europa_web/controllers/user_html/register.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Register"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/leaderboard.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "Result"
+msgstr ""
+
+#: lib/europa_web/controllers/error_html/404.html.heex:13
+#: lib/europa_web/controllers/error_html/500.html.heex:13
+#, elixir-autogen, elixir-format
+msgid "Return to the 3rd dimension"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/index.html.heex:16
+#, elixir-autogen, elixir-format
+msgid "Set foot on European soil"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:53
+#, elixir-autogen, elixir-format
+msgid "Sign in"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:39
+#, elixir-autogen, elixir-format
+msgid "Sign out"
+msgstr ""
+
+#: lib/europa_web/components/layouts/root.html.heex:48
+#, elixir-autogen, elixir-format
+msgid "Sign up"
+msgstr ""
+
+#: lib/europa_web/controllers/error_html/500.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Something went wrong"
+msgstr ""
+
+#: lib/europa_web/components/layouts.ex:108
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Survived"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:158
+#, elixir-autogen, elixir-format
+msgid "The game is open source"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:85
+#, elixir-autogen, elixir-format
+msgid "The need to eat, drink and stay warm in a climate with limited resources and harsh environments"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/lore.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "Timeline"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "Try to survive on cold Jupiter moon"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/leaderboard.html.heex:23
+#: lib/europa_web/controllers/user_html/login.html.heex:9
+#: lib/europa_web/controllers/user_html/register.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Username"
+msgstr ""
+
+#: lib/europa_web/components/layouts.ex:96
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/index.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Welcome to Europa. Dress warmly, make sure your spacesuit is airtight, and let's go!"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "Will you survive?"
+msgstr ""
+
+#: lib/europa_web/controllers/page_html/home.html.heex:72
+#, elixir-autogen, elixir-format
+msgid "With dynamic day/night cycles"
+msgstr ""
+
+#: lib/europa_web/controllers/game_controller.ex:22
+#, elixir-autogen, elixir-format
+msgid "You have %{count} active game(s). Please finish some of them before starting new one."
+msgstr ""
+
+#: lib/europa_web/components/core_components.ex:77
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:136
+#: lib/europa_web/controllers/game_html/game_over.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "day"
+msgid_plural "days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "enemy"
+msgid_plural "enemies"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "killed"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:13
+#, elixir-autogen, elixir-format
+msgid "like"
+msgstr ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:18
+#, elixir-autogen, elixir-format
+msgid "move"
+msgid_plural "moves"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/europa_web/controllers/game_html/game_over.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "others"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:12
+#, elixir-autogen, elixir-format
+msgid ""
+msgstr ""
+
+#: lib/europa/server.ex:1233
+#, elixir-autogen, elixir-format
+msgid "%{enemy_name} attacks you and deals %{damage} damage"
+msgstr ""
+
+#: lib/europa/server.ex:1238
+#, elixir-autogen, elixir-format
+msgid "%{enemy_name} attacks you but misses."
+msgstr ""
+
+#: lib/europa/server.ex:1228
+#, elixir-autogen, elixir-format
+msgid "%{enemy_name} is chasing you"
+msgstr ""
+
+#: lib/europa/server.ex:1243
+#, elixir-autogen, elixir-format
+msgid "%{enemy_name} killed %{character_name}"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:568
+#, elixir-autogen, elixir-format
+msgid "%{from_name} will be delted"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:575
+#, elixir-autogen, elixir-format
+msgid "%{from_name} will change to %{to_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1199
+#, elixir-autogen, elixir-format
+msgid "%{healer_name} healed %{healed_name} for %{units} HP"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:23
+#, elixir-autogen, elixir-format
+msgid "A man-made disaster occurred: the main thermonuclear reactor malfunctioned and exploded, releasing a monstrous amount of energy. The ice on the surface thinned, and monsters began to emerge from beneath it."
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:79
+#, elixir-autogen, elixir-format
+msgid "A political regulatory structure composed primarily of former Western leaders on Earth. It is widely believed that the leadership of this organization is to blame for the disaster. Instead of starting a new life, taking into account all their previous earthly mistakes, they continued to wield power and money for their own benefit."
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:19
+#, elixir-autogen, elixir-format
+msgid "A thermonuclear terraforming center has been built on Europa. Temperatures in some regions have approached 0 degrees Celsius. Water vapor has begun to form an atmosphere."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:93
+#: lib/europa/server/loot/helmet.ex:69
+#: lib/europa/server/loot/weapon.ex:161
+#: lib/europa_web/components/game_components.ex:166
+#, elixir-autogen, elixir-format
+msgid "Accuracy"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:670
+#, elixir-autogen, elixir-format
+msgid "After disassembling you will receive following items:"
+msgstr ""
+
+#: lib/europa/server/npc.ex:27
+#: lib/europa/server/player.ex:122
+#: lib/europa_web/components/game_components.ex:486
+#, elixir-autogen, elixir-format
+msgid "Age"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:489
+#, elixir-autogen, elixir-format
+msgid "Age at disaster"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1129
+#, elixir-autogen, elixir-format
+msgid "Aim mode"
+msgstr ""
+
+#: lib/europa/server/loot.ex:35
+#, elixir-autogen, elixir-format
+msgid "Ammo"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:83
+#, elixir-autogen, elixir-format
+msgid "An opposition rebel group. The main opponents of the WCC. Disparate armed terrorist groups whose goal is to disband the WCC and transfer control of Europa to its people."
+msgstr ""
+
+#: lib/europa/server/loot.ex:41
+#: lib/europa/server/player.ex:129
+#, elixir-autogen, elixir-format
+msgid "Boots"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:168
+#: lib/europa/server/loot/weapon/ammo.ex:60
+#, elixir-autogen, elixir-format
+msgid "Caliber"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:120
+#, elixir-autogen, elixir-format
+msgid "Chen Yan"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:328
+#: lib/europa_web/components/game_components.ex:422
+#: lib/europa_web/components/game_components.ex:469
+#: lib/europa_web/components/game_components.ex:497
+#: lib/europa_web/components/game_components.ex:541
+#: lib/europa_web/components/game_components.ex:650
+#: lib/europa_web/components/game_components.ex:694
+#: lib/europa_web/components/game_components.ex:764
+#: lib/europa_web/components/game_components.ex:1131
+#, elixir-autogen, elixir-format
+msgid "Close"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:554
+#, elixir-autogen, elixir-format
+msgid "Commit a dangerous act?"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:537
+#: lib/europa_web/components/game_components.ex:691
+#, elixir-autogen, elixir-format
+msgid "Confirm"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:524
+#, elixir-autogen, elixir-format
+msgid "Confirm action"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:776
+#, elixir-autogen, elixir-format
+msgid "Consume"
+msgstr ""
+
+#: lib/europa/server/loot/supply.ex:123
+#, elixir-autogen, elixir-format
+msgid "Consume cost"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:195
+#: lib/europa_web/components/game_components.ex:320
+#: lib/europa_web/components/game_components.ex:1126
+#, elixir-autogen, elixir-format
+msgid "Control hints"
+msgstr ""
+
+#: lib/europa/server/loot/supply.ex:122
+#: lib/europa/server/loot/tool.ex:208
+#: lib/europa/server/loot/weapon/ammo.ex:61
+#, elixir-autogen, elixir-format
+msgid "Count"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:347
+#, elixir-autogen, elixir-format
+msgid "Craft items"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:717
+#, elixir-autogen, elixir-format
+msgid "Crafting items"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:749
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:129
+#, elixir-autogen, elixir-format
+msgid "Creator of the SSB. Rebel leader. The first known space terrorist. Believed to be responsible for the destruction of the Martian colony."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:94
+#: lib/europa/server/loot/melee_weapon.ex:68
+#: lib/europa/server/loot/weapon.ex:160
+#, elixir-autogen, elixir-format
+msgid "Damage"
+msgstr ""
+
+#: lib/europa/games.ex:17
+#, elixir-autogen, elixir-format
+msgid "Days survived"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:98
+#: lib/europa/server/planet/tiles/objects.ex:123
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:401
+#, elixir-autogen, elixir-format
+msgid "Disassemble"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:405
+#: lib/europa_web/components/game_components.ex:626
+#: lib/europa_web/components/game_components.ex:646
+#, elixir-autogen, elixir-format
+msgid "Drop"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:409
+#, elixir-autogen, elixir-format
+msgid "Drop partly"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:11
+#, elixir-autogen, elixir-format
+msgid "Earth's resources are nearing depletion. Wars are breaking out, including local nuclear conflicts."
+msgstr ""
+
+#: lib/europa/server/loot/boots.ex:69
+#: lib/europa/server/loot/suit.ex:72
+#: lib/europa_web/components/game_components.ex:176
+#, elixir-autogen, elixir-format
+msgid "Efficiency"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:419
+#: lib/europa_web/components/game_components.ex:466
+#, elixir-autogen, elixir-format
+msgid "Empty"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:795
+#, elixir-autogen, elixir-format
+msgid "Equip"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:74
+#, elixir-autogen, elixir-format
+msgid "Europa Terraforming Center (ETC)"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:89
+#: lib/europa/server/planet/tiles/objects.ex:141
+#: lib/europa/server/planet/tiles/objects.ex:159
+#, elixir-autogen, elixir-format
+msgid "Extinguish"
+msgstr ""
+
+#: lib/europa/server/characters.ex:97
+#, elixir-autogen, elixir-format
+msgid "Female"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:16
+#, elixir-autogen, elixir-format
+msgid "First colonies"
+msgstr ""
+
+#: lib/europa/games.ex:21
+#, elixir-autogen, elixir-format
+msgid "Games played"
+msgstr ""
+
+#: lib/europa/server/npc.ex:28
+#: lib/europa/server/player.ex:123
+#: lib/europa_web/components/game_components.ex:487
+#, elixir-autogen, elixir-format
+msgid "Gender"
+msgstr ""
+
+#: lib/europa/games.ex:18
+#, elixir-autogen, elixir-format
+msgid "Great Red Spots survived"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:92
+#: lib/europa/server/loot/boots.ex:70
+#: lib/europa/server/loot/helmet.ex:70
+#: lib/europa/server/loot/suit.ex:73
+#: lib/europa/server/loot/supply.ex:110
+#: lib/europa/server/player.ex:124
+#: lib/europa_web/components/game_components.ex:146
+#, elixir-autogen, elixir-format
+msgid "Health"
+msgstr ""
+
+#: lib/europa/server/player.ex:127
+#, elixir-autogen, elixir-format
+msgid "Helmet"
+msgstr ""
+
+#: lib/europa/server/loot.ex:39
+#, elixir-autogen, elixir-format
+msgid "Helmets"
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#: lib/europa_web/components/page_components.ex:132
+#, elixir-autogen, elixir-format
+msgid "Henry Davies"
+msgstr ""
+
+#: lib/europa/server/loot/melee_weapon.ex:69
+#, elixir-autogen, elixir-format
+msgid "Hit cost"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:637
+#, elixir-autogen, elixir-format
+msgid "How many?"
+msgstr ""
+
+#: lib/europa/server/loot/supply.ex:112
+#: lib/europa_web/components/game_components.ex:171
+#, elixir-autogen, elixir-format
+msgid "Hunger"
+msgstr ""
+
+#: lib/europa/server.ex:1045
+#, elixir-autogen, elixir-format
+msgid "I'm"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:304
+#, elixir-autogen, elixir-format
+msgid "In inventory"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:133
+#, elixir-autogen, elixir-format
+msgid "Initially elected by the people of Earth as the main coordinator of colonization, he subsequently granted himself title of the President of WCC, which is essentially analogous to the President of all of Europa and human civilization. He survived several assassination attempts by the SSB, but to the surprise of many, he did not leave Europa after the disaster, although he had every opportunity."
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1123
+#, elixir-autogen, elixir-format
+msgid "Interact with environment"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:156
+#: lib/europa_web/components/game_components.ex:345
+#: lib/europa_web/components/game_components.ex:1125
+#, elixir-autogen, elixir-format
+msgid "Inventory"
+msgstr ""
+
+#: lib/europa/server.ex:1089
+#, elixir-autogen, elixir-format
+msgid "It's not possible to do this now."
+msgstr ""
+
+#: lib/europa/games.ex:19
+#, elixir-autogen, elixir-format
+msgid "Killed enemies"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:26
+#, elixir-autogen, elixir-format
+msgid "Left to die"
+msgstr ""
+
+#: lib/europa/server/loot/tool.ex:192
+#, elixir-autogen, elixir-format
+msgid "Level"
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#: lib/europa_web/components/page_components.ex:116
+#, elixir-autogen, elixir-format
+msgid "Li Tian"
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#: lib/europa_web/components/page_components.ex:124
+#, elixir-autogen, elixir-format
+msgid "Li Zhang"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:114
+#, elixir-autogen, elixir-format
+msgid "Light"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:167
+#: lib/europa_web/components/game_components.ex:304
+#, elixir-autogen, elixir-format
+msgid "Loaded"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1124
+#, elixir-autogen, elixir-format
+msgid "Loot"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:166
+#, elixir-autogen, elixir-format
+msgid "Magazine"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:304
+#, elixir-autogen, elixir-format
+msgid "Magazine size"
+msgstr ""
+
+#: lib/europa/server/characters.ex:96
+#, elixir-autogen, elixir-format
+msgid "Male"
+msgstr ""
+
+#: lib/europa/server/loot/suit.ex:75
+#, elixir-autogen, elixir-format
+msgid "Max weight"
+msgstr ""
+
+#: lib/europa/server/player.ex:126
+#, elixir-autogen, elixir-format
+msgid "Melee weapon"
+msgstr ""
+
+#: lib/europa/server/loot.ex:36
+#, elixir-autogen, elixir-format
+msgid "Melee weapons"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:95
+#, elixir-autogen, elixir-format
+msgid "Move distance"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1120
+#, elixir-autogen, elixir-format
+msgid "Move/punch down"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1121
+#, elixir-autogen, elixir-format
+msgid "Move/punch left"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1122
+#, elixir-autogen, elixir-format
+msgid "Move/punch right"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1119
+#, elixir-autogen, elixir-format
+msgid "Move/punch up"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:640
+#: lib/europa_web/components/game_components.ex:643
+#, elixir-autogen, elixir-format
+msgid "Must be between"
+msgstr ""
+
+#: lib/europa/server.ex:1042
+#, elixir-autogen, elixir-format
+msgid "My name is"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:91
+#: lib/europa/server/loot/boots.ex:68
+#: lib/europa/server/loot/helmet.ex:68
+#: lib/europa/server/loot/melee_weapon.ex:67
+#: lib/europa/server/loot/suit.ex:71
+#: lib/europa/server/loot/weapon.ex:159
+#: lib/europa/server/npc.ex:26
+#: lib/europa/server/player.ex:121
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:12
+#, elixir-autogen, elixir-format
+msgid "New Hope"
+msgstr ""
+
+#: lib/europa/server/player.ex:93
+#: lib/europa/server/player.ex:99
+#: lib/europa/server/player.ex:105
+#: lib/europa/server/player.ex:111
+#: lib/europa/server/player.ex:117
+#, elixir-autogen, elixir-format
+msgid "No"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:758
+#, elixir-autogen, elixir-format
+msgid "No blueprints"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:245
+#, elixir-autogen, elixir-format
+msgid "No boots"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:217
+#, elixir-autogen, elixir-format
+msgid "No helmet"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:274
+#, elixir-autogen, elixir-format
+msgid "No melee weapon"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:231
+#, elixir-autogen, elixir-format
+msgid "No suit"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:261
+#, elixir-autogen, elixir-format
+msgid "No weapon"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:117
+#, elixir-autogen, elixir-format
+msgid "Nuclear physicist. One of the first colonists, co-author of the first mass-produced thermonuclear reactor. Director of the Europa Terraforming Center."
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:121
+#, elixir-autogen, elixir-format
+msgid "Nuclear physicist. Wife of Li Tian. She was his deputy and co-author of the fusion reactor. She died in the disaster because she was close to the epicenter of the explosion at the time."
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:35
+#: lib/europa/server/planet/tiles/objects.ex:48
+#: lib/europa/server/planet/tiles/objects.ex:61
+#: lib/europa/server/planet/tiles/objects.ex:74
+#, elixir-autogen, elixir-format
+msgid "Open"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:13
+#, elixir-autogen, elixir-format
+msgid "People understand that the only way to preserve civilization is to colonize other celestial bodies. Research is underway into interplanetary travel and fusion reactors."
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:488
+#, elixir-autogen, elixir-format
+msgid "Profession"
+msgstr ""
+
+#: lib/europa/server/loot/supply.ex:114
+#: lib/europa_web/components/game_components.ex:181
+#, elixir-autogen, elixir-format
+msgid "Radiation"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:391
+#, elixir-autogen, elixir-format
+msgid "Reload"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:165
+#, elixir-autogen, elixir-format
+msgid "Reload cost"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1128
+#, elixir-autogen, elixir-format
+msgid "Reload weapon"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:923
+#, elixir-autogen, elixir-format
+msgid "Required items"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1127
+#, elixir-autogen, elixir-format
+msgid "Shoot"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:162
+#, elixir-autogen, elixir-format
+msgid "Shooting distance"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:163
+#, elixir-autogen, elixir-format
+msgid "Shooting type"
+msgstr ""
+
+#: lib/europa/server/loot/weapon.ex:164
+#, elixir-autogen, elixir-format
+msgid "Shot cost"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:82
+#, elixir-autogen, elixir-format
+msgid "Solar System Brotherhood (SSB)"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:929
+#, elixir-autogen, elixir-format
+msgid "Something under water"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:125
+#, elixir-autogen, elixir-format
+msgid "Son of Li Tian and Chen Yan. The first person born on Europa. The last person died in entire solar system."
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#: lib/europa_web/components/page_components.ex:128
+#, elixir-autogen, elixir-format
+msgid "Stanislav Mishchenko"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:68
+#, elixir-autogen, elixir-format
+msgid "Start game"
+msgstr ""
+
+#: lib/europa/server/player.ex:128
+#, elixir-autogen, elixir-format
+msgid "Suit"
+msgstr ""
+
+#: lib/europa/server/loot.ex:40
+#, elixir-autogen, elixir-format
+msgid "Suits"
+msgstr ""
+
+#: lib/europa/server/loot.ex:37
+#, elixir-autogen, elixir-format
+msgid "Supplies"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:18
+#, elixir-autogen, elixir-format
+msgid "Terraforming Europa"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:22
+#, elixir-autogen, elixir-format
+msgid "The Disaster"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:593
+#, elixir-autogen, elixir-format
+msgid "The action requires following items"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:10
+#, elixir-autogen, elixir-format
+msgid "The beginning of the crisis"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:30
+#, elixir-autogen, elixir-format
+msgid "The end of human history"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:17
+#, elixir-autogen, elixir-format
+msgid "The first groups of settlers began to settle on Mars and the satellites of Jupiter."
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:30
+#, elixir-autogen, elixir-format
+msgid "The last known person in the solar system has died."
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:75
+#, elixir-autogen, elixir-format
+msgid "The power core of Europa. A small artificial sun. A chain of thermonuclear reactors that generate energy through hydrogen fusion and form an atmosphere. It was completely destroyed in the disaster."
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:27
+#, elixir-autogen, elixir-format
+msgid "The top brass and the wealthy fled Europa on the first prototypes of the 'generation ships', leaving the rest to certain death."
+msgstr ""
+
+#: lib/europa/server.ex:1110
+#, elixir-autogen, elixir-format
+msgid "There is nothing to interact with"
+msgstr ""
+
+#: lib/europa/server.ex:1105
+#, elixir-autogen, elixir-format
+msgid "There is nothing to loot"
+msgstr ""
+
+#: lib/europa/server/loot/supply.ex:113
+#: lib/europa_web/components/game_components.ex:161
+#, elixir-autogen, elixir-format
+msgid "Thirst"
+msgstr ""
+
+#: lib/europa_web/live/game_live.ex:218
+#, elixir-autogen, elixir-format
+msgid "This key doesn't do anything. Press H to get control hints."
+msgstr ""
+
+#: lib/europa/server/loot.ex:38
+#, elixir-autogen, elixir-format
+msgid "Tools"
+msgstr ""
+
+#: lib/europa/games.ex:20
+#, elixir-autogen, elixir-format
+msgid "Total moves"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:791
+#, elixir-autogen, elixir-format
+msgid "Unequip"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:396
+#: lib/europa_web/components/game_components.ex:456
+#, elixir-autogen, elixir-format
+msgid "Unload"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:783
+#, elixir-autogen, elixir-format
+msgid "Use"
+msgstr ""
+
+#: lib/europa/server/loot/tool.ex:200
+#, elixir-autogen, elixir-format
+msgid "Use cost"
+msgstr ""
+
+#: lib/europa/server/loot/boots.ex:71
+#: lib/europa/server/loot/helmet.ex:71
+#: lib/europa/server/loot/suit.ex:74
+#: lib/europa/server/loot/supply.ex:111
+#: lib/europa_web/components/game_components.ex:151
+#, elixir-autogen, elixir-format
+msgid "Warm"
+msgstr ""
+
+#: lib/europa/server/player.ex:125
+#, elixir-autogen, elixir-format
+msgid "Weapon"
+msgstr ""
+
+#: lib/europa/server/loot.ex:34
+#, elixir-autogen, elixir-format
+msgid "Weapons"
+msgstr ""
+
+#: lib/europa/server/loot/boots.ex:72
+#: lib/europa/server/loot/helmet.ex:72
+#: lib/europa/server/loot/melee_weapon.ex:70
+#: lib/europa/server/loot/suit.ex:76
+#: lib/europa/server/loot/supply.ex:124
+#: lib/europa/server/loot/tool.ex:209
+#: lib/europa/server/loot/weapon.ex:169
+#: lib/europa/server/loot/weapon/ammo.ex:62
+#, elixir-autogen, elixir-format
+msgid "Weight"
+msgstr ""
+
+#: lib/europa_web/components/page_components.ex:78
+#, elixir-autogen, elixir-format
+msgid "Western Colonisation Community (WCC)"
+msgstr ""
+
+#: lib/europa/server.ex:1209
+#, elixir-autogen, elixir-format
+msgid "You are dying of dehydration!"
+msgstr ""
+
+#: lib/europa/server.ex:1214
+#, elixir-autogen, elixir-format
+msgid "You are dying of hunger!"
+msgstr ""
+
+#: lib/europa/server.ex:1223
+#, elixir-autogen, elixir-format
+msgid "You are dying of radiation!"
+msgstr ""
+
+#: lib/europa/server.ex:1100
+#, elixir-autogen, elixir-format
+msgid "You can't walk because you're overloaded"
+msgstr ""
+
+#: lib/europa/server.ex:1095
+#, elixir-autogen, elixir-format
+msgid "You can't walk through %{tile_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1170
+#, elixir-autogen, elixir-format
+msgid "You consumed %{supply_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1115
+#, elixir-autogen, elixir-format
+msgid "You didn't hit anyone"
+msgstr ""
+
+#: lib/europa/server.ex:1125
+#, elixir-autogen, elixir-format
+msgid "You don't have any ammo to reload your weapon!"
+msgstr ""
+
+#: lib/europa/server.ex:1180
+#, elixir-autogen, elixir-format
+msgid "You drank radioactive water!"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:90
+#, elixir-autogen, elixir-format
+msgid "You extinguished the bonfire"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:142
+#, elixir-autogen, elixir-format
+msgid "You extinguished the burning shuttle"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:160
+#, elixir-autogen, elixir-format
+msgid "You extinguished the fire"
+msgstr ""
+
+#: lib/europa/server.ex:1150
+#, elixir-autogen, elixir-format
+msgid "You fired"
+msgstr ""
+
+#: lib/europa/server.ex:1190
+#, elixir-autogen, elixir-format
+msgid "You get frostbite!"
+msgstr ""
+
+#: lib/europa/server.ex:1155
+#, elixir-autogen, elixir-format
+msgid "You have changed the aiming mode"
+msgstr ""
+
+#: lib/europa/server.ex:1165
+#, elixir-autogen, elixir-format
+msgid "You have crafted %{item_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1160
+#, elixir-autogen, elixir-format
+msgid "You have disassembled %{item_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1120
+#, elixir-autogen, elixir-format
+msgid "You have no weapon in your hands!"
+msgstr ""
+
+#: lib/europa/server.ex:1263
+#, elixir-autogen, elixir-format
+msgid "You hit %{enemy_name} and dealt %{damage} damage to it!"
+msgstr ""
+
+#: lib/europa/server.ex:1272
+#, elixir-autogen, elixir-format
+msgid "You killed %{character_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1265
+#, elixir-autogen, elixir-format
+msgid "You killed %{enemy_name}"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:115
+#, elixir-autogen, elixir-format
+msgid "You lit a bonfire"
+msgstr ""
+
+#: lib/europa/server.ex:1175
+#, elixir-autogen, elixir-format
+msgid "You received a dose of radiation!"
+msgstr ""
+
+#: lib/europa/server.ex:1140
+#, elixir-autogen, elixir-format
+msgid "You reloaded %{weapon_name}"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:99
+#: lib/europa/server/planet/tiles/objects.ex:124
+#, elixir-autogen, elixir-format
+msgid "You removed the bonfire"
+msgstr ""
+
+#: lib/europa/server.ex:1285
+#, elixir-autogen, elixir-format
+msgid "You struck with a %{melee_weapon_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1145
+#, elixir-autogen, elixir-format
+msgid "You unloaded %{weapon_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1084
+#, elixir-autogen, elixir-format
+msgid "You used %{tool_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1078
+#, elixir-autogen, elixir-format
+msgid "You walked at %{tile_name}"
+msgstr ""
+
+#: lib/europa/server.ex:1135
+#, elixir-autogen, elixir-format
+msgid "Your weapon is fully loaded."
+msgstr ""
+
+#: lib/europa/server.ex:1130
+#, elixir-autogen, elixir-format
+msgid "Your weapon is unloaded."
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1130
+#, elixir-autogen, elixir-format
+msgid "Zoom mode"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:262
+#, elixir-autogen, elixir-format
+msgid "bloody"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:119
+#, elixir-autogen, elixir-format
+msgid "bloody floor"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:81
+#, elixir-autogen, elixir-format
+msgid "bonfire"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:27
+#, elixir-autogen, elixir-format
+msgid "broken wall"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:100
+#, elixir-autogen, elixir-format
+msgid "bubbling water"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:133
+#, elixir-autogen, elixir-format
+msgid "burning shuttle"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:38
+#, elixir-autogen, elixir-format
+msgid "cracked ice"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:60
+#, elixir-autogen, elixir-format
+msgid "cracked thin ice"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:173
+#, elixir-autogen, elixir-format
+msgid "darkness"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:137
+#: lib/europa/server/planet/tiles.ex:146
+#: lib/europa/server/planet/tiles.ex:155
+#: lib/europa/server/planet/tiles.ex:164
+#: lib/europa/server/planet/tiles/objects.ex:29
+#: lib/europa/server/planet/tiles/objects.ex:42
+#: lib/europa/server/planet/tiles/objects.ex:55
+#: lib/europa/server/planet/tiles/objects.ex:68
+#, elixir-autogen, elixir-format
+msgid "door"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:108
+#, elixir-autogen, elixir-format
+msgid "extinguished bonfire"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:151
+#, elixir-autogen, elixir-format
+msgid "fire"
+msgstr ""
+
+#: lib/europa/server.ex:1282
+#, elixir-autogen, elixir-format
+msgid "fist"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:110
+#, elixir-autogen, elixir-format
+msgid "floor"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:128
+#, elixir-autogen, elixir-format
+msgid "floor with litter"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:30
+#, elixir-autogen, elixir-format
+msgid "ice"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:71
+#, elixir-autogen, elixir-format
+msgid "ice spikes"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:345
+#, elixir-autogen, elixir-format
+msgid "kg"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:22
+#, elixir-autogen, elixir-format
+msgid "path"
+msgstr ""
+
+#: lib/europa/server/planet.ex:213
+#, elixir-autogen, elixir-format
+msgid "person"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:90
+#, elixir-autogen, elixir-format
+msgid "radioactive water"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:12
+#, elixir-autogen, elixir-format
+msgid "snow"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:47
+#, elixir-autogen, elixir-format
+msgid "thin ice"
+msgstr ""
+
+#: lib/europa/server/planet/tiles/objects.ex:13
+#: lib/europa/server/planet/tiles/objects.ex:14
+#: lib/europa/server/planet/tiles/objects.ex:15
+#: lib/europa/server/planet/tiles/objects.ex:16
+#: lib/europa/server/planet/tiles/objects.ex:17
+#: lib/europa/server/planet/tiles/objects.ex:18
+#: lib/europa/server/planet/tiles/objects.ex:19
+#: lib/europa/server/planet/tiles/objects.ex:20
+#: lib/europa/server/planet/tiles/objects.ex:22
+#, elixir-autogen, elixir-format
+msgid "wall"
+msgstr ""
+
+#: lib/europa/server/planet/tiles.ex:80
+#, elixir-autogen, elixir-format
+msgid "water"
+msgstr ""
+
+#: lib/europa/server.ex:1039
+#, elixir-autogen, elixir-format
+msgid "year"
+msgid_plural "years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/europa_web/components/game_components.ex:136
+#, elixir-autogen, elixir-format
+msgid "year AD"
+msgstr ""
+
+#: lib/europa/server.ex:1048
+#, elixir-autogen, elixir-format
+msgid "years old"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:599
+#, elixir-autogen, elixir-format
+msgid "you have"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:25
+#, elixir-autogen, elixir-format
+msgid "A foul-smelling monster resembling an anthropomorphic deep-sea fish from Earth. The first creature to emerge onto the surface."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:25
+#, elixir-autogen, elixir-format
+msgid "A hideous, foul-smelling, fish-like monster exuding a strange energy."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:25
+#, elixir-autogen, elixir-format
+msgid "A hybrid of a human and a local underwater monster. Rumor has it that some people, for some reason, deliberately dived into the ocean and subsequently became like this."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:25
+#, elixir-autogen, elixir-format
+msgid "A nauseating ocean toad. It moves in sudden jerks."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:25
+#, elixir-autogen, elixir-format
+msgid "An underwater ghoul that exudes even more cold than everything around it."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:24
+#, elixir-autogen, elixir-format
+msgid "Blistered Ghoul"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:24
+#, elixir-autogen, elixir-format
+msgid "Deep-sea semi-worm"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:24
+#, elixir-autogen, elixir-format
+msgid "Fishlike ghoul"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:24
+#, elixir-autogen, elixir-format
+msgid "Human race betrayer"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:24
+#, elixir-autogen, elixir-format
+msgid "Ice Ghoul"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:25
+#, elixir-autogen, elixir-format
+msgid "Something that looks like a cross between a giant slimy worm and a seal. The Geiger counter goes off the charts next to them."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:24
+#, elixir-autogen, elixir-format
+msgid "Stinking Toad"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "#&^!&#"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "*@%#"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Bluah!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Bluen!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Enter..#%@ the..$&#&@ ocean!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Fin...&*^#ers.."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Grrr!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Grrraaah!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Hel... Ghaaa#&^&"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Mother.."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Raaaar!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Ribbit!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "S..tay he#&%.."
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "Submit..to me!"
+msgstr ""
+
+#: lib/europa/server/enemy.ex:0
+#, elixir-autogen, elixir-format
+msgid "WoaAaA!"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Bag"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Bed"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Crashed shuttle"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Cupboard"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Factory box"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Furniture"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Human corpse"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Monster corpse"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Refrigerator"
+msgstr ""
+
+#: lib/europa/server/loot.ex:72
+#, elixir-autogen, elixir-format
+msgid "Table"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid ".40 S&W"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid ".45 ACP"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid ".50 BMG"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid "5.56mm"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A bottle of synthetic milk. Old people adore it for its nostalgic qualities, while young people, who have never seen a real cow, don't understand the need for it as adults."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A bottle of water contaminated with radiation. Drink at your own risk."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A compact, medium-power hydrogen laser. It was primarily used in construction as a replacement for a drill: its short pulse can create a perfect hole in any building material."
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "A development by European scientists, designed to split atoms in laboratories. An extremely powerful and dangerous tool. Difficult times can weaponize anything..."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A device for splitting atoms in a laboratory setting. It emits a highly focused beam of neutrons accelerated to 99.95% the speed of light. Monsters and people are made of atoms too. Get it?"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A drug used to reduce the negative effects of radiation on body tissues, including during radiation therapy."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A dry ration covering basic needs. An indispensable item at the beginning of colonization, it became popular again after the disaster."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A helmet with improved glare for more precise aiming. Developed by SSB."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A modified Earth pistol with increased power. Better to hold it with both hands!"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A modified Earth shotgun. It features an extended barrel, increasing spread and allowing for larger buckshot. It was home-made, so it's not widely available. Monsters will love it."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A plastic baton used by security guards. In practice, it has been shown that a serious adult man can withstand up to a hundred such blows."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A reinforced spacesuit that allows for longer exposure to cold and greater weight capacity. Developed by terrorists from the SSB."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A self-heating food tube, designed for space travel, has also found use in the European cold. It tastes like low-quality vegetable puree, but it warms you up nicely."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A service key card that allows you to open a regular door."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A set of parts for a primitive earthly weapon."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A set of synthetic wood capable of burning in a rarefied atmosphere."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A single-shot sniper rifle, assembled by the WCC military using Earth weapons. It has an incredible range and has proven itself in combat against SSB terrorists."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A standard helmet designed for civilian use."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A standard spacesuit for civilians. More than covers all everyday needs."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A strong, warming drink. They say it protects against radiation, but it's harmful to health."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A syringe with stem cells. An expensive but effective treatment for injuries."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A tube of energy gel. Quenches hunger and thirst."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "A tube of energy gel. The dosimeter keeps beeping next to it."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "An antique Earth pistol. The most popular weapon on Europa. Progress on Europa was focused on science and gunsmithing wasn't very popular, so even this old thing will do."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "An antique Earth rifle, modified by SSB rebels for use in Europa. It fires short bursts and has a sufficient range."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Atom splitter"
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Automatic rifle cartridges. The rebels' loyal allies from the SSB."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Baton"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Beast Slayer"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Bonfire starter kit"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Bottle of pure water"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Bottle of water with radiation"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Can of expired Earth beer"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Canned beef stew"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Canned meat that can be stored for decades. A highly nutritious food."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Carbon dioxide fire extinguisher."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Complex mechanical and scientific components that were not intended for weapon assembly, but..."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Crowbar"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Crystal-clear water from a purifier. The laboratories that purified water from radiation were destroyed along with the nuclear reactors, so the clean water became local gold."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Cystamin"
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Disposable batteries for hydrogen laser."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "ETC laser cutter"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Earth Shotgun. An old and tried-and-true weapon for pacifying protesters. It shoots even further in low-gravity conditions."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Energy gel"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Energy gel with radiation"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Expired canned beef stew"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Expired canned meat. Is it worth eating?"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Fire extinguisher"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "First aid kit with European antibiotics."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Fish crackers"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Fish crackers with radiation"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Freeze-dried berries"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Freeze-dried berries. They keep almost forever and contain some vitamins and sugars."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Good matches that burn even in a thin atmosphere."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Good old fish-shaped crackers. They were brought from Earth in huge quantities because they didn't spoil quickly."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Guard's pistol"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Hawk's eye"
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Heavy pistol cartridges."
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Heavy sniper rounds. Incredibly rare. Could any living creature survive such a shot?"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Heavy-duty boots designed to withstand cold conditions for extended periods. Developed by SSB terrorists for extended outdoor operations."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "High technology is all well and good, but a blow to the head with a few kilograms of Earth iron will pacify even those born outside of Earth."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Key card"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Kitchen knife"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Kitchen knife, cuts vegetables perfectly."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Many settlers believed that beer and cheese were humanity's most important food inventions. Wheat didn't thrive on Europa, so beer supplies were limited to what they brought from Earth. Much of it had already expired."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Matches"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Modified SSB rifle"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Northern Earth peoples warmed themselves with a dish consisting of finely shredded raw fatty fish. It works on Europa too!"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Parts for Earth weapons. Nothing complicated, but the instructions are helpful."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Parts for advanced weapons."
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Powerful buckshot shotgun shells, perfect for exploring the insides of monsters."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "SSB boots"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "SSB helmet"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "SSB suit"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Self-heating food tube"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Shotgun"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "Standard boots sold by WCC to the European population."
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Standard pistol cartridges."
+msgstr ""
+
+#: lib/europa/server/loot.ex:83
+#, elixir-autogen, elixir-format
+msgid "Standard shotgun shells."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Stem cell injector"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Stroganina"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Synthetic milk"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "The Equalizer"
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "The local monsters are adapted to the local conditions. Their bile stinks horribly of rotten fish, but it's warming and healing good. An incredibly valuable remedy."
+msgstr ""
+
+#: lib/europa/server/loot.ex:88
+#, elixir-autogen, elixir-format
+msgid "These once-good crackers now emit radiation."
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Tincture of monster bile"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Vodka"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "WCC civil boots"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "WCC civil helmet"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "WCC civil suit"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "WCC dry rations"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "WCC medical kit"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Weapon parts 1"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Weapon parts 2"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Weapon parts 3"
+msgstr ""
+
+#: lib/europa/server/loot.ex:87
+#, elixir-autogen, elixir-format
+msgid "Weapon parts 4"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid "buckshot"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid "hydrogen battery"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid "neutron cartridges"
+msgstr ""
+
+#: lib/europa/server/loot.ex:82
+#, elixir-autogen, elixir-format
+msgid "shotgun"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "A few years ago, anyone would have sold their own mother to be in my shoes. Now I'm ready to eat rotten canned food and drink water from a puddle. Now even I would prefer to be a worm in someone's ass than myself."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "After the explosion, the WSS is weaker than ever. There's no one left to prove anything to, but I want to find Davies, if he's still alive. If not, I'll shoot what's left of him, then build a new reactor on his snowy grave and blow it up again."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "All is lost..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "All the documentation was stored in the office next to the reactors. I'm sure there wasn't a single intact transistor from the hard drives, not a single intact molecule of paper... Future generations, if any survived, simply won't be able to catch up with this entire scientific base; they'll never have a single new reactor."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Am I personally to blame for the disaster? On the one hand, I have nothing to do with the reactors' operation. But on the other hand, my politics... Who cares now? Is there anyone here besides me?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Are you so carried away playing the King of Europa that you've decided to lay down your bones on it? I'll help you if you ask nicely."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "At the time of the disaster, my father was on the other side of the globe. They were exploring the possibility of building a second set of reactors on the opposite side, because they could evaporate water much more efficiently there than on the busy half of Europa. Is he still alive? If he understands what happened..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Come here!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Damn it! Damn it!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Did the mouse come into the cat's mouth on its own?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Even before the disaster, this so-called 'president of humanity' deserved to be deported to Earth to rot alive from radiation. Now he deserves to become breakfast for one of these creatures. I'm ready to lie down on the next plate just to see it with my own eyes."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Father! You're alive! I thought..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Father, what are you doing here? Lord, you're alive! But Mother..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Hey!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I can't believe my eyes! Why didn't you fly away, you idiot? Are you couldn't fit into the shuttle with a ton of other people's money?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I met one of ours, but at that moment the ghoul was already sucking in his intestines like fucking spaghetti..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I was chosen to rule Europa, and I'd rather freeze 100 meters into the ice than fly away from here. And where would I fly to? The world is ending. I choose to sink along with 'my ship.'"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I was testing the ice strength on the uninhabited side of the satellite. As soon as I felt the jolt, I immediately realized what had happened. But what the hell? The reactors had been operating for almost 20 years without a single breakdown, without a single minute of downtime."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I will never forget you 我的心肝"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I'd served in the air force for over five years; if only there was even one surviving ship here... But where would I go? All the generation ships are already somewhere at the edge of the solar system, and a regular wreck could only get me to Io at best."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I'll fix everything, I guess."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I've killed a hundred people on Europa, two hundred on Earth, without flinching. But when I see these creatures, I want to hide in a corner like a child... What will happen to us now?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Idiots!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Is anyone there?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "It's time to act"
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Junior research fellow"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Members of the SSB, especially me, weren't welcome in respectable circles before. But now I feel like I'm being looked at askance even within the SSB itself. Maybe it's paranoia? I haven't slept for three days..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "My mother used to say that people like me, those born here, are something... Something that shouldn't have been. How did they get so far from home? Science drives progress, and the fear of being vaporized by a nuclear explosion pushes science at the speed of light."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "My parents remained on Earth and, like everyone else, perished in a nuclear war. I flew to Europa with the military, serving in the Canadian Army. There was no one to fight with in the peaceful, newly established Europa, so our unit was disbanded, and after wandering around, I ended up in the SSB, which became my second family."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "My parents spent almost their entire lives trying to develop a working tokamak. After their first major success, they were immediately recruited to Europa to build a terraforming center. A few years later, I was born. So, it turns out I'm as much of a native European as these monsters..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "My wife and I developed the first tokamak prototype, capable of producing hydrogen from water and triggering a nuclear fusion reaction. After successful tests and the launch of mass production, we were called upon to lead the terraforming of Europa. Work progressed rapidly until an explosion occurred, releasing enormous amounts of energy... My wife died immediately, but I managed to survive by a lucky coincidence.. Is our son alive?.."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Now I'm at the helm."
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Nuclear physicist"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "People call me a terrorist, but my true goal is to overthrow the European regime and hand over power to those who deserve it. I am ready to sacrifice everything, including my life, to achieve this goal. If that means teaming up with underwater creatures, I'm in."
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#, elixir-autogen, elixir-format
+msgid "Phil McLee"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Phil? I'm glad you're alive, but what are you doing here? Where are the others?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Politician, head of the WCC"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Power will corrupt anyone. You can maintain control when you've gained power over hundreds, thousands, millions of people... But when you have the highest rank in the solar system... Is disaster the punishment for that? Now I'm an ordinary person and I'm as afraid as everyone else."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Sir, is that you? I thought I was the only one left! After the explosion, the military police from the WCC came running towards us. They started beating the crap out of the guys, I shot two and ran away without looking back. Where are we?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "So that's why it smelled like shit! The wind came before you. Even the spacesuit didn't help."
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Space criminal, leader of the SSB"
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Space criminal, retired soldier."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Stanislav once mentioned that after his death I would take his place. This information haunts me. I never wanted to take on such a burden before, but now I find myself terrified, thinking I'm ready to hasten his death to bring that moment closer."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "They say the explosion was so powerful that the ice on which the generators were standing melted 30 kilometers deep, and all that water instantly boiled. Not a single neuron in the heads of my mother and her colleagues even had time to move to realize what was about to happen to them..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "This isn't funny anymore, I can't believe we're standing here side by side."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "This time, hold the gun with both hands and try not to shake, sucker."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "We've been keeping a low profile most of the time, but now, after the disaster, it's time to act. Those idiots at the WCC, with their negligence, have done all the work for us; all we have to do is take matters into our own hands. All doors are open."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Well..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "What the hell are you doing here?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "What's going to happen to us now? We've dreamed of destroying the WSS our whole lives, but what do we do now? Do we have a plan?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Who is to blame?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Would all this have happened if the SSB terrorists had killed me that time? Just a couple of inches..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "You? Hahaha! Are you going to kill me? I'm doomed one way or another. Will you kill me or leave me for dessert for these ghouls?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Zhang is that you? 你回来了真好! I felt like you survived!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "这算怎么回事啊!"
+msgstr ""

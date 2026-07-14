@@ -20,8 +20,6 @@ config :europa, EuropaWeb.Endpoint,
   secret_key_base: "7ylQsmV1OlFsjuD4UCvDeetpVLtLf1LW0ekxudoN3Vi0Yqo/kbCUO4gAR0QoFl0J",
   server: false
 
-config :europa, Europa.Tools.TextGenerator, texts_path: "/texts_templates/test/"
-
 config :europa, Europa.Server.Planet.Predefined, templates_path: "/planet/test/"
 
 config :europa, Europa.Server.Planet.Predefined,

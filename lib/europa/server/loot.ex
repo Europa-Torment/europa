@@ -65,6 +65,32 @@ defmodule Europa.Server.Loot do
 
   @type uuid :: Ecto.UUID.t()
 
+  for {{item_box, _}, index} <- Enum.with_index(@item_boxes) do
+    fun_name = String.to_atom("__extract_strings_for_ib_#{index}")
+
+    def unquote(fun_name)() do
+      gettext(unquote(item_box.readable_name))
+    end
+  end
+
+  for {{category, items}, i} <- Enum.with_index(@items_attrs) do
+    for {{item, _}, j} <- Enum.with_index(items) do
+      fun_name = String.to_atom("__extract_strings_for_it_#{i}_#{j}")
+
+      if category == :ammo do
+        def unquote(fun_name)() do
+          gettext(unquote(item.caliber))
+          gettext(unquote(item.description))
+        end
+      else
+        def unquote(fun_name)() do
+          gettext(unquote(item.name))
+          gettext(unquote(item.description))
+        end
+      end
+    end
+  end
+
   defprotocol Item do
     alias Europa.Server.Errors
     alias Europa.Server.Loot
