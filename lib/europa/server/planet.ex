@@ -1,4 +1,5 @@
 defmodule Europa.Server.Planet do
+  # TODO: get rid of changing the player structure inside this module, move it to server module
   @behaviour Europa.Server.PlanetManager
 
   use TypedStruct
