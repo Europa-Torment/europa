@@ -832,12 +832,16 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp move_enemy_actions(%Enemy{stand_on: tile}, _) when tile in @swimable_tiles do
+    []
+  end
+
+  defp move_enemy_actions(enemy, []) do
+    [Action.new(enemy, :chasing)]
+  end
+
   defp move_enemy_actions(enemy, neighbor_npc) do
-    if Enum.empty?(neighbor_npc) do
-      [Action.new(enemy, :chasing)]
-    else
-      Enum.map(neighbor_npc, fn {_coord, npc} -> Action.new({enemy, npc}, :enemy_killed_npc) end)
-    end
+    Enum.map(neighbor_npc, fn {_coord, npc} -> Action.new({enemy, npc}, :enemy_killed_npc) end)
   end
 
   defp calculate_enemy_move_coord(%__MODULE__{current_coord: {px, py}} = planet, {ex, ey}) do
