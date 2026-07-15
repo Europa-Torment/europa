@@ -812,10 +812,12 @@ defmodule Europa.Server.Planet do
             _ -> false
           end)
 
+        updated_enemy = struct!(enemy, stand_on: target_tile)
+
         updated_land =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
-          |> change_tile(new_enemy_coord, struct!(enemy, stand_on: target_tile))
+          |> change_tile(new_enemy_coord, updated_enemy)
 
         updated_land =
           Enum.reduce(neighbor_npc, updated_land, fn {npc_coord, npc}, land ->
@@ -823,10 +825,10 @@ defmodule Europa.Server.Planet do
             |> change_tile(npc_coord, generate_human_body(npc))
           end)
 
-        actions = move_enemy_actions(enemy, neighbor_npc)
+        actions = move_enemy_actions(updated_enemy, neighbor_npc)
 
         updated_planet = struct!(planet, land: updated_land)
-        {updated_planet, actions, new_enemy_coord, enemy}
+        {updated_planet, actions, new_enemy_coord, updated_enemy}
     end
   end
 
