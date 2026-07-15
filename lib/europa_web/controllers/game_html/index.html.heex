@@ -2,7 +2,7 @@
 <.background />
 
 <%= if Enum.empty?(@games) do %>
-  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 p-5 text-md font-display tracking-wide text-center">
+  <div class="overflow-x-auto border border-base-content/5 bg-base-100 p-5 text-md font-display tracking-wide text-center">
     {gettext("Welcome to Europa. Dress warmly, make sure your spacesuit is airtight, and let's go!")}
 
     <div class="flex justify-center items-center mt-5">
@@ -10,7 +10,7 @@
     </div>
     <div class="text-center items-center my-3">
       <.button
-        class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full mb-5"
+        class="btn btn-pixel btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold rounded-none mb-5"
         navigate={~p"/games/new"}
       >
         ❄️ {gettext("Set foot on European soil")}
@@ -19,12 +19,12 @@
   </div>
 <% else %>
   <.button
-    class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full mb-5"
+    class="btn btn-pixel btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white text-lg font-display font-bold rounded-none mb-5"
     navigate={~p"/games/new"}
   >
     {gettext("New game")}
   </.button>
-  <ul class="list bg-base-200 rounded-box shadow-md font-display tracking-wide">
+  <ul class="list bg-base-200 shadow-md font-display tracking-wide">
     <li class="p-4 pb-2 text-sm opacity-60 tracking-wide">{gettext("Active game sessions")}</li>
 
     <%= for game <- @games do %>

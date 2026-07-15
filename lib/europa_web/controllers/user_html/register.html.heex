@@ -3,7 +3,7 @@
 <div class="max-w-6xl mx-auto px-4 py-6 relative z-10">
   <.title text={gettext("Register")} />
 
-  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 p-5">
+  <div class="overflow-x-auto border border-base-content/5 bg-base-100 p-5">
     <.form :let={f} for={@changeset} id="register-form" action={~p"/users/register"}>
       <.input type="text" field={f[:username]} label={"#{gettext("Username")}"} />
       <.input type="password" field={f[:password]} label={"#{gettext("Password")}"} />
@@ -16,7 +16,7 @@
         label={"#{gettext("Prove that you are a human or other life form with vision")}"}
       />
 
-      <.button class="btn btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow">
+      <.button class="btn btn-pixel btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 mt-5 rounded-none">
         {gettext("Become European")}
       </.button>
     </.form>
@@ -27,7 +27,7 @@
 
     <div class="p-3">
       <.button
-        class="btn btn-md bg-gradient-to-r from-green-600 to-blue-700 border-none text-white font-bold px-12 py-4 rounded-full btn-glow"
+        class="btn btn-pixel btn-md bg-gradient-to-r from-green-600 to-blue-700 border-none text-white font-bold px-12 py-4 rounded-none"
         navigate={~p"/users/login"}
       >
         {gettext("Login")}

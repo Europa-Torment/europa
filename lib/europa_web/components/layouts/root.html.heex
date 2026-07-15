@@ -7,10 +7,6 @@
     <.live_title default={gettext("Europa Torment - browser game")}>
       {assigns[:page_title]}
     </.live_title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&family=Orbitron:wght@400;700;900&display=swap"
-      rel="stylesheet"
-    />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
@@ -18,12 +14,12 @@
   <body class={if assigns[:game_page], do: "h-screen overflow-hidden", else: ""}>
     <div class="navbar bg-base-200 shadow-sm">
       <div class="flex-1">
-        <.link navigate="/" class="btn btn-ghost text-xl font-display font-bold text-cyan-300 tracking-wide">
+        <.link navigate="/" class="btn btn-ghost text-2xl font-display font-bold text-cyan-300 tracking-wide">
           Europa Torment
         </.link>
       </div>
       <div class="flex-none">
-        <ul class="menu menu-horizontal px-1 font-display font-bold tracking-wide">
+        <ul class="menu menu-horizontal px-1 font-display font-bold text-lg tracking-wide">
           <%= if assigns[:current_user] do %>
             <li><.link navigate={~p"/games"}>🎮 {gettext("Games")}</.link></li>
             <li><.link navigate={~p"/lore"}>📚 {gettext("Lore")}</.link></li>
@@ -33,7 +29,7 @@
                 <summary class="font-bold text-primary">
                   {@current_user_username}
                 </summary>
-                <ul class="menu dropdown-content bg-base-200 rounded-box z-[1] w-48 p-2 shadow">
+                <ul class="menu dropdown-content bg-base-200 z-[1] w-48 p-2 shadow">
                   <li>
                     <.link navigate={~p"/users/logout"} class="whitespace-nowrap">
                       {gettext("Sign out")}
@@ -57,7 +53,7 @@
         </ul>
       </div>
     </div>
-    <div class="container mx-auto py-8 font-mono">
+    <div class="container mx-auto py-8 font-display">
       {@inner_content}
     </div>
   </body>

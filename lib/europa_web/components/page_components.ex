@@ -3,7 +3,7 @@ defmodule EuropaWeb.PageComponents do
   use Gettext, backend: Europa.Gettext
 
   def timeline(assigns) do
-    text_style = "text-sm font-display tracking-wide"
+    text_style = "text-md font-display tracking-wide"
 
     events =
       [
@@ -90,7 +90,7 @@ defmodule EuropaWeb.PageComponents do
     ~H"""
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr">
       <%= for {logo, name, description} <- @organisations do %>
-        <div class="card bg-base-200 shadow-xl rounded-2xl overflow-hidden border border-white/30 backdrop-blur-sm">
+        <div class="card bg-base-200 shadow-xl overflow-hidden border border-white/30 backdrop-blur-sm">
           <figure class="relative overflow-hidden">
             <img
               src={logo}

@@ -63,7 +63,7 @@ defmodule EuropaWeb.GameCompotents do
       <button
         id="start_buttom"
         phx-click="start_game"
-        class="btn btn-xl bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow"
+        class="btn btn-pixel btn-xl bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-none"
       >
         {gettext("Start game")}
       </button>
@@ -87,7 +87,7 @@ defmodule EuropaWeb.GameCompotents do
     assigns = assign(assigns, aim: formatted_aim, visible_planet: visible_planet)
 
     ~H"""
-    <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 rounded-box shadow-md grid place-items-center">
+    <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 shadow-md grid place-items-center">
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
@@ -119,7 +119,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def chat(assigns) do
     ~H"""
-    <div class="h-80 overflow-y-auto bg-base-200 p-5 rounded-box shadow-md text-xs">
+    <div class="h-80 overflow-y-auto bg-base-200 p-5 shadow-md text-xs">
       <%= for message <- Enum.reverse(@chat.messages) do %>
         <p class={"break-words p-1.5 #{chat_color(message)}"}>
           <span class="italic text-gray-400 text-[10px]">{message.id}.</span> {message.text}
@@ -132,7 +132,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def current_time(assigns) do
     ~H"""
-    <div class="bg-base-200 p-3 rounded-box shadow-md text-sm">
+    <div class="bg-base-200 p-3 shadow-md text-sm">
       ⌚ {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext("year AD")}
     </div>
     """
@@ -140,7 +140,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def player_stats(assigns) do
     ~H"""
-    <div class={"bg-base-200 p-5 rounded-box shadow-md text-#{@text_size}"}>
+    <div class={"bg-base-200 p-5 shadow-md text-#{@text_size}"}>
       <ul class="grid grid-cols-2 grid-rows-3 gap-3">
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div class="tooltip" data-tip={gettext("Health")}>
@@ -191,7 +191,7 @@ defmodule EuropaWeb.GameCompotents do
     assigns = Map.put(assigns, :version, @game_version)
 
     ~H"""
-    <div class="bg-base-200 p-5 rounded-box shadow-md text-xs">
+    <div class="bg-base-200 p-5 shadow-md text-xs">
       <.link phx-click="show_control_hints">ℹ️ {gettext("Control hints")}</.link>
     </div>
     <div class="p-1 text-center text-xs">
@@ -204,7 +204,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def equipment(assigns) do
     ~H"""
-    <div class="h-80 bg-base-200 p-5 rounded-box shadow-md text-xs">
+    <div class="h-80 bg-base-200 p-5 shadow-md text-xs">
       <div class="grid grid-cols-2 gap-x-4">
         <div class="flex flex-col gap-y-0.5">
           <%= if @helmet do %>
@@ -217,7 +217,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No helmet")}
               src={~p"/images/no_helmet.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
+              class="bg-neutral w-full h-auto object-cover"
             />
           <% end %>
 
@@ -231,7 +231,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No suit")}
               src={~p"/images/no_suit.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
+              class="bg-neutral w-full h-auto object-cover"
             />
           <% end %>
 
@@ -245,7 +245,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No boots")}
               src={~p"/images/no_boots.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
+              class="bg-neutral w-full h-auto object-cover"
             />
           <% end %>
         </div>
@@ -261,7 +261,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No weapon")}
               src={~p"/images/no_weapon.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
+              class="bg-neutral w-full h-auto object-cover"
             />
           <% end %>
           <%= if @melee_weapon do %>
@@ -274,7 +274,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No melee weapon")}
               src={~p"/images/fist.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover rounded-sm"
+              class="bg-neutral w-full h-auto object-cover"
             />
           <% end %>
         </div>
@@ -292,7 +292,7 @@ defmodule EuropaWeb.GameCompotents do
       data-tooltip={item_tooltip(@item, @player)}
       src={~p"/images/#{@item.image_name <> ".png"}"}
       alt="4"
-      class="bg-neutral w-full h-auto object-cover rounded-sm"
+      class="bg-neutral w-full h-auto object-cover"
     />
     """
   end
@@ -300,7 +300,7 @@ defmodule EuropaWeb.GameCompotents do
   def ammo_info(assigns) do
     ~H"""
     <%= if @weapon do %>
-      <div class="bg-base-200 p-5 rounded-box shadow-md text-xs" {open_inventory_attrs("ammo")}>
+      <div class="bg-base-200 p-5 shadow-md text-xs" {open_inventory_attrs("ammo")}>
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")}/#{gettext("In inventory")}"}>
           🔫 {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
         </p>
@@ -385,7 +385,7 @@ defmodule EuropaWeb.GameCompotents do
                     <.item_quick_action item={item} />
                     <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                       <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
-                      <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                      <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
                         <%= if weapon?(item) && item.rounds_loaded < item.magazine_size do %>
                           <li phx-click="reload_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Reload")} <.moves_count moves_count={item.reload_cost} /></a>
@@ -451,7 +451,7 @@ defmodule EuropaWeb.GameCompotents do
                     <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                       <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
                         <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
-                        <ul tabindex="-1" class="dropdown-content menu bg-neutral rounded-box z-1 w-52 p-2 shadow-sm">
+                        <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
                           <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Unload")}</a>
                           </li>

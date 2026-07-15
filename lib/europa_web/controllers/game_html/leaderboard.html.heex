@@ -8,15 +8,15 @@
       <a
         href={~p"/games/leaderboard?category=#{cat}"}
         role="tab"
-        class={if to_string(@category) == to_string(cat), do: "tab tab-active", else: "tab"}
+        class={if to_string(@category) == to_string(cat), do: "tab tab-active text-lg", else: "tab"}
       >
         {readable_cat}
       </a>
     <% end %>
   </div>
 
-  <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 font-display text-cyan-200 tracking-wide mt-10">
-    <table class="table">
+  <div class="overflow-x-auto border border-base-content/5 bg-base-100 font-display text-cyan-200 tracking-wide mt-10">
+    <table class="table text-lg">
       <thead>
         <tr>
           <th></th>

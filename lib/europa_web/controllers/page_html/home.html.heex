@@ -3,7 +3,7 @@
 <main class="max-w-6xl mx-auto px-4 py-6 relative z-10">
   <Layouts.flash_group flash={@flash} />
 
-  <div class="relative w-full rounded-2xl overflow-hidden shadow-2xl mb-8 group">
+  <div class="relative w-full overflow-hidden shadow-2xl mb-8 group">
     <img
       src={~p"/images/game_art.png"}
       class="w-full object-cover h-[280px] md:h-[420px] transition-transform duration-700 group-hover:scale-105"
@@ -19,13 +19,13 @@
         "In the near future, humans colonized Europa. It was the first and last attempt to colonize another space object: terraforming turned into a disaster and the people with money and power fled the satellite, leaving the rest to their deaths."
       )}
     </p>
-    <div class="divider my-4 w-24 mx-auto bg-cyan-500/50 h-0.5 rounded-full"></div>
+    <div class="divider my-4 w-24 mx-auto bg-cyan-500/50 h-0.5 rounded-none"></div>
     <p class="text-2xl font-display font-bold text-cyan-300 tracking-wide">
       {gettext("Will you survive?")}
     </p>
   </div>
 
-  <div class="carousel w-full rounded-2xl overflow-hidden shadow-2xl mb-6">
+  <div class="carousel w-full overflow-hidden shadow-2xl mb-6">
     <div id="item1" class="carousel-item relative w-full">
       <img src={~p"/images/game_screen1.png"} class="w-full object-cover h-[440px]" alt="game screen" />
       <div class="absolute inset-0 carousel-overlay flex items-center justify-start p-8 md:p-12">
@@ -92,31 +92,31 @@
   <div class="flex flex-wrap justify-center gap-3 py-4 mb-8">
     <a
       href="#item1"
-      class="btn btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-full w-10"
+      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
     >
       1
     </a>
     <a
       href="#item2"
-      class="btn btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-full w-10"
+      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
     >
       2
     </a>
     <a
       href="#item3"
-      class="btn btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-full w-10"
+      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
     >
       3
     </a>
     <a
       href="#item4"
-      class="btn btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-full w-10"
+      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
     >
       4
     </a>
     <a
       href="#item5"
-      class="btn btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-full w-10"
+      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
     >
       5
     </a>
@@ -124,7 +124,7 @@
 
   <div class="text-center my-12">
     <.button
-      class="btn btn-xl bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow"
+      class="btn btn-pixel btn-xl bg-gradient-to-r from-blue-700 to-green-600 text-white font-display font-bold px-12 py-4 rounded-none"
       navigate={~p"/games/new"}
     >
       🚀 {gettext("Become European")}
@@ -135,14 +135,14 @@
   <div class="text-center my-12">
     <p class="text-xs text-white/40 mb-3">{gettext(".. or for starters")}</p>
     <.button
-      class="btn btn-md bg-gradient-to-r from-green-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-full btn-glow"
+      class="btn btn-pixel btn-md bg-gradient-to-r from-green-600 to-blue-700 border-none text-white font-display font-bold rounded-none"
       navigate={~p"/lore"}
     >
       📚 {gettext("Read lore")}
     </.button>
   </div>
 
-  <footer class="footer footer-horizontal footer-center bg-black/50 backdrop-blur-md text-white rounded-2xl p-8 mt-12 border-t border-white/10 shadow-xl">
+  <footer class="footer footer-horizontal footer-center bg-black/50 backdrop-blur-md text-white p-8 mt-12 border-t border-white/10 shadow-xl">
     <div class="flex flex-wrap justify-center gap-2 text-white/80 text-sm font-display tracking-widest">
       <span>
         Developed by
