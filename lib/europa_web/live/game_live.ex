@@ -78,20 +78,10 @@ defmodule EuropaWeb.GameLive do
         |> assign(
           game_field_size: length(socket.assigns.visible_planet),
           game_started: false,
-          item_to_drop: nil,
-          item_drop_count: nil,
           game_over: false,
           game_page: true,
-          disassemble_item_uuid: nil,
-          disassemble_items: nil,
-          blueprints: nil,
-          blueprints_type: nil,
-          interaction_confirmation: nil,
-          transform_name: nil,
           inventory_type: nil,
           zoom_mode: false,
-          compass: nil,
-          compass_target_menu_active: false,
           input_mode: false
         )
 
@@ -124,7 +114,8 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
-  def handle_event("key_pressed", _, %{assigns: %{input_mode: true}} = socket) do
+  def handle_event("key_pressed", %{"code" => code}, %{assigns: %{input_mode: true}} = socket)
+      when code not in @close_codes do
     {:noreply, socket}
   end
 
@@ -172,7 +163,7 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @loot_codes do
     if socket.assigns.item_box do
-      close_item_box(socket)
+      {:noreply, close_item_box(socket)}
     else
       open_item_box(socket)
     end
@@ -180,7 +171,7 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @inventory_codes do
     if socket.assigns.inventory do
-      close_inventory(socket)
+      {:noreply, close_inventory(socket)}
     else
       socket
       |> assign(inventory_type: :all)
@@ -338,11 +329,11 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("close_control_hints", _, socket) do
-    {:noreply, assign(socket, show_control_hints: false)}
+    {:noreply, close_control_hints(socket)}
   end
 
   def handle_event("close_dialog", _, socket) do
-    {:noreply, assign(socket, dialog: nil)}
+    {:noreply, close_dialog(socket)}
   end
 
   def handle_event("close_compass", _, socket) do
@@ -358,12 +349,11 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("close_item_disassemble_menu", _, socket) do
-    {:noreply, assign(socket, disassemble_items: nil)}
+    {:noreply, close_item_disassemble_menu(socket)}
   end
 
   def handle_event("close_craft_menu", _, socket) do
-    socket
-    |> close_craft_menu()
+    {:noreply, close_craft_menu(socket)}
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -434,11 +424,8 @@ defmodule EuropaWeb.GameLive do
           socket
           |> base_assign()
           |> assign_equipment()
-          |> assign(
-            inventory: get_player_inventory(socket),
-            disassemble_item_uuid: nil,
-            disassemble_items: nil
-          )
+          |> close_item_disassemble_menu()
+          |> assign(inventory: get_player_inventory(socket))
           |> play_sound("assemble")
 
         {:noreply, socket}
@@ -455,12 +442,8 @@ defmodule EuropaWeb.GameLive do
           socket
           |> base_assign()
           |> assign_equipment()
-          |> assign(
-            inventory: get_player_inventory(socket),
-            item_to_drop: nil,
-            item_drop_count: nil,
-            input_mode: false
-          )
+          |> close_item_drop_menu()
+          |> assign(inventory: get_player_inventory(socket))
           |> play_sound("equip")
 
         {:noreply, socket}
@@ -480,7 +463,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("close_item_drop_menu", _, socket) do
-    {:noreply, assign(socket, item_to_drop: nil, item_drop_count: nil, input_mode: false)}
+    {:noreply, close_item_drop_menu(socket)}
   end
 
   def handle_event("change_item_drop_count", %{"value" => count}, socket) do
@@ -579,11 +562,11 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("close_item_box", _, socket) do
-    close_item_box(socket)
+    {:noreply, close_item_box(socket)}
   end
 
   def handle_event("close_inventory", _, socket) do
-    close_inventory(socket)
+    {:noreply, close_inventory(socket)}
   end
 
   def handle_event(_, _, socket) do
@@ -753,22 +736,6 @@ defmodule EuropaWeb.GameLive do
       helmet: helmet,
       suit: suit,
       boots: boots
-    )
-  end
-
-  defp close_all(socket) do
-    socket
-    |> close_compass()
-    |> assign(
-      inventory: nil,
-      item_box: nil,
-      show_control_hints: false,
-      item_drop_menu: false,
-      item_to_drop: nil,
-      dialog: nil,
-      disassemble_items: nil,
-      blueprints: nil,
-      interaction_confirmation: nil
     )
   end
 
@@ -965,7 +932,44 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp close_inventory(socket) do
-    {:noreply, assign(socket, inventory: nil, inventory_type: nil)}
+    assign(socket, inventory: nil)
+  end
+
+  defp close_control_hints(socket) do
+    assign(socket, show_control_hints: false)
+  end
+
+  defp close_item_drop_menu(socket) do
+    assign(socket, item_drop_menu: false, item_to_drop: nil, item_drop_count: nil, input_mode: false)
+  end
+
+  defp close_dialog(socket) do
+    assign(socket, dialog: nil)
+  end
+
+  defp close_item_disassemble_menu(socket) do
+    assign(socket, disassemble_item_uuid: nil, disassemble_items: nil)
+  end
+
+  defp close_craft_menu(socket) do
+    assign(socket, blueprints: nil, blueprints_type: nil)
+  end
+
+  defp close_interaction(socket) do
+    assign(socket, interaction_confirmation: nil, transform_name: nil)
+  end
+
+  defp close_all(socket) do
+    socket
+    |> close_compass()
+    |> close_inventory()
+    |> close_item_box()
+    |> close_control_hints()
+    |> close_item_drop_menu()
+    |> close_dialog()
+    |> close_item_disassemble_menu()
+    |> close_craft_menu()
+    |> close_interaction()
   end
 
   defp open_craft_menu(socket) do
@@ -978,10 +982,6 @@ defmodule EuropaWeb.GameLive do
       |> assign(blueprints: blueprints, inventory: inventory)
 
     {:noreply, socket}
-  end
-
-  defp close_craft_menu(socket) do
-    {:noreply, assign(socket, blueprints: nil, blueprints_type: nil)}
   end
 
   defp open_item_box(socket) do
@@ -1000,11 +1000,15 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp close_item_box(socket) do
-    {:noreply, assign(socket, item_box: nil)}
+    assign(socket, item_box: nil)
   end
 
   defp toggle_control_hints(socket) do
-    {:noreply, assign(socket, show_control_hints: !socket.assigns.show_control_hints)}
+    if socket.assigns.show_control_hints do
+      {:noreply, close_control_hints(socket)}
+    else
+      {:noreply, assign(socket, show_control_hints: true)}
+    end
   end
 
   defp toggle_compass(socket) do
@@ -1042,21 +1046,15 @@ defmodule EuropaWeb.GameLive do
 
       {:ok, {:talk, npc}} ->
         {:noreply,
-         assign(socket,
-           dialog: %{npc: npc},
-           chat: Server.get_chat(socket.assigns.server),
-           show_control_hints: false,
-           inventory: nil,
-           item_box: nil,
-           interaction_confirmation: nil,
-           transform_name: nil
-         )}
+         socket
+         |> close_all()
+         |> assign(dialog: %{npc: npc})}
 
       {:ok, {:drink, _}} ->
         socket =
           socket
           |> base_assign()
-          |> assign(interaction_confirmation: nil, transform_name: nil)
+          |> close_interaction()
           |> play_sound("drink")
 
         {:noreply, socket}
@@ -1065,18 +1063,16 @@ defmodule EuropaWeb.GameLive do
         socket =
           socket
           |> base_assign()
-          |> assign(interaction_confirmation: nil, transform_name: nil)
+          |> close_interaction()
           |> play_sound(sound_name)
 
         {:noreply, socket}
 
       _ ->
         {:noreply,
-         assign(socket,
-           chat: Server.get_chat(socket.assigns.server),
-           interaction_confirmation: nil,
-           transform_name: nil
-         )}
+         socket
+         |> close_interaction()
+         |> assign(chat: Server.get_chat(socket.assigns.server))}
     end
   end
 

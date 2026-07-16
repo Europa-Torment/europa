@@ -832,6 +832,10 @@ defmodule EuropaWeb.GameCompotents do
             🧭 {gettext("Track current coord")}
           </button>
 
+          <div class="text-xs">
+            {gettext("Current coord")}: {coord(@current_coord)}
+          </div>
+
           <.compass_current_target target={@compass.current_target} current_coord={@current_coord} />
 
           <.compass_targets targets={@compass.targets} current_coord={@current_coord} />
@@ -849,7 +853,7 @@ defmodule EuropaWeb.GameCompotents do
     ~H"""
     <div>
       <%= if @target do %>
-        <div class="bg-base-200 p-5 shadow-md text-lg">
+        <div class="bg-base-200 p-5 shadow-md text-lg mt-2">
           <.compass_target target={@target} current_coord={@current_coord} is_current_target={true} />
         </div>
       <% end %>
