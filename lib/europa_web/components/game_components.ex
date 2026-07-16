@@ -104,7 +104,7 @@ defmodule EuropaWeb.GameCompotents do
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
                 style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px;"}
-                class="w-full h-auto object-contain block mx-auto z-50"
+                class="w-full h-full object-contain block mx-auto z-50"
               />
             </div>
           <% end %>
