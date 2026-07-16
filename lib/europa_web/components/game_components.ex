@@ -103,7 +103,8 @@ defmodule EuropaWeb.GameCompotents do
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-                class={"w-full h-full max-w-[#{tile_image_size(@zoom_mode)}] max-h-[#{tile_image_size(@zoom_mode)}] object-contain z-50"}
+                style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px;"}
+                class="w-full h-auto object-contain block mx-auto z-50"
               />
             </div>
           <% end %>
@@ -218,8 +219,8 @@ defmodule EuropaWeb.GameCompotents do
 
   def equipment(assigns) do
     ~H"""
-    <div class="h-80 bg-base-200 p-5 shadow-md text-xs">
-      <div class="grid grid-cols-2 gap-x-4">
+    <div class="w-fit h-auto bg-base-200 p-5 shadow-md text-xs">
+      <div class="grid grid-cols-2 gap-x-4 justify-items-center content-start">
         <div class="flex flex-col gap-y-0.5">
           <%= if @helmet do %>
             <.item_image item={@helmet} player={@player} />
@@ -231,7 +232,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No helmet")}
               src={~p"/images/no_helmet.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover"
+              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
           <% end %>
 
@@ -245,7 +246,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No suit")}
               src={~p"/images/no_suit.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover"
+              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
           <% end %>
 
@@ -259,7 +260,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No boots")}
               src={~p"/images/no_boots.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover"
+              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
           <% end %>
         </div>
@@ -275,7 +276,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No weapon")}
               src={~p"/images/no_weapon.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover"
+              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
           <% end %>
           <%= if @melee_weapon do %>
@@ -288,7 +289,7 @@ defmodule EuropaWeb.GameCompotents do
               data-tooltip={gettext("No melee weapon")}
               src={~p"/images/fist.png"}
               alt="4"
-              class="bg-neutral w-full h-auto object-cover"
+              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
           <% end %>
         </div>
@@ -306,7 +307,7 @@ defmodule EuropaWeb.GameCompotents do
       data-tooltip={item_tooltip(@item, @player)}
       src={~p"/images/#{@item.image_name <> ".png"}"}
       alt="4"
-      class="bg-neutral w-full h-auto object-cover"
+      class="bg-neutral max-w-full h-auto object-contain block mx-auto"
     />
     """
   end
