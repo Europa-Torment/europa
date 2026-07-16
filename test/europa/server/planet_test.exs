@@ -1253,7 +1253,8 @@ defmodule Europa.Server.PlanetTest do
       current_coord = {2, 4}
       planet = build(:planet, land: @land_player_look_right_at_enemies, current_coord: current_coord)
 
-      assert %Planet{land: land} = Planet.remove_last_events(planet)
+      assert {:ok, %Planet{land: land}, events} = Planet.remove_last_events(planet)
+      assert Enum.count(events) == 5
 
       assert Enum.all?(land.tiles, fn {coord, tile} ->
                if coords_distance(coord, current_coord) > div(@view_distance, 2) do

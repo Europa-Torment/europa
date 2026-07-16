@@ -44,11 +44,6 @@ defmodule EuropaWeb.GameLive do
 
   @game_over_redirect_delay_ms 8950
 
-  @events_tick_delay_ms 1000
-  @events_tick_max_resets 5
-
-  @processed_player_events_limit 20
-
   @view_distance fetch_config!([Planet, :view_distance])
 
   @default_compass_target_description gettext("No description")
@@ -63,13 +58,9 @@ defmodule EuropaWeb.GameLive do
         socket
         |> assign(
           game: game,
-          server: server,
-          events_tick_timer: schedule_events_tick(),
-          events_tick_timer_reset_at: current_time_ms(),
-          events_tick_timer_reset_skip_count: 0,
-          processed_player_events_uuid: []
+          server: server
         )
-        |> base_assign(events_tick_timer_reset: false)
+        |> base_assign()
         |> assign_equipment()
         |> close_all()
 
@@ -569,13 +560,22 @@ defmodule EuropaWeb.GameLive do
     {:noreply, close_inventory(socket)}
   end
 
+  def handle_event("get_events", _params, socket) do
+    if Process.alive?(socket.assigns.server) do
+      {events, socket} = get_events(socket)
+      {:reply, %{events: events}, socket}
+    else
+      {:reply, [], socket}
+    end
+  end
+
   def handle_event(_, _, socket) do
     {:noreply, socket}
   end
 
   @impl true
   def handle_info(:game_over, socket) do
-    cancel_events_tick_timer(socket)
+    {_events, socket} = get_events(socket)
 
     socket =
       socket
@@ -587,6 +587,15 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
+  def handle_info(:get_events, socket) do
+    if Process.alive?(socket.assigns.server) do
+      {_events, socket} = get_events(socket)
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
   def handle_info(:game_over_redirect, socket) do
     {:noreply, redirect_to_game_over_page(socket, socket.assigns.game.uuid)}
   end
@@ -595,80 +604,46 @@ defmodule EuropaWeb.GameLive do
     {:noreply, play_sound(socket, sound_name)}
   end
 
-  def handle_info({:timeout, timer_ref, :events_tick}, socket) do
-    if connected?(socket) do
-      time_diff = current_time_ms() - socket.assigns.events_tick_timer_reset_at
-      skip_count = socket.assigns.events_tick_timer_reset_skip_count
-
-      cond do
-        timer_ref != socket.assigns.events_tick_timer -> {:noreply, socket}
-        skip_count >= @events_tick_max_resets -> do_events_tick(socket)
-        time_diff >= @events_tick_delay_ms -> do_events_tick(socket)
-        true -> {:noreply, assign(socket, events_tick_timer: schedule_events_tick())}
-      end
-    else
-      cancel_events_tick_timer(socket)
-      {:stop, :shutdown, socket}
-    end
-  end
-
-  def handle_info(:reset_events_tick_timer, socket) do
-    skip_count = socket.assigns.events_tick_timer_reset_skip_count
-    cancel_events_tick_timer(socket)
-
-    {:noreply,
-     assign(socket, events_tick_timer: schedule_events_tick(), events_tick_timer_reset_skip_count: skip_count + 1)}
-  end
-
   def handle_info(_, socket) do
     {:noreply, socket}
   end
 
   ### Private ###
 
-  defp do_events_tick(socket) do
-    if Process.alive?(socket.assigns.server) do
-      :ok = Server.events_tick(socket.assigns.server)
+  defp get_events(socket) do
+    case Server.events_tick(socket.assigns.server) do
+      {:ok, events} ->
+        process_events(events, socket)
 
-      socket =
-        socket
-        |> assign(
-          events_tick_timer: schedule_events_tick(),
-          events_tick_timer_reset_at: current_time_ms(),
-          events_tick_timer_reset_skip_count: 0
-        )
-        |> base_assign(events_tick_timer_reset: false)
-
-      {:noreply, socket}
-    else
-      {:noreply, socket}
+      _ ->
+        {[], socket}
     end
   end
 
-  defp play_sounds_from_player_events(socket) do
-    Enum.reduce(socket.assigns.player.events, socket, fn event, socket ->
-      if event.uuid in socket.assigns.processed_player_events_uuid do
-        socket
-      else
-        socket
-        |> remember_player_event(event.uuid)
-        |> play_player_event_sound(event)
-      end
-    end)
+  defp process_events(events, socket) do
+    {events, socket} =
+      Enum.reduce(events, {[], socket}, fn {event_owner, event}, {events, socket} ->
+        socket = maybe_play_event_sound(event_owner, event, socket)
+        event_text = event_text(event)
+
+        if event_text do
+          event = %{
+            event_owner: "#{event_owner}",
+            event_text: event_text(event),
+            filter: event_filter(event_owner, event)
+          }
+
+          {[event | events], socket}
+        else
+          {events, socket}
+        end
+      end)
+
+    {events, socket}
   end
 
-  defp remember_player_event(socket, event_uuid) do
-    processed_uuids = socket.assigns.processed_player_events_uuid
-
-    updated_processed_uuids =
-      if Enum.count(processed_uuids) == @processed_player_events_limit do
-        List.delete_at(processed_uuids, 0) ++ [event_uuid]
-      else
-        processed_uuids ++ [event_uuid]
-      end
-
-    assign(socket, processed_player_events_uuid: updated_processed_uuids)
-  end
+  defp maybe_play_event_sound(:player, event, socket), do: play_player_event_sound(socket, event)
+  defp maybe_play_event_sound(_, _, socket), do: socket
 
   defp play_player_event_sound(socket, %Event{type: {:damaged, _}}) do
     damaged_sound(socket)
@@ -700,13 +675,7 @@ defmodule EuropaWeb.GameLive do
 
   defp play_player_event_sound(socket, _), do: socket
 
-  defp base_assign(socket, opts \\ []) do
-    resets_count = socket.assigns.events_tick_timer_reset_skip_count
-
-    if Keyword.get(opts, :events_tick_timer_reset, true) && resets_count <= @events_tick_max_resets do
-      self() |> send(:reset_events_tick_timer)
-    end
-
+  defp base_assign(socket, _opts \\ []) do
     player = Server.get_player(socket.assigns.server)
     visible_planet = Server.get_visible_planet(socket.assigns.server)
 
@@ -720,7 +689,7 @@ defmodule EuropaWeb.GameLive do
       aim: get_aim(visible_planet, player),
       current_coord: Server.get_current_coord(socket.assigns.server)
     )
-    |> play_sounds_from_player_events()
+    |> push_event("start_events_polling", %{})
   end
 
   defp assign_equipment(socket) do
@@ -778,7 +747,7 @@ defmodule EuropaWeb.GameLive do
         open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
         matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3},
         radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1},
-        frostbite: %{name: ~p"/sounds/frostbite.mp3", volume: 0.1},
+        frostbite: %{name: ~p"/sounds/frostbite.mp3", volume: 0.2},
         ice_cracked: %{name: ~p"/sounds/ice_cracked.mp3", volume: 0.1},
         monster_dead1: %{name: ~p"/sounds/monster_dead1.mp3", volume: 0.2},
         monster_dead2: %{name: ~p"/sounds/monster_dead2.mp3", volume: 0.2},
@@ -1256,17 +1225,34 @@ defmodule EuropaWeb.GameLive do
   defp move_code_to_direction(code) when code in @move_left_codes, do: :left
   defp move_code_to_direction(code) when code in @move_right_codes, do: :right
 
-  defp schedule_events_tick do
-    :erlang.start_timer(@events_tick_delay_ms, self(), :events_tick)
+  defp event_text(%Event{type: :interested}) do
+    "?"
   end
 
-  defp cancel_events_tick_timer(socket) do
-    Process.cancel_timer(socket.assigns.events_tick_timer)
+  defp event_text(%Event{type: {:damaged, damage}}) do
+    "💔 #{damage}"
   end
 
-  defp current_time_ms do
-    System.system_time(:millisecond)
+  defp event_text(%Event{type: {:healed, health_change}}) do
+    "💊 #{health_change}"
   end
+
+  defp event_text(%Event{type: {:radiation, radiation}}) do
+    "☢️ #{radiation}"
+  end
+
+  defp event_text(%Event{type: {:warm_up, warm}}) when warm < 0 do
+    "❄️ #{abs(warm)}"
+  end
+
+  defp event_text(%Event{type: {:speech, phrase}}), do: phrase
+
+  defp event_text(_), do: nil
+
+  defp event_filter(:player, %Event{type: {:radiation, _}}), do: :green
+  defp event_filter(:player, %Event{type: {:warm_up, units}}) when units < 0, do: :blue
+  defp event_filter(:player, %Event{type: :great_red_spot}), do: :red
+  defp event_filter(_, _), do: nil
 
   # coveralls-ignore-stop
 end

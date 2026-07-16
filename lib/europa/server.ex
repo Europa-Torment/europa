@@ -104,12 +104,12 @@ defmodule Europa.Server do
     GenServer.call(server, :get_player)
   end
 
-  @spec events_tick(pid()) :: :ok
+  @spec events_tick(pid()) :: {:ok, list({:player | Ecto.UUID.t(), Event.t()})}
   def events_tick(server) do
     if Process.alive?(server) do
       GenServer.call(server, :events_tick)
     else
-      :ok
+      {:ok, []}
     end
   end
 
@@ -338,10 +338,13 @@ defmodule Europa.Server do
   end
 
   def handle_call(:events_tick, _from, state) do
-    updated_player = PlayerManager.remove_last_event(state.player)
-    updated_planet = PlanetManager.remove_last_events(state.planet)
+    {:ok, updated_player, player_events} = PlayerManager.remove_last_event(state.player)
+    {:ok, updated_planet, planet_events} = PlanetManager.remove_last_events(state.planet)
 
-    {:reply, :ok, struct!(state, player: updated_player, planet: updated_planet), @inactivity_timeout_ms}
+    player_events = Enum.map(player_events, fn event -> {:player, event} end)
+
+    {:reply, {:ok, player_events ++ planet_events}, struct!(state, player: updated_player, planet: updated_planet),
+     @inactivity_timeout_ms}
   end
 
   def handle_call(:get_chat, _from, state) do
@@ -1049,7 +1052,7 @@ defmodule Europa.Server do
   end
 
   defp maybe_add_radiation(%Player{} = player, %Enemy{radioactive?: true}) do
-    if m_to_n?(1, 10) do
+    if m_to_n?(1, 7) do
       PlayerManager.increase_radiation(player, 5)
     else
       player
@@ -1059,7 +1062,7 @@ defmodule Europa.Server do
   defp maybe_add_radiation(player, _), do: player
 
   defp maybe_decrease_warm(%Player{} = player, %Enemy{cold?: true}) do
-    if m_to_n?(1, 10) do
+    if m_to_n?(1, 5) do
       PlayerManager.warm_up(player, -5)
     else
       player

@@ -349,12 +349,15 @@ defmodule Europa.Server.Planet do
   def remove_last_events(%__MODULE__{} = planet) do
     coords = get_coords_of_structs_with_events_list(planet)
 
-    Enum.reduce(coords, planet, fn coord, pl ->
-      %{events: [_ | rest_events]} = tile = get_tile(pl.land, coord)
-      updated_tile = struct!(tile, events: rest_events)
-      updated_land = change_tile(pl.land, coord, updated_tile)
-      struct!(planet, land: updated_land)
-    end)
+    {planet, events} =
+      Enum.reduce(coords, {planet, []}, fn coord, {pl, events} ->
+        %{uuid: uuid, events: [event | rest_events]} = tile = get_tile(pl.land, coord)
+        updated_tile = struct!(tile, events: rest_events)
+        updated_land = change_tile(pl.land, coord, updated_tile)
+        {struct!(planet, land: updated_land), [{uuid, event} | events]}
+      end)
+
+    {:ok, planet, events}
   end
 
   ### PRIVATE ###
@@ -967,7 +970,7 @@ defmodule Europa.Server.Planet do
     |> visible_land_coords()
     |> Enum.filter(fn coord ->
       case get_tile(land, coord) do
-        %{events: events} = tile when is_struct(tile) and is_list(events) ->
+        %{uuid: _, events: events} = tile when is_struct(tile) and is_list(events) ->
           not_empty_events?.(events)
 
         _ ->

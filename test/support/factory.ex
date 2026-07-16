@@ -317,6 +317,7 @@ defmodule Europa.Support.Factory do
   @spec enemy_factory() :: Enemy.t()
   def enemy_factory do
     %Enemy{
+      uuid: Ecto.UUID.generate(),
       type: :monster,
       name: sequence(:name, &"Enemy #{&1 + 1}"),
       description: "description",

@@ -189,13 +189,13 @@ defmodule Europa.Server.PlayerTest do
       {:ok, player: player, event1: event1, event2: event2}
     end
 
-    test "removes last event", %{player: player, event2: event2} do
-      assert %Player{events: [^event2]} = Player.remove_last_event(player)
+    test "removes last event", %{player: player, event1: event1, event2: event2} do
+      assert {:ok, %Player{events: [^event2]}, [^event1]} = Player.remove_last_event(player)
     end
 
     test "does nothing when no events", %{player: player} do
       player = struct!(player, events: [])
-      assert %Player{events: []} = Player.remove_last_event(player)
+      assert {:ok, %Player{events: []}, []} = Player.remove_last_event(player)
     end
   end
 

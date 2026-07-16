@@ -10,7 +10,6 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Player
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
-  alias Europa.Server.Event
   alias Europa.Server.Characters.Character
   alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
@@ -58,8 +57,6 @@ defmodule EuropaWeb.GameCompotents do
   @swimable_tiles Tiles.swimable_tiles()
 
   @base_tooltip_class "tooltip tooltip-open"
-  @player_tooltip_class "tooltip tooltip-events tooltip-open tooltip-warning"
-  @enemy_tooltip_class "tooltip tooltip-events tooltip-open tooltip-error"
 
   def start_screen(assigns) do
     ~H"""
@@ -78,7 +75,7 @@ defmodule EuropaWeb.GameCompotents do
   def game_field(assigns) do
     formatted_aim =
       Enum.map(assigns.aim, fn {{from_y, from_x}, {to_y, to_x}} ->
-        %{from: "#tile_#{from_y}_#{from_x}", to: "#tile_#{to_y}_#{to_x}"}
+        %{from: "#tile_img_#{from_y}_#{from_x}", to: "#tile_img_#{to_y}_#{to_x}"}
       end)
 
     visible_planet =
@@ -88,21 +85,21 @@ defmodule EuropaWeb.GameCompotents do
         assigns.visible_planet
       end
 
-    tiles_filter = tiles_filter(assigns.player)
-
-    assigns = assign(assigns, aim: formatted_aim, visible_planet: visible_planet, tiles_filter: tiles_filter)
+    assigns = assign(assigns, aim: formatted_aim, visible_planet: visible_planet)
 
     ~H"""
     <div
+      id="game-field"
+      phx-hook="EventsProcessor"
+      data-interval="1000"
       class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 shadow-md grid place-items-center"
-      style={"#{@tiles_filter}"}
     >
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
-            <div class={speech_class(tile, @player)} data-tip={speech(tile, @player)}>
+            <div id={tile_id(tile, x, y)} class={speech_class(tile, @player)} data-tip={speech(tile, @player)}>
               <img
-                id={"tile_#{x}_#{y}"}
+                id={"tile_img_#{x}_#{y}"}
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
@@ -1422,57 +1419,13 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp speech_class(%Enemy{events: [_ | _]}, _player), do: @enemy_tooltip_class
-
-  defp speech_class(:player, %Player{events: [_ | _]} = player) do
-    if speech(:player, player) != "" do
-      @player_tooltip_class
-    else
-      ""
-    end
-  end
-
   defp speech_class(_, _), do: ""
 
   defp speech(%Npc{character: character}, _player) do
     Character.short_phrase(character)
   end
 
-  defp speech(%Enemy{events: [%Event{} = event | _]}, _player) do
-    event_speech(event)
-  end
-
-  defp speech(:player, %Player{events: [%Event{} = event | _]}) do
-    event_speech(event)
-  end
-
   defp speech(_, _), do: ""
-
-  defp event_speech(%Event{type: :interested}) do
-    "?"
-  end
-
-  defp event_speech(%Event{type: {:damaged, damage}}) do
-    "💔 #{damage}"
-  end
-
-  defp event_speech(%Event{type: {:healed, health_change}}) do
-    "💊 #{health_change}"
-  end
-
-  defp event_speech(%Event{type: {:radiation, radiation}}) do
-    "☢️ #{radiation}"
-  end
-
-  defp event_speech(%Event{type: {:warm_up, warm}}) when warm < 0 do
-    "❄️ #{abs(warm)}"
-  end
-
-  defp event_speech(%Event{type: {:speech, phrase}}), do: phrase
-
-  defp event_speech(%Event{type: {:dead, _}}), do: "💀"
-
-  defp event_speech(_), do: ""
 
   defp maybe_round_number(number) when is_float(number) do
     NumberHelpers.round(number, 2)
@@ -1520,21 +1473,9 @@ defmodule EuropaWeb.GameCompotents do
     deg + 90
   end
 
-  defp tiles_filter(%Player{} = player) do
-    case List.first(player.events) do
-      %Event{type: :great_red_spot} ->
-        "filter: grayscale(100%) sepia(100%) hue-rotate(320deg) saturate(500%);"
-
-      %Event{type: {:radiation, _}} ->
-        "filter: grayscale(100%) sepia(100%) hue-rotate(60deg) saturate(200%);"
-
-      %Event{type: {:warm_up, warm_units}} when warm_units < 0 ->
-        "filter: grayscale(100%) sepia(100%) hue-rotate(175deg) saturate(400%);"
-
-      _ ->
-        ""
-    end
-  end
+  defp tile_id(:player, _x, _y), do: "tile_player"
+  defp tile_id(%{uuid: uuid}, _x, _y), do: "tile_#{uuid}"
+  defp tile_id(_, x, y), do: "tile_#{x}_#{y}"
 
   # coveralls-ignore-stop
 end

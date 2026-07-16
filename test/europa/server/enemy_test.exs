@@ -11,6 +11,7 @@ defmodule Europa.Server.EnemyTest do
 
   describe "new/1" do
     test "builds enemy struct" do
+      uuid = Ecto.UUID.generate()
       expected_enemy = build(:enemy, stand_on: nil)
 
       attrs =
@@ -18,7 +19,7 @@ defmodule Europa.Server.EnemyTest do
         |> Map.from_struct()
         |> Map.put(:type, to_string(expected_enemy.type))
 
-      assert Enemy.new(attrs) == expected_enemy
+      assert Enemy.new(attrs) |> struct!(uuid: uuid) == struct!(expected_enemy, uuid: uuid)
     end
   end
 

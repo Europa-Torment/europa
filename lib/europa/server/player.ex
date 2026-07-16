@@ -169,10 +169,10 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def remove_last_event(%__MODULE__{events: []} = player), do: player
+  def remove_last_event(%__MODULE__{events: []} = player), do: {:ok, player, []}
 
-  def remove_last_event(%__MODULE__{events: [_ | rest_events]} = player) do
-    struct!(player, events: rest_events)
+  def remove_last_event(%__MODULE__{events: [event | rest_events]} = player) do
+    {:ok, struct!(player, events: rest_events), [event]}
   end
 
   @impl true

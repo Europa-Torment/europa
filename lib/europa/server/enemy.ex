@@ -35,6 +35,7 @@ defmodule Europa.Server.Enemy do
   end
 
   typedstruct do
+    field :uuid, Ecto.UUID.t(), enforce: true
     field :type, enemy_type(), enforce: true
     field :name, String.t(), enforce: true
     field :description, String.t(), enforce: true
@@ -58,6 +59,7 @@ defmodule Europa.Server.Enemy do
   @spec new(attrs()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      uuid: Ecto.UUID.generate(),
       type: Map.fetch!(attrs, :type) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),

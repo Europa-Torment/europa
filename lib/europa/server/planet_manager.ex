@@ -13,6 +13,7 @@ defmodule Europa.Server.PlanetManager do
   alias Europa.Server.Enemy
   alias Europa.Server.Action
   alias Europa.Server.Errors
+  alias Europa.Server.Event
 
   import Europa.Tools.Conf
 
@@ -151,7 +152,7 @@ defmodule Europa.Server.PlanetManager do
   @doc """
   Removes last event from every struct that has :events field with list of Event.t() in visible part of planet.
   """
-  @callback remove_last_events(Planet.t()) :: Planet.t()
+  @callback remove_last_events(Planet.t()) :: {:ok, Planet.t(), list({event_owner_uuid :: Ecto.UUID.t(), Event.t()})}
 
   @doc """
   Сrops land to size of visible land.

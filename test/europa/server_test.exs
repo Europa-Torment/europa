@@ -108,17 +108,20 @@ defmodule Europa.ServerTest do
 
   describe "events_tick/1" do
     test "remove player and planet last events", %{server: server} do
+      player_event = build(:event)
+      planet_events = build_list(3, :event) |> Enum.map(fn event -> {Ecto.UUID.generate(), event} end)
+
       PlayerManagerMock
       |> expect(:remove_last_event, fn %Player{} = player ->
-        player
+        {:ok, player, [player_event]}
       end)
 
       PlanetManagerMock
       |> expect(:remove_last_events, fn %Planet{} = planet ->
-        planet
+        {:ok, planet, planet_events}
       end)
 
-      assert :ok = Server.events_tick(server)
+      assert {:ok, [{:player, ^player_event} | ^planet_events]} = Server.events_tick(server)
     end
   end
 

@@ -51,7 +51,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Removes first event from player's events list.
   """
-  @callback remove_last_event(Player.t()) :: Player.t()
+  @callback remove_last_event(Player.t()) :: {:ok, Player.t(), list(Event.t())}
 
   @doc """
   Adds item to player's inventory.
