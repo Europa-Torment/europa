@@ -8,6 +8,7 @@ defmodule Europa.ServerTest do
   alias Europa.Server.Event
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Chat
+  alias Europa.Server.Compass
   alias Europa.Server.PlanetManagerMock
   alias Europa.Server.PlayerManagerMock
   alias Europa.Server.Errors
@@ -1007,6 +1008,70 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.craft_item(server, blueprint) == error
+    end
+  end
+
+  describe "add_compass_target/1" do
+    test "adds compass target", %{server: server} do
+      description = "Something"
+      current_coord = Server.get_planet(server).current_coord
+
+      assert {:ok, %Compass{targets: [target]} = compass} = Server.add_compass_target(server, description)
+
+      assert target.coord == current_coord
+      assert target.description == description
+      assert Server.get_compass(server) == compass
+    end
+  end
+
+  describe "delete_compass_target/2" do
+    test "deletes compass target", %{server: server} do
+      description = "Something"
+      assert {:ok, %Compass{targets: [target]}} = Server.add_compass_target(server, description)
+      assert {:ok, %Compass{targets: []} = compass} = Server.delete_compass_target(server, target.uuid)
+      assert Server.get_compass(server) == compass
+    end
+
+    test "returns not_found error", %{server: server} do
+      uuid = Ecto.UUID.generate()
+      assert {:error, :not_found} = Server.delete_compass_target(server, uuid)
+    end
+  end
+
+  describe "follow_compass_target/2" do
+    test "follows compass target", %{server: server} do
+      description = "Something"
+
+      assert {:ok, %Compass{targets: [target]}} = Server.add_compass_target(server, description)
+      assert {:ok, %Compass{current_target: ^target} = compass} = Server.follow_compass_target(server, target.uuid)
+      assert Server.get_compass(server) == compass
+    end
+
+    test "returns not_found error", %{server: server} do
+      uuid = Ecto.UUID.generate()
+      assert {:error, :not_found} = Server.follow_compass_target(server, uuid)
+    end
+  end
+
+  describe "unfollow_compass_target/1" do
+    test "follows compass target", %{server: server} do
+      description = "Something"
+
+      assert {:ok, %Compass{targets: [target]}} = Server.add_compass_target(server, description)
+      assert {:ok, %Compass{current_target: ^target}} = Server.follow_compass_target(server, target.uuid)
+
+      assert {:ok, %Compass{current_target: nil, targets: [^target]} = compass} =
+               Server.unfollow_compass_target(server)
+
+      assert Server.get_compass(server) == compass
+    end
+  end
+
+  describe "get_current_coord/1" do
+    test "returns current coord", %{server: server} do
+      assert {x, y} = Server.get_current_coord(server)
+      assert is_integer(x)
+      assert is_integer(y)
     end
   end
 

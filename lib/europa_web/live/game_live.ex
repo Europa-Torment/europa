@@ -35,6 +35,7 @@ defmodule EuropaWeb.GameLive do
   @shoot_codes fetch_config!([:control_bindings, :shoot]).codes
   @aim_codes fetch_config!([:control_bindings, :aim]).codes
   @zoom_codes fetch_config!([:control_bindings, :zoom]).codes
+  @compass_codes fetch_config!([:control_bindings, :compass]).codes
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -49,6 +50,8 @@ defmodule EuropaWeb.GameLive do
   @processed_player_events_limit 20
 
   @view_distance fetch_config!([Planet, :view_distance])
+
+  @default_compass_target_description gettext("No description")
 
   @impl true
   def mount(%{"uuid" => uuid}, session, socket) do
@@ -86,7 +89,10 @@ defmodule EuropaWeb.GameLive do
           interaction_confirmation: nil,
           transform_name: nil,
           inventory_type: nil,
-          zoom_mode: false
+          zoom_mode: false,
+          compass: nil,
+          compass_target_menu_active: false,
+          input_mode: false
         )
 
       {:ok, socket}
@@ -115,6 +121,10 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event(_, _, %{assigns: %{game_started: false}} = socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("key_pressed", _, %{assigns: %{input_mode: true}} = socket) do
     {:noreply, socket}
   end
 
@@ -150,6 +160,10 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @zoom_codes do
     {:noreply, assign(socket, zoom_mode: !socket.assigns.zoom_mode)}
+  end
+
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @compass_codes do
+    toggle_compass(socket)
   end
 
   def handle_event("key_pressed", %{"code" => code} = params, socket) when code in @interact_codes do
@@ -240,6 +254,73 @@ defmodule EuropaWeb.GameLive do
     |> open_inventory()
   end
 
+  def handle_event("open_compass", _params, socket) do
+    open_compass(socket)
+  end
+
+  def handle_event("open_compass_target_menu", _params, socket) do
+    {:noreply, assign(socket, compass_target_menu_active: true, input_mode: true)}
+  end
+
+  def handle_event("add_compass_target", _params, socket) do
+    description =
+      if socket.assigns.compass_target_description do
+        socket.assigns.compass_target_description
+      else
+        @default_compass_target_description
+      end
+
+    socket =
+      case Server.add_compass_target(socket.assigns.server, description) do
+        {:ok, compass} ->
+          socket
+          |> assign(compass: compass)
+          |> close_compass_target_menu()
+
+        {:error, {:limit_reached, limit}} ->
+          message = gettext("You cannot track more than %{count} target(s)", count: limit)
+
+          socket
+          |> put_flash(:error, message)
+          |> close_compass_target_menu()
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("follow_compass_target", %{"uuid" => uuid}, socket) do
+    case Server.follow_compass_target(socket.assigns.server, uuid) do
+      {:ok, compass} ->
+        {:noreply, assign(socket, compass: compass) |> play_sound("equip")}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("unfollow_compass_target", _params, socket) do
+    case Server.unfollow_compass_target(socket.assigns.server) do
+      {:ok, compass} ->
+        {:noreply, assign(socket, compass: compass) |> play_sound("equip")}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("delete_compass_target", %{"uuid" => uuid}, socket) do
+    case Server.delete_compass_target(socket.assigns.server, uuid) do
+      {:ok, compass} ->
+        {:noreply, assign(socket, compass: compass) |> play_sound("equip")}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("open_craft_menu", params, socket) do
     type =
       params
@@ -262,6 +343,14 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_dialog", _, socket) do
     {:noreply, assign(socket, dialog: nil)}
+  end
+
+  def handle_event("close_compass", _, socket) do
+    {:noreply, close_compass(socket)}
+  end
+
+  def handle_event("close_compass_target_menu", _, socket) do
+    {:noreply, close_compass_target_menu(socket)}
   end
 
   def handle_event("close_interaction_confirmation", _, socket) do
@@ -369,7 +458,8 @@ defmodule EuropaWeb.GameLive do
           |> assign(
             inventory: get_player_inventory(socket),
             item_to_drop: nil,
-            item_drop_count: nil
+            item_drop_count: nil,
+            input_mode: false
           )
           |> play_sound("equip")
 
@@ -383,17 +473,17 @@ defmodule EuropaWeb.GameLive do
   def handle_event("open_item_drop_menu", %{"uuid" => item_uuid}, socket) do
     with {:ok, item} <- Server.get_item(socket.assigns.server, item_uuid),
          true <- Loot.Item.stackable?(item) do
-      {:noreply, assign(socket, item_to_drop: item, item_drop_count: 1)}
+      {:noreply, assign(socket, item_to_drop: item, item_drop_count: 1, input_mode: true)}
     else
       _ -> {:noreply, socket}
     end
   end
 
   def handle_event("close_item_drop_menu", _, socket) do
-    {:noreply, assign(socket, item_to_drop: nil, item_drop_count: nil)}
+    {:noreply, assign(socket, item_to_drop: nil, item_drop_count: nil, input_mode: false)}
   end
 
-  def handle_event("change_item_drop_count", %{"item_drop_count" => count}, socket) do
+  def handle_event("change_item_drop_count", %{"value" => count}, socket) do
     count =
       case Integer.parse(count) do
         {count, _} when is_integer(count) and count > 0 -> count
@@ -401,6 +491,19 @@ defmodule EuropaWeb.GameLive do
       end
 
     {:noreply, assign(socket, item_drop_count: count)}
+  end
+
+  def handle_event("change_compass_target_description", params, socket) do
+    description = Map.get(params, "value", @default_compass_target_description) |> String.trim()
+
+    description =
+      if String.length(description) == 0 do
+        @default_compass_target_description
+      else
+        description
+      end
+
+    {:noreply, assign(socket, compass_target_description: description)}
   end
 
   def handle_event("unload_weapon", %{"uuid" => item_uuid}, socket) do
@@ -627,7 +730,8 @@ defmodule EuropaWeb.GameLive do
       visible_planet: visible_planet,
       chat: Server.get_chat(socket.assigns.server),
       current_time: get_current_time(socket.assigns.server),
-      aim: get_aim(visible_planet, player)
+      aim: get_aim(visible_planet, player),
+      current_coord: Server.get_current_coord(socket.assigns.server)
     )
     |> play_sounds_from_player_events()
   end
@@ -654,6 +758,7 @@ defmodule EuropaWeb.GameLive do
 
   defp close_all(socket) do
     socket
+    |> close_compass()
     |> assign(
       inventory: nil,
       item_box: nil,
@@ -900,6 +1005,28 @@ defmodule EuropaWeb.GameLive do
 
   defp toggle_control_hints(socket) do
     {:noreply, assign(socket, show_control_hints: !socket.assigns.show_control_hints)}
+  end
+
+  defp toggle_compass(socket) do
+    if socket.assigns.compass do
+      {:noreply, close_compass(socket)}
+    else
+      open_compass(socket)
+    end
+  end
+
+  defp open_compass(socket) do
+    {:noreply, assign(socket, compass: Server.get_compass(socket.assigns.server))}
+  end
+
+  defp close_compass(socket) do
+    socket
+    |> assign(compass: nil)
+    |> close_compass_target_menu()
+  end
+
+  defp close_compass_target_menu(socket) do
+    assign(socket, compass_target_menu_active: false, compass_target_description: nil, input_mode: false)
   end
 
   defp interact(socket, params) do

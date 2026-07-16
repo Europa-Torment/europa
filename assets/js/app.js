@@ -27,7 +27,7 @@ import {hooks as colocatedHooks} from "phoenix-colocated/europa"
 import * as AudioMp3 from "./hooks/audio_mp3"
 import * as Tooltip from "./hooks/tooltip"
 import * as Dropdown from "./hooks/dropdown"
-import * as ItemDropChangeCount from "./hooks/item_drop_change_count"
+import * as InputChange from "./hooks/input_change"
 import * as AutoClearFlash from "./hooks/auto_clear_flash"
 import * as Aim from "./hooks/aim"
 
@@ -36,7 +36,7 @@ import topbar from "../vendor/topbar"
 colocatedHooks.AudioMp3 = AudioMp3.hooks.AudioMp3;
 colocatedHooks.Tooltip = Tooltip.hooks.Tooltip;
 colocatedHooks.Dropdown = Dropdown.hooks.Dropdown;
-colocatedHooks.ItemDropChangeCount = ItemDropChangeCount.hooks.ItemDropChangeCount;
+colocatedHooks.InputChange = InputChange.hooks.InputChange;
 colocatedHooks.AutoClearFlash = AutoClearFlash.hooks.AutoClearFlash;
 colocatedHooks.Aim = Aim.hooks.Aim;
 

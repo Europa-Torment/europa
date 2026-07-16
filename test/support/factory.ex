@@ -12,6 +12,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Npc
   alias Europa.Server.Action
   alias Europa.Server.Event
+  alias Europa.Server.Compass
   alias Europa.Server.Characters
   alias Europa.Server.Characters.Character
   alias Europa.Users.User
@@ -256,6 +257,23 @@ defmodule Europa.Support.Factory do
       moves_count: Map.get(opts, :moves_count, 0),
       great_red_spots: Map.get(opts, :great_red_spots, 0),
       characters_pid: characters_pid
+    }
+  end
+
+  @spec compass_factory() :: Compass.t()
+  def compass_factory do
+    %Compass{
+      current_target: nil,
+      targets: []
+    }
+  end
+
+  @spec compass_target_factory() :: Compass.Target.t()
+  def compass_target_factory do
+    %Compass.Target{
+      uuid: Ecto.UUID.generate(),
+      coord: {1, 2},
+      description: "Something"
     }
   end
 

@@ -19,6 +19,7 @@
         boots={@boots}
       />
       <.ammo_info weapon={@weapon} ammo_count={@ammo_count} />
+      <.compass_link />
       <.control_hints_link />
     </div>
 
@@ -47,6 +48,9 @@
     transform_name={@transform_name}
     player={@player}
   />
+
+  <.compass compass={@compass} current_coord={@current_coord} />
+  <.compass_target_menu compass_target_menu_active={@compass_target_menu_active} />
 <% else %>
   <.background />
   <.start_screen />

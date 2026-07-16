@@ -16,6 +16,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Chat
+  alias Europa.Server.Compass
   alias Europa.Tools.NumberHelpers
 
   import Europa.Tools.Conf
@@ -39,6 +40,7 @@ defmodule EuropaWeb.GameCompotents do
   @shoot_keys fetch_config!([:control_bindings, :shoot]).keys
   @aim_keys fetch_config!([:control_bindings, :aim]).keys
   @zoom_keys fetch_config!([:control_bindings, :zoom]).keys
+  @compass_keys fetch_config!([:control_bindings, :compass]).keys
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -46,6 +48,8 @@ defmodule EuropaWeb.GameCompotents do
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
   @craft_moves_count fetch_config!([:game_params, :craft_moves_count])
+
+  @compass_max_description_length fetch_config!([Compass, :max_description_length])
 
   @tiles_image_names Tiles.image_names()
 
@@ -183,6 +187,14 @@ defmodule EuropaWeb.GameCompotents do
           </div>
         </li>
       </ul>
+    </div>
+    """
+  end
+
+  def compass_link(assigns) do
+    ~H"""
+    <div class="bg-base-200 p-5 shadow-md text-xs">
+      <.link phx-click="open_compass">🧭 {gettext("Compass")}</.link>
     </div>
     """
   end
@@ -631,8 +643,8 @@ defmodule EuropaWeb.GameCompotents do
               class="input validator"
               name="item_drop_count"
               value={@item_drop_count}
-              phx-hook="ItemDropChangeCount"
-              phx-change="change_item_drop_count"
+              phx-hook="InputChange"
+              data-event="change_item_drop_count"
               required
               placeholder={gettext("How many?")}
               min="1"
@@ -808,7 +820,140 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def compass(assigns) do
+    ~H"""
+    <%= if @compass do %>
+      <input type="checkbox" id="compass" class="modal-toggle" checked={true} phx-change="close_compass" />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
+          <h3 class="text-lg font-bold pb-3">{gettext("Compass")}</h3>
+
+          <button class="btn btn-primary btn-sm mt-2 mb-2" {add_compass_target_attrs()}>
+            🧭 {gettext("Track current coord")}
+          </button>
+
+          <.compass_current_target target={@compass.current_target} current_coord={@current_coord} />
+
+          <.compass_targets targets={@compass.targets} current_coord={@current_coord} />
+
+          <div class="modal-action">
+            <label phx-click="close_compass" for="compass" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def compass_current_target(assigns) do
+    ~H"""
+    <div>
+      <%= if @target do %>
+        <div class="bg-base-200 p-5 shadow-md text-lg">
+          <.compass_target target={@target} current_coord={@current_coord} is_current_target={true} />
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  def compass_targets(assigns) do
+    ~H"""
+    <%= unless Enum.empty?(@targets) do %>
+      <ul class="list-disc list-inside space-y-2 mt-5 text-sm">
+        <%= for target <- @targets do %>
+          <li>
+            <.compass_target target={target} current_coord={@current_coord} is_current_target={false} />
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+    """
+  end
+
+  def compass_target(assigns) do
+    assigns =
+      if assigns.is_current_target do
+        angle = coords_angle(assigns.current_coord, assigns.target.coord)
+        style = "transform: rotate(#{angle}deg); position: absolute;"
+
+        assign(assigns, style: style)
+      else
+        assigns
+      end
+
+    ~H"""
+    <span id={"compass_target_#{@target.uuid}"} phx-hook="Tooltip" data-tooltip={@target.description}>
+      {coord(@target.coord)}, {coords_distance(@target.coord, @current_coord)}
+    </span>
+
+    <%= if @is_current_target do %>
+      <div class="tooltip" data-tip={"#{gettext("Unfollow")}"}>
+        <.link phx-click="unfollow_compass_target">👁</.link>
+      </div>
+    <% else %>
+      <div class="tooltip" data-tip={"#{gettext("Follow")}"}>
+        <.link phx-click="follow_compass_target" phx-value-uuid={"#{@target.uuid}"}>👁</.link>
+      </div>
+    <% end %>
+
+    <div class="tooltip" data-tip={"#{gettext("Delete")}"}>
+      <.link phx-click="delete_compass_target" phx-value-uuid={"#{@target.uuid}"}>❌</.link>
+    </div>
+
+    <%= if @is_current_target do %>
+      <span id="compass-arrow" class="ml-2" style={@style}>⬆️</span>
+    <% end %>
+    """
+  end
+
+  def compass_target_menu(assigns) do
+    assigns = assign(assigns, max_description_length: @compass_max_description_length)
+
+    ~H"""
+    <%= if @compass_target_menu_active do %>
+      <input
+        type="checkbox"
+        id="compass_target_menu"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_compass_target_menu"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
+          <h3 class="text-lg font-bold pb-3">{gettext("Track coord")}</h3>
+
+          <div>
+            <input
+              id="target_description"
+              phx-hook="InputChange"
+              data-event="change_compass_target_description"
+              type="text"
+              class="input validator"
+              name="description"
+              placeholder={gettext("Description, for example: Strong enemies")}
+              maxlength={@max_description_length}
+            />
+            <p class="validator-hint">
+              {gettext("Required field")}
+            </p>
+            <button class="btn btn-secondary" phx-click="add_compass_target">
+              {gettext("Follow")}
+            </button>
+          </div>
+
+          <div class="modal-action">
+            <label phx-click="close_compass_target_menu" for="compass_target_menu" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
   ### Helpers ###
+
+  defp coord({x, y}), do: "#{x};#{y}"
 
   defp craft_item_name(%Loot.Weapon{name: name}), do: name
   defp craft_item_name(%Loot.Tool{} = tool), do: "#{tool.name}"
@@ -1128,6 +1273,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Reload weapon"), @reload_keys),
       control_hint(gettext("Aim mode"), @aim_keys),
       control_hint(gettext("Zoom mode"), @zoom_keys),
+      control_hint(gettext("Compass"), @compass_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
   end
@@ -1171,12 +1317,20 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
+  defp add_compass_target_attrs do
+    ["phx-click": add_compass_target_click()]
+  end
+
   defp dropdown_attrs do
     [onclick: "document.activeElement.blur()"]
   end
 
   defp open_inventory_click do
     JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_inventory")
+  end
+
+  defp add_compass_target_click do
+    JS.dispatch("js:play-sound", detail: %{name: "click"}) |> JS.push("open_compass_target_menu")
   end
 
   defp open_craft_menu_attrs(type \\ nil) do
@@ -1340,6 +1494,21 @@ defmodule EuropaWeb.GameCompotents do
     visible_planet
     |> Enum.slice(start_row, size)
     |> Enum.map(fn row -> Enum.slice(row, start_col, size) end)
+  end
+
+  defp coords_distance({x1, y1}, {x2, y2}) do
+    distance = abs(x1 - x2) + abs(y1 - y2)
+    "#{distance} " <> gettext("meter(s)")
+  end
+
+  defp coords_angle({x1, y1}, {x2, y2}) do
+    dx = x2 - x1
+    dy = y2 - y1
+
+    rad = :math.atan2(dy, dx)
+
+    deg = rad * 180 / :math.pi()
+    deg + 90
   end
 
   # coveralls-ignore-stop

@@ -112,6 +112,10 @@ config :europa, :game_params,
 
 config :europa, Europa.Server.Characters, filename: "characters.json"
 
+config :europa, Europa.Server.Compass,
+  max_description_length: 50,
+  max_targets: 50
+
 config :europa, :control_bindings,
   move_up: %{keys: ["ArrowUp", "W", "w"], codes: ["KeyW", "ArrowUp"]},
   move_down: %{keys: ["ArrowDown", "S", "s"], codes: ["KeyS", "ArrowDown"]},
@@ -125,6 +129,7 @@ config :europa, :control_bindings,
   reload: %{keys: ["R", "r"], codes: ["KeyR"]},
   aim: %{keys: ["V", "v"], codes: ["KeyV"]},
   zoom: %{keys: ["Z", "z"], codes: ["KeyZ"]},
+  compass: %{keys: ["C", "c"], codes: ["KeyC"]},
   close: %{keys: ["Escape"], codes: ["Escape"]}
 
 # Configure esbuild (the version is required)

@@ -11,6 +11,7 @@ defmodule Europa.Server do
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
   alias Europa.Server.Chat
+  alias Europa.Server.Compass
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Enemy
@@ -47,6 +48,7 @@ defmodule Europa.Server do
     field :planet, Planet.t()
     field :player, Player.t()
     field :chat, Chat.t()
+    field :compass, Compass.t()
     field :killed_enemies, non_neg_integer()
     field :start_datetime, DateTime.t()
     field :current_year_after_disaster, pos_integer()
@@ -124,6 +126,11 @@ defmodule Europa.Server do
   @spec get_visible_planet(pid()) :: Planet.land()
   def get_visible_planet(server) do
     GenServer.call(server, :get_visible_planet)
+  end
+
+  @spec get_current_coord(pid()) :: Planet.coord()
+  def get_current_coord(server) do
+    GenServer.call(server, :get_current_coord)
   end
 
   @spec get_current_time(pid()) :: {year :: pos_integer(), day :: pos_integer(), time :: String.t()}
@@ -228,6 +235,32 @@ defmodule Europa.Server do
     GenServer.call(server, :toggle_aim_mode)
   end
 
+  @spec get_compass(pid()) :: Compass.t()
+  def get_compass(server) do
+    GenServer.call(server, :get_compass)
+  end
+
+  @spec add_compass_target(pid(), Compass.Target.description()) ::
+          {:ok, Compass.t()} | {:error, {:limit_reached, pos_integer()}}
+  def add_compass_target(server, description) when is_binary(description) do
+    GenServer.call(server, {:add_compass_target, description})
+  end
+
+  @spec delete_compass_target(pid(), Compass.Target.uuid()) :: {:ok, Compass.t()} | {:error, :not_found}
+  def delete_compass_target(server, uuid) do
+    GenServer.call(server, {:delete_compass_target, uuid})
+  end
+
+  @spec follow_compass_target(pid(), Compass.Target.uuid()) :: {:ok, Compass.t()} | {:error, :not_found}
+  def follow_compass_target(server, uuid) do
+    GenServer.call(server, {:follow_compass_target, uuid})
+  end
+
+  @spec unfollow_compass_target(pid()) :: {:ok, Compass.t()} | {:error, :not_found}
+  def unfollow_compass_target(server) do
+    GenServer.call(server, :unfollow_compass_target)
+  end
+
   ### CALLBACKS ###
 
   # NOTICE: Do not return updated planet or player structs if callback calls :tick
@@ -272,12 +305,15 @@ defmodule Europa.Server do
       |> Chat.new()
       |> Chat.add_message(story_message)
 
+    compass = Compass.new()
+
     initial_datetime = initial_datetime()
 
     state = %__MODULE__{
       game_uuid: uuid,
       planet: planet,
       chat: chat,
+      compass: compass,
       player: player,
       killed_enemies: 0,
       start_datetime: initial_datetime,
@@ -314,6 +350,10 @@ defmodule Europa.Server do
 
   def handle_call(:get_current_time, _from, state) do
     {:reply, do_get_current_time(state), state, @inactivity_timeout_ms}
+  end
+
+  def handle_call(:get_current_coord, _from, state) do
+    {:reply, state.planet.current_coord, state, @inactivity_timeout_ms}
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do
@@ -653,8 +693,49 @@ defmodule Europa.Server do
           state.chat
           |> Chat.add_message(nothing_to_interact_message)
 
-        {:reply, {:error, :nothing}, struct!(state, chat: updated_chat)}
+        {:reply, {:error, :nothing}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
     end
+  end
+
+  def handle_call(:get_compass, _caller_pid, state) do
+    {:reply, state.compass, state, @inactivity_timeout_ms}
+  end
+
+  def handle_call({:add_compass_target, description}, _caller_pid, state) do
+    target = Compass.Target.new(state.planet.current_coord, description)
+
+    case Compass.add_target(state.compass, target) do
+      {:ok, updated_compass} ->
+        {:reply, {:ok, updated_compass}, struct!(state, compass: updated_compass), @inactivity_timeout_ms}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  def handle_call({:delete_compass_target, uuid}, _caller_pid, state) do
+    case Compass.delete_target(state.compass, uuid) do
+      {:ok, updated_compass} ->
+        {:reply, {:ok, updated_compass}, struct!(state, compass: updated_compass), @inactivity_timeout_ms}
+
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call({:follow_compass_target, uuid}, _caller_pid, state) do
+    case Compass.follow_target(state.compass, uuid) do
+      {:ok, updated_compass} ->
+        {:reply, {:ok, updated_compass}, struct!(state, compass: updated_compass), @inactivity_timeout_ms}
+
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call(:unfollow_compass_target, _caller_pid, state) do
+    updated_compass = Compass.unfollow_target(state.compass)
+    {:reply, {:ok, updated_compass}, struct!(state, compass: updated_compass), @inactivity_timeout_ms}
   end
 
   @impl true
