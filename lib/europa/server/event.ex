@@ -16,6 +16,7 @@ defmodule Europa.Server.Event do
           | {:dead, death_reason()}
           | :enemy_killed
           | :interested
+          | :great_red_spot
 
   typedstruct enforce: true do
     field :uuid, uuid()

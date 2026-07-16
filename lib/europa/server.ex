@@ -858,10 +858,13 @@ defmodule Europa.Server do
     if PlanetManager.land_size(state.planet) >= @crop_size do
       {:ok, updated_planet} = PlanetManager.crop_land(state.planet)
       message = crop_planet_land_message()
+      event = Event.new(:great_red_spot)
 
       struct!(state,
         planet: updated_planet,
-        chat: Chat.add_message(state.chat, message)
+        player: PlayerManager.add_events(state.player, [event]),
+        chat: Chat.add_message(state.chat, message),
+        compass: Compass.new()
       )
     else
       state

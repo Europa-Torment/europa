@@ -88,10 +88,15 @@ defmodule EuropaWeb.GameCompotents do
         assigns.visible_planet
       end
 
-    assigns = assign(assigns, aim: formatted_aim, visible_planet: visible_planet)
+    tiles_filter = tiles_filter(assigns.player)
+
+    assigns = assign(assigns, aim: formatted_aim, visible_planet: visible_planet, tiles_filter: tiles_filter)
 
     ~H"""
-    <div class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 shadow-md grid place-items-center">
+    <div
+      class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 shadow-md grid place-items-center"
+      style={"#{@tiles_filter}"}
+    >
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
@@ -1513,6 +1518,22 @@ defmodule EuropaWeb.GameCompotents do
 
     deg = rad * 180 / :math.pi()
     deg + 90
+  end
+
+  defp tiles_filter(%Player{} = player) do
+    case List.first(player.events) do
+      %Event{type: :great_red_spot} ->
+        "filter: grayscale(100%) sepia(100%) hue-rotate(320deg) saturate(500%);"
+
+      %Event{type: {:radiation, _}} ->
+        "filter: grayscale(100%) sepia(100%) hue-rotate(60deg) saturate(200%);"
+
+      %Event{type: {:warm_up, warm_units}} when warm_units < 0 ->
+        "filter: grayscale(100%) sepia(100%) hue-rotate(175deg) saturate(400%);"
+
+      _ ->
+        ""
+    end
   end
 
   # coveralls-ignore-stop

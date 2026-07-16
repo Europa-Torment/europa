@@ -381,6 +381,7 @@ defmodule Europa.ServerTest do
       |> expect(:tick, fn %Player{} = player, _tick_moves_count ->
         {:ok, player, []}
       end)
+      |> expect(:add_events, fn %Player{} = player, [%Event{type: :great_red_spot}] -> player end)
 
       assert {:moved, :normal} = Server.move(server, @direction)
       :timer.sleep(100)

@@ -694,6 +694,10 @@ defmodule EuropaWeb.GameLive do
     frostbite_sound(socket)
   end
 
+  defp play_player_event_sound(socket, %Event{type: :great_red_spot}) do
+    great_red_spot_sound(socket)
+  end
+
   defp play_player_event_sound(socket, _), do: socket
 
   defp base_assign(socket, opts \\ []) do
@@ -780,7 +784,8 @@ defmodule EuropaWeb.GameLive do
         monster_dead2: %{name: ~p"/sounds/monster_dead2.mp3", volume: 0.2},
         monster_dead3: %{name: ~p"/sounds/monster_dead3.mp3", volume: 0.2},
         monster_dead4: %{name: ~p"/sounds/monster_dead4.mp3", volume: 0.2},
-        fire_extinguisher: %{name: ~p"/sounds/fire_extinguisher.mp3", volume: 0.2}
+        fire_extinguisher: %{name: ~p"/sounds/fire_extinguisher.mp3", volume: 0.2},
+        great_red_spot: %{name: ~p"/sounds/great_red_spot.mp3", volume: 0.09}
       })
 
     assign(socket, :sounds, json)
@@ -880,6 +885,10 @@ defmodule EuropaWeb.GameLive do
         |> play_sound(punch_sound)
         |> play_sound_with_delay("impact")
     end
+  end
+
+  defp great_red_spot_sound(socket) do
+    play_sound_with_delay(socket, "great_red_spot")
   end
 
   defp play_sound(socket, sound_name) do
