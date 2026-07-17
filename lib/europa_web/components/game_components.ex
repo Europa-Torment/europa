@@ -501,7 +501,7 @@ defmodule EuropaWeb.GameCompotents do
             <li><b>{gettext("Age")}:</b> {@dialog.npc.character.current_age}</li>
             <li><b>{gettext("Gender")}:</b> {Character.readable_gender(@dialog.npc.character)}</li>
             <li><b>{gettext("Profession")}:</b> {@dialog.npc.character.profession}</li>
-            <li><b>{gettext("Age at disaster")}:</b> {@dialog.npc.character.age_at_disaster}</li>
+            <li><b>{gettext("Age at disaster")}:</b> {age_at_disaster(@dialog.npc.character.age_at_disaster)}</li>
           </ul>
 
           <blockquote class="italic text-sm border-l-2 border-secondary p-2">
@@ -1477,6 +1477,12 @@ defmodule EuropaWeb.GameCompotents do
   defp tile_id(:player, _x, _y), do: "tile_player"
   defp tile_id(%{uuid: uuid}, _x, _y), do: "tile_#{uuid}"
   defp tile_id(_, x, y), do: "tile_#{x}_#{y}"
+
+  defp age_at_disaster(age) when age > 0 do
+    age
+  end
+
+  defp age_at_disaster(_), do: gettext("Not yet born")
 
   # coveralls-ignore-stop
 end

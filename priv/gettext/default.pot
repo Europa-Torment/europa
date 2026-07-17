@@ -88,7 +88,7 @@ msgstr ""
 msgid "Game over"
 msgstr ""
 
-#: lib/europa_web/components/layouts/root.html.heex:28
+#: lib/europa_web/components/layouts/root.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Games"
 msgstr ""
@@ -125,7 +125,7 @@ msgstr ""
 msgid "Kill monsters, loot abandoned buildings"
 msgstr ""
 
-#: lib/europa_web/components/layouts/root.html.heex:30
+#: lib/europa_web/components/layouts/root.html.heex:26
 #: lib/europa_web/controllers/game_html/leaderboard.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "Leaderboard"
@@ -138,7 +138,7 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: lib/europa_web/components/layouts/root.html.heex:29
+#: lib/europa_web/components/layouts/root.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Lore"
 msgstr ""
@@ -223,17 +223,17 @@ msgstr ""
 msgid "Set foot on European soil"
 msgstr ""
 
-#: lib/europa_web/components/layouts/root.html.heex:53
+#: lib/europa_web/components/layouts/root.html.heex:49
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr ""
 
-#: lib/europa_web/components/layouts/root.html.heex:39
+#: lib/europa_web/components/layouts/root.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "Sign out"
 msgstr ""
 
-#: lib/europa_web/components/layouts/root.html.heex:48
+#: lib/europa_web/components/layouts/root.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "Sign up"
 msgstr ""
@@ -310,7 +310,7 @@ msgstr ""
 msgid "close"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:136
+#: lib/europa_web/components/game_components.ex:143
 #: lib/europa_web/controllers/game_html/game_over.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "day"
@@ -352,37 +352,37 @@ msgstr ""
 msgid ""
 msgstr ""
 
-#: lib/europa/server.ex:1233
+#: lib/europa/server.ex:1323
 #, elixir-autogen, elixir-format
 msgid "%{enemy_name} attacks you and deals %{damage} damage"
 msgstr ""
 
-#: lib/europa/server.ex:1238
+#: lib/europa/server.ex:1328
 #, elixir-autogen, elixir-format
 msgid "%{enemy_name} attacks you but misses."
 msgstr ""
 
-#: lib/europa/server.ex:1228
+#: lib/europa/server.ex:1318
 #, elixir-autogen, elixir-format
 msgid "%{enemy_name} is chasing you"
 msgstr ""
 
-#: lib/europa/server.ex:1243
+#: lib/europa/server.ex:1333
 #, elixir-autogen, elixir-format
 msgid "%{enemy_name} killed %{character_name}"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:568
+#: lib/europa_web/components/game_components.ex:583
 #, elixir-autogen, elixir-format
 msgid "%{from_name} will be delted"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:575
+#: lib/europa_web/components/game_components.ex:590
 #, elixir-autogen, elixir-format
 msgid "%{from_name} will change to %{to_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1199
+#: lib/europa/server.ex:1289
 #, elixir-autogen, elixir-format
 msgid "%{healer_name} healed %{healed_name} for %{units} HP"
 msgstr ""
@@ -402,32 +402,32 @@ msgstr ""
 msgid "A thermonuclear terraforming center has been built on Europa. Temperatures in some regions have approached 0 degrees Celsius. Water vapor has begun to form an atmosphere."
 msgstr ""
 
-#: lib/europa/server/enemy.ex:93
+#: lib/europa/server/enemy.ex:95
 #: lib/europa/server/loot/helmet.ex:69
 #: lib/europa/server/loot/weapon.ex:161
-#: lib/europa_web/components/game_components.ex:166
+#: lib/europa_web/components/game_components.ex:173
 #, elixir-autogen, elixir-format
 msgid "Accuracy"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:670
+#: lib/europa_web/components/game_components.ex:685
 #, elixir-autogen, elixir-format
 msgid "After disassembling you will receive following items:"
 msgstr ""
 
 #: lib/europa/server/npc.ex:27
 #: lib/europa/server/player.ex:122
-#: lib/europa_web/components/game_components.ex:486
+#: lib/europa_web/components/game_components.ex:501
 #, elixir-autogen, elixir-format
 msgid "Age"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:489
+#: lib/europa_web/components/game_components.ex:504
 #, elixir-autogen, elixir-format
 msgid "Age at disaster"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1129
+#: lib/europa_web/components/game_components.ex:1281
 #, elixir-autogen, elixir-format
 msgid "Aim mode"
 msgstr ""
@@ -459,36 +459,38 @@ msgstr ""
 msgid "Chen Yan"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:328
-#: lib/europa_web/components/game_components.ex:422
-#: lib/europa_web/components/game_components.ex:469
-#: lib/europa_web/components/game_components.ex:497
-#: lib/europa_web/components/game_components.ex:541
-#: lib/europa_web/components/game_components.ex:650
-#: lib/europa_web/components/game_components.ex:694
-#: lib/europa_web/components/game_components.ex:764
-#: lib/europa_web/components/game_components.ex:1131
+#: lib/europa_web/components/game_components.ex:343
+#: lib/europa_web/components/game_components.ex:437
+#: lib/europa_web/components/game_components.ex:484
+#: lib/europa_web/components/game_components.ex:512
+#: lib/europa_web/components/game_components.ex:556
+#: lib/europa_web/components/game_components.ex:665
+#: lib/europa_web/components/game_components.ex:709
+#: lib/europa_web/components/game_components.ex:779
+#: lib/europa_web/components/game_components.ex:847
+#: lib/europa_web/components/game_components.ex:953
+#: lib/europa_web/components/game_components.ex:1284
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:554
+#: lib/europa_web/components/game_components.ex:569
 #, elixir-autogen, elixir-format
 msgid "Commit a dangerous act?"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:537
-#: lib/europa_web/components/game_components.ex:691
+#: lib/europa_web/components/game_components.ex:552
+#: lib/europa_web/components/game_components.ex:706
 #, elixir-autogen, elixir-format
 msgid "Confirm"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:524
+#: lib/europa_web/components/game_components.ex:539
 #, elixir-autogen, elixir-format
 msgid "Confirm action"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:776
+#: lib/europa_web/components/game_components.ex:791
 #, elixir-autogen, elixir-format
 msgid "Consume"
 msgstr ""
@@ -498,9 +500,9 @@ msgstr ""
 msgid "Consume cost"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:195
-#: lib/europa_web/components/game_components.ex:320
-#: lib/europa_web/components/game_components.ex:1126
+#: lib/europa_web/components/game_components.ex:210
+#: lib/europa_web/components/game_components.ex:335
+#: lib/europa_web/components/game_components.ex:1278
 #, elixir-autogen, elixir-format
 msgid "Control hints"
 msgstr ""
@@ -512,17 +514,17 @@ msgstr ""
 msgid "Count"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:347
+#: lib/europa_web/components/game_components.ex:362
 #, elixir-autogen, elixir-format
 msgid "Craft items"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:717
+#: lib/europa_web/components/game_components.ex:732
 #, elixir-autogen, elixir-format
 msgid "Crafting items"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:749
+#: lib/europa_web/components/game_components.ex:764
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr ""
@@ -532,7 +534,7 @@ msgstr ""
 msgid "Creator of the SSB. Rebel leader. The first known space terrorist. Believed to be responsible for the destruction of the Martian colony."
 msgstr ""
 
-#: lib/europa/server/enemy.ex:94
+#: lib/europa/server/enemy.ex:96
 #: lib/europa/server/loot/melee_weapon.ex:68
 #: lib/europa/server/loot/weapon.ex:160
 #, elixir-autogen, elixir-format
@@ -546,23 +548,24 @@ msgstr ""
 
 #: lib/europa/server/planet/tiles/objects.ex:98
 #: lib/europa/server/planet/tiles/objects.ex:123
+#: lib/europa_web/components/game_components.ex:907
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:401
+#: lib/europa_web/components/game_components.ex:416
 #, elixir-autogen, elixir-format
 msgid "Disassemble"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:405
-#: lib/europa_web/components/game_components.ex:626
-#: lib/europa_web/components/game_components.ex:646
+#: lib/europa_web/components/game_components.ex:420
+#: lib/europa_web/components/game_components.ex:641
+#: lib/europa_web/components/game_components.ex:661
 #, elixir-autogen, elixir-format
 msgid "Drop"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:409
+#: lib/europa_web/components/game_components.ex:424
 #, elixir-autogen, elixir-format
 msgid "Drop partly"
 msgstr ""
@@ -574,18 +577,18 @@ msgstr ""
 
 #: lib/europa/server/loot/boots.ex:69
 #: lib/europa/server/loot/suit.ex:72
-#: lib/europa_web/components/game_components.ex:176
+#: lib/europa_web/components/game_components.ex:183
 #, elixir-autogen, elixir-format
 msgid "Efficiency"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:419
-#: lib/europa_web/components/game_components.ex:466
+#: lib/europa_web/components/game_components.ex:434
+#: lib/europa_web/components/game_components.ex:481
 #, elixir-autogen, elixir-format
 msgid "Empty"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:795
+#: lib/europa_web/components/game_components.ex:810
 #, elixir-autogen, elixir-format
 msgid "Equip"
 msgstr ""
@@ -619,7 +622,7 @@ msgstr ""
 
 #: lib/europa/server/npc.ex:28
 #: lib/europa/server/player.ex:123
-#: lib/europa_web/components/game_components.ex:487
+#: lib/europa_web/components/game_components.ex:502
 #, elixir-autogen, elixir-format
 msgid "Gender"
 msgstr ""
@@ -629,13 +632,13 @@ msgstr ""
 msgid "Great Red Spots survived"
 msgstr ""
 
-#: lib/europa/server/enemy.ex:92
+#: lib/europa/server/enemy.ex:94
 #: lib/europa/server/loot/boots.ex:70
 #: lib/europa/server/loot/helmet.ex:70
 #: lib/europa/server/loot/suit.ex:73
 #: lib/europa/server/loot/supply.ex:110
 #: lib/europa/server/player.ex:124
-#: lib/europa_web/components/game_components.ex:146
+#: lib/europa_web/components/game_components.ex:153
 #, elixir-autogen, elixir-format
 msgid "Health"
 msgstr ""
@@ -661,23 +664,23 @@ msgstr ""
 msgid "Hit cost"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:637
+#: lib/europa_web/components/game_components.ex:652
 #, elixir-autogen, elixir-format
 msgid "How many?"
 msgstr ""
 
 #: lib/europa/server/loot/supply.ex:112
-#: lib/europa_web/components/game_components.ex:171
+#: lib/europa_web/components/game_components.ex:178
 #, elixir-autogen, elixir-format
 msgid "Hunger"
 msgstr ""
 
-#: lib/europa/server.ex:1045
+#: lib/europa/server.ex:1131
 #, elixir-autogen, elixir-format
 msgid "I'm"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:304
+#: lib/europa_web/components/game_components.ex:319
 #, elixir-autogen, elixir-format
 msgid "In inventory"
 msgstr ""
@@ -687,19 +690,19 @@ msgstr ""
 msgid "Initially elected by the people of Earth as the main coordinator of colonization, he subsequently granted himself title of the President of WCC, which is essentially analogous to the President of all of Europa and human civilization. He survived several assassination attempts by the SSB, but to the surprise of many, he did not leave Europa after the disaster, although he had every opportunity."
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1123
+#: lib/europa_web/components/game_components.ex:1275
 #, elixir-autogen, elixir-format
 msgid "Interact with environment"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:156
-#: lib/europa_web/components/game_components.ex:345
-#: lib/europa_web/components/game_components.ex:1125
+#: lib/europa_web/components/game_components.ex:163
+#: lib/europa_web/components/game_components.ex:360
+#: lib/europa_web/components/game_components.ex:1277
 #, elixir-autogen, elixir-format
 msgid "Inventory"
 msgstr ""
 
-#: lib/europa/server.ex:1089
+#: lib/europa/server.ex:1175
 #, elixir-autogen, elixir-format
 msgid "It's not possible to do this now."
 msgstr ""
@@ -737,12 +740,12 @@ msgid "Light"
 msgstr ""
 
 #: lib/europa/server/loot/weapon.ex:167
-#: lib/europa_web/components/game_components.ex:304
+#: lib/europa_web/components/game_components.ex:319
 #, elixir-autogen, elixir-format
 msgid "Loaded"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1124
+#: lib/europa_web/components/game_components.ex:1276
 #, elixir-autogen, elixir-format
 msgid "Loot"
 msgstr ""
@@ -752,7 +755,7 @@ msgstr ""
 msgid "Magazine"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:304
+#: lib/europa_web/components/game_components.ex:319
 #, elixir-autogen, elixir-format
 msgid "Magazine size"
 msgstr ""
@@ -777,43 +780,43 @@ msgstr ""
 msgid "Melee weapons"
 msgstr ""
 
-#: lib/europa/server/enemy.ex:95
+#: lib/europa/server/enemy.ex:97
 #, elixir-autogen, elixir-format
 msgid "Move distance"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1120
+#: lib/europa_web/components/game_components.ex:1272
 #, elixir-autogen, elixir-format
 msgid "Move/punch down"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1121
+#: lib/europa_web/components/game_components.ex:1273
 #, elixir-autogen, elixir-format
 msgid "Move/punch left"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1122
+#: lib/europa_web/components/game_components.ex:1274
 #, elixir-autogen, elixir-format
 msgid "Move/punch right"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1119
+#: lib/europa_web/components/game_components.ex:1271
 #, elixir-autogen, elixir-format
 msgid "Move/punch up"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:640
-#: lib/europa_web/components/game_components.ex:643
+#: lib/europa_web/components/game_components.ex:655
+#: lib/europa_web/components/game_components.ex:658
 #, elixir-autogen, elixir-format
 msgid "Must be between"
 msgstr ""
 
-#: lib/europa/server.ex:1042
+#: lib/europa/server.ex:1128
 #, elixir-autogen, elixir-format
 msgid "My name is"
 msgstr ""
 
-#: lib/europa/server/enemy.ex:91
+#: lib/europa/server/enemy.ex:93
 #: lib/europa/server/loot/boots.ex:68
 #: lib/europa/server/loot/helmet.ex:68
 #: lib/europa/server/loot/melee_weapon.ex:67
@@ -839,32 +842,32 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:758
+#: lib/europa_web/components/game_components.ex:773
 #, elixir-autogen, elixir-format
 msgid "No blueprints"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:245
+#: lib/europa_web/components/game_components.ex:260
 #, elixir-autogen, elixir-format
 msgid "No boots"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:217
+#: lib/europa_web/components/game_components.ex:232
 #, elixir-autogen, elixir-format
 msgid "No helmet"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:274
+#: lib/europa_web/components/game_components.ex:289
 #, elixir-autogen, elixir-format
 msgid "No melee weapon"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:231
+#: lib/europa_web/components/game_components.ex:246
 #, elixir-autogen, elixir-format
 msgid "No suit"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:261
+#: lib/europa_web/components/game_components.ex:276
 #, elixir-autogen, elixir-format
 msgid "No weapon"
 msgstr ""
@@ -892,18 +895,18 @@ msgstr ""
 msgid "People understand that the only way to preserve civilization is to colonize other celestial bodies. Research is underway into interplanetary travel and fusion reactors."
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:488
+#: lib/europa_web/components/game_components.ex:503
 #, elixir-autogen, elixir-format
 msgid "Profession"
 msgstr ""
 
 #: lib/europa/server/loot/supply.ex:114
-#: lib/europa_web/components/game_components.ex:181
+#: lib/europa_web/components/game_components.ex:188
 #, elixir-autogen, elixir-format
 msgid "Radiation"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:391
+#: lib/europa_web/components/game_components.ex:406
 #, elixir-autogen, elixir-format
 msgid "Reload"
 msgstr ""
@@ -913,17 +916,17 @@ msgstr ""
 msgid "Reload cost"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1128
+#: lib/europa_web/components/game_components.ex:1280
 #, elixir-autogen, elixir-format
 msgid "Reload weapon"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:923
+#: lib/europa_web/components/game_components.ex:1075
 #, elixir-autogen, elixir-format
 msgid "Required items"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1127
+#: lib/europa_web/components/game_components.ex:1279
 #, elixir-autogen, elixir-format
 msgid "Shoot"
 msgstr ""
@@ -948,7 +951,7 @@ msgstr ""
 msgid "Solar System Brotherhood (SSB)"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:929
+#: lib/europa_web/components/game_components.ex:1081
 #, elixir-autogen, elixir-format
 msgid "Something under water"
 msgstr ""
@@ -964,7 +967,7 @@ msgstr ""
 msgid "Stanislav Mishchenko"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:68
+#: lib/europa_web/components/game_components.ex:69
 #, elixir-autogen, elixir-format
 msgid "Start game"
 msgstr ""
@@ -994,7 +997,7 @@ msgstr ""
 msgid "The Disaster"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:593
+#: lib/europa_web/components/game_components.ex:608
 #, elixir-autogen, elixir-format
 msgid "The action requires following items"
 msgstr ""
@@ -1029,23 +1032,23 @@ msgstr ""
 msgid "The top brass and the wealthy fled Europa on the first prototypes of the 'generation ships', leaving the rest to certain death."
 msgstr ""
 
-#: lib/europa/server.ex:1110
+#: lib/europa/server.ex:1196
 #, elixir-autogen, elixir-format
 msgid "There is nothing to interact with"
 msgstr ""
 
-#: lib/europa/server.ex:1105
+#: lib/europa/server.ex:1191
 #, elixir-autogen, elixir-format
 msgid "There is nothing to loot"
 msgstr ""
 
 #: lib/europa/server/loot/supply.ex:113
-#: lib/europa_web/components/game_components.ex:161
+#: lib/europa_web/components/game_components.ex:168
 #, elixir-autogen, elixir-format
 msgid "Thirst"
 msgstr ""
 
-#: lib/europa_web/live/game_live.ex:218
+#: lib/europa_web/live/game_live.ex:214
 #, elixir-autogen, elixir-format
 msgid "This key doesn't do anything. Press H to get control hints."
 msgstr ""
@@ -1060,18 +1063,18 @@ msgstr ""
 msgid "Total moves"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:791
+#: lib/europa_web/components/game_components.ex:806
 #, elixir-autogen, elixir-format
 msgid "Unequip"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:396
-#: lib/europa_web/components/game_components.ex:456
+#: lib/europa_web/components/game_components.ex:411
+#: lib/europa_web/components/game_components.ex:471
 #, elixir-autogen, elixir-format
 msgid "Unload"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:783
+#: lib/europa_web/components/game_components.ex:798
 #, elixir-autogen, elixir-format
 msgid "Use"
 msgstr ""
@@ -1085,7 +1088,7 @@ msgstr ""
 #: lib/europa/server/loot/helmet.ex:71
 #: lib/europa/server/loot/suit.ex:74
 #: lib/europa/server/loot/supply.ex:111
-#: lib/europa_web/components/game_components.ex:151
+#: lib/europa_web/components/game_components.ex:158
 #, elixir-autogen, elixir-format
 msgid "Warm"
 msgstr ""
@@ -1117,47 +1120,47 @@ msgstr ""
 msgid "Western Colonisation Community (WCC)"
 msgstr ""
 
-#: lib/europa/server.ex:1209
+#: lib/europa/server.ex:1299
 #, elixir-autogen, elixir-format
 msgid "You are dying of dehydration!"
 msgstr ""
 
-#: lib/europa/server.ex:1214
+#: lib/europa/server.ex:1304
 #, elixir-autogen, elixir-format
 msgid "You are dying of hunger!"
 msgstr ""
 
-#: lib/europa/server.ex:1223
+#: lib/europa/server.ex:1313
 #, elixir-autogen, elixir-format
 msgid "You are dying of radiation!"
 msgstr ""
 
-#: lib/europa/server.ex:1100
+#: lib/europa/server.ex:1186
 #, elixir-autogen, elixir-format
 msgid "You can't walk because you're overloaded"
 msgstr ""
 
-#: lib/europa/server.ex:1095
+#: lib/europa/server.ex:1181
 #, elixir-autogen, elixir-format
 msgid "You can't walk through %{tile_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1170
+#: lib/europa/server.ex:1256
 #, elixir-autogen, elixir-format
 msgid "You consumed %{supply_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1115
+#: lib/europa/server.ex:1201
 #, elixir-autogen, elixir-format
 msgid "You didn't hit anyone"
 msgstr ""
 
-#: lib/europa/server.ex:1125
+#: lib/europa/server.ex:1211
 #, elixir-autogen, elixir-format
 msgid "You don't have any ammo to reload your weapon!"
 msgstr ""
 
-#: lib/europa/server.ex:1180
+#: lib/europa/server.ex:1266
 #, elixir-autogen, elixir-format
 msgid "You drank radioactive water!"
 msgstr ""
@@ -1177,47 +1180,47 @@ msgstr ""
 msgid "You extinguished the fire"
 msgstr ""
 
-#: lib/europa/server.ex:1150
+#: lib/europa/server.ex:1236
 #, elixir-autogen, elixir-format
 msgid "You fired"
 msgstr ""
 
-#: lib/europa/server.ex:1190
+#: lib/europa/server.ex:1280
 #, elixir-autogen, elixir-format
 msgid "You get frostbite!"
 msgstr ""
 
-#: lib/europa/server.ex:1155
+#: lib/europa/server.ex:1241
 #, elixir-autogen, elixir-format
 msgid "You have changed the aiming mode"
 msgstr ""
 
-#: lib/europa/server.ex:1165
+#: lib/europa/server.ex:1251
 #, elixir-autogen, elixir-format
 msgid "You have crafted %{item_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1160
+#: lib/europa/server.ex:1246
 #, elixir-autogen, elixir-format
 msgid "You have disassembled %{item_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1120
+#: lib/europa/server.ex:1206
 #, elixir-autogen, elixir-format
 msgid "You have no weapon in your hands!"
 msgstr ""
 
-#: lib/europa/server.ex:1263
+#: lib/europa/server.ex:1353
 #, elixir-autogen, elixir-format
 msgid "You hit %{enemy_name} and dealt %{damage} damage to it!"
 msgstr ""
 
-#: lib/europa/server.ex:1272
+#: lib/europa/server.ex:1362
 #, elixir-autogen, elixir-format
 msgid "You killed %{character_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1265
+#: lib/europa/server.ex:1355
 #, elixir-autogen, elixir-format
 msgid "You killed %{enemy_name}"
 msgstr ""
@@ -1227,12 +1230,12 @@ msgstr ""
 msgid "You lit a bonfire"
 msgstr ""
 
-#: lib/europa/server.ex:1175
+#: lib/europa/server.ex:1261
 #, elixir-autogen, elixir-format
 msgid "You received a dose of radiation!"
 msgstr ""
 
-#: lib/europa/server.ex:1140
+#: lib/europa/server.ex:1226
 #, elixir-autogen, elixir-format
 msgid "You reloaded %{weapon_name}"
 msgstr ""
@@ -1243,37 +1246,37 @@ msgstr ""
 msgid "You removed the bonfire"
 msgstr ""
 
-#: lib/europa/server.ex:1285
+#: lib/europa/server.ex:1375
 #, elixir-autogen, elixir-format
 msgid "You struck with a %{melee_weapon_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1145
+#: lib/europa/server.ex:1231
 #, elixir-autogen, elixir-format
 msgid "You unloaded %{weapon_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1084
+#: lib/europa/server.ex:1170
 #, elixir-autogen, elixir-format
 msgid "You used %{tool_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1078
+#: lib/europa/server.ex:1164
 #, elixir-autogen, elixir-format
 msgid "You walked at %{tile_name}"
 msgstr ""
 
-#: lib/europa/server.ex:1135
+#: lib/europa/server.ex:1221
 #, elixir-autogen, elixir-format
 msgid "Your weapon is fully loaded."
 msgstr ""
 
-#: lib/europa/server.ex:1130
+#: lib/europa/server.ex:1216
 #, elixir-autogen, elixir-format
 msgid "Your weapon is unloaded."
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:1130
+#: lib/europa_web/components/game_components.ex:1282
 #, elixir-autogen, elixir-format
 msgid "Zoom mode"
 msgstr ""
@@ -1345,7 +1348,7 @@ msgstr ""
 msgid "fire"
 msgstr ""
 
-#: lib/europa/server.ex:1282
+#: lib/europa/server.ex:1372
 #, elixir-autogen, elixir-format
 msgid "fist"
 msgstr ""
@@ -1370,7 +1373,7 @@ msgstr ""
 msgid "ice spikes"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:345
+#: lib/europa_web/components/game_components.ex:360
 #, elixir-autogen, elixir-format
 msgid "kg"
 msgstr ""
@@ -1418,24 +1421,24 @@ msgstr ""
 msgid "water"
 msgstr ""
 
-#: lib/europa/server.ex:1039
+#: lib/europa/server.ex:1125
 #, elixir-autogen, elixir-format
 msgid "year"
 msgid_plural "years"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/europa_web/components/game_components.ex:136
+#: lib/europa_web/components/game_components.ex:143
 #, elixir-autogen, elixir-format
 msgid "year AD"
 msgstr ""
 
-#: lib/europa/server.ex:1048
+#: lib/europa/server.ex:1134
 #, elixir-autogen, elixir-format
 msgid "years old"
 msgstr ""
 
-#: lib/europa_web/components/game_components.ex:599
+#: lib/europa_web/components/game_components.ex:614
 #, elixir-autogen, elixir-format
 msgid "you have"
 msgstr ""
@@ -2148,6 +2151,8 @@ msgid "shotgun"
 msgstr ""
 
 #: lib/europa/server/characters.ex:0
+#: lib/europa/server/characters.ex:0
+#: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
 msgid "..."
 msgstr ""
@@ -2209,16 +2214,6 @@ msgstr ""
 
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
-msgid "Father! You're alive! I thought..."
-msgstr ""
-
-#: lib/europa/server/characters.ex:0
-#, elixir-autogen, elixir-format
-msgid "Father, what are you doing here? Lord, you're alive! But Mother..."
-msgstr ""
-
-#: lib/europa/server/characters.ex:0
-#, elixir-autogen, elixir-format
 msgid "Hey!"
 msgstr ""
 
@@ -2240,11 +2235,6 @@ msgstr ""
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
 msgid "I was testing the ice strength on the uninhabited side of the satellite. As soon as I felt the jolt, I immediately realized what had happened. But what the hell? The reactors had been operating for almost 20 years without a single breakdown, without a single minute of downtime."
-msgstr ""
-
-#: lib/europa/server/characters.ex:0
-#, elixir-autogen, elixir-format
-msgid "I will never forget you 我的心肝"
 msgstr ""
 
 #: lib/europa/server/characters.ex:0
@@ -2394,11 +2384,6 @@ msgstr ""
 
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
-msgid "What the hell are you doing here?"
-msgstr ""
-
-#: lib/europa/server/characters.ex:0
-#, elixir-autogen, elixir-format
 msgid "What's going to happen to us now? We've dreamed of destroying the WSS our whole lives, but what do we do now? Do we have a plan?"
 msgstr ""
 
@@ -2419,10 +2404,248 @@ msgstr ""
 
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
-msgid "Zhang is that you? 你回来了真好! I felt like you survived!"
+msgid "这算怎么回事啊!"
 msgstr ""
 
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
-msgid "这算怎么回事啊!"
+msgid "A person who voluntarily enters the ocean ceases to be human. These creatures have learned to merge with us and alter our bodies and minds. I saw one of these monsters tear apart four people in a matter of seconds. They eat liver..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#, elixir-autogen, elixir-format
+msgid "Apoapsis Ganymede"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "As discussed, we launched an attack on the thermonuclear station, but we didn't have time to enter and it... Exploded on its own? Were they ahead of the curve or was it just chance?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "As generations changed, the names given to children began to undergo changes, I am a clear example of this."
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:200
+#: lib/europa_web/components/game_components.ex:832
+#: lib/europa_web/components/game_components.ex:1283
+#, elixir-autogen, elixir-format
+msgid "Compass"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:839
+#, elixir-autogen, elixir-format
+msgid "Current coord"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:941
+#, elixir-autogen, elixir-format
+msgid "Description, for example: Strong enemies"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:902
+#: lib/europa_web/components/game_components.ex:948
+#, elixir-autogen, elixir-format
+msgid "Follow"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "For the first few days after the disaster, life continued as usual, adjusted for the new circumstances. But as time went on, meeting a living, unmutated person became increasingly difficult..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "How could reactors operating for years at 100% uptime suddenly explode? This is insane! Who dared? 這究竟是誰的錯?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I don't like to chat, but... So listen to me. While your fingers are still moving, write your biography. If someone comes for us when it's already too late, which is unlikely... Anyway, write it. Ourson noir et blanc chinois."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I got a little burned, but now everything is fine, Apoapsis treated the wound and I can run again."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I know it's your fault, not the terrorists'. Ils ont laissé un imbécile conduire et il a fini dans le fossé. L'ours est un charognard."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "I'm one of the few whose parents were carefree enough to have children in the aftermath of the disaster. My father died of radiation before I was born, and my mother died shortly after giving birth. Scientists found me in the ruins, and I grew up under their care in a research center."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "If it wasn't you, then who? Did Henry fucking Davies climb into his own fucking reactor just to keep us from doing it?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "In the next life, my friend, we will sit in unbearable heat and eat rice and drink vodka de riz. How is it there.. 瘦熊貓!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Is ours en peluche the most alive of all the living?"
+msgstr ""
+
+#: lib/europa/server.ex:1272
+#, elixir-autogen, elixir-format
+msgid "Jupiter shows the Great Red Spot, a monstrous storm swept everything around, but you miraculously survived"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Mister? I've heard of you, you're a FRENCH BEAR, ha-ha-ha. Have you seen those green creatures? I swear, they heal other creatures! If you meet one, kill it first!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:17
+#, elixir-autogen, elixir-format
+msgid "Monsieur Arthur Christan"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "My oldest friend! How nice to meet you.. 你是我的最后一个灵魂伴侣"
+msgstr ""
+
+#: lib/europa_web/live/game_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "No description"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1485
+#, elixir-autogen, elixir-format
+msgid "Not yet born"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Nothing will ever be the same again, do you understand? Never! Why did we give birth to children on this damn piece of ice... What am I saying... Son!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Oh.."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "One night, this damned creature broke through the wall, walked in like it belonged there, and bit off half the fingers on my left hand! Without a fork or knife!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Ouah! Va en enfer, honorable imbécile."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Our guys were supposed to break into the ETC and blow the reactors to hell. There was an explosion, but I found them alive! Who blew them up? The Allfather?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Pas aujourd'hui, l'ours polaire est couvert de sang."
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Radiation poisoning doctor"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:945
+#, elixir-autogen, elixir-format
+msgid "Required field"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Should ancient Earthly morality be preserved in our conditions? I've seen people eat the frozen corpses of others, and I'm not sure I should condemn them."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "The most important thing is that we survived. Did you see the monsters? Under different circumstances, a scientist like you would have gone crazy with joy if he found out about them!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "The only way for you to remain a man is to drink water from an ice hole et mourir."
+msgstr ""
+
+#: lib/europa/server/characters.ex:18
+#, elixir-autogen, elixir-format
+msgid "Thinker (Unemployed)"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:931
+#, elixir-autogen, elixir-format
+msgid "Track coord"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:835
+#, elixir-autogen, elixir-format
+msgid "Track current coord"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:898
+#, elixir-autogen, elixir-format
+msgid "Unfollow"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "What the hell are you doing here? How could you survive the explosion? There shouldn't have been ashes left of you! Wait... You weren't the one who blew up the station?"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Whoa! 吃饭了吗?"
+msgstr ""
+
+#: lib/europa_web/live/game_live.ex:263
+#, elixir-autogen, elixir-format
+msgid "You cannot track more than %{count} target(s)"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "You were the first born here and it seems you'll last the longest! I confess... My legs are starting to turn black, either from the cold or from the radiation. 我要死了."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "Your mother and I were supposed to work in the lab together, but miraculously, I was sent to the other pole to inspect the construction site for the new reactors. New ones! We don't have the old ones anymore!"
+msgstr ""
+
+#: lib/europa_web/components/game_components.ex:1464
+#, elixir-autogen, elixir-format
+msgid "meter(s)"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "今天吃什么了呀? How are you feeling? I was coughing up blood, but I'm holding up so far..."
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "你回来了真好! I felt like you survived!"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "我的心肝"
+msgstr ""
+
+#: lib/europa/server/characters.ex:0
+#, elixir-autogen, elixir-format
+msgid "父親! What happened? I thought you were at the lab... Luckily you survived! But Mom... 阿妈... They say she was right there..."
 msgstr ""

@@ -13,8 +13,10 @@
         ],
         "special_stories": {
             "Li Tian": [
-                "Father! You're alive! I thought...",
-                "Father, what are you doing here? Lord, you're alive! But Mother..."
+                "父親! What happened? I thought you were at the lab... Luckily you survived! But Mom... 阿妈... They say she was right there...",
+                "The most important thing is that we survived. Did you see the monsters? Under different circumstances, a scientist like you would have gone crazy with joy if he found out about them!",
+                "How could reactors operating for years at 100% uptime suddenly explode? This is insane! Who dared? 這究竟是誰的錯?",
+                "I got a little burned, but now everything is fine, Apoapsis treated the wound and I can run again."
             ]
         },
         "short_phrases": [
@@ -35,14 +37,17 @@
         ],
         "special_stories": {
             "Li Zhang": [
-                "Zhang is that you? 你回来了真好! I felt like you survived!"
+                "你回来了真好! I felt like you survived!",
+                "Nothing will ever be the same again, do you understand? Never! Why did we give birth to children on this damn piece of ice... What am I saying... Son!",
+                "Your mother and I were supposed to work in the lab together, but miraculously, I was sent to the other pole to inspect the construction site for the new reactors. New ones! We don't have the old ones anymore!",
+                "今天吃什么了呀? How are you feeling? I was coughing up blood, but I'm holding up so far..."
             ]
         },
         "short_phrases": [
             "这算怎么回事啊!",
             "All is lost...",
             "Well...",
-            "I will never forget you 我的心肝"
+            "我的心肝"
         ]
     },
     {
@@ -55,7 +60,9 @@
             "People call me a terrorist, but my true goal is to overthrow the European regime and hand over power to those who deserve it. I am ready to sacrifice everything, including my life, to achieve this goal. If that means teaming up with underwater creatures, I'm in.",
             "Members of the SSB, especially me, weren't welcome in respectable circles before. But now I feel like I'm being looked at askance even within the SSB itself. Maybe it's paranoia? I haven't slept for three days...",
             "We've been keeping a low profile most of the time, but now, after the disaster, it's time to act. Those idiots at the WCC, with their negligence, have done all the work for us; all we have to do is take matters into our own hands. All doors are open.",
-            "Even before the disaster, this so-called 'president of humanity' deserved to be deported to Earth to rot alive from radiation. Now he deserves to become breakfast for one of these creatures. I'm ready to lie down on the next plate just to see it with my own eyes."
+            "Even before the disaster, this so-called 'president of humanity' deserved to be deported to Earth to rot alive from radiation. Now he deserves to become breakfast for one of these creatures. I'm ready to lie down on the next plate just to see it with my own eyes.",
+            "One night, this damned creature broke through the wall, walked in like it belonged there, and bit off half the fingers on my left hand! Without a fork or knife!",
+            "Our guys were supposed to break into the ETC and blow the reactors to hell. There was an explosion, but I found them alive! Who blew them up? The Allfather?"
         ],
         "special_stories": {
             "Henry Davies": [
@@ -67,8 +74,9 @@
             ],
             "Phil McLee": [
                 "Phil? I'm glad you're alive, but what are you doing here? Where are the others?",
-                "What the hell are you doing here?",
-                "After the explosion, the WSS is weaker than ever. There's no one left to prove anything to, but I want to find Davies, if he's still alive. If not, I'll shoot what's left of him, then build a new reactor on his snowy grave and blow it up again."
+                "What the hell are you doing here? How could you survive the explosion? There shouldn't have been ashes left of you! Wait... You weren't the one who blew up the station?",
+                "After the explosion, the WSS is weaker than ever. There's no one left to prove anything to, but I want to find Davies, if he's still alive. If not, I'll shoot what's left of him, then build a new reactor on his snowy grave and blow it up again.",
+                "If it wasn't you, then who? Did Henry fucking Davies climb into his own fucking reactor just to keep us from doing it?"
             ]
         },
         "short_phrases": [
@@ -118,12 +126,69 @@
                 "Sir, is that you? I thought I was the only one left! After the explosion, the military police from the WCC came running towards us. They started beating the crap out of the guys, I shot two and ran away without looking back. Where are we?",
                 "What's going to happen to us now? We've dreamed of destroying the WSS our whole lives, but what do we do now? Do we have a plan?",
                 "I met one of ours, but at that moment the ghoul was already sucking in his intestines like fucking spaghetti...",
-                "I've killed a hundred people on Europa, two hundred on Earth, without flinching. But when I see these creatures, I want to hide in a corner like a child... What will happen to us now?"
+                "I've killed a hundred people on Europa, two hundred on Earth, without flinching. But when I see these creatures, I want to hide in a corner like a child... What will happen to us now?",
+                "As discussed, we launched an attack on the thermonuclear station, but we didn't have time to enter and it... Exploded on its own? Were they ahead of the curve or was it just chance?"
             ]
         },
         "short_phrases": [
             "...",
             "Damn it! Damn it!"
         ]
+    },
+    {
+        "name": "Apoapsis Ganymede",
+        "gender": "male",
+        "profession": "Radiation poisoning doctor",
+        "age_at_disaster": -5,
+        "years": {"from": 20, "to": 40},
+        "stories": [
+            "I'm one of the few whose parents were carefree enough to have children in the aftermath of the disaster. My father died of radiation before I was born, and my mother died shortly after giving birth. Scientists found me in the ruins, and I grew up under their care in a research center.",
+            "As generations changed, the names given to children began to undergo changes, I am a clear example of this.",
+            "For the first few days after the disaster, life continued as usual, adjusted for the new circumstances. But as time went on, meeting a living, unmutated person became increasingly difficult...",
+            "Should ancient Earthly morality be preserved in our conditions? I've seen people eat the frozen corpses of others, and I'm not sure I should condemn them.",
+            "A person who voluntarily enters the ocean ceases to be human. These creatures have learned to merge with us and alter our bodies and minds. I saw one of these monsters tear apart four people in a matter of seconds. They eat liver..."
+        ],
+        "special_stories": {
+            "Li Zhang": [
+                "My oldest friend! How nice to meet you.. 你是我的最后一个灵魂伴侣",
+                "You were the first born here and it seems you'll last the longest! I confess... My legs are starting to turn black, either from the cold or from the radiation. 我要死了.",
+                "Whoa! 吃饭了吗?"
+            ],
+            "Monsieur Arthur Christan": [
+                "Mister? I've heard of you, you're a FRENCH BEAR, ha-ha-ha. Have you seen those green creatures? I swear, they heal other creatures! If you meet one, kill it first!"
+            ]
+        },
+        "short_phrases": [
+            "...",
+            "Oh.."
+        ]
+    },
+    {
+        "name": "Monsieur Arthur Christan",
+        "gender": "male",
+        "profession": "Thinker (Unemployed)",
+        "age_at_disaster": 40,
+        "years": {"from": 1, "to": 46},
+        "stories": [
+            "..."
+        ],
+        "special_stories": {
+            "Apoapsis Ganymede": [
+               "Is ours en peluche the most alive of all the living?"
+            ],
+            "Li Zhang": [
+                "I don't like to chat, but... So listen to me. While your fingers are still moving, write your biography. If someone comes for us when it's already too late, which is unlikely... Anyway, write it. Ourson noir et blanc chinois.",
+                "In the next life, my friend, we will sit in unbearable heat and eat rice and drink vodka de riz. How is it there.. 瘦熊貓!"
+            ],
+            "Henry Davies": [
+                "Ouah! Va en enfer, honorable imbécile.",
+                "I know it's your fault, not the terrorists'. Ils ont laissé un imbécile conduire et il a fini dans le fossé. L'ours est un charognard.",
+                "The only way for you to remain a man is to drink water from an ice hole et mourir."
+            ],
+            "Phil McLee": [
+                "Pas aujourd'hui, l'ours polaire est couvert de sang."
+            ]
+        },
+        "short_phrases": []
     }
 ]
