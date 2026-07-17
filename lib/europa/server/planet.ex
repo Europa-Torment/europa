@@ -52,6 +52,8 @@ defmodule Europa.Server.Planet do
 
   @predefined_cluster_distance fetch_config!([__MODULE__, :predefined_cluster_distance])
   @predefined_cluster_update_distance fetch_config!([__MODULE__, :predefined_cluster_update_distance])
+  @default_predefined_possibility fetch_config!([__MODULE__, :default_predefined_possibility])
+  @predefined_cluster_possibility fetch_config!([__MODULE__, :predefined_cluster_possibility])
 
   @disaster_year fetch_config!([:game_params, :disaster_year])
 
@@ -88,6 +90,10 @@ defmodule Europa.Server.Planet do
   @warm_water Tiles.tile(:warm_water).atom_value
 
   @snow Tiles.tile(:snow).atom_value
+
+  @concrete Tiles.tile(:concrete).atom_value
+  @concrete_snow Tiles.tile(:concrete_snow).atom_value
+  @ruins Tiles.tile(:ruins).atom_value
 
   @darkness Tiles.tile(:darkness).atom_value
 
@@ -129,11 +135,20 @@ defmodule Europa.Server.Planet do
   # Follow the ordering by noise_threshold to not get unexpected tiles stacking
   # If there is water in region then next one should be without water
   @regions [
-    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.10},
-    %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.04},
-    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: 0.0},
-    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.12},
-    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.44},
+    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.16},
+    %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.11},
+    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.08},
+    %Region{
+      water_tile: @ruins,
+      ice_tile: @concrete,
+      snow_tile: @concrete_snow,
+      enemy_generate_possibility: div(@base_enemy_generate_possibility, 20),
+      predefined_possibility: div(@default_predefined_possibility, 10),
+      specific_item_boxes: [:sun_battery],
+      noise_threshold: 0.07
+    },
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.18},
+    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.47},
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
 
@@ -1209,7 +1224,7 @@ defmodule Europa.Server.Planet do
   defp generate_tile(%__MODULE__{} = planet, {x, y} = coord) do
     tile_by_perlin_noise(x, y, planet.land)
     |> tile_or_enemy(planet, coord)
-    |> tile_or_loot()
+    |> tile_or_loot(planet, coord)
     |> tile_or_npc(planet)
   end
 
@@ -1243,17 +1258,25 @@ defmodule Europa.Server.Planet do
     |> List.flatten()
   end
 
-  defp tile_or_loot(tile) do
+  defp tile_or_loot(tile, %__MODULE__{} = planet, {x, y}) do
     possibility =
       if tile in @high_loot_possibility_tiles do
-        div(@base_enemy_generate_possibility, 10) |> max(300)
+        div(@base_loot_generate_possibility, 10) |> max(300)
       else
         @base_loot_generate_possibility
       end
 
+    region = region_by_perlin_noise(x, y, planet.land)
+
+    item_box_generator =
+      if not Enum.empty?(region.specific_item_boxes) && m_to_n?(1, 5) do
+        fn -> region.specific_item_boxes |> Enum.random() |> Loot.generate_item_box(tile) end
+      else
+        fn -> Loot.generate_item_box() |> Loot.ItemBox.stand_on(tile) end
+      end
+
     if m_to_n?(1, possibility) && tile in @movable_tiles do
-      Loot.generate_item_box()
-      |> Loot.ItemBox.stand_on(tile)
+      item_box_generator.()
     else
       tile
     end
@@ -1285,7 +1308,14 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp generate_enemy_possibility(%__MODULE__{} = planet, {_x, _y} = coord) do
+  defp generate_enemy_possibility(%__MODULE__{} = planet, {x, y} = coord) do
+    case region_by_perlin_noise(x, y, planet.land) do
+      %Region{enemy_generate_possibility: nil} -> default_generate_enemy_possibility(planet, coord)
+      %Region{enemy_generate_possibility: possibility} -> {1, possibility}
+    end
+  end
+
+  defp default_generate_enemy_possibility(%__MODULE__{} = planet, coord) do
     around_water_count =
       planet.land
       |> get_neighbors(coord, 3)
@@ -1444,14 +1474,20 @@ defmodule Europa.Server.Planet do
   # TODO: figure out how to test this
   # coveralls-ignore-start
 
-  defp maybe_generate_predefined(land, direction, characters_pid, planet) do
+  defp maybe_generate_predefined(land, direction, characters_pid, %__MODULE__{current_coord: {x, y}} = planet) do
     in_predefined_cluster? = in_predefined_cluster?(planet.current_coord, planet.predefined_cluster_coord)
+
+    default_predefined_possibility =
+      case region_by_perlin_noise(x, y, land) do
+        %Region{predefined_possibility: nil} -> @default_predefined_possibility
+        %Region{predefined_possibility: possibility} -> possibility
+      end
 
     {m, n} =
       if in_predefined_cluster? do
-        {1, 10}
+        {1, @predefined_cluster_possibility}
       else
-        {1, 50}
+        {1, default_predefined_possibility}
       end
 
     if m_to_n?(m, n) do

@@ -50,6 +50,16 @@
         "random_weight": 0.2
     },
     {
+        "type": "sun_battery",
+        "readable_name": "Sun battery",
+        "max_items": 3, 
+        "item_types": ["tool"], 
+        "movable": false, 
+        "image_name": "sun_battery",
+        "placing": "outdoor",
+        "random_weight": 0.0
+    },
+    {
         "type": "cupboard",
         "readable_name": "Cupboard",
         "max_items": 6, 

@@ -175,6 +175,30 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: false,
       image_name: "darkness",
       gif_tile?: false
+    },
+    concrete: %Tile{
+      atom_value: :c,
+      blood_version: :cb,
+      readable_name: gettext("concrete"),
+      move_cost: 1,
+      movable?: true,
+      image_name: "concrete"
+    },
+    concrete_snow: %Tile{
+      atom_value: :cs,
+      blood_version: :csb,
+      readable_name: gettext("snow-covered concrete"),
+      move_cost: 1,
+      movable?: true,
+      image_name: "concrete_snow"
+    },
+    ruins: %Tile{
+      atom_value: :r,
+      blood_version: nil,
+      readable_name: gettext("ruins"),
+      move_cost: nil,
+      movable?: false,
+      image_name: "ruins"
     }
   }
 
