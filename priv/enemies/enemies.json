@@ -56,7 +56,7 @@
         "max_items": 10,
         "phrases": ["S..tay he#&%..", "Hel... Ghaaa#&^&", "Mother..", "Enter..#%@ the..$&#&@ ocean!", "Submit..to me!", "Fin...&*^#ers.."],
         "image_name": "race_betrayer",
-        "random_weight": 0.09
+        "random_weight": 0.05
     },
     {
         "type": "monster",

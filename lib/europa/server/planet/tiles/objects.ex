@@ -147,6 +147,24 @@ defmodule Europa.Server.Planet.Tiles.Objects do
         }
       ]
     },
+    fire_vehicle: %Object{
+      name: gettext("burning vehicle"),
+      image_name: "vehicle_burning",
+      gif_tile?: true,
+      warm?: true,
+      bright?: true,
+      transforms: [
+        %Transform{
+          name: :extinguish,
+          readable_name: gettext("Extinguish"),
+          message: gettext("You extinguished the burning vehicle"),
+          transforms_to: {:item_box, :vehicle},
+          transform_requirements: {:tools, [Tool.generate_fire_extinguisher()]},
+          transform_sound_name: "fire_extinguisher",
+          transform_cost: 2
+        }
+      ]
+    },
     fire: %Object{
       name: gettext("fire"),
       image_name: "fire",

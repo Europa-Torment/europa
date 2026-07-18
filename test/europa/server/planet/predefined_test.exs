@@ -30,6 +30,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
   @door_down Objects.object(:door_down)
 
   @fire_shuttle Objects.object(:fire_shuttle)
+  @fire_vehicle Objects.object(:fire_vehicle)
 
   @skip Objects.object(:skip)
   @broken_wall Objects.object(:broken_wall)
@@ -100,7 +101,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
     test "generates situation" do
       assert [
-               [@skip, @skip, @skip, @skip, @skip, @skip, @skip],
+               [@skip, @skip, @skip, @skip, @skip, @skip, @skip, @skip, @skip],
                [
                  @skip,
                  %Enemy{},
@@ -110,9 +111,11 @@ defmodule Europa.Server.Planet.PredefinedTest do
                  shuttle,
                  npc_or_skip,
                  %ItemBox{type: :monster_body},
+                 vehicle_or_burning_vehicle,
+                 %ItemBox{type: :sun_battery},
                  @skip
                ],
-               [@skip, @skip, @skip, @skip, @skip, @skip, @skip]
+               [@skip, @skip, @skip, @skip, @skip, @skip, @skip, @skip, @skip]
              ] =
                Predefined.generate(:situation)
 
@@ -124,6 +127,7 @@ defmodule Europa.Server.Planet.PredefinedTest do
 
       assert is_shuttle
       assert npc_or_skip in [{:npc, nil}, @skip]
+      assert vehicle?(vehicle_or_burning_vehicle)
     end
 
     defp assert_door_object(object, expected_object) do
@@ -148,4 +152,8 @@ defmodule Europa.Server.Planet.PredefinedTest do
   end
 
   defp fire?(_), do: false
+
+  defp vehicle?(%ItemBox{type: :vehicle}), do: true
+  defp vehicle?(@fire_vehicle), do: true
+  defp vehicle?(_), do: false
 end

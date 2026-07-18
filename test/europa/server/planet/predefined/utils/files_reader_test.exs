@@ -14,7 +14,10 @@ defmodule Europa.Server.Planet.Predefined.Utils.FilesReaderTest do
     test "returns parsed file as map" do
       result = FilesReader.parse_files(@path, @categories)
       assert is_map(result)
-      assert Enum.all?(result, fn {category, templates} -> is_atom(category) && is_list(templates) end)
+
+      assert Enum.all?(result, fn {category, %{"base_templates" => base_templates}} ->
+               is_atom(category) && is_list(base_templates)
+             end)
     end
   end
 end

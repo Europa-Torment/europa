@@ -142,8 +142,9 @@ defmodule Europa.Server.Planet do
       water_tile: @ruins,
       ice_tile: @concrete,
       snow_tile: @concrete_snow,
-      enemy_generate_possibility: div(@base_enemy_generate_possibility, 20),
+      enemy_generate_possibility: div(@base_enemy_generate_possibility, 15),
       predefined_possibility: div(@default_predefined_possibility, 10),
+      predefined_subcategories: ["city"],
       specific_item_boxes: [:sun_battery],
       noise_threshold: 0.07
     },
@@ -1476,9 +1477,10 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_predefined(land, direction, characters_pid, %__MODULE__{current_coord: {x, y}} = planet) do
     in_predefined_cluster? = in_predefined_cluster?(planet.current_coord, planet.predefined_cluster_coord)
+    region = region_by_perlin_noise(x, y, land)
 
     default_predefined_possibility =
-      case region_by_perlin_noise(x, y, land) do
+      case region do
         %Region{predefined_possibility: nil} -> @default_predefined_possibility
         %Region{predefined_possibility: possibility} -> possibility
       end
@@ -1491,9 +1493,9 @@ defmodule Europa.Server.Planet do
       end
 
     if m_to_n?(m, n) do
-      template = Predefined.generate_random()
+      template = Predefined.generate_random(region.predefined_subcategories)
 
-      coord_fun = generate_template_coord_fun(land, direction, planet.current_coord, in_predefined_cluster?)
+      coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
       new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
 
       is_all_tiles_movable =
@@ -1520,15 +1522,8 @@ defmodule Europa.Server.Planet do
     abs(x1 - x2) + abs(y1 - y2)
   end
 
-  defp generate_template_coord_fun(land, direction, {current_x, current_y}, in_predefined_cluster?) do
-    padding =
-      fn ->
-        if in_predefined_cluster? do
-          Enum.random(-10..10)
-        else
-          Enum.random(-30..30)
-        end
-      end
+  defp generate_template_coord_fun(land, direction, {current_x, current_y}) do
+    padding = fn -> Enum.random(-10..10) end
 
     x_padding = current_x + padding.()
     y_padding = current_y + padding.()

@@ -78,7 +78,7 @@ export const hooks = {
         marker.setAttribute('orient', 'auto');
         const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
-        polygon.setAttribute('fill', '#A65DFC');
+        polygon.setAttribute('fill', '#330C03');
         marker.appendChild(polygon);
         defs.appendChild(marker);
         this.svg.appendChild(defs);
@@ -104,7 +104,7 @@ export const hooks = {
             gradient.setAttribute('y2', y2);
             gradient.setAttribute('gradientUnits', 'userSpaceOnUse');
 
-            const lineColor = '#A65DFC';
+            const lineColor = '#330C03';
             const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
             stop1.setAttribute('offset', '0%');
             stop1.setAttribute('stop-color', lineColor);

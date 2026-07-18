@@ -17,14 +17,14 @@ defmodule Europa.Server.Planet.Predefined do
   import Europa.Tools.Conf
   import Europa.Tools.Randomizer
 
-  @tempaltes_path fetch_config!([__MODULE__, :templates_path])
+  @templates_path fetch_config!([__MODULE__, :templates_path])
 
   @categories %{
     building: %{dir: "/buildings", weight: 1.0},
     situation: %{dir: "/situations", weight: 0.4}
   }
 
-  @templates FilesReader.parse_files(@tempaltes_path, @categories)
+  @templates FilesReader.parse_files(@templates_path, @categories)
 
   @floor Tiles.tile(:floor).atom_value
   @litter_floor Tiles.tile(:litter_floor).atom_value
@@ -51,20 +51,22 @@ defmodule Europa.Server.Planet.Predefined do
   @type npc :: {:npc, Tiles.Tile.t() | nil}
   @type template() :: list(list(Planet.tile()))
 
-  @spec generate_random() :: template()
-  def generate_random do
+  @type subcategory() :: String.t()
+
+  @spec generate_random(list(subcategory())) :: template()
+  def generate_random(subcategories \\ []) do
     @categories
     |> Enum.map(fn {category, %{weight: weight}} -> {category, weight} end)
     |> WeightedRandom.take_one()
-    |> generate()
+    |> generate(subcategories)
   end
 
-  @spec generate(category()) :: template()
-  def generate(category) do
+  @spec generate(category(), list(subcategory())) :: template()
+  def generate(category, subcategories \\ []) do
     opts = opts_for_category(category)
 
-    @templates
-    |> Map.fetch!(category)
+    category
+    |> get_templates_with_subcategories(subcategories)
     |> Enum.random()
     |> String.split("\n")
     |> Enum.map(fn row ->
@@ -160,7 +162,31 @@ defmodule Europa.Server.Planet.Predefined do
     Enum.random([crashed_shuttle, Objects.object(:fire_shuttle)])
   end
 
+  defp elem_to_tile(:situation, "S", _) do
+    Loot.generate_item_box(:sun_battery)
+  end
+
+  defp elem_to_tile(:situation, "v", _) do
+    vehicle = Loot.generate_item_box(:vehicle)
+    Enum.random([vehicle, Objects.object(:fire_vehicle)])
+  end
+
   # Helpers
+
+  defp get_templates_with_subcategories(category_name, subcategories) do
+    category = Map.fetch!(@templates, category_name)
+    base_templates = Map.fetch!(category, "base_templates")
+
+    # Templates from subcategories should be generated more often
+    templates_from_subcategories =
+      category
+      |> Map.take(subcategories)
+      |> Enum.map(fn {_, t} -> t end)
+      |> List.duplicate(3)
+      |> List.flatten()
+
+    Enum.shuffle(base_templates ++ templates_from_subcategories)
+  end
 
   defp or_broken_wall(tile, opts) do
     if Keyword.fetch!(opts, :broken) && m_to_n?(1, @broken_wall_possibility) do

@@ -60,6 +60,16 @@
         "random_weight": 0.0
     },
     {
+        "type": "vehicle",
+        "readable_name": "Vehicle",
+        "max_items": 4, 
+        "item_types": "all", 
+        "movable": false, 
+        "image_name": "vehicle",
+        "placing": "outdoor",
+        "random_weight": 0.02
+    },
+    {
         "type": "cupboard",
         "readable_name": "Cupboard",
         "max_items": 6, 
