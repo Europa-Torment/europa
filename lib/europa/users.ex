@@ -2,6 +2,8 @@ defmodule Europa.Users do
   alias Europa.Repo
   alias Europa.Users.User
 
+  import Ecto.Query
+
   @type id :: pos_integer()
 
   defdelegate create_changeset(params), to: User
@@ -46,6 +48,28 @@ defmodule Europa.Users do
       user ->
         {:ok, user}
     end
+  end
+
+  @spec admin?(User.t() | pos_integer()) :: boolean()
+  def admin?(%User{role: :admin}), do: true
+
+  def admin?(user_id) when is_integer(user_id) do
+    case get_by_id(user_id) do
+      {:ok, user} -> admin?(user)
+      _ -> false
+    end
+  end
+
+  def admin?(_), do: false
+
+  @spec get_users_count() :: non_neg_integer()
+  def get_users_count do
+    from(u in User, select: count(u.id)) |> Repo.one!()
+  end
+
+  @spec get_new_users_count() :: non_neg_integer()
+  def get_new_users_count do
+    from(u in User, where: u.inserted_at >= ago(24, "hour"), select: count(u.id)) |> Repo.one!()
   end
 
   defp validate_login_params(params) do

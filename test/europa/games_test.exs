@@ -165,6 +165,35 @@ defmodule Europa.GamesTest do
     end
   end
 
+  describe "get_active_games_count/0" do
+    test "returns count of active games" do
+      count = 10
+      insert_list(count, :game, state: :active)
+
+      assert Games.get_active_games_count() == count
+    end
+  end
+
+  describe "get_total_games_count/0" do
+    test "returns count of games" do
+      count = 10
+      insert_list(count, :game)
+
+      assert Games.get_total_games_count() == count
+    end
+  end
+
+  describe "get_last_day_games_count/0" do
+    test "returns count of recent games" do
+      count = 10
+      insert_list(count, :game)
+
+      insert_list(count, :game, inserted_at: Timex.now() |> Timex.shift(days: -10))
+
+      assert Games.get_last_day_games_count() == count
+    end
+  end
+
   defp allow_server_mock(mock_module, user_id) do
     mock_module
     |> allow(self(), fn ->

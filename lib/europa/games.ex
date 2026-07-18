@@ -111,6 +111,21 @@ defmodule Europa.Games do
     end
   end
 
+  @spec get_active_games_count() :: non_neg_integer()
+  def get_active_games_count do
+    from(g in Game, where: g.state == :active, select: count(g.id)) |> Repo.one!()
+  end
+
+  @spec get_last_day_games_count() :: non_neg_integer()
+  def get_last_day_games_count do
+    from(g in Game, where: g.inserted_at >= ago(24, "hour"), select: count(g.id)) |> Repo.one!()
+  end
+
+  @spec get_total_games_count() :: non_neg_integer()
+  def get_total_games_count do
+    from(g in Game, select: count(g.id)) |> Repo.one!()
+  end
+
   defp do_get_leaders(category) do
     leaders =
       category

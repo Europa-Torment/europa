@@ -62,6 +62,11 @@ defmodule EuropaWeb.ConnCase do
         assert conn.halted
         assert redirected_to(conn) == ~p"/users/register"
       end
+
+      def assert_redirect_if_not_admin(conn) do
+        assert conn.halted
+        assert redirected_to(conn) == ~p"/"
+      end
     end
   end
 
@@ -69,21 +74,29 @@ defmodule EuropaWeb.ConnCase do
     Europa.DataCase.setup_sandbox(tags)
 
     user = Europa.Support.Factory.insert(:user)
+    admin = Europa.Support.Factory.insert(:user, role: :admin)
 
     conn =
       Phoenix.ConnTest.build_conn()
       |> bypass_through(EuropaWeb.Router, [:browser])
       |> get("/")
 
-    conn_with_session =
-      conn
-      |> Plug.Conn.put_session(:current_user, user.id)
+    {:ok,
+     conn: conn_with_auth(user),
+     admin_conn: conn_with_auth(admin),
+     conn_with_session: conn_with_session(conn, user),
+     conn_without_auth: conn,
+     current_user: user}
+  end
 
-    conn_with_auth =
-      conn_with_session
-      |> Plug.Conn.assign(:current_user, user.id)
-      |> Plug.Conn.assign(:current_user_username, user.username)
+  defp conn_with_auth(user) do
+    Phoenix.ConnTest.build_conn()
+    |> Plug.Conn.assign(:current_user, user.id)
+    |> Plug.Conn.assign(:current_user_username, user.username)
+  end
 
-    {:ok, conn: conn_with_auth, conn_with_session: conn_with_session, conn_without_auth: conn, current_user: user}
+  defp conn_with_session(conn, user) do
+    conn
+    |> Plug.Conn.put_session(:current_user, user.id)
   end
 end

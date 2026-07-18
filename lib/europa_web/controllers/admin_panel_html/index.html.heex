@@ -1,0 +1,23 @@
+<.background />
+
+<div class="max-w-6xl mx-auto px-4 py-6 relative">
+  <.title text={gettext("Admin panel")} />
+
+  <div class="overflow-x-auto border border-base-content/5 bg-base-100 p-10">
+    <.link navigate={~p"/admin/dashboard"} target="_blank">{gettext("Open live dashboard")}</.link>
+  </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 py-6 relative">
+  <.title text={gettext("Stats")} />
+
+  <div class="overflow-x-auto border border-base-content/5 bg-base-100 p-10">
+    <ul>
+      <li>{gettext("Active games")}: {@stats.active_games_count}</li>
+      <li>{gettext("Games played last day")}: {@stats.last_day_games_count}</li>
+      <li>{gettext("Total games played")}: {@stats.total_games_count}</li>
+      <li>{gettext("Total users")}: {@stats.total_users_count}</li>
+      <li>{gettext("New users")}: {@stats.new_users_count}</li>
+    </ul>
+  </div>
+</div>

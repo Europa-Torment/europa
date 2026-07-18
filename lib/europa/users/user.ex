@@ -11,6 +11,7 @@ defmodule Europa.Users.User do
   schema "users" do
     field :username, :string
     field :hashed_password, :string
+    field :role, Ecto.Enum, values: [:user, :admin]
 
     field :password, :string, virtual: true
     field :password_confirmation, :string, virtual: true

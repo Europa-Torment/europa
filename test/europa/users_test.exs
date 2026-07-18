@@ -48,6 +48,21 @@ defmodule Europa.UsersTest do
     end
   end
 
+  describe "admin?/1" do
+    test "checks if user is admin" do
+      user = insert(:user, role: :user)
+      admin = insert(:user, role: :admin)
+
+      assert Users.admin?(user.id) == false
+      assert Users.admin?(user) == false
+
+      assert Users.admin?(admin.id) == true
+      assert Users.admin?(admin) == true
+
+      assert Users.admin?(nil) == false
+    end
+  end
+
   describe "check_login/1" do
     test "returns user if params are valid" do
       user = %User{id: user_id} = insert(:user)
@@ -69,6 +84,25 @@ defmodule Europa.UsersTest do
 
       assert Users.check_login(%{"username" => user.username, "password" => "fake-password"}) ==
                {:error, :invalid_password}
+    end
+  end
+
+  describe "get_users_count/0" do
+    test "returns all users count" do
+      count = 10
+      insert_list(count, :user)
+
+      assert Users.get_users_count() == count
+    end
+  end
+
+  describe "get_new_users_count/0" do
+    test "returns new users count" do
+      count = 10
+      insert_list(count, :user)
+      insert_list(count, :user, inserted_at: Timex.now() |> Timex.shift(days: -2))
+
+      assert Users.get_new_users_count() == count
     end
   end
 end

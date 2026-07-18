@@ -30,6 +30,13 @@
                   {@current_user_username}
                 </summary>
                 <ul class="menu dropdown-content bg-base-200 z-[1] w-48 p-2 shadow">
+                  <%= if Europa.Users.admin?(assigns[:current_user]) do %>
+                    <li>
+                      <.link navigate={~p"/admin"} class="whitespace-nowrap">
+                        {gettext("Admin panel")}
+                      </.link>
+                    </li>
+                  <% end %>
                   <li>
                     <.link navigate={~p"/users/logout"} class="whitespace-nowrap">
                       {gettext("Sign out")}

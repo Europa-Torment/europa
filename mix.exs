@@ -23,7 +23,7 @@ defmodule Europa.MixProject do
   def application do
     [
       mod: {Europa.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -50,6 +50,7 @@ defmodule Europa.MixProject do
     [
       {:phoenix, "~> 1.8.3"},
       {:phoenix_ecto, "~> 4.5"},
+      {:phoenix_live_dashboard, "~> 0.8.7"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},

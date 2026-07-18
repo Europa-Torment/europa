@@ -1,9 +1,12 @@
 defmodule EuropaWeb.Router do
   # coveralls-ignore-start
   use EuropaWeb, :router
+  import Phoenix.LiveDashboard.Router
 
+  alias EuropaWeb.AdminOnly
   alias EuropaWeb.UnauthorizedOnly
   alias EuropaWeb.AuthorizedOnly
+  alias EuropaWeb.AdminOnly
   alias EuropaWeb.Auth
 
   pipeline :browser do
@@ -55,6 +58,14 @@ defmodule EuropaWeb.Router do
     post "/register", UserController, :create
 
     post "/", UserController, :create
+  end
+
+  scope "/admin", EuropaWeb do
+    pipe_through [:browser, AuthorizedOnly, AdminOnly]
+
+    live_dashboard "/dashboard", metrics: EuropaWeb.Telemetry
+
+    get "/", AdminPanelController, :index
   end
 
   # coveralls-ignore-stop
