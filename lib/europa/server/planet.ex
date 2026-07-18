@@ -142,7 +142,7 @@ defmodule Europa.Server.Planet do
       water_tile: @ruins,
       ice_tile: @concrete,
       snow_tile: @concrete_snow,
-      enemy_generate_possibility: div(@base_enemy_generate_possibility, 15),
+      enemy_generate_possibility: div(@base_enemy_generate_possibility, 20),
       predefined_possibility: div(@default_predefined_possibility, 10),
       predefined_subcategories: ["city"],
       specific_item_boxes: [:sun_battery],
@@ -1493,25 +1493,42 @@ defmodule Europa.Server.Planet do
       end
 
     if m_to_n?(m, n) do
-      template = Predefined.generate_random(region.predefined_subcategories)
-
-      coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
-      new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
-
-      is_all_tiles_movable =
-        Enum.all?(new_tiles, fn {{x, y}, _} ->
-          get_tile(land, {x, y}) |> is_nil() && tile_by_perlin_noise(x, y, land) in @movable_tiles
-        end)
-
-      if is_all_tiles_movable do
-        struct!(land, tiles: Map.merge(land.tiles, new_tiles))
-      else
-        land
-      end
+      do_generate_predefined(land, region, direction, characters_pid, planet)
     else
       land
     end
   end
+
+  # tries to generate for up to 5 times (because sometimes template not fits on landscape)
+  defp do_generate_predefined(land, region, direction, characters_pid, planet, attempts \\ 1)
+
+  defp do_generate_predefined(land, region, direction, characters_pid, planet, attempts) when attempts <= 5 do
+    template = Predefined.generate_random(region.predefined_subcategories)
+
+    coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
+    new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
+
+    is_all_tiles_movable =
+      Enum.all?(new_tiles, fn {{x, y}, _} ->
+        get_tile(land, {x, y}) |> is_nil() && tile_by_perlin_noise(x, y, land) in @movable_tiles
+      end)
+
+    # Avoid placing region specific predefines in other regions
+    is_all_tiles_in_current_region =
+      if Enum.empty?(region.predefined_subcategories) do
+        true
+      else
+        Enum.all?(new_tiles, fn {{x, y}, _} -> region_by_perlin_noise(x, y, land) == region end)
+      end
+
+    if is_all_tiles_movable && is_all_tiles_in_current_region do
+      struct!(land, tiles: Map.merge(land.tiles, new_tiles))
+    else
+      do_generate_predefined(land, region, direction, characters_pid, planet, attempts + 1)
+    end
+  end
+
+  defp do_generate_predefined(land, _, _, _, _, _), do: land
 
   defp in_predefined_cluster?(current_coord, cluster_coord) do
     distance = coords_distance(current_coord, cluster_coord)

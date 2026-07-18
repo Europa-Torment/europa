@@ -21,7 +21,7 @@ defmodule Europa.Server.Planet.Predefined do
 
   @categories %{
     building: %{dir: "/buildings", weight: 1.0},
-    situation: %{dir: "/situations", weight: 0.4}
+    situation: %{dir: "/situations", weight: 0.3}
   }
 
   @templates FilesReader.parse_files(@templates_path, @categories)
@@ -167,8 +167,11 @@ defmodule Europa.Server.Planet.Predefined do
   end
 
   defp elem_to_tile(:situation, "v", _) do
-    vehicle = Loot.generate_item_box(:vehicle)
-    Enum.random([vehicle, Objects.object(:fire_vehicle)])
+    if m_to_n?(1, 5) do
+      Objects.object(:fire_vehicle)
+    else
+      Loot.generate_item_box(:vehicle)
+    end
   end
 
   # Helpers
