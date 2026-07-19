@@ -336,14 +336,17 @@ defmodule Europa.ServerTest do
 
       moves_count = 10
       action = build(:action, action_type: :attack, subject: build(:enemy, damage: 500))
-      action2 = build(:action, action_type: :get_cold, subject: :player)
+      action2 = build(:action, action_type: :attack, subject: {build(:npc), build(:enemy)})
+      action3 = build(:action, action_type: :attack, subject: {build(:enemy), build(:npc)})
+      action4 = build(:action, action_type: :get_cold, subject: :player)
+      action5 = build(:action, action_type: :attack, subject: build(:npc))
 
       PlanetManagerMock
       |> expect(:move, fn _planet, @direction, %Player{} -> {:moved, planet, moves_count, @snow, false} end)
       |> expect(:readable_tile_name, fn _tile -> "snow" end)
       |> expect(:tick, fn %Planet{}, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
-        {:ok, planet, [action]}
+        {:ok, planet, [action2, action3]}
       end)
 
       PlayerManagerMock
@@ -351,13 +354,13 @@ defmodule Europa.ServerTest do
       |> stub(:stand_on, fn %Player{} = player, tile ->
         struct!(player, stand_on: tile)
       end)
-      |> expect(:take_damage, fn %Player{} = player, damage ->
-        assert damage == action.subject.damage
+      |> expect(:take_damage, 2, fn %Player{} = player, damage ->
+        assert damage == action.subject.damage || damage == action5.subject.weapon.damage
         struct!(player, health: 0)
       end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
-        {:ok, player, [action2]}
+        {:ok, player, [action, action4, action5]}
       end)
 
       assert {:moved, :normal} = Server.move(server, @direction)
@@ -459,7 +462,7 @@ defmodule Europa.ServerTest do
 
   describe "shoot/1" do
     test "handles success response", %{server: server} do
-      damaged_enemies = [{build(:enemy), _damage = 10}]
+      damaged_enemies = [{build(:enemy), _damage = 10}, {build(:npc), _damage = 10}]
       moves_count = 1
 
       PlanetManagerMock

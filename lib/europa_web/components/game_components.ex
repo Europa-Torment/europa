@@ -16,10 +16,10 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Loot.Item
   alias Europa.Server.Chat
   alias Europa.Server.Compass
+  alias Europa.Server.Characters
   alias Europa.Tools.NumberHelpers
 
   import Europa.Tools.Conf
-  import Europa.Tools.Randomizer
 
   @player Planet.player()
 
@@ -56,8 +56,6 @@ defmodule EuropaWeb.GameCompotents do
   @lethal_tiles Tiles.lethal_tiles()
   @swimable_tiles Tiles.swimable_tiles()
 
-  @base_tooltip_class "tooltip tooltip-open"
-
   def start_screen(assigns) do
     ~H"""
     <div class="w-full p-5 m-5 grid place-items-center">
@@ -91,19 +89,19 @@ defmodule EuropaWeb.GameCompotents do
     <div
       id="game-field"
       phx-hook="EventsProcessor"
-      data-interval="1000"
+      data-interval="750"
       class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 shadow-md grid place-items-center"
     >
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
-            <div id={tile_id(tile, x, y)} class={speech_class(tile, @player)} data-tip={speech(tile, @player)}>
+            <div id={tile_id(tile, x, y)}>
               <img
                 id={"tile_img_#{x}_#{y}"}
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-                style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px;"}
+                style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px; #{enemy_npc_filter(tile, @player)}"}
                 class="w-full h-full object-contain block mx-auto z-50"
               />
             </div>
@@ -1173,8 +1171,8 @@ defmodule EuropaWeb.GameCompotents do
     "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
-  defp get_image_name(%Npc{stand_on: stand_on}, _) do
-    "player_down_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
+  defp get_image_name(%Npc{stand_on: stand_on, view_direction: view_direction} = npc, _) do
+    "player#{aiming_npc_image_prefix(npc)}_#{view_direction}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end
 
   # this is for "skip" object, see Objects module
@@ -1220,6 +1218,9 @@ defmodule EuropaWeb.GameCompotents do
 
   defp aiming_player_image_prefix(%Player{aim_mode?: true}), do: "_aiming"
   defp aiming_player_image_prefix(_), do: ""
+
+  defp aiming_npc_image_prefix(%Npc{target: nil}), do: ""
+  defp aiming_npc_image_prefix(_), do: "_aiming"
 
   defp ext_by_stand_on(%{stand_on: stand_on}), do: ext_by_stand_on(stand_on)
 
@@ -1410,24 +1411,6 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp speech_class(%Npc{character: %Character{short_phrases: []}}, _player), do: ""
-
-  defp speech_class(%Npc{}, _player) do
-    if m_to_n?(1, 3) do
-      @base_tooltip_class
-    else
-      ""
-    end
-  end
-
-  defp speech_class(_, _), do: ""
-
-  defp speech(%Npc{character: character}, _player) do
-    Character.short_phrase(character)
-  end
-
-  defp speech(_, _), do: ""
-
   defp maybe_round_number(number) when is_float(number) do
     NumberHelpers.round(number, 2)
   end
@@ -1483,6 +1466,16 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp age_at_disaster(_), do: gettext("Not yet born")
+
+  defp enemy_npc_filter(%Npc{} = npc, player) do
+    if npc.target == :player || Characters.enemies?(npc.character, player.character) do
+      "filter: sepia(0.6) hue-rotate(330deg) saturate(1.8) brightness(0.9);"
+    else
+      ""
+    end
+  end
+
+  defp enemy_npc_filter(_, _), do: ""
 
   # coveralls-ignore-stop
 end

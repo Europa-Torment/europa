@@ -3,6 +3,7 @@
         "name": "Li Zhang",
         "gender": "male",
         "profession": "Junior research fellow",
+        "fraction": "etc",
         "age_at_disaster": 1,
         "years": {"from": 15, "to": 48},
         "stories": [
@@ -28,6 +29,7 @@
         "name": "Li Tian",
         "gender": "male",
         "profession": "Nuclear physicist",
+        "fraction": "etc",
         "age_at_disaster": 50,
         "years": {"from": 1, "to": 19},
         "stories": [
@@ -54,6 +56,7 @@
         "name": "Stanislav Mishchenko",
         "gender": "male",
         "profession": "Space criminal, leader of the SSB",
+        "fraction": "neutral",
         "age_at_disaster": 30,
         "years": {"from": 1, "to": 30},
         "stories": [
@@ -89,6 +92,7 @@
         "name": "Henry Davies",
         "gender": "male",
         "profession": "Politician, head of the WCC",
+        "fraction": "neutral",
         "age_at_disaster": 50,
         "years": {"from": 1, "to": 30},
         "stories": [
@@ -114,6 +118,8 @@
         "name": "Phil McLee",
         "gender": "male",
         "profession": "Space criminal, retired soldier.",
+        "fraction": "ssb",
+        "enemy_fractions": ["wcc"],
         "age_at_disaster": 20,
         "years": {"from": 1, "to": 20},
         "stories": [
@@ -139,6 +145,7 @@
         "name": "Apoapsis Ganymede",
         "gender": "male",
         "profession": "Radiation poisoning doctor",
+        "fraction": "neutral",
         "age_at_disaster": -5,
         "years": {"from": 20, "to": 40},
         "stories": [
@@ -167,6 +174,8 @@
         "name": "Monsieur Arthur Christan",
         "gender": "male",
         "profession": "Thinker (Unemployed)",
+        "fraction": "neutral",
+        "enemy_fractions": ["ssb"],
         "age_at_disaster": 40,
         "years": {"from": 1, "to": 46},
         "stories": [
@@ -188,6 +197,38 @@
             "Phil McLee": [
                 "Pas aujourd'hui, l'ours polaire est couvert de sang."
             ]
+        },
+        "short_phrases": []
+    },
+    {
+        "name": "WCC guard",
+        "gender": "male",
+        "profession": "Guard",
+        "fraction": "wcc",
+        "enemy_fractions": ["ssb"],
+        "age_at_disaster": 20,
+        "years": {"from": 1, "to": 40},
+        "not_playable": true,
+        "stories": [
+            "We are not supposed to talk."
+        ],
+        "special_stories": {
+        },
+        "short_phrases": []
+    },
+    {
+        "name": "SSB terrorist",
+        "gender": "male",
+        "profession": "Terrorist",
+        "fraction": "ssb",
+        "enemy_fractions": ["wcc"],
+        "age_at_disaster": 20,
+        "years": {"from": 1, "to": 40},
+        "not_playable": true,
+        "stories": [
+            "Back off!"
+        ],
+        "special_stories": {
         },
         "short_phrases": []
     }

@@ -39,6 +39,8 @@ config :europa, Europa.Server.Planet,
   enemy_view_distance: 3,
   # Keep 100% possibility to tests consistency
   enemy_move_possibility: [from: 10, to: 10],
+  # Keep 100% possibility to tests consistency
+  npc_move_possibility: [from: 10, to: 10],
   predefined_cluster_update_distance: 5000
 
 config :europa, Europa.Server, finish_game_on_server_exit: false

@@ -643,6 +643,13 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp maybe_play_event_sound(:player, event, socket), do: play_player_event_sound(socket, event)
+
+  defp maybe_play_event_sound(_, %Event{type: {:shoot, %Weapon{sound_name: sound_name}}}, socket),
+    do: play_sound(socket, sound_name)
+
+  defp maybe_play_event_sound(_, %Event{type: :missed_shoot}, socket),
+    do: bullet_whistle_sound(socket)
+
   defp maybe_play_event_sound(_, _, socket), do: socket
 
   defp play_player_event_sound(socket, %Event{type: {:damaged, _}}) do
@@ -754,7 +761,8 @@ defmodule EuropaWeb.GameLive do
         monster_dead3: %{name: ~p"/sounds/monster_dead3.mp3", volume: 0.2},
         monster_dead4: %{name: ~p"/sounds/monster_dead4.mp3", volume: 0.2},
         fire_extinguisher: %{name: ~p"/sounds/fire_extinguisher.mp3", volume: 0.2},
-        great_red_spot: %{name: ~p"/sounds/great_red_spot.mp3", volume: 0.09}
+        great_red_spot: %{name: ~p"/sounds/great_red_spot.mp3", volume: 0.09},
+        bullet_whistle: %{name: ~p"/sounds/bullet_whistle.mp3", volume: 0.1}
       })
 
     assign(socket, :sounds, json)
@@ -788,6 +796,10 @@ defmodule EuropaWeb.GameLive do
   defp step_sound(socket, _tile) do
     sound = Enum.random(["snow1", "snow2", "snow3"])
     play_sound(socket, sound)
+  end
+
+  defp bullet_whistle_sound(socket) do
+    play_sound_with_delay(socket, "bullet_whistle")
   end
 
   defp damaged_sound(socket) do
@@ -1243,6 +1255,10 @@ defmodule EuropaWeb.GameLive do
 
   defp event_text(%Event{type: {:warm_up, warm}}) when warm < 0 do
     "❄️ #{abs(warm)}"
+  end
+
+  defp event_text(%Event{type: {:shoot, _}}) do
+    "💥"
   end
 
   defp event_text(%Event{type: {:speech, phrase}}), do: phrase

@@ -256,7 +256,8 @@ defmodule Europa.Support.Factory do
       land: Map.get(opts, :land, default_land()),
       moves_count: Map.get(opts, :moves_count, 0),
       great_red_spots: Map.get(opts, :great_red_spots, 0),
-      characters_pid: characters_pid
+      characters_pid: characters_pid,
+      player_fraction: :neutral
     }
   end
 
@@ -343,6 +344,9 @@ defmodule Europa.Support.Factory do
       name: sequence(:name, &"Character #{&1 + 1}"),
       gender: :male,
       profession: "Game developer",
+      fraction: :neutral,
+      enemy_fractions: [],
+      not_playable?: false,
       age_at_disaster: 20,
       years: 1..48,
       stories: ["Story 1", "Story 2"],
@@ -357,9 +361,14 @@ defmodule Europa.Support.Factory do
     character = build(:character)
 
     %Npc{
+      uuid: Ecto.UUID.generate(),
       character: character,
       story: Character.random_story(character),
-      stand_on: Tiles.tile(:ice).atom_value
+      stand_on: Tiles.tile(:ice).atom_value,
+      view_direction: :down,
+      weapon: build(:weapon),
+      health: 100,
+      accuracy: 50
     }
   end
 

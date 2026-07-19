@@ -274,7 +274,10 @@ defmodule Europa.Server do
     {:ok, current_character} = Characters.pick_main(characters_pid)
     current_year_after_disaster = current_character.current_age - current_character.age_at_disaster
     current_year = @disaster_year + current_year_after_disaster
-    planet = PlanetManager.new(year: current_year, characters_pid: characters_pid)
+
+    planet =
+      PlanetManager.new(year: current_year, characters_pid: characters_pid, player_fraction: current_character.fraction)
+
     player_initial_stand_on_tile = PlanetManager.player_initial_stand_on_tile(planet)
 
     weapon = Loot.generate_item(:weapon)
@@ -1029,7 +1032,7 @@ defmodule Europa.Server do
   defp process_actions(%Player{} = player, actions, game_uuid, caller_pid) when is_list(actions) do
     Enum.reduce(actions, player, fn action, player ->
       case action do
-        %Action{action_type: :attack, subject: enemy} ->
+        %Action{action_type: :attack, subject: %Enemy{} = enemy} ->
           blood_tile = blood_tile(player.stand_on)
 
           player
@@ -1037,6 +1040,13 @@ defmodule Europa.Server do
           |> PlayerManager.stand_on(blood_tile)
           |> maybe_add_radiation(enemy)
           |> maybe_decrease_warm(enemy)
+
+        %Action{action_type: :attack, subject: %Npc{} = npc} ->
+          blood_tile = blood_tile(player.stand_on)
+
+          player
+          |> PlayerManager.take_damage(npc.weapon.damage)
+          |> PlayerManager.stand_on(blood_tile)
 
         %Action{action_type: :warm_up, subject: :player} ->
           PlayerManager.warm_up(player, @warm_up_quantity)
@@ -1324,14 +1334,77 @@ defmodule Europa.Server do
     Chat.Message.new(msg, :danger)
   end
 
+  defp action_message(%Action{subject: %Npc{} = npc, action_type: :attack}) do
+    msg =
+      gettext("%{character_name} attacks you and deals %{damage} damage",
+        character_name: npc.character.name,
+        damage: npc.weapon.damage
+      )
+
+    Chat.Message.new(msg, :danger)
+  end
+
   defp action_message(%Action{subject: %Enemy{} = enemy, action_type: :miss_attack}) do
     msg = gettext("%{enemy_name} attacks you but misses.", enemy_name: enemy.name)
     Chat.Message.new(msg, :warning)
   end
 
-  defp action_message(%Action{subject: {%Enemy{} = enemy, %Npc{} = npc}, action_type: :enemy_killed_npc}) do
+  defp action_message(%Action{subject: %Npc{} = npc, action_type: :miss_attack}) do
+    msg = gettext("%{character_name} attacks you but misses.", character_name: npc.character.name)
+    Chat.Message.new(msg, :warning)
+  end
+
+  defp action_message(%Action{subject: {%Enemy{} = enemy, %Npc{health: 0} = npc}, action_type: :attack}) do
     msg = gettext("%{enemy_name} killed %{character_name}", enemy_name: enemy.name, character_name: npc.character.name)
     Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: {%Enemy{} = enemy, %Npc{} = npc}, action_type: :attack}) do
+    msg =
+      gettext("%{enemy_name} attacks %{character_name} and deals %{damage} damage",
+        enemy_name: enemy.name,
+        character_name: npc.character.name,
+        damage: enemy.damage
+      )
+
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: {%Npc{} = first_npc, %Npc{health: 0} = second_npc}, action_type: :attack}) do
+    msg =
+      gettext("%{first_character_name} killed %{second_character_name}",
+        first_character_name: first_npc.character.name,
+        second_character_name: second_npc.character.name
+      )
+
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: {%Npc{} = first_npc, %Npc{} = second_npc}, action_type: :attack}) do
+    msg =
+      gettext("%{first_character_name} attacks %{second_character_name} and deals %{damage} damage",
+        first_character_name: first_npc.character.name,
+        second_character_name: second_npc.character.name,
+        damage: first_npc.weapon.damage
+      )
+
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: {%Npc{} = npc, %Enemy{health: 0} = enemy}, action_type: :attack}) do
+    msg = gettext("%{character_name} killed %{enemy_name}", character_name: npc.character.name, enemy_name: enemy.name)
+    Chat.Message.new(msg, :story)
+  end
+
+  defp action_message(%Action{subject: {%Npc{} = npc, %Enemy{} = enemy}, action_type: :attack}) do
+    msg =
+      gettext("%{character_name} attacks %{enemy_name} and deals %{damage} damage",
+        character_name: npc.character.name,
+        enemy_name: enemy.name,
+        damage: npc.weapon.damage
+      )
+
+    Chat.Message.new(msg, :story)
   end
 
   defp action_message(_), do: nil
@@ -1358,8 +1431,17 @@ defmodule Europa.Server do
         message = Chat.Message.new(msg, :regular)
         Chat.add_message(chat, message)
 
-      {%Npc{} = npc, _}, chat ->
-        msg = gettext("You killed %{character_name}", character_name: npc.character.name)
+      {%Npc{} = npc, damage}, chat ->
+        msg =
+          if npc.health > 0 do
+            gettext("You hit %{character_name} and dealt %{damage} damage to it!",
+              character_name: npc.character.name,
+              damage: damage
+            )
+          else
+            gettext("You killed %{character_name}", character_name: npc.character.name)
+          end
+
         message = Chat.Message.new(msg, :danger)
         Chat.add_message(chat, message)
     end)

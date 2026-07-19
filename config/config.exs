@@ -42,7 +42,8 @@ config :europa, Europa.Server.Planet,
   base_enemy_generate_possibility: 5000,
   enemy_view_distance: 6,
   enemy_move_possibility: [from: 85, to: 100],
-  npc_generate_possibility: 5000,
+  npc_move_possibility: [from: 50, to: 100],
+  npc_generate_possibility: 1000,
   predefined_cluster_distance: 40,
   predefined_cluster_update_distance: 200,
   default_predefined_possibility: 70,
@@ -74,6 +75,9 @@ config :europa, :weapons,
 config :europa, :game_params,
   disaster_year: 2152,
   craft_moves_count: 3,
+  npc: [
+    health: [from: 50, to: 100]
+  ],
   player: [
     warm_up_quantity: 25,
     max_weight: [

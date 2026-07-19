@@ -67,6 +67,17 @@ defmodule Europa.Server.EnemyTest do
     end
   end
 
+  describe "trigger/2" do
+    test "sets enemy trigger" do
+      enemy = build(:enemy, target: nil)
+      npc_uuid = build(:npc).uuid
+
+      assert %Enemy{target: :player} = Enemy.trigger(enemy, :player)
+      assert %Enemy{target: ^npc_uuid} = Enemy.trigger(enemy, npc_uuid)
+      assert %Enemy{target: nil} = Enemy.trigger(enemy, nil)
+    end
+  end
+
   describe "take_damage/2" do
     setup do
       enemy = build(:enemy, health: 100)

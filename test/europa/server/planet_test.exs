@@ -12,6 +12,7 @@ defmodule Europa.Server.PlanetTest do
   alias Europa.Server.Action
   alias Europa.Server.Event
   alias Europa.Server.Characters
+  alias Europa.Server.Npc
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
   alias Europa.Server.Loot.Weapon
@@ -71,43 +72,51 @@ defmodule Europa.Server.PlanetTest do
         name: "E1",
         move_distance: 1,
         health: @initial_enemy_health,
-        events: build_list(@enemy_events_count, :event)
+        events: build_list(@enemy_events_count, :event),
+        target: :player,
+        accuracy: 1000
       )
   @en2 build(:enemy,
          name: "E2",
          move_distance: 1,
          health: @initial_enemy_health,
-         events: build_list(@enemy_events_count, :event)
+         events: build_list(@enemy_events_count, :event),
+         target: :player
        )
   @en3 build(:enemy,
          name: "E3",
          move_distance: 1,
          health: @initial_enemy_health,
-         events: build_list(@enemy_events_count, :event)
+         events: build_list(@enemy_events_count, :event),
+         target: :player
        )
   @en4 build(:enemy,
          name: "E4",
          move_distance: 1,
          health: @initial_enemy_health,
-         events: build_list(@enemy_events_count, :event)
+         events: build_list(@enemy_events_count, :event),
+         target: :player
        )
   @en5 build(:enemy,
          name: "E5",
          move_distance: 1,
          health: @initial_enemy_health,
-         events: build_list(@enemy_events_count, :event)
+         events: build_list(@enemy_events_count, :event),
+         target: :player
        )
   @en6 build(:enemy,
          name: "E6",
          move_distance: 1,
          health: @initial_enemy_health,
-         events: build_list(@enemy_events_count, :event)
+         events: build_list(@enemy_events_count, :event),
+         target: :player
        )
   @en7 build(:enemy,
          name: "E7",
          move_distance: 1,
          health: @initial_enemy_health,
-         events: build_list(@enemy_events_count, :event)
+         events: build_list(@enemy_events_count, :event),
+         target: :player
        )
 
   @en8 build(:enemy,
@@ -117,10 +126,45 @@ defmodule Europa.Server.PlanetTest do
          events: build_list(@enemy_events_count, :event),
          healer?: true,
          heal_possibility: 1,
-         heal_unit: 2
+         heal_unit: 2,
+         target: :player
        )
 
-  @n build(:npc)
+  @n2_uuid Ecto.UUID.generate()
+
+  @en9 build(:enemy,
+         name: "E9",
+         move_distance: 1,
+         health: @initial_enemy_health,
+         events: build_list(@enemy_events_count, :event),
+         accuracy: 0,
+         target: @n2_uuid
+       )
+
+  @n build(:npc, accuracy: 0)
+
+  @n2 build(:npc,
+        uuid: @n2_uuid,
+        accuracy: 1000,
+        weapon: build(:weapon, damage: 1, shooting_distance: 1),
+        target: @en9.uuid,
+        view_direction: :left
+      )
+
+  @n3 build(:npc,
+        accuracy: 1000,
+        weapon: build(:weapon, damage: 1, shooting_distance: 1),
+        target: :player,
+        view_direction: :right
+      )
+
+  @n4 build(:npc,
+        accuracy: 1000,
+        weapon: build(:weapon, damage: 1, shooting_distance: 1),
+        target: nil,
+        view_direction: :right,
+        character: build(:character, enemy_fractions: [:neutral, :wcc, :etc, :ssb])
+      )
 
   @move_costs Tiles.move_costs()
 
@@ -571,6 +615,34 @@ defmodule Europa.Server.PlanetTest do
                                   ]
                                   |> PlanetLandConverter.from_matrix()
 
+  @land_player_right_close_to_enemy_npc [
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @n3, @pl, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                        ]
+                                        |> PlanetLandConverter.from_matrix()
+
+  @land_player_right_close_to_fraction_enemy_npc [
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @n4, @pl, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                                 ]
+                                                 |> PlanetLandConverter.from_matrix()
+
   @land_player_up_close_to_water [
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -769,9 +841,9 @@ defmodule Europa.Server.PlanetTest do
 
   @land_enemy_right_close_to_npc [
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
-                                   [@i, @i, @en, @n, @pl, @i, @i, @i, @i, @i],
+                                   [@i, @i, @en, @n, @i, @i, @i, @i, @i, @i],
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
-                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @pl, @i, @i, @i, @i, @i, @i],
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -781,22 +853,53 @@ defmodule Europa.Server.PlanetTest do
                                  ]
                                  |> PlanetLandConverter.from_matrix()
 
+  @land_npc_right_close_to_enemy [
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @en9, @n2, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @pl, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                   [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                 ]
+                                 |> PlanetLandConverter.from_matrix()
+
+  @land_npc_near_to_enemy [
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @en9, @i, @n2, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @pl, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                            [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                          ]
+                          |> PlanetLandConverter.from_matrix()
+
   setup do
     {:ok, characters_pid} = Characters.start_link()
-    planet = Planet.new(year: @year, characters_pid: characters_pid)
+    planet = Planet.new(year: @year, characters_pid: characters_pid, player_fraction: :neutral)
     {:ok, planet: planet, characters_pid: characters_pid}
   end
 
   describe "new/1" do
     test "creates planet", %{characters_pid: characters_pid} do
-      assert %Planet{land: land, current_coord: {x, y}, year: year} =
-               Planet.new(year: @year, characters_pid: characters_pid)
+      fraction = :wcc
+
+      assert %Planet{land: land, current_coord: {x, y}, year: year, player_fraction: player_fraction} =
+               Planet.new(year: @year, characters_pid: characters_pid, player_fraction: fraction)
 
       assert %Planet.Land{tiles: %{}} = land
       assert is_integer(x)
       assert is_integer(y)
 
       assert year == @year
+      assert player_fraction == fraction
     end
   end
 
@@ -1126,13 +1229,43 @@ defmodule Europa.Server.PlanetTest do
       assert updated_land == @land_player_right_close_to_enemy
     end
 
-    test "enemy kills npc" do
-      planet = build(:planet, land: @land_enemy_right_close_to_npc, current_coord: {4, 1})
+    test "enemy attacks npc" do
+      planet = build(:planet, land: @land_enemy_right_close_to_npc, current_coord: {3, 3})
 
-      assert {:ok, %Planet{} = updated_planet, [%Action{subject: {@en, @n}, action_type: :enemy_killed_npc}]} =
+      assert {:ok, %Planet{} = updated_planet, [%Action{subject: {%Enemy{}, %Npc{}}, action_type: :attack}]} =
                Planet.tick(planet, 1)
 
-      assert_human_bodies(updated_planet, _human_bodies_count = 1)
+      assert Enum.find(updated_planet.land.tiles, fn
+               {_, %Npc{} = npc} -> npc.uuid == @n.uuid && npc.health == @n.health - @en.damage
+               _ -> false
+             end)
+    end
+
+    test "npc attacks enemy" do
+      planet = build(:planet, land: @land_npc_right_close_to_enemy, current_coord: {3, 3})
+
+      assert {:ok, %Planet{} = updated_planet, [%Action{subject: {%Npc{}, %Enemy{}}, action_type: :attack}]} =
+               Planet.tick(planet, 1)
+
+      assert Enum.find(updated_planet.land.tiles, fn
+               {_, %Enemy{} = enemy} -> enemy.uuid == @en9.uuid && enemy.health == @en9.health - @n2.weapon.damage
+               _ -> false
+             end)
+    end
+
+    test "npc attacks player (triggered to player)" do
+      planet = build(:planet, land: @land_player_right_close_to_enemy_npc, current_coord: {4, 1})
+      assert {:ok, %Planet{}, [%Action{subject: %Npc{}, action_type: :attack}]} = Planet.tick(planet, 1)
+    end
+
+    test "npc attacks player (enemy fraction)" do
+      planet = build(:planet, land: @land_player_right_close_to_fraction_enemy_npc, current_coord: {4, 1})
+      assert {:ok, %Planet{}, [%Action{subject: %Npc{}, action_type: :attack}]} = Planet.tick(planet, 1)
+    end
+
+    test "npc moves to enemy" do
+      planet = build(:planet, land: @land_npc_near_to_enemy, current_coord: {3, 3})
+      assert {:ok, %Planet{land: @land_npc_right_close_to_enemy}, _} = Planet.tick(planet, 1)
     end
 
     test "doesn't update predefined_cluster_coord when player not to far from current cluster" do

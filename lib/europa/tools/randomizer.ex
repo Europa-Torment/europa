@@ -13,7 +13,9 @@ defmodule Europa.Tools.Randomizer do
     m
   end
 
-  @spec m_to_n?(pos_integer(), pos_integer()) :: boolean()
+  @spec m_to_n?(non_neg_integer(), pos_integer()) :: boolean()
+  def m_to_n?(0, _), do: false
+
   def m_to_n?(m, n) when is_integer(m) and is_integer(n) and m < n and m > 0 and n > 0 do
     number = :rand.uniform(n)
 

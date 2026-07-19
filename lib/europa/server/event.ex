@@ -1,6 +1,8 @@
 defmodule Europa.Server.Event do
   use TypedStruct
 
+  alias Europa.Server.Loot.Weapon
+
   @type uuid :: Ecto.UUID.t()
   @type health_change :: pos_integer()
   @type radiation_change :: pos_integer()
@@ -14,9 +16,11 @@ defmodule Europa.Server.Event do
           | {:warm_up, warm_change()}
           | {:speech, text :: String.t()}
           | {:dead, death_reason()}
+          | {:shoot, Weapon.t()}
           | :enemy_killed
           | :interested
           | :great_red_spot
+          | :missed_shoot
 
   typedstruct enforce: true do
     field :uuid, uuid()

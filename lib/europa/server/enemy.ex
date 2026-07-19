@@ -16,6 +16,7 @@ defmodule Europa.Server.Enemy do
 
   @type attrs :: map()
   @type enemy_type :: unquote(Types.one_of(@allowed_enemy_types))
+  @type target() :: :player | Ecto.UUID.t() | nil
 
   for {{enemy, _}, i} <- Enum.with_index(@enemies_attrs) do
     fun_name = String.to_atom("__extract_strings_for_#{i}")
@@ -54,6 +55,7 @@ defmodule Europa.Server.Enemy do
     field :events, list(Event.t()), default: []
     field :phrases, list(String.t()), default: []
     field :max_items, pos_integer(), enforce: true
+    field :target, target()
   end
 
   @spec new(attrs()) :: t()
@@ -132,6 +134,11 @@ defmodule Europa.Server.Enemy do
   @spec stand_on(t(), Planet.tile()) :: t()
   def stand_on(%__MODULE__{} = enemy, tile) do
     struct!(enemy, stand_on: tile)
+  end
+
+  @spec trigger(t(), target()) :: t()
+  def trigger(%__MODULE__{} = enemy, target) do
+    struct!(enemy, target: target)
   end
 
   @spec add_events(t(), list(Event.t())) :: t()

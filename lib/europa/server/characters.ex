@@ -57,29 +57,37 @@ defmodule Europa.Server.Characters do
     @type short_phrase :: String.t()
     @type short_phrases :: list(short_phrase())
 
+    @type fraction :: :neutral | :wcc | :ssb | :etc
+
     typedstruct do
       field :name, String.t(), enforce: true
       field :gender, gender(), enforce: true
       field :profession, String.t(), enforce: true
+      field :fraction, fraction(), enforce: true
+      field :enemy_fractions, list(fraction()), enforce: true, default: []
       field :age_at_disaster, integer(), enforce: true
       field :current_age, integer()
       field :years, Range.t(), enforce: true
       field :stories, stories(), enforce: true
       field :special_stories, special_stories(), enforce: true
       field :short_phrases, short_phrases(), enforce: true
+      field :not_playable?, boolean(), enforce: true, default: false
     end
 
     @spec from_map!(map()) :: t()
     def from_map!(%{} = raw_character) do
       %Character{
         name: Map.fetch!(raw_character, "name"),
-        gender: Map.fetch!(raw_character, "gender") |> gender_to_atom(),
+        gender: Map.fetch!(raw_character, "gender") |> String.to_atom(),
         profession: Map.fetch!(raw_character, "profession"),
+        fraction: Map.fetch!(raw_character, "fraction") |> String.to_atom(),
+        enemy_fractions: Map.get(raw_character, "enemy_fractions", []) |> Enum.map(&String.to_atom/1),
         age_at_disaster: Map.fetch!(raw_character, "age_at_disaster"),
         years: Map.fetch!(raw_character, "years") |> parse_years(),
         stories: Map.fetch!(raw_character, "stories"),
         special_stories: Map.get(raw_character, "special_stories", %{}),
         short_phrases: Map.get(raw_character, "short_phrases", []),
+        not_playable?: Map.get(raw_character, "not_playable", false),
         # will be determined later
         current_age: 0
       }
@@ -122,9 +130,6 @@ defmodule Europa.Server.Characters do
     defp parse_years(%{"from" => from, "to" => to}) when is_integer(from) and is_integer(to) and from < to do
       from..to
     end
-
-    defp gender_to_atom("male"), do: :male
-    defp gender_to_atom("female"), do: :female
   end
 
   typedstruct module: State, enforce: true do
@@ -137,6 +142,11 @@ defmodule Europa.Server.Characters do
   @spec start_link() :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link do
     GenServer.start_link(__MODULE__, nil)
+  end
+
+  @spec enemies?(Character.t(), Character.t()) :: boolean()
+  def enemies?(%Character{} = first_character, %Character{} = second_character) do
+    second_character.fraction in first_character.enemy_fractions
   end
 
   @spec pick_main(pid()) :: {:ok, Character.t()} | {:error, :already_picked}
@@ -164,7 +174,11 @@ defmodule Europa.Server.Characters do
   end
 
   def handle_call(:pick_main, _from, %State{characters: characters} = state) do
-    main_character = Enum.random(characters)
+    main_character =
+      characters
+      |> Enum.filter(fn character -> not character.not_playable? end)
+      |> Enum.random()
+
     current_year_after_disaster = Enum.random(main_character.years)
 
     filtered_characters =
@@ -195,7 +209,14 @@ defmodule Europa.Server.Characters do
 
       characters ->
         character = Enum.random(characters)
-        rest_characters = List.delete(characters, character)
+
+        rest_characters =
+          if character.not_playable? do
+            characters
+          else
+            List.delete(characters, character)
+          end
+
         {:ok, {Character.determine_current_age(character, current_year_after_disaster), rest_characters}}
     end
   end

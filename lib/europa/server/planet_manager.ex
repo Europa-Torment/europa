@@ -11,6 +11,7 @@ defmodule Europa.Server.PlanetManager do
   alias Europa.Server.Loot
   alias Europa.Server.Player
   alias Europa.Server.Enemy
+  alias Europa.Server.Npc
   alias Europa.Server.Action
   alias Europa.Server.Errors
   alias Europa.Server.Event
@@ -119,7 +120,7 @@ defmodule Europa.Server.PlanetManager do
   ```
   """
   @callback shoot(Planet.t(), Player.t()) ::
-              {:ok, {Planet.t(), Player.t(), list({Enemy.t(), damage :: pos_integer()}), Server.move_cost()}}
+              {:ok, {Planet.t(), Player.t(), list({Enemy.t() | Npc.t(), damage :: pos_integer()}), Server.move_cost()}}
               | {:error, :empty_magazine}
               | {:error, :no_weapon}
               | {:error, :miss, Player.t(), Server.move_cost()}
