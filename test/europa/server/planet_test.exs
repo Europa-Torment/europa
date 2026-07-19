@@ -2223,9 +2223,9 @@ defmodule Europa.Server.PlanetTest do
         )
 
       player =
-        build(:player, view_direction: :left, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
+        build(:player, view_direction: :up, accuracy: @max_accuracy, weapon_uuid: weapon.uuid, inventory: [weapon])
 
-      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {7, 4})
+      planet = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
 
       {:ok, updated_planet} = test_shoot(planet, player, weapon, 1, _check_damage = false)
       assert_human_bodies(updated_planet, _human_bodies_count = 1)

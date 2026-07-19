@@ -508,7 +508,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_shoot(%__MODULE__{} = planet, %Player{} = player, %Loot.Weapon{} = weapon) do
-    case find_targets(planet, player, weapon) do
+    case find_targets(planet, planet.current_coord, player.view_direction, weapon) do
       [] ->
         rounds_per_shot = Loot.Weapon.rounds_per_shot(weapon)
         updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon, rounds_per_shot)
@@ -541,19 +541,21 @@ defmodule Europa.Server.Planet do
     {:ok, struct!(planet, land: updated_land), player, updated_item_box, updated_weapon}
   end
 
-  defp find_targets(planet, player, %Loot.Weapon{shooting_type: st} = weapon) when st in [:bullet, :burst] do
+  defp find_targets(planet, coord, view_direction, %Loot.Weapon{shooting_type: st} = weapon)
+       when st in [:bullet, :burst] do
     shooting_distance = weapon.shooting_distance
-    find_direct_targets(planet, player, shooting_distance)
+    find_direct_targets(planet, coord, view_direction, shooting_distance)
   end
 
-  defp find_targets(planet, player, %Loot.Weapon{shooting_type: :shot} = weapon) do
+  defp find_targets(planet, coord, view_direction, %Loot.Weapon{shooting_type: :shot} = weapon) do
     shooting_distance = weapon.shooting_distance
-    find_shotgun_targets(planet, player, shooting_distance)
+    find_shotgun_targets(planet, coord, view_direction, shooting_distance)
   end
 
   defp find_direct_targets(
-         %__MODULE__{land: land, current_coord: {x, y}},
-         %Player{view_direction: view_direction},
+         %__MODULE__{land: land},
+         {x, y},
+         view_direction,
          shooting_distance
        ) do
     coord_fun =
@@ -572,6 +574,7 @@ defmodule Europa.Server.Planet do
         case get_tile(land, coord) do
           %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
           %Npc{} -> true
+          :player -> true
           _ -> false
         end
       end)
@@ -583,8 +586,9 @@ defmodule Europa.Server.Planet do
   end
 
   defp find_shotgun_targets(
-         %__MODULE__{land: land, current_coord: coord},
-         %Player{view_direction: view_direction},
+         %__MODULE__{land: land},
+         coord,
+         view_direction,
          shooting_distance
        ) do
     coord
@@ -595,6 +599,7 @@ defmodule Europa.Server.Planet do
       case get_tile(land, coord) do
         %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
         %Npc{} -> true
+        :player -> true
         _ -> false
       end
     end)
@@ -623,6 +628,7 @@ defmodule Europa.Server.Planet do
       Enum.find_index(coords, fn coord ->
         case get_tile(land, coord) do
           nil -> false
+          :player -> true
           %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
           %Npc{} -> true
           %Object{high?: true} -> true
@@ -895,13 +901,18 @@ defmodule Europa.Server.Planet do
 
       target_coord ->
         target = get_tile(planet.land, target_coord)
+        new_view_direction = coords_position(npc_coord, target_coord)
+        npc = Npc.change_view_direction(npc, new_view_direction)
+
+        find_targets(planet, npc_coord, npc.view_direction, npc.weapon)
 
         cond do
           !m_to_n?(@npc_move_possibility_from, @npc_move_possibility_to) ->
             {planet, []}
 
           target != nil && coords_on_same_line?(npc_coord, target_coord) &&
-              coords_distance(npc_coord, target_coord) in 1..shooting_distance ->
+            coords_distance(npc_coord, target_coord) in 1..shooting_distance &&
+              target_coord in find_targets(planet, npc_coord, npc.view_direction, npc.weapon) ->
             npc_attack(planet, npc_coord, npc, target_coord)
 
           target != nil ->
@@ -950,8 +961,7 @@ defmodule Europa.Server.Planet do
         {planet, []}
 
       :player ->
-        new_view_direction = coords_position(npc_coord, target_coord)
-        updated_npc = Npc.change_view_direction(npc, new_view_direction) |> add_npc_shoot_event()
+        updated_npc = add_npc_shoot_event(npc)
         updated_land = change_tile(planet.land, npc_coord, updated_npc)
         {struct!(planet, land: updated_land), [Action.new(updated_npc, :attack)]}
 
@@ -962,8 +972,7 @@ defmodule Europa.Server.Planet do
 
   defp do_npc_attack_by_target_uuid(%__MODULE__{} = planet, %Npc{} = npc, npc_coord, target_coord, target) do
     updated_target = damage_object(target, npc.weapon.damage, npc.uuid)
-    new_view_direction = coords_position(npc_coord, target_coord)
-    updated_npc = Npc.change_view_direction(npc, new_view_direction) |> add_npc_shoot_event()
+    updated_npc = add_npc_shoot_event(npc)
 
     updated_land =
       planet.land
