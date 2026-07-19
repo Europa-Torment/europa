@@ -1000,7 +1000,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_move_npc(%__MODULE__{} = planet, npc_coord, %Npc{} = npc, target_coord) do
-    case calculate_move_coord(planet, npc_coord, target_coord) do
+    case calculate_move_coord(planet, npc_coord, target_coord, :npc) do
       :stay ->
         {planet, []}
 
@@ -1131,7 +1131,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy, target_coord) do
-    case calculate_move_coord(planet, enemy_coord, target_coord) do
+    case calculate_move_coord(planet, enemy_coord, target_coord, :enemy) do
       :stay ->
         {planet, [Action.new(enemy, :stay)], enemy_coord, enemy}
 
@@ -1190,7 +1190,7 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp calculate_move_coord(%__MODULE__{} = planet, {ox, oy} = _moving_object, {tx, ty} = _target) do
+  defp calculate_move_coord(%__MODULE__{} = planet, {ox, oy} = _moving_object, {tx, ty} = _target, subject) do
     x_diff = abs(ox - tx)
     y_diff = abs(oy - ty)
 
@@ -1201,14 +1201,14 @@ defmodule Europa.Server.Planet do
     move_y_coord = {ox, new_oy}
 
     move_x =
-      if movable_tile?(planet.land, move_x_coord, :enemy) do
+      if movable_tile?(planet.land, move_x_coord, subject) do
         move_x_coord
       else
         nil
       end
 
     move_y =
-      if movable_tile?(planet.land, move_y_coord, :enemy) do
+      if movable_tile?(planet.land, move_y_coord, subject) do
         move_y_coord
       else
         nil
@@ -1216,7 +1216,7 @@ defmodule Europa.Server.Planet do
 
     desperate_moves =
       [{ox + 1, oy}, {ox - 1, oy}, {ox, oy + 1}, {ox, oy - 1}]
-      |> Enum.filter(fn coord -> movable_tile?(planet.land, coord, :enemy) end)
+      |> Enum.filter(fn coord -> movable_tile?(planet.land, coord, subject) end)
 
     cond do
       x_diff > y_diff && move_x ->
@@ -1322,8 +1322,8 @@ defmodule Europa.Server.Planet do
   defp movable_tile?(land, coord, subject \\ :player) do
     movable_tiles =
       case subject do
-        :player -> @movable_tiles
         :enemy -> @enemy_movable_tiles
+        _ -> @movable_tiles
       end
 
     case get_tile(land, coord) do
