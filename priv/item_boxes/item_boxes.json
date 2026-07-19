@@ -24,7 +24,7 @@
         "readable_name": "Human corpse", 
         "max_items": 4, 
         "item_types": "all", 
-        "movable": false, 
+        "movable": true,
         "image_name": "human_corpse",
         "placing": "outdoor",
         "random_weight": 1.0

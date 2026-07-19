@@ -19,6 +19,7 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Loot.Utils.FilesReader
   alias Europa.Server.Enemy
+  alias Europa.Server.Npc
   alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
@@ -396,6 +397,17 @@ defmodule Europa.Server.Loot do
     |> get_item_box()
     |> add_items(enemy.max_items)
     |> ItemBox.stand_on(enemy.stand_on)
+  end
+
+  @spec generate_item_box_from_npc(Npc.t()) :: ItemBox.t()
+  def generate_item_box_from_npc(%Npc{} = npc) do
+    item_box =
+      :human_body
+      |> get_item_box()
+      |> add_items(3)
+      |> ItemBox.stand_on(npc.stand_on)
+
+    struct!(item_box, items: [npc.weapon | item_box.items])
   end
 
   @spec get_items(item_type()) :: list()

@@ -725,8 +725,17 @@ defmodule Europa.Server.Planet do
     Loot.generate_item_box_from_enemy(enemy)
   end
 
+  defp generate_human_body(%Npc{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = npc) do
+    human_body =
+      npc
+      |> Npc.stand_on(stand_on)
+      |> Loot.generate_item_box_from_npc()
+
+    struct!(human_body, items: items ++ human_body.items)
+  end
+
   defp generate_human_body(%Npc{} = npc) do
-    Loot.generate_item_box(:human_body, npc.stand_on)
+    Loot.generate_item_box_from_npc(npc)
   end
 
   # this is for "skip" object, see Objects module
@@ -1301,7 +1310,7 @@ defmodule Europa.Server.Planet do
       |> Enemy.take_damage(damage)
       |> Enemy.stand_on(blood_tile(enemy.stand_on))
     else
-      Loot.generate_item_box(:monster_body, enemy.stand_on)
+      generate_monster_body(enemy)
     end
   end
 
@@ -1312,8 +1321,7 @@ defmodule Europa.Server.Planet do
       |> Npc.stand_on(blood_tile(npc.stand_on))
       |> maybe_trigger_npc(subject)
     else
-      corpse = Loot.generate_item_box(:human_body, npc.stand_on)
-      struct!(corpse, items: [npc.weapon | corpse.items])
+      generate_human_body(npc)
     end
   end
 

@@ -628,6 +628,19 @@ defmodule Europa.Server.LootTest do
     end
   end
 
+  describe "generate_item_box_from_npc/1" do
+    test "generates human_body item box" do
+      weapon = build(:weapon)
+      npc = build(:npc, weapon: weapon)
+
+      assert %Loot.ItemBox{items: items} = Loot.generate_item_box_from_npc(npc)
+      assert is_list(items)
+
+      assert Enum.all?(items, fn item -> item?(item) end)
+      assert weapon in items
+    end
+  end
+
   describe "blueprints/1" do
     test "returns list of blueprints" do
       blueprints = Loot.blueprints()
