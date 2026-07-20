@@ -157,11 +157,13 @@ defmodule Europa.Server.Characters do
   end
 
   @spec enemies?(Character.t(), Character.t()) :: boolean()
-  def enemies?(%Character{not_playable?: true} = first_character, %Character{not_playable?: true} = second_character) do
-    second_character.fraction in first_character.enemy_fractions
-  end
+  def enemies?(%Character{} = first_character, %Character{} = second_character) do
+    not_playable? = first_character.not_playable? || second_character.not_playable?
+    first_enemy? = first_character.fraction in second_character.enemy_fractions
+    second_enemy? = second_character.fraction in first_character.enemy_fractions
 
-  def enemies?(_, _), do: false
+    not_playable? && (first_enemy? || second_enemy?)
+  end
 
   @spec pick_main(pid()) :: {:ok, Character.t()} | {:error, :already_picked}
   def pick_main(pid) do

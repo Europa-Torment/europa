@@ -41,6 +41,7 @@ defmodule Europa.Server.CharactersTest do
 end
 
 defmodule Europa.Server.Characters.CharacterTest do
+  alias Europa.Server.Characters
   use Europa.DataCase
 
   alias Europa.Server.Characters.Character
@@ -53,7 +54,42 @@ defmodule Europa.Server.Characters.CharacterTest do
     end
   end
 
+  describe "enemies?/2" do
+    test "returns true when first character is enemy of second character" do
+      first_character = build(:character, fraction: :wcc, enemy_fractions: [], not_playable?: true)
+      second_character = build(:character, fraction: :ssb, enemy_fractions: [:wcc], not_playable?: true)
+
+      assert Characters.enemies?(first_character, second_character) == true
+    end
+
+    test "returns true when second character is enemy of first character" do
+      first_character = build(:character, fraction: :wcc, enemy_fractions: [:ssb], not_playable?: true)
+      second_character = build(:character, fraction: :ssb, enemy_fractions: [], not_playable?: true)
+
+      assert Characters.enemies?(first_character, second_character) == true
+    end
+
+    test "returns false when characters are not enemies" do
+      first_character = build(:character, fraction: :wcc, enemy_fractions: [], not_playable?: true)
+      second_character = build(:character, fraction: :ssb, enemy_fractions: [], not_playable?: true)
+
+      assert Characters.enemies?(first_character, second_character) == false
+    end
+
+    test "returns false is both characters are playable" do
+      first_character = build(:character, fraction: :wcc, enemy_fractions: [:ssb], not_playable?: false)
+      second_character = build(:character, fraction: :ssb, not_playable?: false)
+
+      assert Characters.enemies?(first_character, second_character) == false
+    end
+  end
+
   describe "random_story/1" do
+    test "returns nil when character not playable" do
+      character = build(:character, not_playable?: true)
+      assert Character.random_story(character) |> is_nil()
+    end
+
     test "returns one character's story" do
       character = build(:character)
       assert Character.random_story(character) in character.stories
