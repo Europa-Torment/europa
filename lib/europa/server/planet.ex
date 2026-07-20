@@ -25,6 +25,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Action
   alias Europa.Server.Event
   alias Europa.Server.Characters
+  alias Europa.Server.Characters.Character
   alias Europa.Server.Npc
 
   import Europa.Tools.Randomizer
@@ -395,7 +396,7 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp do_interact(%Npc{target: nil} = npc, planet, _view_direction, _opts) do
+  defp do_interact(%Npc{target: nil, character: %Character{not_playable?: false}} = npc, planet, _view_direction, _opts) do
     {:ok, planet, {:talk, npc}}
   end
 
@@ -714,6 +715,9 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp maybe_delete_empty_item_box(%Loot.ItemBox{type: :bag, items: [], stand_on: stand_on}), do: stand_on
+  defp maybe_delete_empty_item_box(item_box), do: item_box
+
   defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = enemy) do
     monster_body =
       enemy
@@ -811,7 +815,7 @@ defmodule Europa.Server.Planet do
     ]
 
     Enum.reduce(enemies_actions, {planet, []}, fn action_fn, {planet, actions} ->
-      enemies_coords = get_coords_of_enemies_which_see_player(planet)
+      enemies_coords = get_coords_of_visible_enemies(planet)
 
       {updated_planet, new_actions} = action_fn.(enemies_coords, planet)
       {updated_planet, actions ++ new_actions}
@@ -1105,7 +1109,8 @@ defmodule Europa.Server.Planet do
         enemy_attack(planet, actions, enemy_coord, enemy, target_coord)
 
       true ->
-        if m_to_n?(@enemy_move_possibility_from, @enemy_move_possibility_to) do
+        if m_to_n?(@enemy_move_possibility_from, @enemy_move_possibility_to) &&
+             enemy_see_target?(enemy_coord, target_coord, enemy) do
           do_move_enemy(planet, enemy_coord, enemy, target_coord)
         else
           {planet, actions ++ [Action.new(enemy, :stay)], enemy_coord, enemy}
@@ -1169,12 +1174,12 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp move_enemy_actions(%Enemy{stand_on: tile}) when tile in @swimable_tiles do
-    []
+  defp move_enemy_actions(%Enemy{target: :player, stand_on: tile} = enemy) when tile not in @swimable_tiles do
+    [Action.new(enemy, :chasing)]
   end
 
-  defp move_enemy_actions(enemy) do
-    [Action.new(enemy, :chasing)]
+  defp move_enemy_actions(_) do
+    []
   end
 
   defp closest_target(%__MODULE__{} = planet, object_coord, target_coords, opts \\ []) do
@@ -1405,22 +1410,14 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp get_coords_of_enemies_which_see_player(%__MODULE__{current_coord: current_coord, land: land} = planet) do
-    planet
-    |> get_coords_of_visible_enemies()
-    |> Enum.filter(fn coord ->
-      case get_tile(land, coord) do
-        %Enemy{} ->
-          enemy_see_player?(current_coord, coord)
-
-        _ ->
-          false
-      end
-    end)
+  defp enemy_see_target?(enemy_coord, target_coord, %Enemy{target: :player}) do
+    enemy_see_player?(enemy_coord, target_coord)
   end
 
-  defp enemy_see_player?(coord1, coord2) do
-    coords_distance(coord1, coord2) <= @enemy_view_distance
+  defp enemy_see_target?(_, _, _), do: true
+
+  defp enemy_see_player?(enemy_coord, player_coord) do
+    coords_distance(enemy_coord, player_coord) <= @enemy_view_distance
   end
 
   defp do_take_loot(
@@ -1448,15 +1445,42 @@ defmodule Europa.Server.Planet do
   defp do_move(planet, target_coord, direction, player) do
     tile = get_tile(planet.land, target_coord)
 
-    if movable_tile?(planet.land, target_coord) do
-      do_move(planet, tile, target_coord, direction, player.stand_on)
-    else
-      attack_with_melee_weapon_or_stay(planet, player, target_coord, tile)
+    case tile do
+      %Npc{target: target} when target != :player ->
+        switch_positions_with_npc(planet, player, tile, target_coord)
+
+      _ ->
+        if movable_tile?(planet.land, target_coord) do
+          do_move(planet, tile, target_coord, direction, player.stand_on)
+        else
+          attack_with_melee_weapon_or_stay(planet, player, target_coord, tile)
+        end
     end
   end
 
-  defp maybe_delete_empty_item_box(%Loot.ItemBox{type: :bag, items: [], stand_on: stand_on}), do: stand_on
-  defp maybe_delete_empty_item_box(item_box), do: item_box
+  defp switch_positions_with_npc(
+         %__MODULE__{} = planet,
+         %Player{} = player,
+         %Npc{stand_on: new_tile} = npc,
+         target_coord
+       ) do
+    excuse = Enum.random([gettext("Sorry"), gettext("Oh.."), gettext("My bad")])
+
+    updated_npc =
+      npc
+      |> Npc.stand_on(player.stand_on)
+      |> Npc.add_events([Event.new({:speech, excuse})])
+
+    updated_land =
+      planet.land
+      |> change_tile(planet.current_coord, updated_npc)
+      |> change_tile(target_coord, @player)
+
+    updated_planet = struct!(planet, land: updated_land, current_coord: target_coord)
+    move_cost = move_cost(new_tile)
+
+    {:moved, updated_planet, move_cost, new_tile, next_to_interactive_tile?(updated_planet)}
+  end
 
   defp do_move(planet, tile, target_coord, direction, player_stand_on) do
     updated_land =

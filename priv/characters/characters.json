@@ -56,7 +56,7 @@
         "name": "Stanislav Mishchenko",
         "gender": "male",
         "profession": "Space criminal, leader of the SSB",
-        "fraction": "neutral",
+        "fraction": "ssb",
         "age_at_disaster": 30,
         "years": {"from": 1, "to": 30},
         "stories": [
@@ -92,7 +92,7 @@
         "name": "Henry Davies",
         "gender": "male",
         "profession": "Politician, head of the WCC",
-        "fraction": "neutral",
+        "fraction": "wcc",
         "age_at_disaster": 50,
         "years": {"from": 1, "to": 30},
         "stories": [
@@ -209,11 +209,8 @@
         "age_at_disaster": 20,
         "years": {"from": 1, "to": 40},
         "not_playable": true,
-        "stories": [
-            "We are not supposed to talk."
-        ],
-        "special_stories": {
-        },
+        "stories": [],
+        "special_stories": {},
         "short_phrases": []
     },
     {
@@ -225,11 +222,8 @@
         "age_at_disaster": 20,
         "years": {"from": 1, "to": 40},
         "not_playable": true,
-        "stories": [
-            "Back off!"
-        ],
-        "special_stories": {
-        },
+        "stories": [],
+        "special_stories": {},
         "short_phrases": []
     }
 ]

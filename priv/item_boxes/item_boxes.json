@@ -52,7 +52,7 @@
     {
         "type": "sun_battery",
         "readable_name": "Sun battery",
-        "max_items": 3, 
+        "max_items": 1, 
         "item_types": ["tool"], 
         "movable": false, 
         "image_name": "sun_battery",

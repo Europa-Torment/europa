@@ -1049,10 +1049,24 @@ defmodule Europa.Server.PlanetTest do
       assert move_cost == Map.fetch!(@move_costs, @ib2.stand_on)
     end
 
-    test "not moves in not movable tile" do
+    test "not moves on not movable tile" do
       planet = build(:planet, land: @land_player_look_right_at_loot, current_coord: {4, 4})
       player = build_player_stand_on(@i)
       assert {:stay, @ib} = Planet.move(planet, :right, player)
+    end
+
+    test "switches position with npc" do
+      player = build(:player, view_direction: :up)
+
+      planet =
+        %Planet{current_coord: {x, y}} = build(:planet, land: @land_player_up_close_to_npc, current_coord: {4, 7})
+
+      assert {:moved, %Planet{current_coord: {^x, y2}} = updated_planet, move_cost, _, _next_to_interactive = true} =
+               Planet.move(planet, :up, player)
+
+      assert y2 == y - 1
+      assert move_cost == Map.fetch!(@move_costs, @i)
+      assert %Npc{} = Map.get(updated_planet.land.tiles, {x, y})
     end
 
     test "generates left column" do

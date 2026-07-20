@@ -43,7 +43,7 @@ defmodule Europa.Server.Planet.Predefined do
   @burning_building_possibility fetch_config!([__MODULE__, :building, :burning_building_possibility])
   @burning_floor_possibility fetch_config!([__MODULE__, :building, :burning_floor_possibility])
 
-  @npc_generate_possibility fetch_config!([Planet, :npc_generate_possibility])
+  @npc_generate_possibility fetch_config!([__MODULE__, :npc_generate_possibility])
 
   @skip Objects.object(:skip)
 

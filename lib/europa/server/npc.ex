@@ -21,7 +21,7 @@ defmodule Europa.Server.Npc do
   typedstruct do
     field :uuid, Ecto.UUID.t(), enforce: true
     field :character, Character.t(), enforce: true
-    field :story, Character.story(), enforce: true
+    field :story, Character.story()
     field :stand_on, Planet.tile(), enforce: true
     field :health, non_neg_integer(), enforce: true
     field :accuracy, pos_integer(), enforce: true
@@ -51,6 +51,7 @@ defmodule Europa.Server.Npc do
       {gettext("Name"), character.name},
       {gettext("Age"), character.current_age},
       {gettext("Gender"), Character.readable_gender(character)},
+      {gettext("Fraction"), Character.readable_fraction(character)},
       {gettext("Health"), npc.health},
       {gettext("Aggressive"), aggressive(npc)}
     ]

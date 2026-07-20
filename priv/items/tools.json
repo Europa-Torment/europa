@@ -10,7 +10,7 @@
         },
         "stackable": true,
         "weight": 0.1, 
-        "random_weight": 2.5
+        "random_weight": 1.7
     },
     {
         "name": "Weapon parts 2", 
@@ -23,7 +23,7 @@
         },
         "stackable": true,
         "weight": 0.2, 
-        "random_weight": 1.0
+        "random_weight": 0.4
     },
     {
         "name": "Weapon parts 3", 
@@ -36,7 +36,7 @@
         },
         "stackable": true,
         "weight": 0.3, 
-        "random_weight": 0.5
+        "random_weight": 0.08
     },
     {
         "name": "Weapon parts 4", 
@@ -49,7 +49,7 @@
         },
         "stackable": true,
         "weight": 0.4, 
-        "random_weight": 0.05
+        "random_weight": 0.04
     },
     {
         "name": "Key card", 
@@ -73,7 +73,7 @@
         "properties": {},
         "stackable": true,
         "weight": 0.01, 
-        "random_weight": 1.0
+        "random_weight": 1.5
     },
     {
         "name": "Bonfire starter kit", 
@@ -86,7 +86,7 @@
         "use_cost": 2,
         "stackable": true,
         "weight": 1.0, 
-        "random_weight": 0.08
+        "random_weight": 0.4
     },
     {
         "name": "Fire extinguisher", 

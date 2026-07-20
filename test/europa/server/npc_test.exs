@@ -19,13 +19,14 @@ defmodule Europa.Server.NpcTest do
 
   describe "readable_stats/1" do
     test "returns stats" do
-      npc = build(:npc, character: build(:character, gender: :female))
+      npc = build(:npc, character: build(:character, gender: :female, fraction: :wcc))
 
       expected_stats =
         [
           {"Name", npc.character.name},
           {"Age", npc.character.current_age},
           {"Gender", "Female"},
+          {"Fraction", "WCC"},
           {"Health", npc.health},
           {"Aggressive", "No"}
         ]
