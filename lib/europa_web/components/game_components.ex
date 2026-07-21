@@ -474,7 +474,9 @@ defmodule EuropaWeb.GameCompotents do
         <% end %>
         <%= if @empty_implant_sockets > 0 do %>
           <%= for _ <- 1..@empty_implant_sockets do %>
-            <li>{gettext("Empty implant socket")}</li>
+            <li>
+              <span class="text-secondary">{gettext("Empty implant socket")}</span>
+            </li>
           <% end %>
         <% end %>
       </ul>
