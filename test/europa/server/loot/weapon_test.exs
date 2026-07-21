@@ -7,17 +7,20 @@ defmodule Europa.Server.Loot.WeaponTest do
 
   @burst_bullets_per_shot fetch_config!([:weapons, :burst_bullets_per_shot])
 
-  describe "decrease_rounds_loaded/2" do
-    test "decreases weapon loaded" do
-      n = 7
-      weapon = build(:weapon, rounds_loaded: 10)
-      assert %Weapon{rounds_loaded: 3} = Weapon.decrease_rounds_loaded(weapon, n)
+  describe "decrease_rounds_loaded/1" do
+    test "decreases weapon loaded (bullet)" do
+      weapon = build(:weapon, rounds_loaded: 10, shooting_type: :bullet)
+      assert %Weapon{rounds_loaded: 9} = Weapon.decrease_rounds_loaded(weapon)
+    end
+
+    test "decreases weapon loaded (burst)" do
+      weapon = build(:weapon, rounds_loaded: 10, shooting_type: :burst)
+      assert %Weapon{rounds_loaded: 7} = Weapon.decrease_rounds_loaded(weapon)
     end
 
     test "no negative value" do
-      n = 20
-      weapon = build(:weapon, rounds_loaded: 10)
-      assert %Weapon{rounds_loaded: 0} = Weapon.decrease_rounds_loaded(weapon, n)
+      weapon = build(:weapon, rounds_loaded: 1, shooting_type: :burst)
+      assert %Weapon{rounds_loaded: 0} = Weapon.decrease_rounds_loaded(weapon)
     end
   end
 

@@ -73,7 +73,10 @@ defmodule Europa.Server.PlayerManager do
   Equips given item or returns error if item is not exists or not equipable.
   """
   @callback equip_item(Player.t(), Loot.uuid()) ::
-              {:ok, Player.t()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+              {:ok, Player.t()}
+              | {:error, :not_found}
+              | {:error, Errors.NotApplicableError.t()}
+              | {:error, :implants_limit}
 
   @doc """
   Disassembles given item.
@@ -118,29 +121,29 @@ defmodule Europa.Server.PlayerManager do
   @callback use_tools(Player.t(), list(Loot.Item.item())) :: {:ok, Player.t()} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
-  Finds current equiped weapon or returns error if no weapon is equiped.
+  Finds current equipped weapon or returns error if no weapon is equipped.
   """
-  @callback get_equiped_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_weapon}
+  @callback get_equipped_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_weapon}
 
   @doc """
-  Finds current equiped melee weapon or returns error if no melee weapon is equiped.
+  Finds current equipped melee weapon or returns error if no melee weapon is equipped.
   """
-  @callback get_equiped_melee_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_melee_weapon}
+  @callback get_equipped_melee_weapon(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_melee_weapon}
 
   @doc """
-  Finds current equiped helmet or returns error if no helmet is equiped.
+  Finds current equipped helmet or returns error if no helmet is equipped.
   """
-  @callback get_equiped_helmet(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_helmet}
+  @callback get_equipped_helmet(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_helmet}
 
   @doc """
-  Finds current equiped suit or returns error if no suit is equiped.
+  Finds current equipped suit or returns error if no suit is equipped.
   """
-  @callback get_equiped_suit(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_suit}
+  @callback get_equipped_suit(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_suit}
 
   @doc """
-  Finds current equiped boots or returns error if no boots is equiped.
+  Finds current equipped boots or returns error if no boots is equipped.
   """
-  @callback get_equiped_boots(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_boots}
+  @callback get_equipped_boots(Player.t()) :: {:ok, Loot.Item.item()} | {:error, :no_boots}
 
   @doc """
   Finds ammo for given weapon or returns error if no such ammo in inventory.
@@ -151,10 +154,10 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Reloads given weapon or returns one of errors:
 
-  `{:error, :no_weapon}` - no equiped weapon
+  `{:error, :no_weapon}` - no equipped weapon
   `{:error, :no_ammo}` - no necessary ammo in inventory
   `{:error, :full_magazine}` - weapon is already fully loaded
-  `{:error, %Europa.Server.Errors.NotApplicableError{}}` - invalid item is equiped as weapon
+  `{:error, %Europa.Server.Errors.NotApplicableError{}}` - invalid item is equipped as weapon
   """
   @callback reload_weapon(Player.t()) ::
               {:ok, Player.t(), weapon :: Loot.Item.item()}
@@ -169,7 +172,7 @@ defmodule Europa.Server.PlayerManager do
   `{:error, :not_found}` - weapon with given uuid is not found
   `{:error, :no_ammo}` - no necessary ammo in inventory
   `{:error, :full_magazine}` - weapon is already fully loaded
-  `{:error, %Europa.Server.Errors.NotApplicableError{}}` - invalid item is equiped as weapon
+  `{:error, %Europa.Server.Errors.NotApplicableError{}}` - invalid item is equipped as weapon
   """
   @callback reload_weapon(Player.t(), Loot.uuid()) ::
               {:ok, Player.t(), weapon :: Loot.Item.item()}
@@ -222,7 +225,30 @@ defmodule Europa.Server.PlayerManager do
   """
   @callback toggle_aim_mode(Player.t()) :: {:ok, Player.t()} | {:error, :no_weapon}
 
+  @doc """
+  Performs player ticks.
+  """
   @callback tick(Player.t(), Server.move_cost()) :: {:ok, Player.t(), list(Action.t())}
+
+  @doc """
+  Returns damage of equipped weapon with taking into account the improvement from implants
+  """
+  @callback weapon_damage(Player.t()) :: pos_integer()
+
+  @doc """
+  Returns damage of given weapon with taking into account the improvement from implants
+  """
+  @callback weapon_damage(Player.t(), Loot.Weapon.t()) :: pos_integer()
+
+  @doc """
+  Returns damage of equipped melee weapon with taking into account the improvement from implants
+  """
+  @callback melee_weapon_damage(Player.t()) :: pos_integer()
+
+  @doc """
+  Returns damage of givem melee weapon with taking into account the improvement from implants
+  """
+  @callback melee_weapon_damage(Player.t(), Loot.MeleeWeapon.t()) :: pos_integer()
 
   ### Implementation callers ###
 
@@ -264,15 +290,15 @@ defmodule Europa.Server.PlayerManager do
 
   def craft_item(player, blueprint), do: manager_impl().craft_item(player, blueprint)
 
-  def get_equiped_weapon(player), do: manager_impl().get_equiped_weapon(player)
+  def get_equipped_weapon(player), do: manager_impl().get_equipped_weapon(player)
 
-  def get_equiped_melee_weapon(player), do: manager_impl().get_equiped_melee_weapon(player)
+  def get_equipped_melee_weapon(player), do: manager_impl().get_equipped_melee_weapon(player)
 
-  def get_equiped_helmet(player), do: manager_impl().get_equiped_helmet(player)
+  def get_equipped_helmet(player), do: manager_impl().get_equipped_helmet(player)
 
-  def get_equiped_suit(player), do: manager_impl().get_equiped_suit(player)
+  def get_equipped_suit(player), do: manager_impl().get_equipped_suit(player)
 
-  def get_equiped_boots(player), do: manager_impl().get_equiped_boots(player)
+  def get_equipped_boots(player), do: manager_impl().get_equipped_boots(player)
 
   def find_weapon_ammo(player, weapon), do: manager_impl().find_weapon_ammo(player, weapon)
 
@@ -301,6 +327,14 @@ defmodule Europa.Server.PlayerManager do
   def toggle_aim_mode(player), do: manager_impl().toggle_aim_mode(player)
 
   def tick(player, moves_count), do: manager_impl().tick(player, moves_count)
+
+  def weapon_damage(player), do: manager_impl().weapon_damage(player)
+
+  def weapon_damage(player, weapon), do: manager_impl().weapon_damage(player, weapon)
+
+  def melee_weapon_damage(player), do: manager_impl().melee_weapon_damage(player)
+
+  def melee_weapon_damage(player, melee_weapon), do: manager_impl().melee_weapon_damage(player, melee_weapon)
 
   ### PRIVATE ###
 

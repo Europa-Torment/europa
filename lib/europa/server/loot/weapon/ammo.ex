@@ -37,6 +37,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
+  alias Europa.Seerver.Player
 
   @spec item_type(Ammo.t()) :: :ammo
   def item_type(%Ammo{}), do: :ammo
@@ -54,8 +55,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
   @spec description(Ammo.t()) :: String.t()
   def description(%Ammo{description: description}), do: description
 
-  @spec readable_attrs(Ammo.t()) :: list()
-  def readable_attrs(%Ammo{} = ammo) do
+  @spec readable_attrs(Ammo.t(), Player.t()) :: list()
+  def readable_attrs(%Ammo{} = ammo, _player) do
     [
       {:caliber, gettext("Caliber"), ammo.caliber},
       {:count, gettext("Count"), ammo.count},

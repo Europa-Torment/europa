@@ -73,7 +73,7 @@ defmodule Europa.Support.Factory do
   def weapon_factory do
     %Loot.Weapon{
       uuid: Ecto.UUID.generate(),
-      equiped: false,
+      equipped: false,
       name: sequence(:name, &"weapon #{&1 + 1}"),
       description: "description",
       shot_cost: 1,
@@ -108,7 +108,7 @@ defmodule Europa.Support.Factory do
   def melee_weapon_factory do
     %Loot.MeleeWeapon{
       uuid: Ecto.UUID.generate(),
-      equiped: false,
+      equipped: false,
       name: sequence(:name, &"melee weapon #{&1 + 1}"),
       description: "description",
       hit_cost: 1,
@@ -187,6 +187,26 @@ defmodule Europa.Support.Factory do
     }
   end
 
+  @spec implant_factory() :: Loot.Implant.t()
+  def implant_factory do
+    %Loot.Implant{
+      uuid: Ecto.UUID.generate(),
+      name: sequence(:name, &"implant #{&1 + 1}"),
+      description: "description",
+      properties: build(:implant_properties),
+      weight: 1.0
+    }
+  end
+
+  @spec implant_properties_factory() :: Loot.Implant.Properties.t()
+  def implant_properties_factory do
+    %Loot.Implant.Properties{
+      max_health: 10,
+      max_warm: 10,
+      accuracy: 10
+    }
+  end
+
   @spec tool_factory() :: Loot.Tool.t()
   def tool_factory do
     %Loot.Tool{
@@ -241,7 +261,8 @@ defmodule Europa.Support.Factory do
       thirst: 0,
       radiation: 0,
       stand_on: Tiles.tile(:ice).atom_value,
-      aim_mode?: false
+      aim_mode?: false,
+      max_implants: 3
     }
   end
 

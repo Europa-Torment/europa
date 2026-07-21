@@ -5,7 +5,7 @@ defmodule Europa.Server.Loot.Suit do
 
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
-    field :equiped, boolean(), default: false
+    field :equipped, boolean(), default: false
     field :name, String.t()
     field :description, String.t()
     field :efficiency, pos_integer()
@@ -20,7 +20,7 @@ defmodule Europa.Server.Loot.Suit do
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
-      equiped: false,
+      equipped: false,
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       efficiency: Map.fetch!(attrs, :efficiency),
@@ -39,6 +39,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Errors
+  alias Europa.Server.Player
 
   @spec item_type(Suit.t()) :: :suit
   def item_type(%Suit{}), do: :suit
@@ -65,8 +66,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
   @spec description(Suit.t()) :: String.t()
   def description(%Suit{description: description}), do: description
 
-  @spec readable_attrs(Suit.t()) :: list()
-  def readable_attrs(%Suit{} = suit) do
+  @spec readable_attrs(Suit.t(), Player.t()) :: list()
+  def readable_attrs(%Suit{} = suit, _player) do
     [
       {:name, gettext("Name"), suit.name},
       {:efficiency, gettext("Efficiency"), suit.efficiency},
@@ -79,12 +80,12 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
 
   @spec equip(Suit.t()) :: {:ok, Suit.t()}
   def equip(%Suit{} = suit) do
-    {:ok, struct!(suit, equiped: true)}
+    {:ok, struct!(suit, equipped: true)}
   end
 
   @spec unequip(Suit.t()) :: {:ok, Suit.t()}
   def unequip(%Suit{} = suit) do
-    {:ok, struct!(suit, equiped: false)}
+    {:ok, struct!(suit, equipped: false)}
   end
 
   @spec equipable?(Suit.t()) :: true

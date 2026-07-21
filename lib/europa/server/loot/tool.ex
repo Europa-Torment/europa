@@ -135,6 +135,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
+  alias Europa.Server.Player
 
   @spec item_type(Tool.t()) :: :tool
   def item_type(%Tool{}), do: :tool
@@ -180,8 +181,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
   @spec description(Tool.t()) :: String.t()
   def description(%Tool{description: description}), do: description
 
-  @spec readable_attrs(Tool.t()) :: list()
-  def readable_attrs(%Tool{} = tool) do
+  @spec readable_attrs(Tool.t(), Player.t()) :: list()
+  def readable_attrs(%Tool{} = tool, _player) do
     properties_attrs =
       tool.properties
       |> significant_properties()

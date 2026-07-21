@@ -19,7 +19,7 @@ defmodule Europa.Server.Loot.Weapon do
 
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
-    field :equiped, boolean(), default: false
+    field :equipped, boolean(), default: false
     field :name, String.t()
     field :description, String.t()
     field :shot_cost, Server.move_cost()
@@ -42,7 +42,7 @@ defmodule Europa.Server.Loot.Weapon do
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
-      equiped: false,
+      equipped: false,
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       shot_cost: Map.fetch!(attrs, :shot_cost),
@@ -62,9 +62,10 @@ defmodule Europa.Server.Loot.Weapon do
     }
   end
 
-  @spec decrease_rounds_loaded(t(), n :: pos_integer()) :: t()
-  def decrease_rounds_loaded(%__MODULE__{} = weapon, n \\ 1) when n > 0 do
-    updated_value = (weapon.rounds_loaded - n) |> max(0)
+  @spec decrease_rounds_loaded(t()) :: t()
+  def decrease_rounds_loaded(%__MODULE__{} = weapon) do
+    rounds_per_shot = rounds_per_shot(weapon)
+    updated_value = (weapon.rounds_loaded - rounds_per_shot) |> max(0)
     struct!(weapon, rounds_loaded: updated_value)
   end
 
@@ -116,7 +117,7 @@ defmodule Europa.Server.Loot.Weapon do
       |> Map.put(:count, weapon.rounds_loaded)
       |> Ammo.new()
 
-    updated_weapon = decrease_rounds_loaded(weapon, weapon.rounds_loaded)
+    updated_weapon = struct!(weapon, rounds_loaded: 0)
     {:ok, {updated_weapon, ammo}}
   end
 end
@@ -127,6 +128,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Player
+  alias Europa.Server.PlayerManager
 
   @spec item_type(Weapon.t()) :: :weapon
   def item_type(%Weapon{}), do: :weapon
@@ -153,11 +156,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
   @spec description(Weapon.t()) :: String.t()
   def description(%Weapon{description: description}), do: description
 
-  @spec readable_attrs(Weapon.t()) :: list()
-  def readable_attrs(%Weapon{} = weapon) do
+  @spec readable_attrs(Weapon.t(), Player.t()) :: list()
+  def readable_attrs(%Weapon{} = weapon, %Player{} = player) do
     [
       {:name, gettext("Name"), weapon.name},
-      {:damage, gettext("Damage"), weapon.damage},
+      {:damage, gettext("Damage"), PlayerManager.weapon_damage(player, weapon)},
       {:accuracy, gettext("Accuracy"), weapon.accuracy},
       {:shooting_distance, gettext("Shooting distance"), weapon.shooting_distance},
       {:shooting_type, gettext("Shooting type"), weapon.shooting_type},
@@ -172,12 +175,12 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   @spec equip(Weapon.t()) :: {:ok, Weapon.t()}
   def equip(%Weapon{} = weapon) do
-    {:ok, struct!(weapon, equiped: true)}
+    {:ok, struct!(weapon, equipped: true)}
   end
 
   @spec unequip(Weapon.t()) :: {:ok, Weapon.t()}
   def unequip(%Weapon{} = weapon) do
-    {:ok, struct!(weapon, equiped: false)}
+    {:ok, struct!(weapon, equipped: false)}
   end
 
   @spec equipable?(Weapon.t()) :: true

@@ -1136,7 +1136,7 @@ defmodule Europa.Server.PlanetTest do
       test_damage_enemy(planet, player, :up, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
     end
 
-    test "damages top enemy (no melee weapon equiped)" do
+    test "damages top enemy (no melee weapon equipped)" do
       planet = build(:planet, land: @land_player_up_close_to_enemy, current_coord: {4, 7})
       player = build(:player, accuracy: @max_accuracy)
 
@@ -1151,7 +1151,7 @@ defmodule Europa.Server.PlanetTest do
       test_damage_enemy(planet, player, :down, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
     end
 
-    test "damages bottom enemy (no melee weapon equiped)" do
+    test "damages bottom enemy (no melee weapon equipped)" do
       planet = build(:planet, land: @land_player_down_close_to_enemy, current_coord: {4, 1})
       player = build(:player, accuracy: @max_accuracy)
 
@@ -1166,7 +1166,7 @@ defmodule Europa.Server.PlanetTest do
       test_damage_enemy(planet, player, :right, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
     end
 
-    test "damages right enemy (no melee weapon equiped)" do
+    test "damages right enemy (no melee weapon equipped)" do
       planet = build(:planet, land: @land_player_left_close_to_enemy, current_coord: {4, 1})
       player = build(:player, accuracy: @max_accuracy)
 
@@ -1181,7 +1181,7 @@ defmodule Europa.Server.PlanetTest do
       test_damage_enemy(planet, player, :left, melee_weapon.damage, melee_weapon.hit_cost, melee_weapon)
     end
 
-    test "damages left enemy (no melee weapon equiped)" do
+    test "damages left enemy (no melee weapon equipped)" do
       planet = build(:planet, land: @land_player_right_close_to_enemy, current_coord: {4, 1})
       player = build(:player, accuracy: @max_accuracy)
 
@@ -1190,13 +1190,14 @@ defmodule Europa.Server.PlanetTest do
 
     defp test_damage_enemy(planet, player, direction, expected_damage, expected_move_cost, melee_weapon) do
       PlayerManagerMock
-      |> expect(:get_equiped_melee_weapon, fn %Player{} ->
+      |> expect(:get_equipped_melee_weapon, fn %Player{} ->
         if melee_weapon do
           {:ok, melee_weapon}
         else
           {:error, :no_melee_weapon}
         end
       end)
+      |> expect(:melee_weapon_damage, fn _ -> expected_damage end)
 
       assert {:attack, %Planet{} = updated_planet, damaged_enemies, ^expected_move_cost} =
                Planet.move(planet, direction, player)
@@ -2418,7 +2419,7 @@ defmodule Europa.Server.PlanetTest do
 
     defp test_miss(planet, player, weapon) do
       PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
+      |> expect(:get_equipped_weapon, fn _ -> {:ok, weapon} end)
       |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
         assert_rounds_loaded_decreased(weapon, updated_weapon)
         player
@@ -2429,18 +2430,15 @@ defmodule Europa.Server.PlanetTest do
     end
 
     defp test_shoot(planet, player, weapon, expected_damaged_enemies_count, check_damage \\ true) do
-      expected_damage =
-        case weapon.shooting_type do
-          :burst -> weapon.damage * @burst_bullets_per_shot
-          _ -> weapon.damage
-        end
+      expected_damage = Player.weapon_damage(player)
 
       PlayerManagerMock
-      |> expect(:get_equiped_weapon, fn _ -> {:ok, weapon} end)
+      |> expect(:get_equipped_weapon, fn _ -> {:ok, weapon} end)
       |> expect(:update_item, fn ^player, %Weapon{} = updated_weapon ->
         assert_rounds_loaded_decreased(weapon, updated_weapon)
         player
       end)
+      |> expect(:weapon_damage, fn _ -> expected_damage end)
 
       assert {:ok, {updated_planet, ^player, damaged_enemies, move_cost}} = Planet.shoot(planet, player)
 

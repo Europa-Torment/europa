@@ -158,9 +158,9 @@ defmodule Europa.Server do
     GenServer.call(server, :shoot)
   end
 
-  @spec reload(pid(), Loot.uuid() | :equiped) ::
+  @spec reload(pid(), Loot.uuid() | :equipped) ::
           :ok | {:error, :no_weapon} | {:error, :no_ammo} | {:error, :full_magazine}
-  def reload(server, item_uuid \\ :equiped) do
+  def reload(server, item_uuid \\ :equipped) do
     GenServer.call(server, {:reload, item_uuid})
   end
 
@@ -541,7 +541,7 @@ defmodule Europa.Server do
   def handle_call({:reload, item_uuid}, {caller_pid, _}, state) do
     result =
       case item_uuid do
-        :equiped -> PlayerManager.reload_weapon(state.player)
+        :equipped -> PlayerManager.reload_weapon(state.player)
         _ -> PlayerManager.reload_weapon(state.player, item_uuid)
       end
 
@@ -1449,7 +1449,7 @@ defmodule Europa.Server do
 
   defp add_punch_message_to_chat(%Chat{} = chat, player, moves_count) do
     melee_weapon_name =
-      case PlayerManager.get_equiped_melee_weapon(player) do
+      case PlayerManager.get_equipped_melee_weapon(player) do
         {:ok, melee_weapon} -> melee_weapon.name
         _ -> gettext("fist")
       end

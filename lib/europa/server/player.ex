@@ -13,8 +13,10 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Weapon.Ammo
+  alias Europa.Server.Loot.MeleeWeapon
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Implant
   alias Europa.Server.Errors
   alias Europa.Server.Event
   alias Europa.Tools.NumberHelpers
@@ -60,6 +62,8 @@ defmodule Europa.Server.Player do
     field :boots_uuid, Loot.uuid()
     field :aim_mode?, boolean(), default: false
     field :events, list(Event.t()), default: []
+    field :max_implants, non_neg_integer(), enforce: true
+    field :implant_uuids, list(Loot.uuid()), default: []
   end
 
   @impl true
@@ -81,38 +85,39 @@ defmodule Europa.Server.Player do
       hunger: hunger(),
       thirst: thirst(),
       radiation: 0,
+      max_implants: 3,
       stand_on: Tiles.tile(:snow).atom_value
     }
   end
 
   @impl true
   def readable_stats(%__MODULE__{} = player) do
-    equiped_weapon =
-      case get_equiped_weapon(player) do
+    equipped_weapon =
+      case get_equipped_weapon(player) do
         {:ok, weapon} -> weapon.name
         _ -> gettext("No")
       end
 
-    equiped_melee_weapon =
-      case get_equiped_melee_weapon(player) do
+    equipped_melee_weapon =
+      case get_equipped_melee_weapon(player) do
         {:ok, melee_weapon} -> melee_weapon.name
         _ -> gettext("No")
       end
 
-    equiped_helmet =
-      case get_equiped_helmet(player) do
+    equipped_helmet =
+      case get_equipped_helmet(player) do
         {:ok, helmet} -> helmet.name
         _ -> gettext("No")
       end
 
-    equiped_suit =
-      case get_equiped_suit(player) do
+    equipped_suit =
+      case get_equipped_suit(player) do
         {:ok, suit} -> suit.name
         _ -> gettext("No")
       end
 
-    equiped_boots =
-      case get_equiped_boots(player) do
+    equipped_boots =
+      case get_equipped_boots(player) do
         {:ok, boots} -> boots.name
         _ -> gettext("No")
       end
@@ -122,11 +127,11 @@ defmodule Europa.Server.Player do
       {gettext("Age"), player.character.current_age},
       {gettext("Gender"), Character.readable_gender(player.character)},
       {gettext("Health"), "#{player.health}/#{player.max_health}"},
-      {gettext("Weapon"), equiped_weapon},
-      {gettext("Melee weapon"), equiped_melee_weapon},
-      {gettext("Helmet"), equiped_helmet},
-      {gettext("Suit"), equiped_suit},
-      {gettext("Boots"), equiped_boots}
+      {gettext("Weapon"), equipped_weapon},
+      {gettext("Melee weapon"), equipped_melee_weapon},
+      {gettext("Helmet"), equipped_helmet},
+      {gettext("Suit"), equipped_suit},
+      {gettext("Boots"), equipped_boots}
     ]
   end
 
@@ -247,7 +252,8 @@ defmodule Europa.Server.Player do
   @impl true
   def equip_item(%__MODULE__{} = player, item_uuid) do
     with {:ok, item} <- get_item(player, item_uuid),
-         {:ok, updated_item} <- Loot.Item.equip(item) do
+         {:ok, updated_item} <- Loot.Item.equip(item),
+         :ok <- check_implants_limit(player, updated_item) do
       do_equip_or_unequip_item(player, updated_item)
     end
   end
@@ -313,55 +319,55 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def get_equiped_weapon(%__MODULE__{weapon_uuid: nil}) do
+  def get_equipped_weapon(%__MODULE__{weapon_uuid: nil}) do
     {:error, :no_weapon}
   end
 
-  def get_equiped_weapon(%__MODULE__{weapon_uuid: weapon_uuid} = player) do
+  def get_equipped_weapon(%__MODULE__{weapon_uuid: weapon_uuid} = player) do
     with {:error, :not_found} <- get_item(player, weapon_uuid) do
       {:error, :no_weapon}
     end
   end
 
   @impl true
-  def get_equiped_melee_weapon(%__MODULE__{melee_weapon_uuid: nil}) do
+  def get_equipped_melee_weapon(%__MODULE__{melee_weapon_uuid: nil}) do
     {:error, :no_melee_weapon}
   end
 
-  def get_equiped_melee_weapon(%__MODULE__{melee_weapon_uuid: melee_weapon_uuid} = player) do
+  def get_equipped_melee_weapon(%__MODULE__{melee_weapon_uuid: melee_weapon_uuid} = player) do
     with {:error, :not_found} <- get_item(player, melee_weapon_uuid) do
       {:error, :no_melee_weapon}
     end
   end
 
   @impl true
-  def get_equiped_helmet(%__MODULE__{helmet_uuid: nil}) do
+  def get_equipped_helmet(%__MODULE__{helmet_uuid: nil}) do
     {:error, :no_helmet}
   end
 
-  def get_equiped_helmet(%__MODULE__{helmet_uuid: helmet_uuid} = player) do
+  def get_equipped_helmet(%__MODULE__{helmet_uuid: helmet_uuid} = player) do
     with {:error, :not_found} <- get_item(player, helmet_uuid) do
       {:error, :no_helmet}
     end
   end
 
   @impl true
-  def get_equiped_suit(%__MODULE__{suit_uuid: nil}) do
+  def get_equipped_suit(%__MODULE__{suit_uuid: nil}) do
     {:error, :no_suit}
   end
 
-  def get_equiped_suit(%__MODULE__{suit_uuid: suit_uuid} = player) do
+  def get_equipped_suit(%__MODULE__{suit_uuid: suit_uuid} = player) do
     with {:error, :not_found} <- get_item(player, suit_uuid) do
       {:error, :no_suit}
     end
   end
 
   @impl true
-  def get_equiped_boots(%__MODULE__{boots_uuid: nil}) do
+  def get_equipped_boots(%__MODULE__{boots_uuid: nil}) do
     {:error, :no_boots}
   end
 
-  def get_equiped_boots(%__MODULE__{boots_uuid: boots_uuid} = player) do
+  def get_equipped_boots(%__MODULE__{boots_uuid: boots_uuid} = player) do
     with {:error, :not_found} <- get_item(player, boots_uuid) do
       {:error, :no_boots}
     end
@@ -405,7 +411,7 @@ defmodule Europa.Server.Player do
 
   @impl true
   def reload_weapon(%__MODULE__{} = player) do
-    with {:ok, weapon} <- get_equiped_weapon(player),
+    with {:ok, weapon} <- get_equipped_weapon(player),
          :ok <- Weapon.check_reload_needed(weapon),
          {:ok, ammo} <- find_weapon_ammo(player, weapon) do
       do_reload_weapon(player, weapon, ammo)
@@ -464,7 +470,84 @@ defmodule Europa.Server.Player do
 
   def tick(player, _), do: {:ok, player, []}
 
+  @impl true
+  def weapon_damage(%__MODULE__{weapon_uuid: weapon_uuid} = player) when not is_nil(weapon_uuid) do
+    {:ok, weapon} = get_equipped_weapon(player)
+    weapon_damage(player, weapon)
+  end
+
+  @impl true
+  def weapon_damage(%__MODULE__{} = player, %Weapon{} = weapon) do
+    damage =
+      player
+      |> equipped_implants()
+      |> Enum.reduce(weapon.damage, fn implant, damage ->
+        damage + implant_damage_for_weapon(implant, weapon)
+      end)
+
+    damage * Weapon.rounds_per_shot(weapon)
+  end
+
+  @impl true
+  def melee_weapon_damage(%__MODULE__{melee_weapon_uuid: melee_weapon_uuid} = player)
+      when not is_nil(melee_weapon_uuid) do
+    {:ok, melee_weapon} = get_equipped_melee_weapon(player)
+
+    melee_weapon_damage(player, melee_weapon)
+  end
+
+  @impl true
+  def melee_weapon_damage(%__MODULE__{} = player, %MeleeWeapon{} = melee_weapon) do
+    player
+    |> equipped_implants()
+    |> Enum.reduce(melee_weapon.damage, fn implant, damage ->
+      damage + implant_damage_for_melee_weapon(implant, melee_weapon)
+    end)
+  end
+
   ### PRIVATE ###
+
+  defp implant_damage_for_weapon(%Implant{properties: properties}, %Weapon{shooting_type: shooting_type}) do
+    properties
+    |> Map.from_struct()
+    |> Enum.reduce(0, fn
+      {:shotgun_damage, value}, damage when is_integer(value) ->
+        if shooting_type == :shot do
+          damage + value
+        else
+          damage
+        end
+
+      {:shoot_damage, value}, damage when is_integer(value) ->
+        damage + value
+
+      _, damage ->
+        damage
+    end)
+  end
+
+  defp implant_damage_for_melee_weapon(%Implant{properties: properties}, _) do
+    properties
+    |> Map.from_struct()
+    |> Enum.reduce(0, fn
+      {:melee_damage, value}, damage when is_integer(value) ->
+        damage + value
+
+      _, damage ->
+        damage
+    end)
+  end
+
+  defp equipped_implants(%__MODULE__{implant_uuids: []}) do
+    []
+  end
+
+  defp equipped_implants(%__MODULE__{} = player) do
+    Enum.filter(player.inventory, fn
+      %Implant{equipped: true} -> true
+      _ -> false
+    end)
+  end
 
   defp do_stand_on_lethal_tile?(%{stand_on: stand_on} = tile) when is_struct(tile) do
     do_stand_on_lethal_tile?(stand_on)
@@ -602,9 +685,9 @@ defmodule Europa.Server.Player do
   end
 
   defp maybe_unequip_item(%__MODULE__{} = player, item) do
-    if Loot.Item.equipable?(item) && item.equiped do
+    if Loot.Item.equipable?(item) && item.equipped do
       {:ok, updated_player} = unequip_item(player, item.uuid)
-      {updated_player, struct!(item, equiped: false)}
+      {updated_player, struct!(item, equipped: false)}
     else
       {player, item}
     end
@@ -885,7 +968,7 @@ defmodule Europa.Server.Player do
     current_item_attrs = get_current_item_attrs(player, updated_item)
 
     stats_changes =
-      if updated_item.equiped do
+      if updated_item.equipped do
         Loot.Item.player_stats_changes(updated_item)
       else
         %{}
@@ -897,7 +980,10 @@ defmodule Europa.Server.Player do
           item.uuid == updated_item.uuid ->
             updated_item
 
-          Loot.Item.item_type(item) == Loot.Item.item_type(updated_item) && item.equiped ->
+          Loot.Item.item_type(item) == :implant ->
+            item
+
+          Loot.Item.item_type(item) == Loot.Item.item_type(updated_item) && item.equipped ->
             {:ok, item} = Loot.Item.unequip(item)
             item
 
@@ -908,16 +994,18 @@ defmodule Europa.Server.Player do
 
     changed_params =
       case updated_item do
-        %Loot.Weapon{equiped: true} -> [weapon_uuid: updated_item.uuid]
-        %Loot.MeleeWeapon{equiped: true} -> [melee_weapon_uuid: updated_item.uuid]
-        %Loot.Helmet{equiped: true} -> [helmet_uuid: updated_item.uuid]
-        %Loot.Suit{equiped: true} -> [suit_uuid: updated_item.uuid]
-        %Loot.Boots{equiped: true} -> [boots_uuid: updated_item.uuid]
-        %Loot.Weapon{equiped: false} -> [weapon_uuid: nil]
-        %Loot.MeleeWeapon{equiped: false} -> [melee_weapon_uuid: nil]
-        %Loot.Helmet{equiped: false} -> [helmet_uuid: nil]
-        %Loot.Suit{equiped: false} -> [suit_uuid: nil]
-        %Loot.Boots{equiped: false} -> [boots_uuid: nil]
+        %Loot.Weapon{equipped: true} -> [weapon_uuid: updated_item.uuid]
+        %Loot.MeleeWeapon{equipped: true} -> [melee_weapon_uuid: updated_item.uuid]
+        %Loot.Helmet{equipped: true} -> [helmet_uuid: updated_item.uuid]
+        %Loot.Suit{equipped: true} -> [suit_uuid: updated_item.uuid]
+        %Loot.Boots{equipped: true} -> [boots_uuid: updated_item.uuid]
+        %Loot.Implant{equipped: true} -> [implant_uuids: player.implant_uuids ++ [updated_item.uuid]]
+        %Loot.Weapon{equipped: false} -> [weapon_uuid: nil]
+        %Loot.MeleeWeapon{equipped: false} -> [melee_weapon_uuid: nil]
+        %Loot.Helmet{equipped: false} -> [helmet_uuid: nil]
+        %Loot.Suit{equipped: false} -> [suit_uuid: nil]
+        %Loot.Boots{equipped: false} -> [boots_uuid: nil]
+        %Loot.Implant{equipped: false} -> [implant_uuids: player.implant_uuids -- [updated_item.uuid]]
       end
 
     updated_player =
@@ -1013,11 +1101,30 @@ defmodule Europa.Server.Player do
   defp get_current_item_attrs(player, new_item) do
     uuid =
       case new_item do
-        %Loot.Weapon{} -> player.weapon_uuid
-        %Loot.MeleeWeapon{} -> player.melee_weapon_uuid
-        %Loot.Helmet{} -> player.helmet_uuid
-        %Loot.Suit{} -> player.suit_uuid
-        %Loot.Boots{} -> player.boots_uuid
+        %Loot.Weapon{} ->
+          player.weapon_uuid
+
+        %Loot.MeleeWeapon{} ->
+          player.melee_weapon_uuid
+
+        %Loot.Helmet{} ->
+          player.helmet_uuid
+
+        %Loot.Suit{} ->
+          player.suit_uuid
+
+        %Loot.Boots{} ->
+          player.boots_uuid
+
+        %Loot.Implant{equipped: false} ->
+          if new_item.uuid in player.implant_uuids do
+            new_item.uuid
+          else
+            nil
+          end
+
+        _ ->
+          nil
       end
 
     case get_item(player, uuid) do
@@ -1025,6 +1132,18 @@ defmodule Europa.Server.Player do
       _ -> %{}
     end
   end
+
+  defp check_implants_limit(%__MODULE__{max_implants: max_implants, implant_uuids: implants}, %Implant{
+         equipped: true
+       }) do
+    if Enum.count(implants) + 1 <= max_implants do
+      :ok
+    else
+      {:error, :implants_limit}
+    end
+  end
+
+  defp check_implants_limit(_, _), do: :ok
 
   defp add_health_changed_event(player, health_value) do
     event =

@@ -64,6 +64,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
+  alias Europa.Server.Player
 
   @spec item_type(Supply.t()) :: :supply
   def item_type(%Supply{}), do: :supply
@@ -98,8 +99,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   @spec description(Supply.t()) :: String.t()
   def description(%Supply{description: description}), do: description
 
-  @spec readable_attrs(Supply.t()) :: list()
-  def readable_attrs(%Supply{} = supply) do
+  @spec readable_attrs(Supply.t(), Player.t()) :: list()
+  def readable_attrs(%Supply{} = supply, _player) do
     properties_attrs =
       supply.properties
       |> significant_properties()
@@ -161,8 +162,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   end
 
   @spec player_stats_changes(Supply.t()) :: map()
-  def player_stats_changes(%Supply{properties: pripertis}) do
-    pripertis
+  def player_stats_changes(%Supply{properties: properties}) do
+    properties
     |> significant_properties()
     |> Enum.into(%{})
   end

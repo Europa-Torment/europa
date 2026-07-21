@@ -6,7 +6,7 @@ defmodule Europa.Server.Loot.MeleeWeapon do
 
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
-    field :equiped, boolean(), default: false
+    field :equipped, boolean(), default: false
     field :name, String.t()
     field :description, String.t()
     field :damage, pos_integer()
@@ -20,7 +20,7 @@ defmodule Europa.Server.Loot.MeleeWeapon do
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
-      equiped: false,
+      equipped: false,
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       damage: Map.fetch!(attrs, :damage),
@@ -38,6 +38,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.MeleeWeapon
   alias Europa.Server.Errors
+  alias Europa.Server.Player
+  alias Europa.Server.PlayerManager
 
   @spec item_type(MeleeWeapon.t()) :: :melee_weapon
   def item_type(%MeleeWeapon{}), do: :melee_weapon
@@ -61,11 +63,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
   @spec description(MeleeWeapon.t()) :: String.t()
   def description(%MeleeWeapon{description: description}), do: description
 
-  @spec readable_attrs(MeleeWeapon.t()) :: list()
-  def readable_attrs(%MeleeWeapon{} = weapon) do
+  @spec readable_attrs(MeleeWeapon.t(), Player.t()) :: list()
+  def readable_attrs(%MeleeWeapon{} = weapon, %Player{} = player) do
     [
       {:name, gettext("Name"), weapon.name},
-      {:damage, gettext("Damage"), weapon.damage},
+      {:damage, gettext("Damage"), PlayerManager.melee_weapon_damage(player, weapon)},
       {:hit_cost, gettext("Hit cost"), weapon.hit_cost},
       {:weight, gettext("Weight"), weapon.weight}
     ]
@@ -73,12 +75,12 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
 
   @spec equip(MeleeWeapon.t()) :: {:ok, MeleeWeapon.t()}
   def equip(%MeleeWeapon{} = weapon) do
-    {:ok, struct!(weapon, equiped: true)}
+    {:ok, struct!(weapon, equipped: true)}
   end
 
   @spec unequip(MeleeWeapon.t()) :: {:ok, MeleeWeapon.t()}
   def unequip(%MeleeWeapon{} = weapon) do
-    {:ok, struct!(weapon, equiped: false)}
+    {:ok, struct!(weapon, equipped: false)}
   end
 
   @spec equipable?(MeleeWeapon.t()) :: true

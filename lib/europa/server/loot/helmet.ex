@@ -5,7 +5,7 @@ defmodule Europa.Server.Loot.Helmet do
 
   typedstruct enforce: true do
     field :uuid, Loot.uuid()
-    field :equiped, boolean(), default: false
+    field :equipped, boolean(), default: false
     field :name, String.t()
     field :description, String.t()
     field :accuracy, pos_integer()
@@ -19,7 +19,7 @@ defmodule Europa.Server.Loot.Helmet do
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
       uuid: Ecto.UUID.generate(),
-      equiped: false,
+      equipped: false,
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       accuracy: Map.fetch!(attrs, :accuracy),
@@ -37,6 +37,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Helmet
   alias Europa.Server.Errors
+  alias Europa.Server.Player
 
   @spec item_type(Helmet.t()) :: :helmet
   def item_type(%Helmet{}), do: :helmet
@@ -62,8 +63,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
   @spec description(Helmet.t()) :: String.t()
   def description(%Helmet{description: description}), do: description
 
-  @spec readable_attrs(Helmet.t()) :: list()
-  def readable_attrs(%Helmet{} = helmet) do
+  @spec readable_attrs(Helmet.t(), Player.t()) :: list()
+  def readable_attrs(%Helmet{} = helmet, _player) do
     [
       {:name, gettext("Name"), helmet.name},
       {:accuracy, gettext("Accuracy"), helmet.accuracy},
@@ -75,12 +76,12 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   @spec equip(Helmet.t()) :: {:ok, Helmet.t()}
   def equip(%Helmet{} = helmet) do
-    {:ok, struct!(helmet, equiped: true)}
+    {:ok, struct!(helmet, equipped: true)}
   end
 
   @spec unequip(Helmet.t()) :: {:ok, Helmet.t()}
   def unequip(%Helmet{} = helmet) do
-    {:ok, struct!(helmet, equiped: false)}
+    {:ok, struct!(helmet, equipped: false)}
   end
 
   @spec equipable?(Helmet.t()) :: true

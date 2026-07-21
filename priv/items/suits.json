@@ -18,7 +18,7 @@
         "max_warm": {"from": 10, "to": 15}, 
         "max_weight": {"from": 7, "to": 15}, 
         "weight": 17.5,
-        "image_name": "default_suit", 
+        "image_name": "ssb_suit", 
         "random_weight": 0.8
     }
 ]

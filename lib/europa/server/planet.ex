@@ -336,7 +336,7 @@ defmodule Europa.Server.Planet do
 
   @impl true
   def shoot(%__MODULE__{} = planet, %Player{} = player) do
-    with {:ok, weapon} <- PlayerManager.get_equiped_weapon(player) do
+    with {:ok, weapon} <- PlayerManager.get_equipped_weapon(player) do
       do_shoot(planet, player, weapon)
     end
   end
@@ -511,8 +511,7 @@ defmodule Europa.Server.Planet do
   defp do_shoot(%__MODULE__{} = planet, %Player{} = player, %Loot.Weapon{} = weapon) do
     case find_targets(planet, planet.current_coord, player.view_direction, weapon) do
       [] ->
-        rounds_per_shot = Loot.Weapon.rounds_per_shot(weapon)
-        updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon, rounds_per_shot)
+        updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon)
         updated_player = PlayerManager.update_item(player, updated_weapon)
         {:error, :miss, updated_player, weapon.shot_cost}
 
@@ -646,8 +645,7 @@ defmodule Europa.Server.Planet do
 
   defp shoot_enemies(%__MODULE__{} = planet, %Player{} = player, %Loot.Weapon{} = weapon, enemies_coords)
        when is_list(enemies_coords) do
-    rounds_per_shot = Loot.Weapon.rounds_per_shot(weapon)
-    damage = weapon.damage * rounds_per_shot
+    damage = PlayerManager.weapon_damage(player)
 
     %{planet: updated_planet, shooted_enemies: shooted_enemies} =
       Enum.reduce(enemies_coords, %{shooted_enemies: [], planet: planet}, fn coord, acc ->
@@ -671,7 +669,7 @@ defmodule Europa.Server.Planet do
         end
       end)
 
-    updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon, rounds_per_shot)
+    updated_weapon = Loot.Weapon.decrease_rounds_loaded(weapon)
     updated_player = PlayerManager.update_item(player, updated_weapon)
 
     shot_cost = weapon.shot_cost
@@ -1513,9 +1511,12 @@ defmodule Europa.Server.Planet do
 
   defp do_attack_with_melee_weapon(%__MODULE__{} = planet, player, target_coord, enemy) do
     {damage, move_cost} =
-      case PlayerManager.get_equiped_melee_weapon(player) do
-        {:ok, %Loot.MeleeWeapon{damage: damage, hit_cost: hit_cost}} -> {damage, hit_cost}
-        _ -> {1, 2}
+      case PlayerManager.get_equipped_melee_weapon(player) do
+        {:ok, %Loot.MeleeWeapon{hit_cost: hit_cost}} ->
+          {PlayerManager.melee_weapon_damage(player), hit_cost}
+
+        _ ->
+          {1, 2}
       end
 
     if player.accuracy >= @max_accuracy || m_to_n?(player.accuracy, @max_accuracy) do

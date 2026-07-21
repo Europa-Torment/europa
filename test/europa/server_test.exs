@@ -272,7 +272,7 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
-      |> expect(:get_equiped_melee_weapon, fn %Player{} -> {:error, :no_melee_weapon} end)
+      |> expect(:get_equipped_melee_weapon, fn %Player{} -> {:error, :no_melee_weapon} end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
         {:ok, player, []}

@@ -16,7 +16,7 @@
         "max_health": {"from": 10, "to": 15},
         "max_warm": {"from": 4, "to": 15}, 
         "weight": 3.0,
-        "image_name": "default_helmet", 
+        "image_name": "ssb_helmet", 
         "random_weight": 0.8
     }
 ]

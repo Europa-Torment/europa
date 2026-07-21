@@ -6,6 +6,9 @@ defmodule Europa.Server.Loot.ItemTest do
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
+  alias Europa.Server.PlayerManagerMock
+
+  setup :verify_on_exit!
 
   describe "composed_name/1" do
     test "returns string with item name" do
@@ -17,7 +20,8 @@ defmodule Europa.Server.Loot.ItemTest do
             build(:helmet),
             build(:suit),
             build(:boots),
-            build(:supply)
+            build(:supply),
+            build(:implant)
           ] do
         assert Item.composed_name(item) |> is_binary()
       end
@@ -34,7 +38,8 @@ defmodule Europa.Server.Loot.ItemTest do
             build(:helmet),
             build(:suit),
             build(:boots),
-            build(:supply)
+            build(:supply),
+            build(:implant)
           ] do
         assert Item.description(item) |> is_binary()
       end
@@ -51,7 +56,8 @@ defmodule Europa.Server.Loot.ItemTest do
             build(:helmet),
             build(:suit),
             build(:boots),
-            build(:supply)
+            build(:supply),
+            build(:implant)
           ] do
         assert Item.negative_attrs(item) |> Enum.all?(&is_atom/1)
       end
@@ -59,8 +65,16 @@ defmodule Europa.Server.Loot.ItemTest do
   end
 
   describe "readable_attrs/1" do
-    test "returns attrs for weapon" do
+    setup do
+      player = build(:player)
+      {:ok, player: player}
+    end
+
+    test "returns attrs for weapon", %{player: player} do
       weapon = build(:weapon)
+
+      PlayerManagerMock
+      |> expect(:weapon_damage, fn ^player, ^weapon -> weapon.damage end)
 
       expected_attrs = [
         {:name, "Name", weapon.name},
@@ -76,10 +90,10 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", weapon.weight}
       ]
 
-      assert Item.readable_attrs(weapon) == expected_attrs
+      assert Item.readable_attrs(weapon, player) == expected_attrs
     end
 
-    test "returns attrs for ammo" do
+    test "returns attrs for ammo", %{player: player} do
       ammo = build(:ammo)
 
       expected_attrs = [
@@ -88,10 +102,10 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", ammo.count * ammo.weight}
       ]
 
-      assert Item.readable_attrs(ammo) == expected_attrs
+      assert Item.readable_attrs(ammo, player) == expected_attrs
     end
 
-    test "returns attrs for tool" do
+    test "returns attrs for tool", %{player: player} do
       tool = build(:tool)
 
       expected_attrs = [
@@ -100,11 +114,14 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", tool.count * tool.weight}
       ]
 
-      assert Item.readable_attrs(tool) == expected_attrs
+      assert Item.readable_attrs(tool, player) == expected_attrs
     end
 
-    test "returns attrs for melee weapon" do
+    test "returns attrs for melee weapon", %{player: player} do
       melee_weapon = build(:melee_weapon)
+
+      PlayerManagerMock
+      |> expect(:melee_weapon_damage, fn ^player, ^melee_weapon -> melee_weapon.damage end)
 
       expected_attrs = [
         {:name, "Name", melee_weapon.name},
@@ -113,10 +130,10 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", melee_weapon.weight}
       ]
 
-      assert Item.readable_attrs(melee_weapon) == expected_attrs
+      assert Item.readable_attrs(melee_weapon, player) == expected_attrs
     end
 
-    test "returns attrs for helmet" do
+    test "returns attrs for helmet", %{player: player} do
       helmet = build(:helmet)
 
       expected_attrs = [
@@ -127,10 +144,10 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", helmet.weight}
       ]
 
-      assert Item.readable_attrs(helmet) == expected_attrs
+      assert Item.readable_attrs(helmet, player) == expected_attrs
     end
 
-    test "returns attrs for suit" do
+    test "returns attrs for suit", %{player: player} do
       suit = build(:suit)
 
       expected_attrs = [
@@ -142,10 +159,10 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", suit.weight}
       ]
 
-      assert Item.readable_attrs(suit) == expected_attrs
+      assert Item.readable_attrs(suit, player) == expected_attrs
     end
 
-    test "returns attrs for boots" do
+    test "returns attrs for boots", %{player: player} do
       boots = build(:boots)
 
       expected_attrs = [
@@ -156,10 +173,10 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", boots.weight}
       ]
 
-      assert Item.readable_attrs(boots) == expected_attrs
+      assert Item.readable_attrs(boots, player) == expected_attrs
     end
 
-    test "returns attrs for supply" do
+    test "returns attrs for supply", %{player: player} do
       supply =
         build(:supply,
           properties: build(:supply_properties, health: 11, thirst: 12, hunger: 13, radiation: 14, warm: 15)
@@ -176,7 +193,23 @@ defmodule Europa.Server.Loot.ItemTest do
         {:weight, "Weight", supply.count * supply.weight}
       ]
 
-      assert Item.readable_attrs(supply) == expected_attrs
+      assert Item.readable_attrs(supply, player) == expected_attrs
+    end
+
+    test "returns attrs for implant", %{player: player} do
+      implant =
+        build(:implant,
+          properties: build(:implant_properties, max_health: 11, max_warm: 15, accuracy: 20)
+        )
+
+      expected_attrs = [
+        {:accuracy, "Accuracy", implant.properties.accuracy},
+        {:max_health, "Max health", implant.properties.max_health},
+        {:max_warm, "Max warm", implant.properties.max_warm},
+        {:weight, "Weight", implant.weight}
+      ]
+
+      assert Item.readable_attrs(implant, player) == expected_attrs
     end
   end
 
@@ -219,6 +252,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns true for supply" do
       supply = build(:supply)
       assert Item.consumable?(supply) == true
+    end
+
+    test "returns false for implant" do
+      implant = build(:implant)
+      assert Item.consumable?(implant) == false
     end
   end
 
@@ -265,6 +303,11 @@ defmodule Europa.Server.Loot.ItemTest do
       supply = build(:supply)
       assert Item.usable?(supply) == false
     end
+
+    test "returns false for implant" do
+      implant = build(:implant)
+      assert Item.usable?(implant) == false
+    end
   end
 
   describe "equipable?/1" do
@@ -304,8 +347,13 @@ defmodule Europa.Server.Loot.ItemTest do
     end
 
     test "returns false for supply" do
-      ammo = build(:supply)
-      assert Item.equipable?(ammo) == false
+      supply = build(:supply)
+      assert Item.equipable?(supply) == false
+    end
+
+    test "returns true for implant" do
+      implant = build(:implant)
+      assert Item.equipable?(implant) == true
     end
   end
 
@@ -349,6 +397,11 @@ defmodule Europa.Server.Loot.ItemTest do
       supply = build(:supply)
       assert Item.stackable?(supply) == true
     end
+
+    test "returns false for implant" do
+      implant = build(:implant)
+      assert Item.stackable?(implant) == false
+    end
   end
 
   describe "disassemblable?/1" do
@@ -390,6 +443,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns false for supply" do
       supply = build(:supply)
       assert Item.disassemblable?(supply) == false
+    end
+
+    test "returns false for implant" do
+      implant = build(:implant)
+      assert Item.disassemblable?(implant) == false
     end
   end
 
@@ -433,12 +491,17 @@ defmodule Europa.Server.Loot.ItemTest do
       supply = build(:supply, count: 20)
       assert Item.weight(supply) == supply.count * supply.weight
     end
+
+    test "returns implant weight" do
+      implant = build(:implant)
+      assert Item.weight(implant) == implant.weight
+    end
   end
 
   describe "equip/1" do
-    test "changes equiped to true" do
-      weapon = build(:weapon, equiped: false)
-      assert {:ok, %Weapon{equiped: true}} = Item.equip(weapon)
+    test "changes equipped to true" do
+      weapon = build(:weapon, equipped: false)
+      assert {:ok, %Weapon{equipped: true}} = Item.equip(weapon)
     end
 
     test "returns not_applicable error" do
@@ -597,6 +660,7 @@ defmodule Europa.Server.LootTest do
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Implant
   alias Europa.Server.Loot.Blueprint
 
   describe "generate_item/1" do
@@ -684,6 +748,7 @@ defmodule Europa.Server.LootTest do
   defp item?(%Ammo{}), do: true
   defp item?(%Tool{}), do: true
   defp item?(%Supply{}), do: true
+  defp item?(%Implant{}), do: true
   defp item?(_), do: false
 
   defp tool?(%Tool{}), do: true

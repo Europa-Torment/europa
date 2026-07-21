@@ -16,7 +16,7 @@
         "max_health": {"from": 8, "to": 12},
         "max_warm": {"from": 10, "to": 15},
         "weight": 3.5,
-        "image_name": "default_boots", 
+        "image_name": "ssb_boots", 
         "random_weight": 0.8
     }
 ]

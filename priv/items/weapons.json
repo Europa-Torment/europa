@@ -66,7 +66,7 @@
         "caliber": "buckshot",
         "rounds_loaded": {"from": 2, "to": {"attr": "magazine_size"}},
         "shooting_type": "shot",
-        "damage": {"from": 25, "to": 40},
+        "damage": {"from": 25, "to": 35},
         "shooting_distance": {"from": 3, "to": 6},
         "level": 3,
         "parts_count": 4,
@@ -85,7 +85,7 @@
         "caliber": "5.56mm",
         "rounds_loaded": {"from": 20, "to": {"attr": "magazine_size"}},
         "shooting_type": "burst",
-        "damage": {"from": 5, "to": 10},
+        "damage": {"from": 5, "to": 7},
         "shooting_distance": {"from": 6, "to": 10},
         "level": 3,
         "parts_count": 4,
@@ -130,7 +130,7 @@
         "weight": 15.0,
         "image_name": "atom_splitter",
         "sound_name": "laser",
-        "random_weight": 0.05
+        "random_weight": 0.04
     },
     {
         "name": "ETC laser cutter",
@@ -149,6 +149,6 @@
         "weight": 0.9,
         "image_name": "etc_laser_cutter",
         "sound_name": "laser",
-        "random_weight": 0.06
+        "random_weight": 0.09
     }
 ]

@@ -17,9 +17,11 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Implant
   alias Europa.Server.Loot.Utils.FilesReader
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
+  alias Europa.Server.Player
   alias Europa.Server.Errors
 
   import Europa.Tools.Randomizer
@@ -34,12 +36,13 @@ defmodule Europa.Server.Loot do
   @weighted_item_types [
     {:weapon, gettext("Weapons"), 0.4},
     {:ammo, gettext("Ammo"), 0.7},
-    {:melee_weapon, gettext("Melee weapons"), 0.5},
+    {:melee_weapon, gettext("Melee weapons"), 0.7},
     {:supply, gettext("Supplies"), 1.0},
     {:tool, gettext("Tools"), 0.7},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},
-    {:boots, gettext("Boots"), 0.4}
+    {:boots, gettext("Boots"), 0.4},
+    {:implant, gettext("Implants"), 0.3}
   ]
 
   @item_types Enum.map(@weighted_item_types, fn {k, v, _} -> {k, v} end)
@@ -54,7 +57,8 @@ defmodule Europa.Server.Loot do
     suit: "suits.json",
     boots: "boots.json",
     supply: "supplies.json",
-    tool: "tools.json"
+    tool: "tools.json",
+    implant: "implants.json"
   }
 
   @items_attrs FilesReader.parse_items_files(@filenames)
@@ -104,7 +108,16 @@ defmodule Europa.Server.Loot do
     alias Europa.Server.Loot.Supply
     alias Europa.Server.Loot.Tool
 
-    @type item() :: Weapon.t() | Ammo.t() | MeleeWeapon.t() | Helmet.t() | Suit.t() | Boots.t() | Supply.t() | Tool.t()
+    @type item() ::
+            Weapon.t()
+            | Ammo.t()
+            | MeleeWeapon.t()
+            | Helmet.t()
+            | Suit.t()
+            | Boots.t()
+            | Supply.t()
+            | Tool.t()
+            | Implant.t()
     @type weight() :: number()
 
     @spec item_type(item()) :: Loot.item_type()
@@ -116,8 +129,8 @@ defmodule Europa.Server.Loot do
     @spec description(item()) :: String.t()
     def description(item)
 
-    @spec readable_attrs(item()) :: list()
-    def readable_attrs(item)
+    @spec readable_attrs(item(), Player.t()) :: list()
+    def readable_attrs(item, player)
 
     @spec consumable?(item()) :: boolean()
     def consumable?(item)
@@ -323,6 +336,7 @@ defmodule Europa.Server.Loot do
       :boots -> Boots.new(attrs)
       :supply -> Supply.new(attrs)
       :tool -> Tool.new(attrs)
+      :implant -> Implant.new(attrs)
     end
   end
 

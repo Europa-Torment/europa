@@ -1,0 +1,65 @@
+[
+    {
+        "name": "Mechanical eye",
+        "description": "An optical implant that increases visual acuity and focusing range.",
+        "properties": {
+            "accuracy": {"from": 1, "to": 5}
+        },
+        "weight": 0.1,
+        "random_weight": 0.5
+    },
+    {
+        "name": "Quantum immunomodulator",
+        "description": "An arterial-implantable immune cell modulator.",
+        "properties": {
+            "max_health": {"from": 1, "to": 10}
+        },
+        "weight": 0.1,
+        "random_weight": 1.0
+    },
+    {
+        "name": "Metabolism stimulant",
+        "description": "Subcutaneous implant that enhances metabolism.",
+        "properties": {
+            "max_warm": {"from": 1, "to": 10}
+        },
+        "weight": 0.1,
+        "random_weight": 1.0
+    },
+    {
+        "name": "Steel Grip",
+        "description": "Increases shotguns damage.",
+        "properties": {
+            "shotgun_damage": {"from": 2, "to": 5}
+        },
+        "weight": 0.3,
+        "random_weight": 0.5
+    },
+    {
+        "name": "Optical amplifier",
+        "description": "Increases firearm damage.",
+        "properties": {
+            "shoot_damage": {"from": 1, "to": 5}
+        },
+        "weight": 0.3,
+        "random_weight": 0.04
+    },
+    {
+        "name": "Response modulator",
+        "description": "Increases melee weapon damage.",
+        "properties": {
+            "melee_damage": {"from": 1, "to": 3}
+        },
+        "weight": 0.1,
+        "random_weight": 1.0
+    },
+    {
+        "name": "Spine activator",
+        "description": "Increases load capacity.",
+        "properties": {
+            "max_weight": {"from": 2, "to": 5}
+        },
+        "weight": 0.8,
+        "random_weight": 1.0
+    }
+]

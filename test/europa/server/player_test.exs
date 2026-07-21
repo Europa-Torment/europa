@@ -383,18 +383,19 @@ defmodule Europa.Server.PlayerTest do
       helmet = build(:helmet)
       suit = build(:suit)
       boots = build(:boots)
+      implant = build(:implant)
 
-      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots])
+      player = build(:player, weapon_uuid: nil, inventory: [weapon, ammo, helmet, suit, boots, implant])
 
-      {:ok, player: player, weapon: weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
+      {:ok, player: player, weapon: weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots, implant: implant}
     end
 
-    test "equips items", %{player: player, weapon: weapon, helmet: helmet, suit: suit, boots: boots} do
-      for item <- [weapon, helmet, suit, boots] do
+    test "equips items", %{player: player, weapon: weapon, helmet: helmet, suit: suit, boots: boots, implant: implant} do
+      for item <- [weapon, helmet, suit, boots, implant] do
         assert {:ok, updated_player} = Player.equip_item(player, item.uuid)
         updated_item = Enum.find(updated_player.inventory, fn i -> i.uuid == item.uuid end)
 
-        assert updated_item.equiped == true
+        assert updated_item.equipped == true
         assert_changed_player_item_uuid(updated_player, updated_item, _expected_value = updated_item.uuid)
       end
     end
@@ -417,26 +418,41 @@ defmodule Europa.Server.PlayerTest do
     test "returns error when item not quipable", %{player: player, ammo: ammo} do
       assert Player.equip_item(player, ammo.uuid) == {:error, %Errors.NotApplicableError{}}
     end
+
+    test "returns error when limit of equipped implants is reached" do
+      [implant, implant2] = build_pair(:implant)
+      player = build(:player, max_implants: 1, implant_uuids: [implant.uuid], inventory: [implant, implant2])
+
+      assert Player.equip_item(player, implant2.uuid) == {:error, :implants_limit}
+    end
   end
 
   describe "unequip_item/2" do
     setup do
-      weapon = build(:weapon, equiped: true)
-      melee_weapon = build(:weapon, equiped: true)
+      weapon = build(:weapon, equipped: true)
+      melee_weapon = build(:weapon, equipped: true)
       ammo = build(:ammo)
-      helmet = build(:helmet, equiped: true)
-      suit = build(:suit, equiped: true)
-      boots = build(:boots, equiped: true)
+      helmet = build(:helmet, equipped: true)
+      suit = build(:suit, equipped: true)
+      boots = build(:boots, equipped: true)
+      implant = build(:implant, equipped: true)
 
       player =
         build(:player,
           weapon_uuid: weapon.uuid,
-          inventory: [weapon, melee_weapon, ammo, helmet, suit, boots],
+          inventory: [weapon, melee_weapon, ammo, helmet, suit, boots, implant],
           aim_mode?: true
         )
 
       {:ok,
-       player: player, weapon: weapon, melee_weapon: melee_weapon, ammo: ammo, helmet: helmet, suit: suit, boots: boots}
+       player: player,
+       weapon: weapon,
+       melee_weapon: melee_weapon,
+       ammo: ammo,
+       helmet: helmet,
+       suit: suit,
+       boots: boots,
+       implant: implant}
     end
 
     test "unequips items", %{
@@ -445,13 +461,14 @@ defmodule Europa.Server.PlayerTest do
       melee_weapon: melee_weapon,
       helmet: helmet,
       suit: suit,
-      boots: boots
+      boots: boots,
+      implant: implant
     } do
-      for item <- [weapon, melee_weapon, helmet, suit, boots] do
+      for item <- [weapon, melee_weapon, helmet, suit, boots, implant] do
         assert {:ok, updated_player} = Player.unequip_item(player, item.uuid)
         updated_item = Enum.find(updated_player.inventory, fn i -> i.uuid == item.uuid end)
 
-        assert updated_item.equiped == false
+        assert updated_item.equipped == false
         assert_changed_player_item_uuid(updated_player, updated_item, _expected_value = nil)
 
         if Loot.Item.item_type(item) == :weapon do
@@ -624,7 +641,7 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  describe "get_equiped_weapon/1" do
+  describe "get_equipped_weapon/1" do
     setup do
       weapon = build(:weapon)
       player = build(:player, weapon_uuid: weapon.uuid, inventory: [weapon])
@@ -632,17 +649,17 @@ defmodule Europa.Server.PlayerTest do
       {:ok, player: player, weapon: weapon}
     end
 
-    test "returns equiped weapon", %{player: player, weapon: weapon} do
-      assert Player.get_equiped_weapon(player) == {:ok, weapon}
+    test "returns equipped weapon", %{player: player, weapon: weapon} do
+      assert Player.get_equipped_weapon(player) == {:ok, weapon}
     end
 
-    test "returns error when no equiped weapon", %{player: player} do
+    test "returns error when no equipped weapon", %{player: player} do
       player = struct!(player, weapon_uuid: nil)
-      assert Player.get_equiped_weapon(player) == {:error, :no_weapon}
+      assert Player.get_equipped_weapon(player) == {:error, :no_weapon}
     end
   end
 
-  describe "get_equiped_helmet/1" do
+  describe "get_equipped_helmet/1" do
     setup do
       helmet = build(:helmet)
       player = build(:player, helmet_uuid: helmet.uuid, inventory: [helmet])
@@ -650,13 +667,13 @@ defmodule Europa.Server.PlayerTest do
       {:ok, player: player, helmet: helmet}
     end
 
-    test "returns equiped helmet", %{player: player, helmet: helmet} do
-      assert Player.get_equiped_helmet(player) == {:ok, helmet}
+    test "returns equipped helmet", %{player: player, helmet: helmet} do
+      assert Player.get_equipped_helmet(player) == {:ok, helmet}
     end
 
-    test "returns error when no equiped helmet", %{player: player} do
+    test "returns error when no equipped helmet", %{player: player} do
       player = struct!(player, helmet_uuid: nil)
-      assert Player.get_equiped_helmet(player) == {:error, :no_helmet}
+      assert Player.get_equipped_helmet(player) == {:error, :no_helmet}
     end
   end
 
@@ -759,7 +776,7 @@ defmodule Europa.Server.PlayerTest do
       assert {:ok, %Player{aim_mode?: false, accuracy: ^accuracy}} = Player.toggle_aim_mode(updated_player)
     end
 
-    test "returns no_weapon error when weapon not equiped" do
+    test "returns no_weapon error when weapon not equipped" do
       player = build(:player, weapon_uuid: nil)
       assert {:error, :no_weapon} = Player.toggle_aim_mode(player)
     end
@@ -1187,11 +1204,105 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "weapon_damage/1" do
+    test "returns weapon damage" do
+      weapon = build(:weapon, equipped: true)
+      player = build(:player, weapon_uuid: weapon.uuid, inventory: [weapon])
+      assert Player.weapon_damage(player) == weapon.damage
+    end
+
+    test "increases damage by implants (not shotgun)" do
+      weapon = build(:weapon, shooting_type: :bullet, equipped: true)
+
+      implant1 =
+        build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3), equipped: true)
+
+      implant2 =
+        build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3), equipped: true)
+
+      implant3 = build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3))
+
+      player =
+        build(:player,
+          weapon_uuid: weapon.uuid,
+          implant_uuids: [implant1.uuid, implant2.uuid],
+          inventory: [weapon, implant1, implant2, implant3]
+        )
+
+      assert Player.weapon_damage(player) ==
+               weapon.damage + implant1.properties.shoot_damage + implant2.properties.shoot_damage
+    end
+
+    test "increases damage by implants (shotgun)" do
+      weapon = build(:weapon, shooting_type: :shot, equipped: true)
+
+      implant1 =
+        build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3), equipped: true)
+
+      implant2 =
+        build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3), equipped: true)
+
+      implant3 = build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3))
+
+      player =
+        build(:player,
+          weapon_uuid: weapon.uuid,
+          implant_uuids: [implant1.uuid, implant2.uuid],
+          inventory: [weapon, implant1, implant2, implant3]
+        )
+
+      assert Player.weapon_damage(player) ==
+               weapon.damage + implant1.properties.shoot_damage + implant2.properties.shoot_damage +
+                 implant1.properties.shotgun_damage + implant2.properties.shotgun_damage
+    end
+  end
+
+  describe "melee_weapon_damage/1" do
+    test "returns melee weapon damage" do
+      melee_weapon = build(:melee_weapon, equipped: true)
+      player = build(:player, melee_weapon_uuid: melee_weapon.uuid, inventory: [melee_weapon])
+      assert Player.melee_weapon_damage(player) == melee_weapon.damage
+    end
+
+    test "increases damage by implants" do
+      melee_weapon = build(:melee_weapon, equipped: true)
+
+      implant1 =
+        build(:implant,
+          properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3, melee_damage: 10),
+          equipped: true
+        )
+
+      implant2 =
+        build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3), equipped: true)
+
+      implant3 = build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3))
+
+      player =
+        build(:player,
+          melee_weapon_uuid: melee_weapon.uuid,
+          implant_uuids: [implant1.uuid, implant2.uuid],
+          inventory: [melee_weapon, implant1, implant2, implant3]
+        )
+
+      assert Player.melee_weapon_damage(player) ==
+               melee_weapon.damage + implant1.properties.melee_damage
+    end
+  end
+
   defp max_weight_range do
     from = fetch_config!([:game_params, :player, :max_weight, :from])
     to = fetch_config!([:game_params, :player, :max_weight, :to])
 
     from..to
+  end
+
+  defp assert_changed_player_item_uuid(player, %Loot.Implant{equipped: true} = implant, _) do
+    assert implant.uuid in player.implant_uuids
+  end
+
+  defp assert_changed_player_item_uuid(player, %Loot.Implant{equipped: false} = implant, _) do
+    refute implant.uuid in player.implant_uuids
   end
 
   defp assert_changed_player_item_uuid(player, updated_item, expected_value) do

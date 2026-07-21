@@ -376,6 +376,11 @@ defmodule EuropaWeb.GameLive do
 
         {:noreply, socket}
 
+      {:error, :implants_limit} ->
+        message = gettext("There are no free sockets for implantation.")
+        socket = put_flash(socket, :error, message)
+        {:noreply, socket}
+
       _ ->
         {:noreply, socket}
     end
@@ -889,7 +894,7 @@ defmodule EuropaWeb.GameLive do
     redirect(socket, to: ~p"/games/#{game_uuid}/game-over")
   end
 
-  defp reload_weapon(socket, item_uuid \\ :equiped) do
+  defp reload_weapon(socket, item_uuid \\ :equipped) do
     result = Server.reload(socket.assigns.server, item_uuid)
 
     socket = base_assign(socket)
@@ -1140,7 +1145,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp get_current_weapon(player) do
-    case PlayerManager.get_equiped_weapon(player) do
+    case PlayerManager.get_equipped_weapon(player) do
       {:ok, weapon} -> weapon
       _ -> nil
     end
@@ -1156,28 +1161,28 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp get_current_melee_weapon(player) do
-    case PlayerManager.get_equiped_melee_weapon(player) do
+    case PlayerManager.get_equipped_melee_weapon(player) do
       {:ok, melee_weapon} -> melee_weapon
       _ -> nil
     end
   end
 
   defp get_current_helmet(player) do
-    case PlayerManager.get_equiped_helmet(player) do
+    case PlayerManager.get_equipped_helmet(player) do
       {:ok, helmet} -> helmet
       _ -> nil
     end
   end
 
   defp get_current_suit(player) do
-    case PlayerManager.get_equiped_suit(player) do
+    case PlayerManager.get_equipped_suit(player) do
       {:ok, suit} -> suit
       _ -> nil
     end
   end
 
   defp get_current_boots(player) do
-    case PlayerManager.get_equiped_boots(player) do
+    case PlayerManager.get_equipped_boots(player) do
       {:ok, boots} -> boots
       _ -> nil
     end

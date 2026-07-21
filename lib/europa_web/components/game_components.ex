@@ -347,7 +347,19 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   def inventory(assigns) do
-    assigns = assign(assigns, craft_moves_count: @craft_moves_count)
+    {equipped_implants, rest_items} =
+      if assigns[:inventory_type] == :implant && assigns[:inventory] do
+        Enum.split_with(assigns.inventory, fn implant -> implant.equipped end)
+      else
+        {[], assigns[:inventory]}
+      end
+
+    assigns =
+      assign(assigns,
+        inventory: rest_items,
+        equipped_implants: equipped_implants,
+        craft_moves_count: @craft_moves_count
+      )
 
     ~H"""
     <%= if @inventory do %>
@@ -383,49 +395,13 @@ defmodule EuropaWeb.GameCompotents do
               </a>
             <% end %>
           </div>
+          <%= if @inventory_type == :implant do %>
+            <.equipped_implants implants={@equipped_implants} player={@player} craft_moves_count={@craft_moves_count} />
+          <% end %>
           <%= if Enum.count(@inventory) > 0 do %>
             <ul class="list-disc list-inside space-y-2 text-sm">
               <%= for item <- @inventory do %>
-                <div class="group relative">
-                  <li>
-                    <span
-                      id={"loot_item_#{item.uuid}"}
-                      phx-hook="Tooltip"
-                      data-tooltip={item_tooltip(item, @player)}
-                    >
-                      {Item.composed_name(item)}
-                    </span>
-                    <.item_quick_action item={item} />
-                    <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
-                      <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
-                      <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
-                        <%= if weapon?(item) && item.rounds_loaded < item.magazine_size do %>
-                          <li phx-click="reload_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
-                            <a>{gettext("Reload")} <.moves_count moves_count={item.reload_cost} /></a>
-                          </li>
-                        <% end %>
-                        <%= if weapon?(item) && item.rounds_loaded > 0 do %>
-                          <li phx-click="unload_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
-                            <a>{gettext("Unload")} <.moves_count moves_count={item.reload_cost} /></a>
-                          </li>
-                        <% end %>
-                        <%= if Loot.Item.disassemblable?(item) do %>
-                          <li phx-click="disassemble_item" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
-                            <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
-                          </li>
-                        <% end %>
-                        <li phx-click="drop_item" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
-                          <a>{gettext("Drop")}</a>
-                        </li>
-                        <%= if Loot.Item.stackable?(item) do %>
-                          <li phx-click="open_item_drop_menu" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
-                            <a>{gettext("Drop partly")}</a>
-                          </li>
-                        <% end %>
-                      </ul>
-                    </div>
-                  </li>
-                </div>
+                <.inventory_item item={item} player={@player} craft_moves_count={@craft_moves_count} />
               <% end %>
             </ul>
           <% else %>
@@ -437,6 +413,72 @@ defmodule EuropaWeb.GameCompotents do
         </div>
       </div>
     <% end %>
+    """
+  end
+
+  def inventory_item(assigns) do
+    ~H"""
+    <div class="group relative">
+      <li>
+        <span
+          id={"loot_item_#{@item.uuid}"}
+          phx-hook="Tooltip"
+          data-tooltip={item_tooltip(@item, @player)}
+        >
+          {Item.composed_name(@item)}
+        </span>
+        <.item_quick_action item={@item} />
+        <div class="dropdown dropdown-top" id={"item-#{@item.uuid}-dropdown"} phx-hook="Dropdown">
+          <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
+          <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
+            <%= if weapon?(@item) && @item.rounds_loaded < @item.magazine_size do %>
+              <li phx-click="reload_weapon" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Reload")} <.moves_count moves_count={@item.reload_cost} /></a>
+              </li>
+            <% end %>
+            <%= if weapon?(@item) && @item.rounds_loaded > 0 do %>
+              <li phx-click="unload_weapon" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Unload")} <.moves_count moves_count={@item.reload_cost} /></a>
+              </li>
+            <% end %>
+            <%= if Loot.Item.disassemblable?(@item) do %>
+              <li phx-click="disassemble_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
+              </li>
+            <% end %>
+            <li phx-click="drop_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+              <a>{gettext("Drop")}</a>
+            </li>
+            <%= if Loot.Item.stackable?(@item) do %>
+              <li phx-click="open_item_drop_menu" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Drop partly")}</a>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </li>
+    </div>
+    """
+  end
+
+  def equipped_implants(assigns) do
+    empty_implant_sockets = assigns.player.max_implants - Enum.count(assigns.player.implant_uuids)
+    assigns = assign(assigns, empty_implant_sockets: empty_implant_sockets)
+
+    ~H"""
+    <div class="bg-base-200 p-5 shadow-md text-sm mb-3">
+      <h2 class="text-lg mb-2">{gettext("Currently implanted")}</h2>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <%= for implant <- @implants do %>
+          <.inventory_item item={implant} player={@player} craft_moves_count={@craft_moves_count} />
+        <% end %>
+        <%= if @empty_implant_sockets > 0 do %>
+          <%= for _ <- 1..@empty_implant_sockets do %>
+            <li>{gettext("Empty implant socket")}</li>
+          <% end %>
+        <% end %>
+      </ul>
+    </div>
     """
   end
 
@@ -800,7 +842,7 @@ defmodule EuropaWeb.GameCompotents do
       </div>
     <% end %>
     <%= if Item.equipable?(@item) do %>
-      <%= if @item.equiped do %>
+      <%= if @item.equipped do %>
         <div class="tooltip" data-tip={"#{gettext("Unequip")}"}>
           <.link phx-click="unequip_item" phx-value-uuid={"#{@item.uuid}"}>🫳🏻</.link>
         </div>
@@ -1010,15 +1052,15 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
-  defp get_item_attrs(item, nil) do
+  defp get_item_attrs(item, nil, player) do
     item
-    |> Item.readable_attrs()
+    |> Item.readable_attrs(player)
     |> Enum.map(fn {_attr, name, value} -> {name, value} end)
   end
 
-  defp get_item_attrs(item, current_item) do
-    item_attrs = Item.readable_attrs(item)
-    current_item_attrs = Item.readable_attrs(current_item)
+  defp get_item_attrs(item, current_item, player) do
+    item_attrs = Item.readable_attrs(item, player)
+    current_item_attrs = Item.readable_attrs(current_item, player)
 
     Enum.with_index(item_attrs, fn {attr, name, value}, index ->
       {_current_attr, _current_name, current_value} = Enum.at(current_item_attrs, index)
@@ -1061,7 +1103,7 @@ defmodule EuropaWeb.GameCompotents do
 
     attrs =
       item
-      |> get_item_attrs(current_item)
+      |> get_item_attrs(current_item, player)
       |> to_ul()
 
     [item_description(item) | attrs]
@@ -1233,35 +1275,35 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp get_player_weapon(player) do
-    case PlayerManager.get_equiped_weapon(player) do
+    case PlayerManager.get_equipped_weapon(player) do
       {:ok, weapon} -> weapon
       _ -> nil
     end
   end
 
   defp get_player_melee_weapon(player) do
-    case PlayerManager.get_equiped_melee_weapon(player) do
+    case PlayerManager.get_equipped_melee_weapon(player) do
       {:ok, melee_weapon} -> melee_weapon
       _ -> nil
     end
   end
 
   defp get_player_helmet(player) do
-    case PlayerManager.get_equiped_helmet(player) do
+    case PlayerManager.get_equipped_helmet(player) do
       {:ok, helmet} -> helmet
       _ -> nil
     end
   end
 
   defp get_player_suit(player) do
-    case PlayerManager.get_equiped_suit(player) do
+    case PlayerManager.get_equipped_suit(player) do
       {:ok, suit} -> suit
       _ -> nil
     end
   end
 
   defp get_player_boots(player) do
-    case PlayerManager.get_equiped_boots(player) do
+    case PlayerManager.get_equipped_boots(player) do
       {:ok, boots} -> boots
       _ -> nil
     end
