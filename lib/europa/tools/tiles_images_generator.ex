@@ -86,12 +86,16 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
   defp generate_landscape!(root_dir, [files | rest]) do
     tmp_landscapes = Path.join([@tmp_base, @landscape])
+    landscapes = get_files(root_dir, tmp_landscapes)
+    image_pairs = for l <- landscapes, f <- files, do: {l, f}
 
-    for landscape <- get_files(root_dir, tmp_landscapes) do
-      for over_landscape <- files do
-        do_generate_landscape(root_dir, landscape, over_landscape)
-      end
-    end
+    image_pairs
+    |> Flow.from_enumerable(max_demand: 1000)
+    |> Flow.partition(stages: 10)
+    |> Flow.map(fn {landscape, over_landscape} ->
+      do_generate_landscape(root_dir, landscape, over_landscape)
+    end)
+    |> Flow.run()
 
     generate_landscape!(root_dir, rest)
   end
@@ -151,15 +155,20 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
   defp generate_objects!(root_dir) do
     objects =
-      get_not_movable_object_files(root_dir) ++ get_files(root_dir, @enemies) ++ get_not_movable_loot_files(root_dir)
+      get_not_movable_object_files(root_dir) ++
+        get_files(root_dir, @enemies) ++
+        get_not_movable_loot_files(root_dir)
 
     tmp_landscapes = get_tmp_files(root_dir, @landscape)
+    image_pairs = for object <- objects, landscape <- tmp_landscapes, do: {landscape, object}
 
-    for object <- objects do
-      for landscape <- tmp_landscapes do
-        do_generate_object(root_dir, landscape, object)
-      end
-    end
+    image_pairs
+    |> Flow.from_enumerable(max_demand: 1000)
+    |> Flow.partition(stages: 10)
+    |> Flow.map(fn {landscape, object} ->
+      do_generate_object(root_dir, landscape, object)
+    end)
+    |> Flow.run()
   end
 
   defp do_generate_object(root_dir, landscape, object) do
