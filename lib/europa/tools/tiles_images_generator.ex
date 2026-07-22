@@ -46,6 +46,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
   @spec generate_tiles!(root_dir :: String.t()) :: :ok
   def generate_tiles!(root_dir \\ @priv_dir) do
+    Logger.info("Start tiles generation")
     prepare_tmp_dirs!(root_dir)
 
     ready = get_files(root_dir, @ready)
@@ -53,6 +54,8 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
     generate_landscape!(root_dir)
     generate_objects!(root_dir)
+
+    Logger.info("Done! Tiles generated")
 
     :ok
   end
@@ -213,7 +216,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
   end
 
   defp gif_loops_forever?(path) do
-    {:ok, binary} = File.read(path)
+    binary = File.read!(path)
 
     case :binary.split(binary, "NETSCAPE2.0") do
       [_before, <<3, 1, 0, 0, _rest::binary>>] ->
@@ -237,7 +240,7 @@ defmodule Europa.Tools.TilesImagesGenerator do
 
   defp write_image!(image, path, opts \\ []) do
     Image.write!(image, path, opts)
-    Logger.info("Generated tile #{path}")
+    :ok
   end
 
   defp prepare_tmp_dirs!(root_dir) do
