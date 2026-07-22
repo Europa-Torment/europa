@@ -7,12 +7,31 @@ export const hooks = {
         
         tooltip.className = 'fixed bg-neutral text-white p-2 shadow-lg text-xs z-1000 phx-tooltip break-words max-w-xs font-display';
         tooltip.innerHTML = this.el.dataset.tooltip;
-        tooltip.style.left = e.clientX + 40 + 'px';
+        tooltip.style.left = '0px';
         tooltip.style.top = '0px';
         tooltip.style.opacity = '0';
         tooltip.style.pointerEvents = 'none';
         tooltip.id = 'tooltip-' + this.el.id;
         document.body.appendChild(tooltip);
+
+        const viewportWidth = window.innerWidth;
+        const tooltipWidth = tooltip.offsetWidth;
+        const gap = 10;
+        const edgeOffset = 10;
+
+        let left;
+        const fitsRight = (e.clientX + gap + tooltipWidth + edgeOffset) <= viewportWidth;
+        if (fitsRight) {
+          left = e.clientX + gap;
+        } else {
+          const fitsLeft = (e.clientX - gap - tooltipWidth - edgeOffset) >= 0;
+          if (fitsLeft) {
+            left = e.clientX - tooltipWidth - gap;
+          } else {
+            left = edgeOffset;
+          }
+        }
+        tooltip.style.left = left + 'px';
 
         const tooltipHeight = tooltip.offsetHeight;
         const viewportHeight = window.innerHeight;
@@ -26,6 +45,7 @@ export const hooks = {
           top = e.clientY + 5;
         }
         tooltip.style.top = top + 'px';
+
         tooltip.style.opacity = '1';
         tooltip.style.pointerEvents = 'auto';
 
@@ -33,10 +53,8 @@ export const hooks = {
       });
 
       this.onDocumentKeydown = (event) => {
-        if (event.key === 'Escape') {
-          document.querySelectorAll('.phx-tooltip').forEach(t => t.remove());
-          if (this.tooltip) this.tooltip = null;
-        }
+        document.querySelectorAll('.phx-tooltip').forEach(t => t.remove());
+        if (this.tooltip) this.tooltip = null;
       };
       document.addEventListener('keydown', this.onDocumentKeydown);
 

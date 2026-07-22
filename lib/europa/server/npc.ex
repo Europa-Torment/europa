@@ -28,6 +28,7 @@ defmodule Europa.Server.Npc do
     field :view_direction, Planet.direction(), enforce: true
     field :weapon, Weapon.t(), enforce: true
     field :target, target()
+    field :player_enemy?, boolean(), default: false
     field :events, list(Event.t()), default: []
   end
 
@@ -52,8 +53,7 @@ defmodule Europa.Server.Npc do
       {gettext("Age"), character.current_age},
       {gettext("Gender"), Character.readable_gender(character)},
       {gettext("Fraction"), Character.readable_fraction(character)},
-      {gettext("Health"), npc.health},
-      {gettext("Aggressive"), aggressive(npc)}
+      {gettext("Health"), npc.health}
     ]
   end
 
@@ -96,8 +96,19 @@ defmodule Europa.Server.Npc do
   def maybe_add_speech_event(%__MODULE__{} = npc), do: npc
 
   @spec trigger(t(), target()) :: t()
+  def trigger(%__MODULE__{} = npc, :player) do
+    npc
+    |> set_player_enemy()
+    |> do_trigger(:player)
+  end
+
+  def trigger(%__MODULE__{player_enemy?: true} = npc, nil) do
+    npc
+    |> do_trigger(:player)
+  end
+
   def trigger(%__MODULE__{} = npc, target) do
-    struct!(npc, target: target)
+    do_trigger(npc, target)
   end
 
   @spec change_view_direction(t(), Planet.direction()) :: t()
@@ -114,8 +125,13 @@ defmodule Europa.Server.Npc do
     struct!(npc, stand_on: tile)
   end
 
-  defp aggressive(%__MODULE__{target: :player}), do: gettext("Yes")
-  defp aggressive(_), do: gettext("No")
+  defp do_trigger(%__MODULE__{} = npc, target) do
+    struct!(npc, target: target)
+  end
+
+  defp set_player_enemy(%__MODULE__{} = npc) do
+    struct!(npc, player_enemy?: true)
+  end
 
   defp accuracy do
     from = div(@max_accuracy, 2)

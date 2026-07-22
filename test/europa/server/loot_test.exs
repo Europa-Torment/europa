@@ -177,10 +177,7 @@ defmodule Europa.Server.Loot.ItemTest do
     end
 
     test "returns attrs for supply", %{player: player} do
-      supply =
-        build(:supply,
-          properties: build(:supply_properties, health: 11, thirst: 12, hunger: 13, radiation: 14, warm: 15)
-        )
+      supply = build(:supply)
 
       expected_attrs = [
         {:health, "Health", supply.properties.health},
@@ -197,15 +194,17 @@ defmodule Europa.Server.Loot.ItemTest do
     end
 
     test "returns attrs for implant", %{player: player} do
-      implant =
-        build(:implant,
-          properties: build(:implant_properties, max_health: 11, max_warm: 15, accuracy: 20)
-        )
+      implant = build(:implant)
 
       expected_attrs = [
         {:accuracy, "Accuracy", implant.properties.accuracy},
-        {:max_health, "Max health", implant.properties.max_health},
-        {:max_warm, "Max warm", implant.properties.max_warm},
+        {:efficiency, "Efficiency", implant.properties.efficiency},
+        {:max_health, "Health", implant.properties.max_health},
+        {:max_warm, "Warm", implant.properties.max_warm},
+        {:max_weight, "Max weight", implant.properties.max_weight},
+        {:melee_damage, "Melee weapon damage", implant.properties.melee_damage},
+        {:shoot_damage, "Shoot damage", implant.properties.shoot_damage},
+        {:shotgun_damage, "Shotgun damage", implant.properties.shotgun_damage},
         {:weight, "Weight", implant.weight}
       ]
 

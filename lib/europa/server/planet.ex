@@ -704,7 +704,7 @@ defmodule Europa.Server.Planet do
       npc
       |> Npc.take_damage(damage)
       |> Npc.stand_on(blood_tile(npc.stand_on))
-      |> maybe_trigger_npc(:player)
+      |> trigger_npc(:player)
 
     if updated_npc.health > 0 do
       {updated_npc, change_tile(land, coord, updated_npc)}
@@ -927,13 +927,12 @@ defmodule Europa.Server.Planet do
   end
 
   defp skip_npc_trigger(%__MODULE__{} = planet, npc_coord, npc) do
-    updated_npc = maybe_trigger_npc(npc, nil)
+    updated_npc = trigger_npc(npc, nil)
     updated_land = change_tile(planet.land, npc_coord, updated_npc)
     {struct!(planet, land: updated_land), []}
   end
 
-  defp maybe_trigger_npc(%Npc{target: :player} = npc, _), do: npc
-  defp maybe_trigger_npc(%Npc{} = npc, target), do: Npc.trigger(npc, target)
+  defp trigger_npc(%Npc{} = npc, target), do: Npc.trigger(npc, target)
 
   defp npc_attack(%__MODULE__{} = planet, npc_coord, %Npc{} = npc, target_coord) do
     if m_to_n?(npc.accuracy, @max_accuracy) do
@@ -1331,7 +1330,7 @@ defmodule Europa.Server.Planet do
       npc
       |> Npc.take_damage(damage)
       |> Npc.stand_on(blood_tile(npc.stand_on))
-      |> maybe_trigger_npc(subject)
+      |> trigger_npc(subject)
     else
       generate_human_body(npc)
     end

@@ -14,10 +14,10 @@ defmodule Europa.Games do
   import Europa.Tools.Conf
 
   @allowed_leaders_categories [
-    days: gettext("Days survived"),
-    great_red_spots: gettext("Great Red Spots survived"),
-    kills: gettext("Killed enemies"),
-    moves: gettext("Total moves"),
+    days: gettext("Days survived (per game)"),
+    great_red_spots: gettext("Great Red Spots survived (per game)"),
+    kills: gettext("Killed enemies (per game)"),
+    moves: gettext("Moves (per game)"),
     games_played: gettext("Games played")
   ]
 
@@ -142,8 +142,9 @@ defmodule Europa.Games do
       join: u in User,
       on: u.id == g.user_id,
       group_by: u.username,
-      select: {u.username, sum(g.days)},
-      order_by: [desc: sum(g.days)],
+      having: max(g.days) > 0,
+      select: {u.username, max(g.days)},
+      order_by: [desc: max(g.days)],
       limit: @leaders_limit
     )
     |> Repo.all()
@@ -154,8 +155,9 @@ defmodule Europa.Games do
       join: u in User,
       on: u.id == g.user_id,
       group_by: u.username,
-      select: {u.username, sum(g.great_red_spots)},
-      order_by: [desc: sum(g.great_red_spots)],
+      having: max(g.great_red_spots) > 0,
+      select: {u.username, max(g.great_red_spots)},
+      order_by: [desc: max(g.great_red_spots)],
       limit: @leaders_limit
     )
     |> Repo.all()
@@ -166,8 +168,9 @@ defmodule Europa.Games do
       join: u in User,
       on: u.id == g.user_id,
       group_by: u.username,
-      select: {u.username, sum(g.killed_enemies)},
-      order_by: [desc: sum(g.killed_enemies)],
+      having: max(g.killed_enemies) > 0,
+      select: {u.username, max(g.killed_enemies)},
+      order_by: [desc: max(g.killed_enemies)],
       limit: @leaders_limit
     )
     |> Repo.all()
@@ -178,8 +181,9 @@ defmodule Europa.Games do
       join: u in User,
       on: u.id == g.user_id,
       group_by: u.username,
-      select: {u.username, sum(g.moves_count)},
-      order_by: [desc: sum(g.moves_count)],
+      having: max(g.moves_count) > 0,
+      select: {u.username, max(g.moves_count)},
+      order_by: [desc: max(g.moves_count)],
       limit: @leaders_limit
     )
     |> Repo.all()

@@ -61,5 +61,30 @@
         },
         "weight": 0.8,
         "random_weight": 1.0
+    },
+    {
+        "name": "Concentration Enhancer",
+        "description": "Improves the efficiency of actions.",
+        "properties": {
+            "efficiency": {"from": 1, "to": 10}
+        },
+        "weight": 0.8,
+        "random_weight": 0.08
+    },
+    {
+        "name": "God module",
+        "description": "A rare implant. A secret development for supersoldiers.",
+        "properties": {
+            "accuracy": {"from": 1, "to": 5},
+            "efficiency": {"from": 1, "to": 10},
+            "max_warm": {"from": 1, "to": 10},
+            "max_health": {"from": 1, "to": 10},
+            "max_weight": {"from": 2, "to": 5},
+            "melee_damage": {"from": 1, "to": 3},
+            "shoot_damage": {"from": 1, "to": 5},
+            "shotgun_damage": {"from": 2, "to": 5}
+        },
+        "weight": 0.9,
+        "random_weight": 0.01
     }
 ]

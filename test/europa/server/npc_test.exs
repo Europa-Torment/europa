@@ -27,8 +27,7 @@ defmodule Europa.Server.NpcTest do
           {"Age", npc.character.current_age},
           {"Gender", "Female"},
           {"Fraction", "WCC"},
-          {"Health", npc.health},
-          {"Aggressive", "No"}
+          {"Health", npc.health}
         ]
 
       assert Npc.readable_stats(npc) == expected_stats
@@ -104,6 +103,20 @@ defmodule Europa.Server.NpcTest do
       assert %Npc{target: :player} = Npc.trigger(npc, :player)
       assert %Npc{target: ^enemy_uuid} = Npc.trigger(npc, enemy_uuid)
       assert %Npc{target: nil} = Npc.trigger(npc, nil)
+    end
+
+    test "sets player_enemy?" do
+      npc = build(:npc, target: nil, player_enemy?: false)
+      assert %Npc{player_enemy?: true} = Npc.trigger(npc, :player)
+    end
+
+    test "re-trigger to player" do
+      enemy_uuid = build(:enemy).uuid
+      npc1 = build(:npc, target: enemy_uuid, player_enemy?: true)
+      npc2 = build(:npc, target: enemy_uuid, player_enemy?: false)
+
+      assert %Npc{target: :player} = Npc.trigger(npc1, nil)
+      assert %Npc{target: nil} = Npc.trigger(npc2, nil)
     end
   end
 

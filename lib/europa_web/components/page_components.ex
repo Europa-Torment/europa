@@ -71,15 +71,15 @@ defmodule EuropaWeb.PageComponents do
 
   def organisations(assigns) do
     organisations = [
-      {~p"/images/ETC.png", gettext("Europa Terraforming Center (ETC)"),
+      {~p"/images/lore/organisations/ETC.png", gettext("Europa Terraforming Center (ETC)"),
        gettext(
          "The power core of Europa. A small artificial sun. A chain of thermonuclear reactors that generate energy through hydrogen fusion and form an atmosphere. It was completely destroyed in the disaster."
        )},
-      {~p"/images/WCC.png", gettext("Western Colonisation Community (WCC)"),
+      {~p"/images/lore/organisations/WCC.png", gettext("Western Colonisation Community (WCC)"),
        gettext(
          "A political regulatory structure composed primarily of former Western leaders on Earth. It is widely believed that the leadership of this organization is to blame for the disaster. Instead of starting a new life, taking into account all their previous earthly mistakes, they continued to wield power and money for their own benefit."
        )},
-      {~p"/images/SSB.png", gettext("Solar System Brotherhood (SSB)"),
+      {~p"/images/lore/organisations/SSB.png", gettext("Solar System Brotherhood (SSB)"),
        gettext(
          "An opposition rebel group. The main opponents of the WCC. Disparate armed terrorist groups whose goal is to disband the WCC and transfer control of Europa to its people."
        )}

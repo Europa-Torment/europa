@@ -129,7 +129,7 @@ defmodule Europa.Support.Factory do
       max_warm: 1,
       accuracy: 2,
       weight: 1.0,
-      image_name: "default_helmet"
+      image_name: "civil_helmet"
     }
   end
 
@@ -144,7 +144,7 @@ defmodule Europa.Support.Factory do
       max_weight: 1,
       efficiency: 2,
       weight: 1.0,
-      image_name: "default_suit"
+      image_name: "civil_suit"
     }
   end
 
@@ -158,7 +158,7 @@ defmodule Europa.Support.Factory do
       max_warm: 1,
       efficiency: 2,
       weight: 1.0,
-      image_name: "default_boots"
+      image_name: "civil_boots"
     }
   end
 
@@ -201,9 +201,14 @@ defmodule Europa.Support.Factory do
   @spec implant_properties_factory() :: Loot.Implant.Properties.t()
   def implant_properties_factory do
     %Loot.Implant.Properties{
-      max_health: 10,
-      max_warm: 10,
-      accuracy: 10
+      max_health: 11,
+      max_warm: 15,
+      accuracy: 20,
+      efficiency: 30,
+      max_weight: 50,
+      shoot_damage: 2,
+      shotgun_damage: 3,
+      melee_damage: 1
     }
   end
 

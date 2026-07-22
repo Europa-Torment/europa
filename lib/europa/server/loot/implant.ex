@@ -9,6 +9,7 @@ defmodule Europa.Server.Loot.Implant do
       field :max_warm, integer() | nil
       field :max_weight, integer() | nil
       field :accuracy, integer() | nil
+      field :efficiency, integer() | nil
       field :shotgun_damage, integer() | nil
       field :shoot_damage, integer() | nil
       field :melee_damage, integer() | nil
@@ -21,6 +22,7 @@ defmodule Europa.Server.Loot.Implant do
         max_warm: Map.get(attrs, :max_warm),
         max_weight: Map.get(attrs, :max_weight),
         accuracy: Map.get(attrs, :accuracy),
+        efficiency: Map.get(attrs, :efficiency),
         shotgun_damage: Map.get(attrs, :shotgun_damage),
         shoot_damage: Map.get(attrs, :shoot_damage),
         melee_damage: Map.get(attrs, :melee_damage)
@@ -99,10 +101,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Implant do
       |> Enum.map(fn {property, value} ->
         name =
           case property do
-            :max_health -> gettext("Max health")
-            :max_warm -> gettext("Max warm")
+            :max_health -> gettext("Health")
+            :max_warm -> gettext("Warm")
             :max_weight -> gettext("Max weight")
             :accuracy -> gettext("Accuracy")
+            :efficiency -> gettext("Efficiency")
             :shoot_damage -> gettext("Shoot damage")
             :shotgun_damage -> gettext("Shotgun damage")
             :melee_damage -> gettext("Melee weapon damage")
@@ -166,8 +169,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Implant do
       case property do
         :max_health -> "H:#{value}"
         :max_warm -> "W:#{value}"
-        :max_weight -> "WM:#{value}"
+        :max_weight -> "WE:#{value}"
         :accuracy -> "A:#{value}"
+        :efficiency -> "E:#{value}"
         :shotgun_damage -> "SHD:#{value}"
         :shoot_damage -> "SG:#{value}"
         :melee_damage -> "MD:#{value}"

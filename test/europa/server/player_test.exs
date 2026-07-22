@@ -1274,7 +1274,10 @@ defmodule Europa.Server.PlayerTest do
         )
 
       implant2 =
-        build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3), equipped: true)
+        build(:implant,
+          properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3, melee_damage: nil),
+          equipped: true
+        )
 
       implant3 = build(:implant, properties: build(:implant_properties, shoot_damage: 2, shotgun_damage: 3))
 

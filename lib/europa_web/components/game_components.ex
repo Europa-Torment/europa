@@ -148,42 +148,42 @@ defmodule EuropaWeb.GameCompotents do
     <div class={"bg-base-200 p-5 shadow-md text-#{@text_size}"}>
       <ul class="grid grid-cols-2 grid-rows-3 gap-3">
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div class="tooltip" data-tip={gettext("Health")}>
+          <div id={"health-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:health)}>
             💙 {@player_stats.health}/{@player_stats.max_health}
           </div>
         </li>
         <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div class="tooltip" data-tip={gettext("Warm")}>
+          <div id={"warm-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:warm)}>
             ❄️ {@player_stats.warm}/{@player_stats.max_warm}
           </div>
         </li>
         <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
-          <div class="tooltip" data-tip={gettext("Inventory")}>
+          <div id={"inventory-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:inventory)}>
             💼 {@player_stats.inventory_weight}/{@player_stats.max_weight}
           </div>
         </li>
         <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div class="tooltip" data-tip={gettext("Thirst")}>
+          <div id={"thirst-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:thirst)}>
             💧 {@player_stats.thirst}
           </div>
         </li>
         <li>
-          <div class="tooltip" data-tip={gettext("Accuracy")}>
+          <div id={"accuracy-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:accuracy)}>
             🎯 {@player_stats.accuracy}
           </div>
         </li>
         <li class={"#{hunger_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div class="tooltip" data-tip={gettext("Hunger")}>
+          <div id={"hunger-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:hunger)}>
             🍗 {@player_stats.hunger}
           </div>
         </li>
         <li>
-          <div class="tooltip" data-tip={gettext("Efficiency")}>
+          <div id={"efficiency-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:efficiency)}>
             🦌 {@player_stats.efficiency}
           </div>
         </li>
         <li class={"#{radiation_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div class="tooltip" data-tip={gettext("Radiation")}>
+          <div id={"radiation-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:radiation)}>
             ☢️ {@player_stats.radiation}
           </div>
         </li>
@@ -228,7 +228,7 @@ defmodule EuropaWeb.GameCompotents do
               {open_inventory_attrs("helmet")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No helmet")}
-              src={~p"/images/no_helmet.png"}
+              src={~p"/images/equipment/helmets/no_helmet.png"}
               alt="4"
               class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
@@ -242,7 +242,7 @@ defmodule EuropaWeb.GameCompotents do
               {open_inventory_attrs("suit")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No suit")}
-              src={~p"/images/no_suit.png"}
+              src={~p"/images/equipment/suits/no_suit.png"}
               alt="4"
               class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
@@ -256,7 +256,7 @@ defmodule EuropaWeb.GameCompotents do
               {open_inventory_attrs("boots")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No boots")}
-              src={~p"/images/no_boots.png"}
+              src={~p"/images/equipment/boots/no_boots.png"}
               alt="4"
               class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
@@ -272,7 +272,7 @@ defmodule EuropaWeb.GameCompotents do
               {open_inventory_attrs("weapon")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No weapon")}
-              src={~p"/images/no_weapon.png"}
+              src={~p"/images/equipment/weapons/no_weapon.png"}
               alt="4"
               class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
@@ -285,7 +285,7 @@ defmodule EuropaWeb.GameCompotents do
               {open_inventory_attrs("melee_weapon")}
               phx-hook="Tooltip"
               data-tooltip={gettext("No melee weapon")}
-              src={~p"/images/fist.png"}
+              src={~p"/images/equipment/melee_weapons/fist.png"}
               alt="4"
               class="bg-neutral max-w-full h-auto object-contain block mx-auto"
             />
@@ -303,7 +303,7 @@ defmodule EuropaWeb.GameCompotents do
       {open_inventory_attrs("#{Loot.Item.item_type(@item)}")}
       phx-hook="Tooltip"
       data-tooltip={item_tooltip(@item, @player)}
-      src={~p"/images/#{@item.image_name <> ".png"}"}
+      src={"#{item_image_path(@item)}"}
       alt="4"
       class="bg-neutral max-w-full h-auto object-contain block mx-auto"
     />
@@ -373,7 +373,7 @@ defmodule EuropaWeb.GameCompotents do
             </button>
           </h3>
           <div class="p-2">
-            <.player_stats player_stats={@player_stats} text_size="xs" />
+            <.player_stats player_stats={@player_stats} text_size="xs" display_type="inventory" />
           </div>
           <div role="tablist" class="tabs tabs-lift tabs-xs pb-3 pt-3">
             <a
@@ -1000,6 +1000,19 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def mascot_image(assigns) do
+    image =
+      Enum.random([
+        ~p"/images/mascots/smoking.gif"
+      ])
+
+    assigns = assign(assigns, image: image)
+
+    ~H"""
+    <img src={@image} />
+    """
+  end
+
   ### Helpers ###
 
   defp coord({x, y}), do: "#{x};#{y}"
@@ -1132,6 +1145,74 @@ defmodule EuropaWeb.GameCompotents do
     [enemy_description(enemy) | stats]
   end
 
+  defp stat_tooltip(:health) do
+    description = gettext("Your health indicator.")
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:accuracy) do
+    description =
+      gettext(
+        "Your accuracy rating. The higher the value, the greater your chance of hitting your target. This rating increases while aiming."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:efficiency) do
+    description =
+      gettext(
+        "Your efficiency indicator. The higher the value, the greater the chance your action will take one turn less."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:inventory) do
+    description =
+      gettext(
+        "Your inventory load in kilograms. If slightly overloaded, your actions will take more turns; if heavily overloaded, you won't be able to move."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:warm) do
+    description =
+      gettext(
+        "Your warmth level. If it drops to zero, you'll start dying from frostbite. The warmer you are, the slower you'll freeze."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:thirst) do
+    description =
+      gettext(
+        "Your thirst level. The higher the value, the more thirsty you become. When you reach a critical point, you'll begin to die of thirst."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:hunger) do
+    description =
+      gettext(
+        "Your hunger level. The higher the value, the more you want to eat. When it reaches a critical point, you'll begin to starve to death."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
+  defp stat_tooltip(:radiation) do
+    description =
+      gettext(
+        "Your radiation contamination level. The higher the value, the more contaminated you are and the greater the risk of damage from accumulated radiation."
+      )
+
+    description(description, _with_breaks? = false)
+  end
+
   defp tile_tooltip(tile, player) do
     case tile do
       @player ->
@@ -1164,8 +1245,14 @@ defmodule EuropaWeb.GameCompotents do
     description(description)
   end
 
-  defp description(text) do
-    ~s|<span class="italic text-base-content">| <> text <> ~s|</span><br/><br/>|
+  defp description(text, with_breaks? \\ true) do
+    description = ~s|<span class="italic text-base-content">| <> text <> ~s|</span>|
+
+    if with_breaks? do
+      description <> "<br /></br />"
+    else
+      description
+    end
   end
 
   defp to_ul(list) do
@@ -1512,7 +1599,7 @@ defmodule EuropaWeb.GameCompotents do
   defp age_at_disaster(_), do: gettext("Not yet born")
 
   defp enemy_npc_filter(%Npc{} = npc, player) do
-    if npc.target == :player || Characters.enemies?(npc.character, player.character) do
+    if npc.target == :player || Characters.enemies?(npc.character, player.character) || npc.player_enemy? do
       "filter: sepia(0.6) hue-rotate(330deg) saturate(1.8) brightness(0.9);"
     else
       ""
@@ -1520,6 +1607,19 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp enemy_npc_filter(_, _), do: ""
+
+  defp item_image_path(item) do
+    category =
+      case Loot.Item.item_type(item) do
+        :weapon -> "weapons"
+        :melee_weapon -> "melee_weapons"
+        :helmet -> "helmets"
+        :suit -> "suits"
+        :boots -> "boots"
+      end
+
+    "/images/equipment/#{category}/#{item.image_name <> ".png"}"
+  end
 
   # coveralls-ignore-stop
 end
