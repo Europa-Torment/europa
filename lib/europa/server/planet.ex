@@ -848,7 +848,7 @@ defmodule Europa.Server.Planet do
     {new_target_coord, new_target} =
       closest_target(planet, npc_coord, enemy_coords ++ enemy_npc_coords, without_player: true)
 
-    enemy_fraction? = planet.player_fraction in npc.character.enemy_fractions
+    enemy_fraction? = planet.player_fraction in npc.character.enemy_fractions && npc.character.not_playable?
 
     new_target =
       cond do
@@ -1443,7 +1443,7 @@ defmodule Europa.Server.Planet do
     tile = get_tile(planet.land, target_coord)
 
     case tile do
-      %Npc{target: target} when target != :player ->
+      %Npc{player_enemy?: false} ->
         switch_positions_with_npc(planet, player, tile, target_coord)
 
       _ ->
@@ -1495,7 +1495,7 @@ defmodule Europa.Server.Planet do
     {:moved, updated_planet, move_cost, tile, next_to_interactive_tile?(updated_planet)}
   end
 
-  defp attack_with_melee_weapon_or_stay(planet, player, target_coord, %Npc{target: :player} = npc) do
+  defp attack_with_melee_weapon_or_stay(planet, player, target_coord, %Npc{player_enemy?: true} = npc) do
     do_attack_with_melee_weapon(planet, player, target_coord, npc)
   end
 

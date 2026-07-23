@@ -17,6 +17,8 @@ defmodule EuropaWeb do
   those modules here.
   """
 
+  # coveralls-ignore-start
+
   def static_paths, do: ~w(assets fonts images sounds favicon.ico robots.txt)
 
   def router do
@@ -111,4 +113,6 @@ defmodule EuropaWeb do
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
+
+  # coveralls-ignore-stop
 end

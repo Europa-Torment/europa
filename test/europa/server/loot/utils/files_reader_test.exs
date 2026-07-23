@@ -32,10 +32,7 @@ defmodule Europa.Server.Loot.Utils.FilesReaderTest do
       result = FilesReader.parse_item_boxes_file(@item_boxes_filename)
 
       assert Enum.all?(result, fn {attrs, _} ->
-               case ItemBox.from_map(attrs) do
-                 %ItemBox{} -> true
-                 _ -> false
-               end
+               %ItemBox{} = ItemBox.from_map(attrs)
              end)
     end
   end

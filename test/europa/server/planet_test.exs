@@ -148,14 +148,16 @@ defmodule Europa.Server.PlanetTest do
         accuracy: 1000,
         weapon: build(:weapon, damage: 1, shooting_distance: 1),
         target: @en9.uuid,
-        view_direction: :left
+        view_direction: :left,
+        character: build(:character, not_playable?: true)
       )
 
   @n3 build(:npc,
         accuracy: 1000,
         weapon: build(:weapon, damage: 1, shooting_distance: 1),
         target: :player,
-        view_direction: :right
+        view_direction: :right,
+        character: build(:character, not_playable?: true)
       )
 
   @n4 build(:npc,
@@ -163,7 +165,7 @@ defmodule Europa.Server.PlanetTest do
         weapon: build(:weapon, damage: 1, shooting_distance: 1),
         target: nil,
         view_direction: :right,
-        character: build(:character, enemy_fractions: [:neutral, :wcc, :etc, :ssb])
+        character: build(:character, enemy_fractions: [:neutral, :wcc, :etc, :ssb], not_playable?: true)
       )
 
   @move_costs Tiles.move_costs()

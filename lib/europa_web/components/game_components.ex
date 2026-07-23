@@ -16,7 +16,6 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Loot.Item
   alias Europa.Server.Chat
   alias Europa.Server.Compass
-  alias Europa.Server.Characters
   alias Europa.Tools.NumberHelpers
 
   import Europa.Tools.Conf
@@ -101,7 +100,7 @@ defmodule EuropaWeb.GameCompotents do
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-                style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px; #{enemy_npc_filter(tile, @player)}"}
+                style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px; #{enemy_npc_filter(tile)}"}
                 class="w-full h-full object-contain block mx-auto z-50"
               />
             </div>
@@ -1598,15 +1597,15 @@ defmodule EuropaWeb.GameCompotents do
 
   defp age_at_disaster(_), do: gettext("Not yet born")
 
-  defp enemy_npc_filter(%Npc{} = npc, player) do
-    if npc.target == :player || Characters.enemies?(npc.character, player.character) || npc.player_enemy? do
+  defp enemy_npc_filter(%Npc{} = npc) do
+    if npc.target == :player || npc.player_enemy? do
       "filter: sepia(0.6) hue-rotate(330deg) saturate(1.8) brightness(0.9);"
     else
       ""
     end
   end
 
-  defp enemy_npc_filter(_, _), do: ""
+  defp enemy_npc_filter(_), do: ""
 
   defp item_image_path(item) do
     category =

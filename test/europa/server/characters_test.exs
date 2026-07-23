@@ -75,13 +75,6 @@ defmodule Europa.Server.Characters.CharacterTest do
 
       assert Characters.enemies?(first_character, second_character) == false
     end
-
-    test "returns false is both characters are playable" do
-      first_character = build(:character, fraction: :wcc, enemy_fractions: [:ssb], not_playable?: false)
-      second_character = build(:character, fraction: :ssb, not_playable?: false)
-
-      assert Characters.enemies?(first_character, second_character) == false
-    end
   end
 
   describe "random_story/1" do

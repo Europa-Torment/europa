@@ -1109,7 +1109,11 @@ defmodule Europa.Server do
 
   defp maybe_finish_game(%Player{health: 0} = player, game_uuid, caller_pid) do
     Games.finish_game(game_uuid, :died)
-    caller_pid |> send(:game_over)
+
+    if Process.alive?(caller_pid) do
+      caller_pid |> send(:game_over)
+    end
+
     Process.send_after(self(), :game_over, 800)
     player
   end
