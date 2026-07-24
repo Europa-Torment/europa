@@ -15,5 +15,7 @@ defmodule Europa.Server.Planet.Region do
     field :predefined_possibility, pos_integer()
     field :predefined_subcategories, list(Predefined.subcategory()), default: []
     field :specific_item_boxes, list(Loot.item_box_type()), default: []
+    field :city?, default: false
+    field :road_tile, Planet.tile()
   end
 end

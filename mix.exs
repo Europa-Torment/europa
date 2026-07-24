@@ -70,7 +70,6 @@ defmodule Europa.MixProject do
       {:image, "~> 0.63.0"},
       {:timex, "~> 3.7"},
       {:flow, "~> 1.2"},
-      {:hackney, "~> 4.0", override: true},
       {:captcha, git: "https://github.com/davidqhr/elixir-captcha.git", ref: "aac22c1"},
       {:phoenix_copy, "~> 0.1.4", only: [:dev, :prod]},
       {:hammox, "~> 0.7", only: :test},

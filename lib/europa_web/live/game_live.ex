@@ -36,6 +36,7 @@ defmodule EuropaWeb.GameLive do
   @aim_codes fetch_config!([:control_bindings, :aim]).codes
   @zoom_codes fetch_config!([:control_bindings, :zoom]).codes
   @compass_codes fetch_config!([:control_bindings, :compass]).codes
+  @map_codes fetch_config!([:control_bindings, :map]).codes
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -148,6 +149,10 @@ defmodule EuropaWeb.GameLive do
     toggle_compass(socket)
   end
 
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @map_codes do
+    toggle_map(socket)
+  end
+
   def handle_event("key_pressed", %{"code" => code} = params, socket) when code in @interact_codes do
     interact(socket, params)
   end
@@ -234,6 +239,10 @@ defmodule EuropaWeb.GameLive do
     socket
     |> assign(inventory_type: type)
     |> open_inventory()
+  end
+
+  def handle_event("open_map", _params, socket) do
+    open_map(socket)
   end
 
   def handle_event("open_compass", _params, socket) do
@@ -325,6 +334,10 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_dialog", _, socket) do
     {:noreply, close_dialog(socket)}
+  end
+
+  def handle_event("close_map", _, socket) do
+    {:noreply, close_map(socket)}
   end
 
   def handle_event("close_compass", _, socket) do
@@ -956,6 +969,7 @@ defmodule EuropaWeb.GameLive do
 
   defp close_all(socket) do
     socket
+    |> close_map()
     |> close_compass()
     |> close_inventory()
     |> close_item_box()
@@ -1012,6 +1026,23 @@ defmodule EuropaWeb.GameLive do
     else
       open_compass(socket)
     end
+  end
+
+  defp toggle_map(socket) do
+    if socket.assigns.map do
+      {:noreply, close_map(socket)}
+    else
+      open_map(socket)
+    end
+  end
+
+  defp open_map(socket) do
+    {:noreply, assign(socket, map: Server.get_map(socket.assigns.server))}
+  end
+
+  defp close_map(socket) do
+    socket
+    |> assign(map: nil)
   end
 
   defp open_compass(socket) do
@@ -1256,6 +1287,10 @@ defmodule EuropaWeb.GameLive do
 
   defp event_text(%Event{type: {:radiation, radiation}}) do
     "☢️ #{radiation}"
+  end
+
+  defp event_text(%Event{type: :great_red_spot}) do
+    gettext("What?!")
   end
 
   defp event_text(%Event{type: {:warm_up, warm}}) when warm < 0 do

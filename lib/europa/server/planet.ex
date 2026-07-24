@@ -144,11 +144,14 @@ defmodule Europa.Server.Planet do
     %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.11},
     %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.08},
     %Region{
+      city?: true,
+      not_spawnable?: true,
       water_tile: @ruins,
-      ice_tile: @concrete,
+      ice_tile: @concrete_snow,
       snow_tile: @concrete_snow,
+      road_tile: @concrete,
       enemy_generate_possibility: div(@base_enemy_generate_possibility, 20),
-      predefined_possibility: div(@default_predefined_possibility, 10),
+      predefined_possibility: 1,
       predefined_subcategories: ["city"],
       specific_item_boxes: [:sun_battery],
       noise_threshold: 0.07
@@ -157,6 +160,10 @@ defmodule Europa.Server.Planet do
     %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.47},
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
+
+  @city_block_size 11
+  @city_road_width 2
+  @city_cell_size @city_block_size + @city_road_width
 
   typedstruct module: Land, enforce: true do
     field :tiles, map(), default: %{}
@@ -250,6 +257,27 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
+  def get_map(%__MODULE__{land: land} = planet) do
+    {{x_from, x_to}, {y_from, y_to}} = map_land_intervals(planet, 80)
+
+    map_tile = fn x, y ->
+      tile = get_tile(land, {x, y})
+
+      if tile && y in planet.land.min_y..planet.land.max_y && x in planet.land.min_x..planet.land.max_x do
+        tile_for_map(tile)
+      else
+        @darkness
+      end
+    end
+
+    for y <- y_from..y_to do
+      for x <- x_from..x_to do
+        map_tile.(x, y)
+      end
+    end
+  end
+
+  @impl true
   def land_size(%__MODULE__{land: land}) do
     Enum.count(land.tiles)
   end
@@ -266,7 +294,7 @@ defmodule Europa.Server.Planet do
       end
       |> Enum.with_index(fn row, x ->
         Enum.with_index(row, fn tile, y ->
-          {{x, y}, tile}
+          {{x, y}, tile_to_landscape(tile)}
         end)
       end)
       |> List.flatten()
@@ -385,6 +413,9 @@ defmodule Europa.Server.Planet do
   end
 
   ### PRIVATE ###
+
+  defp tile_to_landscape(%{stand_on: tile}), do: tile_to_landscape(tile)
+  defp tile_to_landscape(tile), do: tile
 
   defp next_to_interactive_tile?(%__MODULE__{} = planet) do
     Enum.any?(@directions, fn direction ->
@@ -757,6 +788,14 @@ defmodule Europa.Server.Planet do
       %Tile{blood_version: blood_tile} when not is_nil(blood_tile) -> blood_tile
       _ -> tile
     end
+  end
+
+  defp tile_for_map(%{map_color: color} = tile) when not is_nil(color) do
+    tile
+  end
+
+  defp tile_for_map(tile) do
+    tile_to_landscape(tile)
   end
 
   defp maybe_set_new_predefined_cluster_coord(%__MODULE__{} = planet) do
@@ -1547,8 +1586,19 @@ defmodule Europa.Server.Planet do
     Map.get(land.tiles, {x, y})
   end
 
-  defp visible_land_intervals(%__MODULE__{current_coord: {x, y}, land: land}) do
-    n = div(@view_distance, 2)
+  defp map_land_intervals(%__MODULE__{current_coord: {x, y}}, view_distance) do
+    n = div(view_distance, 2)
+
+    x_from = x - n
+    x_to = x + n
+    y_from = y - n
+    y_to = y + n
+
+    {{x_from, x_to}, {y_from, y_to}}
+  end
+
+  defp visible_land_intervals(%__MODULE__{current_coord: {x, y}, land: land}, view_distance \\ @view_distance) do
+    n = div(view_distance, 2)
 
     x_from = x - n
     x_to = min(x + n, land.max_x)
@@ -1558,8 +1608,8 @@ defmodule Europa.Server.Planet do
     {{x_from, x_to}, {y_from, y_to}}
   end
 
-  defp visible_land_coords(%__MODULE__{} = planet) do
-    {{x_from, x_to}, {y_from, y_to}} = visible_land_intervals(planet)
+  defp visible_land_coords(%__MODULE__{} = planet, view_distance \\ @view_distance) do
+    {{x_from, x_to}, {y_from, y_to}} = visible_land_intervals(planet, view_distance)
 
     for y <- y_from..y_to do
       for x <- x_from..x_to do
@@ -1639,6 +1689,9 @@ defmodule Europa.Server.Planet do
     noise = PerlinNoise.noise(x * 0.1 + noise_coef, y * 0.1 + noise_coef)
 
     cond do
+      region.city? && region.road_tile && road?(x, y) ->
+        region.road_tile
+
       noise < -0.4 ->
         region.water_tile || @water
 
@@ -1663,6 +1716,21 @@ defmodule Europa.Server.Planet do
       )
 
     Enum.find(@regions, fn region -> noise <= region.noise_threshold end)
+  end
+
+  defp road?(x, y) do
+    x = Integer.mod(x, @city_cell_size)
+    y = Integer.mod(y, @city_cell_size)
+
+    x < @city_road_width || y < @city_road_width
+  end
+
+  defp not_on_road?(%Region{} = region, {x, y}) do
+    if region.city? && region.road_tile do
+      not road?(x, y)
+    else
+      true
+    end
   end
 
   defp generate_tile(%__MODULE__{} = planet, {x, y} = coord) do
@@ -1788,7 +1856,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {x, _y}} = planet, :right) do
     if (planet.land.max_x - x) in 1..@generate_distance do
-      struct!(planet, land: add_right_column(planet))
+      add_right_column(planet)
     else
       planet
     end
@@ -1796,7 +1864,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {x, _y}} = planet, :left) do
     if x in planet.land.min_x..@generate_distance do
-      struct!(planet, land: add_left_column(planet))
+      add_left_column(planet)
     else
       planet
     end
@@ -1804,7 +1872,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {_x, y}} = planet, :up) do
     if y in planet.land.min_y..@generate_distance do
-      struct!(planet, land: add_top_row(planet))
+      add_top_row(planet)
     else
       planet
     end
@@ -1812,7 +1880,7 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{current_coord: {_x, y}} = planet, :down) do
     if (planet.land.max_y - y) in 1..@generate_distance do
-      struct!(planet, land: add_bottom_row(planet))
+      add_bottom_row(planet)
     else
       planet
     end
@@ -1829,8 +1897,12 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
-    |> maybe_generate_predefined(:right, planet.characters_pid, planet)
+    updated_land =
+      struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
+
+    planet
+    |> struct!(land: updated_land)
+    |> maybe_generate_predefined(:right)
   end
 
   defp add_left_column(%__MODULE__{land: land} = planet) do
@@ -1842,8 +1914,12 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
-    |> maybe_generate_predefined(:left, planet.characters_pid, planet)
+    updated_land =
+      struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
+
+    planet
+    |> struct!(land: updated_land)
+    |> maybe_generate_predefined(:left)
   end
 
   defp add_top_row(%__MODULE__{land: land} = planet) do
@@ -1855,8 +1931,12 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
-    |> maybe_generate_predefined(:up, planet.characters_pid, planet)
+    updated_land =
+      struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
+
+    planet
+    |> struct!(land: updated_land)
+    |> maybe_generate_predefined(:up)
   end
 
   defp add_bottom_row(%__MODULE__{land: land} = planet) do
@@ -1868,8 +1948,12 @@ defmodule Europa.Server.Planet do
       end
       |> filter_exist_tiles(land)
 
-    struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
-    |> maybe_generate_predefined(:down, planet.characters_pid, planet)
+    updated_land =
+      struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
+
+    planet
+    |> struct!(land: updated_land)
+    |> maybe_generate_predefined(:down)
   end
 
   defp filter_exist_tiles(tiles, land) do
@@ -1918,9 +2002,9 @@ defmodule Europa.Server.Planet do
   # TODO: figure out how to test this
   # coveralls-ignore-start
 
-  defp maybe_generate_predefined(land, direction, characters_pid, %__MODULE__{current_coord: {x, y}} = planet) do
+  defp maybe_generate_predefined(%__MODULE__{current_coord: {x, y}} = planet, direction) do
     in_predefined_cluster? = in_predefined_cluster?(planet.current_coord, planet.predefined_cluster_coord)
-    region = region_by_perlin_noise(x, y, land)
+    region = region_by_perlin_noise(x, y, planet.land)
 
     default_predefined_possibility =
       case region do
@@ -1929,31 +2013,50 @@ defmodule Europa.Server.Planet do
       end
 
     {m, n} =
-      if in_predefined_cluster? do
+      if in_predefined_cluster? && !region.city? do
         {1, @predefined_cluster_possibility}
       else
         {1, default_predefined_possibility}
       end
 
     if m_to_n?(m, n) do
-      do_generate_predefined(land, region, direction, characters_pid, planet)
+      if region.city? do
+        generate_city_predefined(planet, region, direction)
+      else
+        do_generate_predefined(planet, region, direction, planet.current_coord)
+      end
     else
-      land
+      planet
     end
   end
 
-  # tries to generate for up to 5 times (because sometimes template not fits on landscape)
-  defp do_generate_predefined(land, region, direction, characters_pid, planet, attempts \\ 1)
+  defp generate_city_predefined(%__MODULE__{} = planet, region, direction) do
+    target_blocks = get_city_blocks(planet.current_coord, planet.land, direction)
 
-  defp do_generate_predefined(land, region, direction, characters_pid, planet, attempts) when attempts <= 5 do
+    Enum.reduce(target_blocks, planet, fn {bx, by}, planet_acc ->
+      tile = get_tile(planet_acc.land, {bx + 2, by + 2})
+
+      if is_nil(tile) || tile in @movable_tiles do
+        do_generate_predefined(planet_acc, region, direction, {bx, by})
+      else
+        planet_acc
+      end
+    end)
+  end
+
+  # tries to generate for up to 5 times (because sometimes template not fits on landscape)
+  defp do_generate_predefined(planet, region, direction, current_coord, attempts \\ 1)
+
+  defp do_generate_predefined(%__MODULE__{} = planet, region, direction, current_coord, attempts) when attempts <= 5 do
     template = Predefined.generate_random(region.predefined_subcategories)
 
-    coord_fun = generate_template_coord_fun(land, direction, planet.current_coord)
-    new_tiles = generate_tiles_for_template(template, coord_fun, land, characters_pid, planet.year)
+    coord_fun = generate_template_coord_fun(planet.land, direction, current_coord, region, template)
+    new_tiles = generate_tiles_for_template(template, coord_fun, planet)
 
     is_all_tiles_movable =
-      Enum.all?(new_tiles, fn {{x, y}, _} ->
-        get_tile(land, {x, y}) |> is_nil() && tile_by_perlin_noise(x, y, land) in @movable_tiles
+      Enum.all?(new_tiles, fn {{x, y} = coord, _} ->
+        get_tile(planet.land, coord) |> is_nil() && tile_by_perlin_noise(x, y, planet.land) in @movable_tiles &&
+          not_on_road?(region, coord)
       end)
 
     # Avoid placing region specific predefines in other regions
@@ -1961,17 +2064,18 @@ defmodule Europa.Server.Planet do
       if Enum.empty?(region.predefined_subcategories) do
         true
       else
-        Enum.all?(new_tiles, fn {{x, y}, _} -> region_by_perlin_noise(x, y, land) == region end)
+        Enum.all?(new_tiles, fn {{x, y}, _} -> region_by_perlin_noise(x, y, planet.land) == region end)
       end
 
     if is_all_tiles_movable && is_all_tiles_in_current_region do
-      struct!(land, tiles: Map.merge(land.tiles, new_tiles))
+      updated_land = struct!(planet.land, tiles: Map.merge(planet.land.tiles, new_tiles))
+      struct!(planet, land: updated_land)
     else
-      do_generate_predefined(land, region, direction, characters_pid, planet, attempts + 1)
+      do_generate_predefined(planet, region, direction, current_coord, attempts + 1)
     end
   end
 
-  defp do_generate_predefined(land, _, _, _, _, _), do: land
+  defp do_generate_predefined(planet, _, _, _, _), do: planet
 
   defp in_predefined_cluster?(current_coord, cluster_coord) do
     distance = coords_distance(current_coord, cluster_coord)
@@ -2002,9 +2106,26 @@ defmodule Europa.Server.Planet do
     coords_distance(first_coord, target_coord) < coords_distance(second_coord, target_coord)
   end
 
-  defp generate_template_coord_fun(land, direction, {current_x, current_y}) do
-    padding = fn -> Enum.random(-10..10) end
+  defp generate_template_coord_fun(_land, _direction, {bx, by}, %Region{city?: true}, template) do
+    template_h = length(template)
 
+    template_w =
+      case template do
+        [first_row | _] -> length(first_row)
+        _ -> 0
+      end
+
+    offset_x = div(@city_cell_size - template_w, 2)
+    offset_y = div(@city_cell_size - template_h, 2)
+
+    target_x = bx + offset_x
+    target_y = by + offset_y
+
+    fn x, y -> {x + target_x, y + target_y} end
+  end
+
+  defp generate_template_coord_fun(land, direction, {current_x, current_y}, _region, _template) do
+    padding = fn -> Enum.random(-10..10) end
     x_padding = current_x + padding.()
     y_padding = current_y + padding.()
 
@@ -2016,11 +2137,38 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp generate_tiles_for_template(template, coord_fun, land, characters_pid, year) do
+  defp get_city_blocks({current_x, current_y}, land, direction) do
+    base_min_x = current_x - @view_distance
+    base_max_x = current_x + @view_distance
+
+    base_min_y = current_y - @view_distance
+    base_max_y = current_y + @view_distance
+
+    {min_x, max_x, min_y, max_y} =
+      case direction do
+        :up -> {base_min_x, base_max_x, min(base_min_y, land.min_y - @view_distance), base_max_y}
+        :down -> {base_min_x, base_max_x, base_min_y, max(base_max_y, land.max_y + @view_distance)}
+        :left -> {min(base_min_x, land.min_x - @view_distance), base_max_x, base_min_y, base_max_y}
+        :right -> {base_min_x, max(base_max_x, land.max_x + @view_distance), base_min_y, base_max_y}
+      end
+
+    start_block_x = Integer.floor_div(min_x, @city_cell_size) * @city_cell_size
+    end_block_x = Integer.floor_div(max_x, @city_cell_size) * @city_cell_size
+
+    start_block_y = Integer.floor_div(min_y, @city_cell_size) * @city_cell_size
+    end_block_y = Integer.floor_div(max_y, @city_cell_size) * @city_cell_size
+
+    for bx <- :lists.seq(start_block_x, end_block_x, @city_cell_size),
+        by <- :lists.seq(start_block_y, end_block_y, @city_cell_size) do
+      {bx, by}
+    end
+  end
+
+  defp generate_tiles_for_template(template, coord_fun, planet) do
     Enum.with_index(template, fn row, y ->
       Enum.with_index(row, fn tile, x ->
         coord = coord_fun.(x, y)
-        {coord, prepare_predefined_tile(tile, land, coord, characters_pid, year)}
+        {coord, prepare_predefined_tile(tile, planet.land, coord, planet.characters_pid, planet.year)}
       end)
     end)
     |> List.flatten()

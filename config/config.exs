@@ -55,7 +55,7 @@ config :europa, Europa.Server.Planet.Predefined,
   building: [
     enemy_generate_possibility: 100,
     loot_generate_possibility: 3,
-    locked_door_possibility: 10,
+    locked_door_possibility: 5,
     broken_building_possibility: 10,
     broken_wall_possibility: 5,
     burning_building_possibility: 7,
@@ -137,6 +137,7 @@ config :europa, :control_bindings,
   aim: %{keys: ["V", "v"], codes: ["KeyV"]},
   zoom: %{keys: ["Z", "z"], codes: ["KeyZ"]},
   compass: %{keys: ["C", "c"], codes: ["KeyC"]},
+  map: %{keys: ["M", "m"], codes: ["KeyM"]},
   close: %{keys: ["Escape"], codes: ["Escape"]}
 
 # Configure esbuild (the version is required)

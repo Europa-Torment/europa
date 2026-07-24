@@ -171,3 +171,13 @@ body {
   font-weight: normal;
   font-style: normal;
 }
+
+.blink-sharp {
+  animation: toggle 1s step-end infinite;
+}
+
+@keyframes toggle {
+  50% {
+    opacity: 0;
+  }
+}

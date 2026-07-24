@@ -60,6 +60,11 @@ defmodule Europa.Server.PlanetManager do
   @callback get_visible_land(Planet.t(), DateTime.t()) :: Planet.land()
 
   @doc """
+  Returns visible part of planet's map.
+  """
+  @callback get_map(Planet.t()) :: Planet.land()
+
+  @doc """
   Move player in given direction or attack enemy with melee weapon.
   If move succeded response is:
   ```
@@ -170,6 +175,7 @@ defmodule Europa.Server.PlanetManager do
   def allowed_directions, do: manager_impl().allowed_directions()
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
   def get_visible_land(planet, current_datetime), do: manager_impl().get_visible_land(planet, current_datetime)
+  def get_map(planet), do: manager_impl().get_map(planet)
   def land_size(planet), do: manager_impl().land_size(planet)
   def move(planet, direction, player), do: manager_impl().move(planet, direction, player)
   def loot(planet, direction), do: manager_impl().loot(planet, direction)

@@ -168,27 +168,26 @@ defmodule Europa.Server.Planet.Predefined do
 
   defp elem_to_tile(:situation, "v", _) do
     if m_to_n?(1, 5) do
-      Objects.object(:fire_vehicle)
-    else
       Loot.generate_item_box(:vehicle)
+    else
+      Objects.object(:fire_vehicle)
     end
   end
 
   # Helpers
 
+  defp get_templates_with_subcategories(category_name, []) do
+    category = Map.fetch!(@templates, category_name)
+    Map.fetch!(category, "base_templates")
+  end
+
   defp get_templates_with_subcategories(category_name, subcategories) do
     category = Map.fetch!(@templates, category_name)
-    base_templates = Map.fetch!(category, "base_templates")
 
-    # Templates from subcategories should be generated more often
-    templates_from_subcategories =
-      category
-      |> Map.take(subcategories)
-      |> Enum.map(fn {_, t} -> t end)
-      |> List.duplicate(3)
-      |> List.flatten()
-
-    Enum.shuffle(base_templates ++ templates_from_subcategories)
+    category
+    |> Map.take(subcategories)
+    |> Enum.map(fn {_, t} -> t end)
+    |> List.flatten()
   end
 
   defp or_broken_wall(tile, opts) do

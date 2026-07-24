@@ -42,6 +42,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
     field :bright?, boolean(), default: false
     field :radioactive?, boolean(), default: false
     field :movable?, boolean(), default: false
+    field :map_color, String.t()
     field :gif_tile?, boolean(), default: false
     field :image_name, String.t(), enforce: true
     field :stand_on, Planet.tile()

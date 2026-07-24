@@ -1018,6 +1018,17 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "get_map/1" do
+    test "returns planet map", %{server: server} do
+      map = [[@snow]]
+
+      PlanetManagerMock
+      |> expect(:get_map, fn %Planet{} -> map end)
+
+      assert Server.get_map(server) == map
+    end
+  end
+
   describe "add_compass_target/1" do
     test "adds compass target", %{server: server} do
       description = "Something"

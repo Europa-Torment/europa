@@ -183,6 +183,20 @@ defmodule Europa.Server.PlanetTest do
 
   @midday Timex.parse!("2016-02-29T12:00:00-06:00", "{ISO:Extended}")
 
+  @land [
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+          [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+        ]
+        |> PlanetLandConverter.from_matrix()
+
   @land_player_look_up_at_loot [
                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -967,6 +981,26 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
+  describe "get_map/1" do
+    setup do
+      planet = build(:planet, land: @land, current_coord: {4, 4})
+      {:ok, planet: planet}
+    end
+
+    test "returns planet map", %{planet: planet} do
+      map = Planet.get_map(planet)
+
+      assert length(hd(map)) == 81
+      assert length(map) == 81
+
+      assert map
+             |> List.flatten()
+             |> Enum.all?(fn tile ->
+               tile == :player || Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
+             end)
+    end
+  end
+
   describe "move/2" do
     test "moves player right" do
       planet =
@@ -1545,7 +1579,7 @@ defmodule Europa.Server.PlanetTest do
 
   describe "crop_land/1" do
     test "crops planet land to size of visible land" do
-      planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
+      planet = build(:planet, land: @land, current_coord: {4, 4})
 
       %Planet.Land{tiles: expected_tiles} =
         Planet.get_visible_land(planet, @midday) |> PlanetLandConverter.from_matrix()

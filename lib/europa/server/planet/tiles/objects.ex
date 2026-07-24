@@ -7,28 +7,38 @@ defmodule Europa.Server.Planet.Tiles.Objects do
   alias Europa.Server.Loot.Tool
   alias Europa.Tools.Types
 
+  @wall_color "#260C05"
+
   @objects %{
     # object used to leave space unoccupied
     skip: %Object{name: gettext(""), image_name: "", high?: false, movable?: true},
-    wall_up: %Object{name: gettext("wall"), image_name: "wall_up", high?: true},
-    wall_down: %Object{name: gettext("wall"), image_name: "wall_down", high?: true},
-    wall_right: %Object{name: gettext("wall"), image_name: "wall_right", high?: true},
-    wall_right_up: %Object{name: gettext("wall"), image_name: "wall_right_up", high?: true},
-    wall_right_down: %Object{name: gettext("wall"), image_name: "wall_right_down", high?: true},
-    wall_left: %Object{name: gettext("wall"), image_name: "wall_left", high?: true},
-    wall_left_up: %Object{name: gettext("wall"), image_name: "wall_left_up", high?: true},
-    wall_left_down: %Object{name: gettext("wall"), image_name: "wall_left_down", high?: true},
+    wall_up: %Object{name: gettext("wall"), image_name: "wall_up", high?: true, map_color: @wall_color},
+    wall_down: %Object{name: gettext("wall"), image_name: "wall_down", high?: true, map_color: @wall_color},
+    wall_right: %Object{name: gettext("wall"), image_name: "wall_right", high?: true, map_color: @wall_color},
+    wall_right_up: %Object{name: gettext("wall"), image_name: "wall_right_up", high?: true, map_color: @wall_color},
+    wall_right_down: %Object{name: gettext("wall"), image_name: "wall_right_down", high?: true, map_color: @wall_color},
+    wall_left: %Object{name: gettext("wall"), image_name: "wall_left", high?: true, map_color: @wall_color},
+    wall_left_up: %Object{name: gettext("wall"), image_name: "wall_left_up", high?: true, map_color: @wall_color},
+    wall_left_down: %Object{name: gettext("wall"), image_name: "wall_left_down", high?: true, map_color: @wall_color},
     wall_vertical_inside: %Object{
       name: gettext("wall"),
       image_name: "wall_vertical_inside",
       high?: true,
-      stand_on: Tiles.tile(:floor).atom_value
+      stand_on: Tiles.tile(:floor).atom_value,
+      map_color: @wall_color
     },
-    broken_wall: %Object{name: gettext("broken wall"), image_name: "broken_wall", high?: false, movable?: true},
+    broken_wall: %Object{
+      name: gettext("broken wall"),
+      image_name: "broken_wall",
+      high?: false,
+      movable?: true,
+      map_color: @wall_color
+    },
     door_up: %Object{
       name: gettext("door"),
       image_name: "door_horizontal",
       high?: true,
+      map_color: @wall_color,
       transforms: [
         %Transform{
           name: :open,
@@ -42,6 +52,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("door"),
       image_name: "door_horizontal",
       high?: true,
+      map_color: @wall_color,
       transforms: [
         %Transform{
           name: :open,
@@ -55,6 +66,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("door"),
       image_name: "door_left",
       high?: true,
+      map_color: @wall_color,
       transforms: [
         %Transform{
           name: :open,
@@ -68,6 +80,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("door"),
       image_name: "door_right",
       high?: true,
+      map_color: @wall_color,
       transforms: [
         %Transform{
           name: :open,

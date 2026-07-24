@@ -18,5 +18,6 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :lethal?, boolean(), default: false
     field :lethal_event, atom()
     field :high_loot_possibility?, boolean(), default: false
+    field :map_color, String.t(), enforce: true
   end
 end

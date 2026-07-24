@@ -235,6 +235,11 @@ defmodule Europa.Server do
     GenServer.call(server, :toggle_aim_mode)
   end
 
+  @spec get_map(pid()) :: Planet.land()
+  def get_map(server) do
+    GenServer.call(server, :get_map)
+  end
+
   @spec get_compass(pid()) :: Compass.t()
   def get_compass(server) do
     GenServer.call(server, :get_compass)
@@ -701,6 +706,10 @@ defmodule Europa.Server do
 
         {:reply, {:error, :nothing}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
     end
+  end
+
+  def handle_call(:get_map, _caller_pid, state) do
+    {:reply, PlanetManager.get_map(state.planet), state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_compass, _caller_pid, state) do
