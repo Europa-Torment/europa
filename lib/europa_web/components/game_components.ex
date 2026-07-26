@@ -93,7 +93,7 @@ defmodule EuropaWeb.GameCompotents do
       class="w-3/6 h-fit flex flex-col overflow-hidden bg-base-200 p-5 m-5 shadow-md grid place-items-center"
     >
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
-        <div class="flex gap-0">
+        <div id={"row_#{x}"} class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
             <div id={tile_id(tile, x, y)}>
               <img
