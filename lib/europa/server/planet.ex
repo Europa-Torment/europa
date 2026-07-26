@@ -145,7 +145,6 @@ defmodule Europa.Server.Planet do
     %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.08},
     %Region{
       city?: true,
-      not_spawnable?: true,
       water_tile: @ruins,
       ice_tile: @concrete_snow,
       snow_tile: @concrete_snow,
@@ -161,7 +160,7 @@ defmodule Europa.Server.Planet do
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
 
-  @city_block_size 11
+  @city_block_size 12
   @city_road_width 2
   @city_cell_size @city_block_size + @city_road_width
 
