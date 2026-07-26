@@ -91,6 +91,156 @@ defmodule Europa.Server.Planet.Templates.TemplateTest do
     ]
   }
 
+  @invalid_or1 [
+    [
+      %{
+        type: "object",
+        name: "wall_up",
+        or: %{
+          type: "object",
+          name: "broken_wall",
+          when: %{
+            modificators: ["broken"],
+            possibility: %{from: 1, to: 3}
+          }
+        }
+      }
+    ]
+  ]
+
+  @invalid_or2 [
+    [
+      %{
+        type: "object",
+        name: "wall_up",
+        or: [
+          %{
+            type: "object",
+            name: "fake",
+            when: %{
+              modificators: ["broken"],
+              possibility: %{from: 1, to: 3}
+            }
+          }
+        ]
+      }
+    ]
+  ]
+
+  @invalid_when1 [
+    [
+      %{
+        type: "loot",
+        name: "monster_body",
+        or: [
+          %{
+            type: "npc",
+            stand_on: %{
+              type: "loot",
+              name: "monster_body"
+            },
+            when: %{}
+          }
+        ]
+      }
+    ]
+  ]
+
+  @invalid_when2 [
+    [
+      %{
+        type: "loot",
+        name: "monster_body",
+        or: [
+          %{
+            type: "npc",
+            stand_on: %{
+              type: "loot",
+              name: "monster_body"
+            },
+            when: %{possibility: %{from: 5, to: 1}}
+          }
+        ]
+      }
+    ]
+  ]
+
+  @invalid_when3 [
+    [
+      %{
+        type: "loot",
+        name: "monster_body",
+        or: [
+          %{
+            type: "npc",
+            stand_on: %{
+              type: "loot",
+              name: "monster_body"
+            },
+            when: %{possibility: %{to: 1}}
+          }
+        ]
+      }
+    ]
+  ]
+
+  @invalid_when4 [
+    [
+      %{
+        type: "loot",
+        name: "monster_body",
+        or: [
+          %{
+            type: "npc",
+            stand_on: %{
+              type: "loot",
+              name: "monster_body"
+            },
+            when: %{possibility: %{from: 1}}
+          }
+        ]
+      }
+    ]
+  ]
+
+  @invalid_when5 [
+    [
+      %{
+        type: "loot",
+        name: "monster_body",
+        or: [
+          %{
+            type: "npc",
+            stand_on: %{
+              type: "loot",
+              name: "monster_body"
+            },
+            when: %{possibility: %{from: "1", to: "2"}}
+          }
+        ]
+      }
+    ]
+  ]
+
+  @invalid_when6 [
+    [
+      %{
+        type: "loot",
+        name: "monster_body",
+        or: [
+          %{
+            type: "npc",
+            stand_on: %{
+              type: "loot",
+              name: "monster_body"
+            },
+            when: %{modificators: "not list"}
+          }
+        ]
+      }
+    ]
+  ]
+
   describe "from_map/1" do
     test "builds Template struct from map" do
       assert {:ok, %Template{} = template} = Template.from_map(@raw_template)
@@ -181,6 +331,21 @@ defmodule Europa.Server.Planet.Templates.TemplateTest do
       assert {:error, _} = @raw_template |> Map.delete(:name) |> Template.from_map()
       assert {:error, _} = @raw_template |> Map.delete(:content) |> Template.from_map()
       assert {:error, _} = @raw_template |> Map.put(:modificators, "fake") |> Template.from_map()
+
+      for invalid_or <- [@invalid_or1, @invalid_or2] do
+        assert {:error, _} = @raw_template |> Map.put(:content, invalid_or) |> Template.from_map()
+      end
+
+      for invalid_when <- [
+            @invalid_when1,
+            @invalid_when2,
+            @invalid_when3,
+            @invalid_when4,
+            @invalid_when5,
+            @invalid_when6
+          ] do
+        assert {:error, _} = @raw_template |> Map.put(:content, invalid_when) |> Template.from_map()
+      end
 
       invalid_modificators = [
         [%{possibility: %{from: 1, to: 2}}],
