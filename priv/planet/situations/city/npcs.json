@@ -1,0 +1,15 @@
+{
+  "name": "NPCs",
+  "content": [
+    [
+      {"type": "npc"},
+      {"type": "loot", "name": "bag", "or": [{"type": "object", "name": "skip", "when": {"possibility": {"from": 1, "to": 2}}}, {"type": "loot", "name": "vehicle", "when": {"possibility": {"from": 1, "to": 5}}}]}
+    ],
+    [
+      {"type": "object", "name": "bonfire", "or": [{"type": "object", "name": "bonfire_base", "when": {"possibility": {"from": 1, "to": 2}}}]}
+    ],
+    [
+      {"type": "npc", "or": [{"type": "loot", "name": "human_body", "when": {"possibility": {"from": 1, "to": 5}}}]}
+    ]
+  ]
+}

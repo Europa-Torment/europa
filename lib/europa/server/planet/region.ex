@@ -1,7 +1,7 @@
 defmodule Europa.Server.Planet.Region do
   use TypedStruct
 
-  alias Europa.Server.Planet.Predefined
+  alias Europa.Server.Planet.Templates
   alias Europa.Server.Planet
   alias Europa.Server.Loot
 
@@ -13,7 +13,7 @@ defmodule Europa.Server.Planet.Region do
     field :noise_threshold, number()
     field :enemy_generate_possibility, pos_integer()
     field :predefined_possibility, pos_integer()
-    field :predefined_subcategories, list(Predefined.subcategory()), default: []
+    field :predefined_subcategories, list(Templates.subcategory()), default: []
     field :specific_item_boxes, list(Loot.item_box_type()), default: []
     field :city?, default: false
     field :road_tile, Planet.tile()

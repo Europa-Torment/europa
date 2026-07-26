@@ -66,6 +66,8 @@ defmodule EuropaWeb.Router do
     live_dashboard "/dashboard", metrics: EuropaWeb.Telemetry
 
     get "/", AdminPanelController, :index
+
+    live "/templates", TemplatesLive
   end
 
   # coveralls-ignore-stop

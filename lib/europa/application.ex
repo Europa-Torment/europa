@@ -3,6 +3,8 @@ defmodule Europa.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  # coveralls-ignore-start
+
   use Application
 
   alias Europa.Games
@@ -40,4 +42,6 @@ defmodule Europa.Application do
     EuropaWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  # coveralls-ignore-stop
 end

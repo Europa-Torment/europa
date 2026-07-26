@@ -1,0 +1,55 @@
+{
+  "name": "house",
+  "modificators": [
+    {
+      "name": "burning",
+      "possibility": {"from": 1, "to": 5}
+    },
+    {
+      "name": "broken",
+      "possibility": {"from": 1, "to": 10}
+    }
+  ],
+  "content": [
+    [
+      {"type": "object", "name": "wall_left_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_right_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "table", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
+      {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "loot", "name": "bed", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "tile", "name": "floor", "when": {"possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "enemy", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}, {"type": "npc", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 120}}}, {"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "door_down"},
+      {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_right_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ]
+  ]
+}

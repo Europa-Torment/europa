@@ -16,40 +16,15 @@ And that's it!
 
 ## Buildings/game situations
 
-The game features a system of pre-generated map sections. You can add [buildings](/priv/planet/buildings/) and [game situations](/priv/planet/situations/) (for example, [an NPC standing next to a bonfire](/priv/planet/situations/npc_bonfire.txt)).
+The game has a template system that allows you to create any possible game situation [with json files](/priv/planet/).
 
-Each building/situation is a separate `.txt` file in which, using special symbols, a section of the map is described, which will then be converted into game tiles.
+For an example, you can look at existing templates or see the documentation for the [template engine module](/lib/europa/server/planet/templates.ex).
 
-Buling example:
+Templates can be variable depending on various conditions, so one template can create many different variations of game situations, for example: a normal house, a burning house, a house with broken walls, a house with monsters, a house with different furniture - all of this can be described in one template.
 
-```
-iuuuuuuuu^
-lLLLIfLLLr
-lNffIffcfr
-lfcffffffr
-!dddfddddv
-```
+### Editor
 
-Where:
-
-* `i` - upper-left corner
-* `!` - lower left corner
-* `^` - upper right corner
-* `v` - lower right corner
-* `u` - upper horizontal wall
-* `d` - lower horizontal wall
-* `l` - left vertical wall
-* `r` - right vertical wall
-* `I` - inside vertical wall
-* `f` - floor (can be changed to an enemy randomly)
-* `L` - loot item box (furtinute) (can be changed to floor randomly)
-* `N` - NPC (can be changed to floor randomly)
-
-This will eventually turn into something like this (at the time of writing the documentation):
-
-![building example](/docs/images/building_example.png)
-
-To get acquainted with the current functionality, you can [see how special symbols are replaced with game tiles in the code](/lib/europa/server/planet/predefined.ex).
+There is also an editor that allows you to view the rendering result of templates. If you have a local copy of the game installed, the editor will be available in the dev environment at http://localhost:4000/admin/templates
 
 ## Characters
 

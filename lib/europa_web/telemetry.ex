@@ -1,4 +1,5 @@
 defmodule EuropaWeb.Telemetry do
+  # coveralls-ignore-start
   use Supervisor
   import Telemetry.Metrics
 
@@ -89,4 +90,6 @@ defmodule EuropaWeb.Telemetry do
       # {EuropaWeb, :count_users, []}
     ]
   end
+
+  # coveralls-ignore-stop
 end

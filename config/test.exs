@@ -20,14 +20,6 @@ config :europa, EuropaWeb.Endpoint,
   secret_key_base: "7ylQsmV1OlFsjuD4UCvDeetpVLtLf1LW0ekxudoN3Vi0Yqo/kbCUO4gAR0QoFl0J",
   server: false
 
-config :europa, Europa.Server.Planet.Predefined, templates_path: "/planet/test/"
-
-config :europa, Europa.Server.Planet.Predefined,
-  building: [
-    enemy_generate_possibility: 100_000_000,
-    loot_generate_possibility: 1
-  ]
-
 config :europa, Europa.Server.Characters, filename: "test_characters.json"
 
 # Changing will break tests

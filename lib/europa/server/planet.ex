@@ -10,7 +10,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Planet.Tiles.Tile
   alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Planet.Tiles.Objects.Object
-  alias Europa.Server.Planet.Predefined
+  alias Europa.Server.Planet.Templates
   alias Europa.Server.Planet.Region
 
   alias Europa.Tools.Types
@@ -412,6 +412,38 @@ defmodule Europa.Server.Planet do
     {:ok, planet, events}
   end
 
+  @spec prepare_predefined_tile(tile() | {:npc, tile() | nil}, coord(), t(), tile() | nil) :: tile()
+  def prepare_predefined_tile(_, _, _, forced_stand_on \\ nil)
+
+  def prepare_predefined_tile(%Enemy{stand_on: nil} = enemy, coord, planet, forced_stand_on) do
+    stand_on = forced_stand_on || predefined_stand_on_tile(planet.land, coord)
+    Enemy.stand_on(enemy, stand_on)
+  end
+
+  def prepare_predefined_tile(%Loot.ItemBox{stand_on: nil} = item_box, coord, planet, forced_stand_on) do
+    stand_on = forced_stand_on || predefined_stand_on_tile(planet.land, coord)
+    Loot.ItemBox.stand_on(item_box, stand_on)
+  end
+
+  def prepare_predefined_tile(%Object{stand_on: nil} = object, coord, planet, forced_stand_on) do
+    stand_on = forced_stand_on || predefined_stand_on_tile(planet.land, coord)
+    Object.stand_on(object, stand_on)
+  end
+
+  def prepare_predefined_tile({:npc, stand_on}, coord, planet, forced_stand_on) do
+    stand_on = stand_on || forced_stand_on || predefined_stand_on_tile(planet.land, coord)
+
+    case Characters.pick(planet.characters_pid, planet.year - @disaster_year) do
+      {:ok, character} ->
+        Npc.new(character, stand_on)
+
+      _ ->
+        stand_on
+    end
+  end
+
+  def prepare_predefined_tile(tile, _, _, _), do: tile
+
   ### PRIVATE ###
 
   defp tile_to_landscape(%{stand_on: tile}), do: tile_to_landscape(tile)
@@ -494,7 +526,7 @@ defmodule Europa.Server.Planet do
 
       transformed_tile =
         Object.transform(object, transform_name)
-        |> prepare_predefined_tile(planet.land, target_coord, planet.characters_pid, planet.year)
+        |> prepare_predefined_tile(target_coord, planet)
 
       updated_land =
         planet.land
@@ -2048,7 +2080,7 @@ defmodule Europa.Server.Planet do
   defp do_generate_predefined(planet, region, direction, current_coord, attempts \\ 1)
 
   defp do_generate_predefined(%__MODULE__{} = planet, region, direction, current_coord, attempts) when attempts <= 5 do
-    template = Predefined.generate_random(region.predefined_subcategories)
+    template = Templates.generate_random(region.predefined_subcategories)
 
     coord_fun = generate_template_coord_fun(planet.land, direction, current_coord, region, template)
     new_tiles = generate_tiles_for_template(template, coord_fun, planet)
@@ -2061,11 +2093,7 @@ defmodule Europa.Server.Planet do
 
     # Avoid placing region specific predefines in other regions
     is_all_tiles_in_current_region =
-      if Enum.empty?(region.predefined_subcategories) do
-        true
-      else
-        Enum.all?(new_tiles, fn {{x, y}, _} -> region_by_perlin_noise(x, y, planet.land) == region end)
-      end
+      Enum.all?(new_tiles, fn {{x, y}, _} -> region_by_perlin_noise(x, y, planet.land) == region end)
 
     if is_all_tiles_movable && is_all_tiles_in_current_region do
       updated_land = struct!(planet.land, tiles: Map.merge(planet.land.tiles, new_tiles))
@@ -2115,8 +2143,11 @@ defmodule Europa.Server.Planet do
         _ -> 0
       end
 
-    offset_x = div(@city_cell_size - template_w, 2)
-    offset_y = div(@city_cell_size - template_h, 2)
+    diff_x = @city_cell_size - template_w
+    offset_x = div(diff_x, 2) + if rem(diff_x, 2) != 0, do: 1, else: 0
+
+    diff_y = @city_cell_size - template_h
+    offset_y = div(diff_y, 2) + if rem(diff_y, 2) != 0, do: 1, else: 0
 
     target_x = bx + offset_x
     target_y = by + offset_y
@@ -2168,41 +2199,12 @@ defmodule Europa.Server.Planet do
     Enum.with_index(template, fn row, y ->
       Enum.with_index(row, fn tile, x ->
         coord = coord_fun.(x, y)
-        {coord, prepare_predefined_tile(tile, planet.land, coord, planet.characters_pid, planet.year)}
+        {coord, prepare_predefined_tile(tile, coord, planet)}
       end)
     end)
     |> List.flatten()
     |> Enum.into(%{})
   end
-
-  defp prepare_predefined_tile(%Enemy{stand_on: nil} = enemy, land, coord, _, _) do
-    stand_on = predefined_stand_on_tile(land, coord)
-    Enemy.stand_on(enemy, stand_on)
-  end
-
-  defp prepare_predefined_tile(%Loot.ItemBox{stand_on: nil} = item_box, land, coord, _, _) do
-    stand_on = predefined_stand_on_tile(land, coord)
-    Loot.ItemBox.stand_on(item_box, stand_on)
-  end
-
-  defp prepare_predefined_tile(%Object{stand_on: nil} = object, land, coord, _, _) do
-    stand_on = predefined_stand_on_tile(land, coord)
-    Object.stand_on(object, stand_on)
-  end
-
-  defp prepare_predefined_tile({:npc, stand_on}, land, coord, characters_pid, year) do
-    stand_on = stand_on || predefined_stand_on_tile(land, coord)
-
-    case Characters.pick(characters_pid, year - @disaster_year) do
-      {:ok, character} ->
-        Npc.new(character, stand_on)
-
-      _ ->
-        stand_on
-    end
-  end
-
-  defp prepare_predefined_tile(tile, _, _, _, _), do: tile
 
   defp predefined_stand_on_tile(land, {x, y}) do
     tile_by_perlin_noise(x, y, land)

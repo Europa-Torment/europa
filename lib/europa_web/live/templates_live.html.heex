@@ -1,0 +1,55 @@
+<Layouts.flash_group flash={@flash} />
+<.background />
+
+<div class="max-w-6xl mx-auto px-4 py-6 relative">
+  <.title text="Templates editor" />
+</div>
+
+<div class="overflow-x-auto border border-base-content/5 bg-base-100 p-10">
+  <div class="text-xs mb-2">
+    Currently, the best way to create templates is to describe them in your code editor, then paste the finished or intermediate JSON into this editor and run rendering checks.
+  </div>
+
+  <.input
+    id="template-json"
+    phx-hook="InputChange"
+    data-event="change_template_json"
+    type="textarea"
+    name="template"
+    value={@json}
+    rows={15}
+    label="Template JSON"
+  />
+
+  <.button
+    id="render-template"
+    phx-click="render_template"
+    class="btn btn-pixel btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold rounded-none mt-3"
+  >
+    Render
+  </.button>
+</div>
+
+<%= if @template do %>
+  <div class="max-w-6xl mx-auto px-4 py-6 relative">
+    <.title text="Rendered template" />
+  </div>
+
+  <div class="overflow-x-auto border border-base-content/5 bg-base-100 p-10">
+    <.game_field visible_planet={@template} player={@player} aim={[]} zoom_mode={false} />
+
+    <div class="text-secondary text-lg mt-3 mb-3">
+      Template size: {length(@template)}x{length(hd(@template))}
+    </div>
+
+    <.button
+      id="render-template"
+      phx-click="render_template"
+      class="btn btn-pixel btn-md bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold rounded-none mb-5"
+    >
+      Render
+    </.button>
+
+    <div class="text-xs">Keep clicking to see different versions of template</div>
+  </div>
+<% end %>

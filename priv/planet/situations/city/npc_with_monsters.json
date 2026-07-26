@@ -1,0 +1,21 @@
+{
+  "name": "NPCs fights with monsters",
+  "content": [
+    [
+      {"type": "enemy", "or": [{"type": "object", "name": "skip", "when": {"possibility": {"from": 1, "to": 10}}}]},
+      {"type": "enemy"},
+      {"type": "enemy"},
+      {"type": "enemy", "or": [{"type": "object", "name": "skip", "when": {"possibility": {"from": 1, "to": 10}}}]}
+    ],
+    [
+      {"type": "object", "name": "skip", "or": [{"type": "object", "name": "fire_vehicle", "when": {"possibility": {"from": 1, "to": 10}}}]},
+      {"type": "object", "name": "skip", "or": [{"type": "loot", "name": "human_body", "when": {"possibility": {"from": 1, "to": 5}}}, {"type": "loot", "name": "monster_body", "when": {"possibility": {"from": 1, "to": 5}}}, {"type": "object", "name": "fire_shuttle", "when": {"possibility": {"from": 1, "to": 5}}}]},
+      {"type": "object", "name": "skip"}
+    ],
+    [
+      {"type": "npc"},
+      {"type": "npc"},
+      {"type": "npc"}
+    ]
+  ]
+}

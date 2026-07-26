@@ -1,0 +1,10 @@
+{
+    "name": "takeoff site",
+    "content": [
+        [{"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "object", "name": "fire_shuttle", "stand_on": {"type": "tile", "name": "concrete"}, "or": [{"type": "loot", "name": "crashed_shuttle", "stand_on": {"type": "tile", "name": "concrete"}, "when": {"possibility": {"from": 1, "to": 5}}}]}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}],
+        [{"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}],
+        [{"type": "tile", "name": "concrete", "or": [{"type": "loot", "name": "box", "stand_on": {"type": "tile", "name": "concrete"}, "when": {"possibility": {"from": 1, "to": 6}}}]}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete", "or": [{"type": "enemy", "stand_on": {"type": "tile", "name": "concrete"}, "when": {"possibility": {"from": 1, "to": 3}}}]}, {"type": "tile", "name": "concrete"}],
+        [{"type": "tile", "name": "concrete", "or": [{"type": "loot", "name": "box", "stand_on": {"type": "tile", "name": "concrete"}, "when": {"possibility": {"from": 1, "to": 6}}}]}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}],
+        [{"type": "tile", "name": "concrete", "or": [{"type": "loot", "name": "box", "stand_on": {"type": "tile", "name": "concrete"}, "when": {"possibility": {"from": 1, "to": 6}}}]}, {"type": "object", "name": "fire_shuttle", "stand_on": {"type": "tile", "name": "concrete"}, "or": [{"type": "loot", "name": "crashed_shuttle", "stand_on": {"type": "tile", "name": "concrete"}, "when": {"possibility": {"from": 1, "to": 5}}}]}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}, {"type": "tile", "name": "concrete"}]
+    ]
+}

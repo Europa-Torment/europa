@@ -1,0 +1,11 @@
+{
+    "name": "sun batteries",
+    "content": [
+        [
+            {"type": "loot", "name": "sun_battery"}, {"type": "loot", "name": "sun_battery"}, {"type": "loot", "name": "sun_battery"}
+        ],
+        [
+            {"type": "loot", "name": "sun_battery"}, {"type": "loot", "name": "sun_battery"}, {"type": "loot", "name": "sun_battery"}
+        ]
+    ]
+}

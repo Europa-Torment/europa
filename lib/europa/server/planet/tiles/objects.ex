@@ -48,6 +48,21 @@ defmodule Europa.Server.Planet.Tiles.Objects do
         }
       ]
     },
+    door_up_locked: %Object{
+      name: gettext("door"),
+      image_name: "door_horizontal",
+      high?: true,
+      map_color: @wall_color,
+      transforms: [
+        %Transform{
+          name: :open,
+          readable_name: gettext("Open"),
+          transforms_to: {:tile, :open_up_door},
+          transform_requirements: {:tools, [Tool.generate_key()]},
+          transform_sound_name: "open_door"
+        }
+      ]
+    },
     door_down: %Object{
       name: gettext("door"),
       image_name: "door_horizontal",
@@ -58,6 +73,21 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_down_door},
+          transform_sound_name: "open_door"
+        }
+      ]
+    },
+    door_down_locked: %Object{
+      name: gettext("door"),
+      image_name: "door_horizontal",
+      high?: true,
+      map_color: @wall_color,
+      transforms: [
+        %Transform{
+          name: :open,
+          readable_name: gettext("Open"),
+          transforms_to: {:tile, :open_down_door},
+          transform_requirements: {:tools, [Tool.generate_key()]},
           transform_sound_name: "open_door"
         }
       ]
@@ -76,6 +106,21 @@ defmodule Europa.Server.Planet.Tiles.Objects do
         }
       ]
     },
+    door_left_locked: %Object{
+      name: gettext("door"),
+      image_name: "door_left",
+      high?: true,
+      map_color: @wall_color,
+      transforms: [
+        %Transform{
+          name: :open,
+          readable_name: gettext("Open"),
+          transforms_to: {:tile, :open_left_door},
+          transform_requirements: {:tools, [Tool.generate_key()]},
+          transform_sound_name: "open_door"
+        }
+      ]
+    },
     door_right: %Object{
       name: gettext("door"),
       image_name: "door_right",
@@ -86,6 +131,21 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_right_door},
+          transform_sound_name: "open_door"
+        }
+      ]
+    },
+    door_right_locked: %Object{
+      name: gettext("door"),
+      image_name: "door_right",
+      high?: true,
+      map_color: @wall_color,
+      transforms: [
+        %Transform{
+          name: :open,
+          readable_name: gettext("Open"),
+          transforms_to: {:tile, :open_right_door},
+          transform_requirements: {:tools, [Tool.generate_key()]},
           transform_sound_name: "open_door"
         }
       ]

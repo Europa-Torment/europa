@@ -49,18 +49,7 @@ config :europa, Europa.Server.Planet,
   default_predefined_possibility: 70,
   predefined_cluster_possibility: 15
 
-config :europa, Europa.Server.Planet.Predefined,
-  templates_path: "/planet/",
-  npc_generate_possibility: 20,
-  building: [
-    enemy_generate_possibility: 100,
-    loot_generate_possibility: 3,
-    locked_door_possibility: 5,
-    broken_building_possibility: 10,
-    broken_wall_possibility: 5,
-    burning_building_possibility: 7,
-    burning_floor_possibility: 3
-  ]
+config :europa, Europa.Server.Planet.Templates, templates_path: "/planet/"
 
 config :europa, Europa.Games,
   leaders_limit: 50,

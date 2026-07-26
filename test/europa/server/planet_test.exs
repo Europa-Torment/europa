@@ -2565,6 +2565,28 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
+  describe "prepare_predefined_tile/6" do
+    setup do
+      {:ok, planet: build(:planet, year: 2153)}
+    end
+
+    test "sets stand_on", %{planet: planet} do
+      tiles = [
+        build(:enemy, stand_on: nil),
+        build(:loot_item_box, stand_on: nil),
+        build(:object, stand_on: nil)
+      ]
+
+      for tile <- tiles do
+        assert %{stand_on: @i} = Planet.prepare_predefined_tile(tile, {1, 1}, planet, @i)
+      end
+    end
+
+    test "generates NPC and sets stand_on", %{planet: planet} do
+      assert %Npc{stand_on: @i} = Planet.prepare_predefined_tile({:npc, nil}, {1, 1}, planet, @i)
+    end
+  end
+
   defp assert_rounds_loaded_decreased(weapon, updated_weapon) do
     n =
       case weapon.shooting_type do
