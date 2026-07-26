@@ -315,9 +315,13 @@ defmodule EuropaWeb.GameCompotents do
   def ammo_info(assigns) do
     ~H"""
     <%= if @weapon do %>
-      <div class="bg-base-200 p-5 shadow-md text-xs" {open_inventory_attrs("ammo")}>
+      <div
+        style="display: inline-flex; align-items: center; gap: 0;"
+        class="bg-base-200 p-5 shadow-md text-xs"
+        {open_inventory_attrs("ammo")}
+      >
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")}/#{gettext("In inventory")}"}>
-          <.icon_image name="ammo" /> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
+          <span class="text-lg"><.icon_image name="ammo" /></span> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
         </p>
       </div>
     <% end %>
@@ -370,8 +374,12 @@ defmodule EuropaWeb.GameCompotents do
         <div class="modal-box overflow-visible overflow-y-auto max-w-2xl">
           <h3 class="text-lg font-bold">
             {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
-            <button class="btn btn-primary btn-sm" {open_craft_menu_attrs()}>
-              <.icon_image name="tool" />{gettext("Craft items")}
+            <button
+              style="display: inline-flex; align-items: center; gap: 0;"
+              class="btn btn-primary btn-sm"
+              {open_craft_menu_attrs()}
+            >
+              <span class="text-lg"><.icon_image name="tool" /></span>{gettext("Craft items")}
             </button>
           </h3>
           <div class="p-2">
@@ -862,7 +870,7 @@ defmodule EuropaWeb.GameCompotents do
   def moves_count(assigns) do
     ~H"""
     <%= if @moves_count > 0 do %>
-      <span class="italic text-base-content text-[0.625rem]"><.icon_image name="dice" />{@moves_count}</span>
+      <span class="italic text-base-content text-[0.825rem]"><.icon_image name="dice" />{@moves_count}</span>
     <% end %>
     """
   end

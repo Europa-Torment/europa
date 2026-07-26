@@ -301,7 +301,7 @@ defmodule EuropaWeb.CoreComponents do
     ~H"""
     <img
       src={"/images/icons/#{@name}.png"}
-      style="max-width: 16px; max-height: 16px; display: inline-block; vertical-align: middle; height: 1.2em; width: auto; margin-top: -2px;"
+      style="max-width: 32px; max-height: 32px; display: inline-block; vertical-align: middle; height: 1.2em; width: auto; margin-top: -2px;"
     />
     """
   end
