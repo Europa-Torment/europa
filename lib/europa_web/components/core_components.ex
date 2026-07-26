@@ -297,6 +297,15 @@ defmodule EuropaWeb.CoreComponents do
     """
   end
 
+  def icon_image(assigns) do
+    ~H"""
+    <img
+      src={"/images/icons/#{@name}.png"}
+      style="max-width: 16px; max-height: 16px; display: inline-block; vertical-align: middle; height: 1.2em; width: auto; margin-top: -2px;"
+    />
+    """
+  end
+
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""

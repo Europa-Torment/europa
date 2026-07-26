@@ -642,12 +642,13 @@ defmodule EuropaWeb.GameLive do
     {events, socket} =
       Enum.reduce(events, {[], socket}, fn {event_owner, event}, {events, socket} ->
         socket = maybe_play_event_sound(event_owner, event, socket)
-        event_text = event_text(event)
+        {event_text, event_icon} = event_text_and_icon(event)
 
         if event_text do
           event = %{
             event_owner: "#{event_owner}",
-            event_text: event_text(event),
+            event_text: event_text,
+            icon: event_icon,
             filter: event_filter(event_owner, event)
           }
 
@@ -1273,37 +1274,37 @@ defmodule EuropaWeb.GameLive do
   defp move_code_to_direction(code) when code in @move_left_codes, do: :left
   defp move_code_to_direction(code) when code in @move_right_codes, do: :right
 
-  defp event_text(%Event{type: :interested}) do
-    "?"
+  defp event_text_and_icon(%Event{type: :interested}) do
+    {"?", nil}
   end
 
-  defp event_text(%Event{type: {:damaged, damage}}) do
-    "💔 #{damage}"
+  defp event_text_and_icon(%Event{type: {:damaged, damage}}) do
+    {"#{damage}", "damage"}
   end
 
-  defp event_text(%Event{type: {:healed, health_change}}) do
-    "💊 #{health_change}"
+  defp event_text_and_icon(%Event{type: {:healed, health_change}}) do
+    {"#{health_change}", "heart"}
   end
 
-  defp event_text(%Event{type: {:radiation, radiation}}) do
-    "☢️ #{radiation}"
+  defp event_text_and_icon(%Event{type: {:radiation, radiation}}) do
+    {"#{radiation}", "radiation"}
   end
 
-  defp event_text(%Event{type: :great_red_spot}) do
-    gettext("What?!")
+  defp event_text_and_icon(%Event{type: :great_red_spot}) do
+    {gettext("What?!"), nil}
   end
 
-  defp event_text(%Event{type: {:warm_up, warm}}) when warm < 0 do
-    "❄️ #{abs(warm)}"
+  defp event_text_and_icon(%Event{type: {:warm_up, warm}}) when warm < 0 do
+    {"#{abs(warm)}", "warm"}
   end
 
-  defp event_text(%Event{type: {:shoot, _}}) do
-    "💥"
+  defp event_text_and_icon(%Event{type: {:shoot, _}}) do
+    {"", "bang"}
   end
 
-  defp event_text(%Event{type: {:speech, phrase}}), do: phrase
+  defp event_text_and_icon(%Event{type: {:speech, phrase}}), do: {phrase, nil}
 
-  defp event_text(_), do: nil
+  defp event_text_and_icon(_), do: {nil, nil}
 
   defp event_filter(:player, %Event{type: {:radiation, _}}), do: :green
   defp event_filter(:player, %Event{type: {:warm_up, units}}) when units < 0, do: :blue

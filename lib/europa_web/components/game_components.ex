@@ -138,7 +138,9 @@ defmodule EuropaWeb.GameCompotents do
   def current_time(assigns) do
     ~H"""
     <div class="bg-base-200 p-3 shadow-md text-sm">
-      ⌚ {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext("year AD")}
+      <.icon_image name="clock" /> {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext(
+        "year AD"
+      )}
     </div>
     """
   end
@@ -149,42 +151,42 @@ defmodule EuropaWeb.GameCompotents do
       <ul class="grid grid-cols-2 grid-rows-3 gap-3">
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"health-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:health)}>
-            💙 {@player_stats.health}/{@player_stats.max_health}
+            <.icon_image name="heart" /> {@player_stats.health}/{@player_stats.max_health}
           </div>
         </li>
         <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"warm-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:warm)}>
-            ❄️ {@player_stats.warm}/{@player_stats.max_warm}
+            <.icon_image name="warm" /> {@player_stats.warm}/{@player_stats.max_warm}
           </div>
         </li>
         <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
           <div id={"inventory-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:inventory)}>
-            💼 {@player_stats.inventory_weight}/{@player_stats.max_weight}
+            <.icon_image name="backpack" /> {@player_stats.inventory_weight}/{@player_stats.max_weight}
           </div>
         </li>
         <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"thirst-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:thirst)}>
-            💧 {@player_stats.thirst}
+            <.icon_image name="thirst" /> {@player_stats.thirst}
           </div>
         </li>
         <li>
           <div id={"accuracy-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:accuracy)}>
-            🎯 {@player_stats.accuracy}
+            <.icon_image name="accuracy" /> {@player_stats.accuracy}
           </div>
         </li>
         <li class={"#{hunger_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"hunger-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:hunger)}>
-            🍗 {@player_stats.hunger}
+            <.icon_image name="hunger" /> {@player_stats.hunger}
           </div>
         </li>
         <li>
           <div id={"efficiency-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:efficiency)}>
-            🦌 {@player_stats.efficiency}
+            <.icon_image name="efficiency" /> {@player_stats.efficiency}
           </div>
         </li>
         <li class={"#{radiation_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"radiation-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:radiation)}>
-            ☢️ {@player_stats.radiation}
+            <.icon_image name="radiation" /> {@player_stats.radiation}
           </div>
         </li>
       </ul>
@@ -195,7 +197,7 @@ defmodule EuropaWeb.GameCompotents do
   def compass_link(assigns) do
     ~H"""
     <div class="bg-base-200 p-5 shadow-md text-xs">
-      <.link phx-click="open_compass">🧭 {gettext("Compass")}</.link>
+      <.link phx-click="open_compass"><.icon_image name="compass" /> {gettext("Compass")}</.link>
     </div>
     """
   end
@@ -205,7 +207,7 @@ defmodule EuropaWeb.GameCompotents do
 
     ~H"""
     <div class="bg-base-200 p-5 shadow-md text-xs">
-      <.link phx-click="show_control_hints">ℹ️ {gettext("Control hints")}</.link>
+      <.link phx-click="show_control_hints"><.icon_image name="book" /> {gettext("Control hints")}</.link>
     </div>
     <div class="p-1 text-center text-xs">
       <div class="inline-block text-neutral">
@@ -315,7 +317,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @weapon do %>
       <div class="bg-base-200 p-5 shadow-md text-xs" {open_inventory_attrs("ammo")}>
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")}/#{gettext("In inventory")}"}>
-          🔫 {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
+          <.icon_image name="ammo" /> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
         </p>
       </div>
     <% end %>
@@ -369,7 +371,7 @@ defmodule EuropaWeb.GameCompotents do
           <h3 class="text-lg font-bold">
             {gettext("Inventory")} ({@player_stats.inventory_weight}/{@player_stats.max_weight}{gettext("kg")})
             <button class="btn btn-primary btn-sm" {open_craft_menu_attrs()}>
-              🛠️ {gettext("Craft items")}
+              <.icon_image name="tool" />{gettext("Craft items")}
             </button>
           </h3>
           <div class="p-2">
@@ -805,7 +807,7 @@ defmodule EuropaWeb.GameCompotents do
                     <%= if PlayerManager.enough_tools?(@player, required_tools) do %>
                       <div class="tooltip" data-tip={"#{gettext("Create")}"}>
                         <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>
-                          🛠️ <.moves_count moves_count={@craft_moves_count} />
+                          <.icon_image name="tool" /> <.moves_count moves_count={@craft_moves_count} />
                         </.link>
                       </div>
                     <% end %>
@@ -832,25 +834,25 @@ defmodule EuropaWeb.GameCompotents do
     <%= if Item.consumable?(@item) do %>
       <div class="tooltip" data-tip={"#{gettext("Consume")}"}>
         <.link phx-click="consume_supply" phx-value-uuid={"#{@item.uuid}"}>
-          💊 <.moves_count moves_count={@item.consume_cost} />
+          <.icon_image name="apple" /> <.moves_count moves_count={@item.consume_cost} />
         </.link>
       </div>
     <% end %>
     <%= if Item.usable?(@item) do %>
       <div class="tooltip" data-tip={"#{gettext("Use")}"}>
         <.link phx-click="use_tool" phx-value-uuid={"#{@item.uuid}"}>
-          🔨 <.moves_count moves_count={@item.use_cost} />
+          <.icon_image name="tool" /> <.moves_count moves_count={@item.use_cost} />
         </.link>
       </div>
     <% end %>
     <%= if Item.equipable?(@item) do %>
       <%= if @item.equipped do %>
         <div class="tooltip" data-tip={"#{gettext("Unequip")}"}>
-          <.link phx-click="unequip_item" phx-value-uuid={"#{@item.uuid}"}>🫳🏻</.link>
+          <.link phx-click="unequip_item" phx-value-uuid={"#{@item.uuid}"}><.icon_image name="cross" /></.link>
         </div>
       <% else %>
         <div class="tooltip" data-tip={"#{gettext("Equip")}"}>
-          <.link phx-click="equip_item" phx-value-uuid={"#{@item.uuid}"}>🛠️</.link>
+          <.link phx-click="equip_item" phx-value-uuid={"#{@item.uuid}"}><.icon_image name="done" /></.link>
         </div>
       <% end %>
     <% end %>
@@ -860,7 +862,7 @@ defmodule EuropaWeb.GameCompotents do
   def moves_count(assigns) do
     ~H"""
     <%= if @moves_count > 0 do %>
-      <span class="italic text-base-content text-[0.625rem]">🎲{@moves_count}</span>
+      <span class="italic text-base-content text-[0.625rem]"><.icon_image name="dice" />{@moves_count}</span>
     <% end %>
     """
   end
@@ -928,7 +930,7 @@ defmodule EuropaWeb.GameCompotents do
           <h3 class="text-lg font-bold pb-3">{gettext("Compass")}</h3>
 
           <button class="btn btn-primary btn-sm mt-2 mb-2" {add_compass_target_attrs()}>
-            🧭 {gettext("Track current coord")}
+            <.icon_image name="compass" /> {gettext("Track current coord")}
           </button>
 
           <div class="text-xs">
@@ -992,20 +994,20 @@ defmodule EuropaWeb.GameCompotents do
 
     <%= if @is_current_target do %>
       <div class="tooltip" data-tip={"#{gettext("Unfollow")}"}>
-        <.link phx-click="unfollow_compass_target">👁</.link>
+        <.link phx-click="unfollow_compass_target"><.icon_image name="compass" /></.link>
       </div>
     <% else %>
       <div class="tooltip" data-tip={"#{gettext("Follow")}"}>
-        <.link phx-click="follow_compass_target" phx-value-uuid={"#{@target.uuid}"}>👁</.link>
+        <.link phx-click="follow_compass_target" phx-value-uuid={"#{@target.uuid}"}><.icon_image name="compass" /></.link>
       </div>
     <% end %>
 
     <div class="tooltip" data-tip={"#{gettext("Delete")}"}>
-      <.link phx-click="delete_compass_target" phx-value-uuid={"#{@target.uuid}"}>❌</.link>
+      <.link phx-click="delete_compass_target" phx-value-uuid={"#{@target.uuid}"}><.icon_image name="cross" /></.link>
     </div>
 
     <%= if @is_current_target do %>
-      <span id="compass-arrow" class="ml-2" style={@style}>⬆️</span>
+      <span id="compass-arrow" class="ml-2" style={@style}>↑</span>
     <% end %>
     """
   end
