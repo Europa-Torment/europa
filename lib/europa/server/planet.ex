@@ -1297,10 +1297,12 @@ defmodule Europa.Server.Planet do
   end
 
   defp build_move_graph(planet, {sx, sy} = subject_coord, {tx, ty} = target_coord, subject) do
-    min_x = min(sx, tx) - @view_distance
-    max_x = max(sx, tx) + @view_distance
-    min_y = min(sy, ty) - @view_distance
-    max_y = max(sy, ty) + @view_distance
+    view_distance = 5
+
+    min_x = min(sx, tx) - view_distance
+    max_x = max(sx, tx) + view_distance
+    min_y = min(sy, ty) - view_distance
+    max_y = max(sy, ty) + view_distance
 
     coords = for x <- min_x..max_x, y <- min_y..max_y, do: {x, y}
 
