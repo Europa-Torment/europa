@@ -1280,56 +1280,47 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp calculate_move_coord(%__MODULE__{} = planet, {ox, oy} = _moving_object, {tx, ty} = _target, subject) do
-    x_diff = abs(ox - tx)
-    y_diff = abs(oy - ty)
+  defp calculate_move_coord(%__MODULE__{} = planet, {_sx, _sy} = subject_coord, {_tx, _ty} = target_coord, subject) do
+    if subject_coord == target_coord do
+      :stay
+    else
+      graph = build_move_graph(planet, subject_coord, target_coord, subject)
 
-    new_ox = if ox > tx, do: ox - 1, else: ox + 1
-    new_oy = if oy > ty, do: oy - 1, else: oy + 1
+      case Graph.get_shortest_path(graph, subject_coord, target_coord) do
+        [_, next_coord | _rest] ->
+          next_coord
 
-    move_x_coord = {new_ox, oy}
-    move_y_coord = {ox, new_oy}
-
-    move_x =
-      if movable_tile?(planet.land, move_x_coord, subject) do
-        move_x_coord
-      else
-        nil
+        _ ->
+          :stay
       end
-
-    move_y =
-      if movable_tile?(planet.land, move_y_coord, subject) do
-        move_y_coord
-      else
-        nil
-      end
-
-    desperate_moves =
-      [{ox + 1, oy}, {ox - 1, oy}, {ox, oy + 1}, {ox, oy - 1}]
-      |> Enum.filter(fn coord -> movable_tile?(planet.land, coord, subject) end)
-
-    cond do
-      x_diff > y_diff && move_x ->
-        move_x
-
-      y_diff > x_diff && move_y ->
-        move_y
-
-      y_diff == x_diff && move_x && move_y ->
-        Enum.random([move_x, move_y])
-
-      move_x != nil ->
-        move_x
-
-      move_y != nil ->
-        move_y
-
-      !Enum.empty?(desperate_moves) ->
-        Enum.random(desperate_moves)
-
-      true ->
-        :stay
     end
+  end
+
+  defp build_move_graph(planet, {sx, sy} = subject_coord, {tx, ty} = target_coord, subject) do
+    min_x = min(sx, tx) - @view_distance
+    max_x = max(sx, tx) + @view_distance
+    min_y = min(sy, ty) - @view_distance
+    max_y = max(sy, ty) + @view_distance
+
+    coords = for x <- min_x..max_x, y <- min_y..max_y, do: {x, y}
+
+    valid? =
+      fn coord ->
+        coord == subject_coord || coord == target_coord || movable_tile?(planet.land, coord, subject)
+      end
+
+    coords = Enum.filter(coords, valid?)
+
+    graph = Graph.new()
+    graph = Enum.reduce(coords, graph, fn coord, g -> Graph.add_vertex(g, coord) end)
+
+    Enum.reduce(coords, graph, fn {x, y} = coord, g ->
+      [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+      |> Enum.filter(&valid?.(&1))
+      |> Enum.reduce(g, fn neighbor, acc ->
+        Graph.add_edge(acc, coord, neighbor)
+      end)
+    end)
   end
 
   defp attack_or_miss(%Enemy{} = enemy) do
