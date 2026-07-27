@@ -10,6 +10,7 @@ defmodule Europa.Server.Loot.Utils.FilesReaderTest do
   }
 
   @item_boxes_filename "item_boxes.json"
+  @blueprints_filename "blueprints.json"
 
   describe "parse_items_files/1" do
     test "returns parsed files as map" do
@@ -34,6 +35,15 @@ defmodule Europa.Server.Loot.Utils.FilesReaderTest do
       assert Enum.all?(result, fn {attrs, _} ->
                %ItemBox{} = ItemBox.from_map(attrs)
              end)
+    end
+  end
+
+  describe "parse_blueprints_file/1" do
+    test "returns parsed file as list" do
+      result = FilesReader.parse_blueprints_file(@blueprints_filename)
+
+      assert is_list(result)
+      assert Enum.all?(result, fn attrs -> is_map(attrs) end)
     end
   end
 end

@@ -1,5 +1,6 @@
 [
     {
+        "id": "civil_suit",
         "name": "Civil suit", 
         "description": "A standard spacesuit for civilians. More than covers all everyday needs.",
         "efficiency": {"from": 1, "to": 3}, 
@@ -11,6 +12,7 @@
         "random_weight": 2.0
     },
     {
+        "id": "ssb_suit",
         "name": "SSB suit", 
         "description": "A reinforced spacesuit that allows for longer exposure to cold and greater weight capacity. Developed by terrorists from the SSB.",
         "efficiency": {"from": 1, "to": 6}, 
@@ -22,6 +24,7 @@
         "random_weight": 0.8
     },
     {
+        "id": "wcc_military_suit",
         "name": "WCC military suit", 
         "description": "A heavy military suit designed for elite units of the WCC military.",
         "efficiency": {"from": 1, "to": 2}, 

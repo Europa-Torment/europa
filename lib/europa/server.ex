@@ -209,7 +209,7 @@ defmodule Europa.Server do
     GenServer.call(server, {:disassemble_item, item_uuid})
   end
 
-  @spec craft_item(pid(), Loot.Blueprint.t()) :: :ok | {:error, Errors.NotApplicableError.t()}
+  @spec craft_item(pid(), Loot.Blueprints.Blueprint.t()) :: :ok | {:error, Errors.NotApplicableError.t()}
   def craft_item(server, blueprint) do
     GenServer.call(server, {:craft_item, blueprint})
   end
@@ -457,7 +457,7 @@ defmodule Europa.Server do
   end
 
   def handle_call({:craft_item, blueprint}, caller_pid, state) do
-    case PlayerManager.craft_item(state.player, %Loot.Blueprint{} = blueprint) do
+    case PlayerManager.craft_item(state.player, %Loot.Blueprints.Blueprint{} = blueprint) do
       {:ok, updated_player} ->
         crafted_message = crafted_message(blueprint.item, @craft_moves_count)
 

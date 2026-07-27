@@ -13,6 +13,7 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server.Loot
   alias Europa.Server.Event
   alias Europa.Server.Loot.Weapon
+  alias Europa.Server.Loot.Blueprints
   alias Europa.Server.Planet.Tiles.Objects.Object
 
   import EuropaWeb.GameCompotents
@@ -418,8 +419,8 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("disassemble_item", %{"uuid" => item_uuid}, socket) do
     with {:ok, item} <- Server.get_item(socket.assigns.server, item_uuid),
-         true <- Loot.Item.disassemblable?(item),
-         {:ok, items} <- Loot.Item.disassemble(item) do
+         true <- Loot.item_disassemblable?(item),
+         {:ok, items} <- Loot.disassemble_item(item) do
       {:noreply, assign(socket, disassemble_item_uuid: item_uuid, disassemble_items: items)}
     else
       _ -> {:noreply, socket}
@@ -983,12 +984,11 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp open_craft_menu(socket) do
-    blueprints = Loot.blueprints(socket.assigns.blueprints_type)
+    blueprints = Blueprints.blueprints(socket.assigns.blueprints_type)
     inventory = get_player_inventory(socket)
 
     socket =
       socket
-      |> close_all()
       |> assign(blueprints: blueprints, inventory: inventory)
 
     {:noreply, socket}
@@ -1135,7 +1135,7 @@ defmodule EuropaWeb.GameLive do
           socket
           |> base_assign()
           |> assign(
-            blueprints: Loot.blueprints(),
+            blueprints: Blueprints.blueprints(),
             inventory: get_player_inventory(socket)
           )
           |> play_sound("assemble")

@@ -103,7 +103,8 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Crafts item from it's blueprint.
   """
-  @callback craft_item(Player.t(), Loot.Blueprint.t()) :: {:ok, Player.t()} | {:error, Errors.NotApplicableError.t()}
+  @callback craft_item(Player.t(), Loot.Blueprints.Blueprint.t()) ::
+              {:ok, Player.t()} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
   Returns amount of given item.
@@ -119,6 +120,22 @@ defmodule Europa.Server.PlayerManager do
   Use given tools (decrease counts or delete)
   """
   @callback use_tools(Player.t(), list(Loot.Item.item())) :: {:ok, Player.t()} | {:error, Errors.NotApplicableError.t()}
+
+  @doc """
+  Returns amount of given item.
+  """
+  @callback resources_amount(Player.t(), Loot.Resource.t()) :: non_neg_integer()
+
+  @doc """
+  Checks if player has enough resources of given types
+  """
+  @callback enough_resources?(Player.t(), list(Loot.Item.item())) :: boolean()
+
+  @doc """
+  Use given resources (decrease counts or delete)
+  """
+  @callback use_resources(Player.t(), list(Loot.Item.item())) ::
+              {:ok, Player.t()} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
   Finds current equipped weapon or returns error if no weapon is equipped.
@@ -287,6 +304,12 @@ defmodule Europa.Server.PlayerManager do
   def enough_tools?(player, tools), do: manager_impl().enough_tools?(player, tools)
 
   def use_tools(player, tools), do: manager_impl().use_tools(player, tools)
+
+  def resources_amount(player, resource), do: manager_impl().resources_amount(player, resource)
+
+  def enough_resources?(player, resources), do: manager_impl().enough_resources?(player, resources)
+
+  def use_resources(player, resources), do: manager_impl().use_resources(player, resources)
 
   def craft_item(player, blueprint), do: manager_impl().craft_item(player, blueprint)
 

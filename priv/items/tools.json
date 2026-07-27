@@ -1,60 +1,8 @@
 [
     {
-        "name": "Weapon parts 1",
-        "description": "A set of parts for a primitive earthly weapon.",
-        "type": "weapon_parts",
-        "count": {"from": 1, "to": 4}, 
-        "sound_name": "assemble",
-        "properties": {
-            "level": 1
-        },
-        "stackable": true,
-        "weight": 0.1, 
-        "random_weight": 1.7
-    },
-    {
-        "name": "Weapon parts 2", 
-        "description": "Parts for Earth weapons. Nothing complicated, but the instructions are helpful.",
-        "type": "weapon_parts",
-        "count": {"from": 1, "to": 3}, 
-        "sound_name": "assemble",
-        "properties": {
-            "level": 2
-        },
-        "stackable": true,
-        "weight": 0.2, 
-        "random_weight": 0.4
-    },
-    {
-        "name": "Weapon parts 3", 
-        "description": "Parts for advanced weapons.",
-        "type": "weapon_parts",
-        "count": {"from": 1, "to": 2}, 
-        "sound_name": "assemble",
-        "properties": {
-            "level": 3
-        },
-        "stackable": true,
-        "weight": 0.3, 
-        "random_weight": 0.08
-    },
-    {
-        "name": "Weapon parts 4", 
-        "description": "Complex mechanical and scientific components that were not intended for weapon assembly, but...",
-        "type": "weapon_parts",
-        "count": 1, 
-        "sound_name": "assemble",
-        "properties": {
-            "level": 4
-        },
-        "stackable": true,
-        "weight": 0.4, 
-        "random_weight": 0.04
-    },
-    {
+        "id": "key",
         "name": "Key card", 
         "description": "A service key card that allows you to open a regular door.",
-        "type": "key",
         "count": {"from": 1, "to": 4},
         "sound_name": "assemble",
         "properties": {
@@ -65,9 +13,9 @@
         "random_weight": 1.0
     },
     {
+        "id": "matches",
         "name": "Matches", 
         "description": "Good matches that burn even in a thin atmosphere.",
-        "type": "matches",
         "count": {"from": 1, "to": 20},
         "sound_name": "matches",
         "properties": {},
@@ -76,9 +24,9 @@
         "random_weight": 1.5
     },
     {
+        "id": "bonfire_starter_kit",
         "name": "Bonfire starter kit", 
         "description": "A set of synthetic wood capable of burning in a rarefied atmosphere.",
-        "type": "bonfire_starter_kit",
         "count": {"from": 1, "to": 2},
         "sound_name": "matches",
         "properties": {},
@@ -89,9 +37,9 @@
         "random_weight": 0.4
     },
     {
+        "id": "fire_extinguisher",
         "name": "Fire extinguisher", 
         "description": "Carbon dioxide fire extinguisher.",
-        "type": "fire_extinguisher",
         "count": {"from": 1, "to": 3},
         "sound_name": "fire_extinguisher",
         "properties": {},

@@ -451,7 +451,7 @@ defmodule EuropaWeb.GameCompotents do
                 <a>{gettext("Unload")} <.moves_count moves_count={@item.reload_cost} /></a>
               </li>
             <% end %>
-            <%= if Loot.Item.disassemblable?(@item) do %>
+            <%= if Loot.item_disassemblable?(@item) do %>
               <li phx-click="disassemble_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
                 <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
               </li>
@@ -805,14 +805,14 @@ defmodule EuropaWeb.GameCompotents do
           <div>
             <ul class="list-disc list-inside space-y-2 text-sm">
               <%= if Enum.count(@blueprints) > 0 do %>
-                <%= for %Loot.Blueprint{item: item, tools: required_tools} <- @blueprints do %>
+                <%= for %Loot.Blueprints.Blueprint{item: item, resources: required_resources} <- @blueprints do %>
                   <li
                     id={"craft_item_#{item.uuid}"}
                     phx-hook="Tooltip"
-                    data-tooltip={craft_item_tooltip(item, required_tools, @player)}
+                    data-tooltip={craft_item_tooltip(item, required_resources, @player)}
                   >
                     {craft_item_name(item)}
-                    <%= if PlayerManager.enough_tools?(@player, required_tools) do %>
+                    <%= if PlayerManager.enough_resources?(@player, required_resources) do %>
                       <div class="tooltip" data-tip={"#{gettext("Create")}"}>
                         <.link phx-click="craft_item" phx-value-uuid={"#{item.uuid}"}>
                           <.icon_image name="tool" /> <.moves_count moves_count={@craft_moves_count} />
@@ -1084,18 +1084,34 @@ defmodule EuropaWeb.GameCompotents do
   defp coord({x, y}), do: "#{x};#{y}"
 
   defp craft_item_name(%Loot.Weapon{name: name}), do: name
-  defp craft_item_name(%Loot.Tool{} = tool), do: "#{tool.name}"
+  defp craft_item_name(%Loot.Weapon.Ammo{caliber: caliber}), do: "AMMO: #{caliber}"
+  defp craft_item_name(%Loot.Resource{} = resource), do: resource.name
+  defp craft_item_name(%Loot.Tool{} = tool), do: tool.name
 
-  defp craft_tools_requirements(tools, %Player{} = player) when is_list(tools) do
-    tools
-    |> Enum.map(fn required_tool ->
-      player_tools_count = PlayerManager.tools_amount(player, required_tool)
-      count = "#{player_tools_count}/#{required_tool.count}"
-      count_class = required_tool_class(player_tools_count, required_tool)
+  defp craft_resources_requirements(resources, %Player{} = player) when is_list(resources) do
+    resources
+    |> Enum.map(fn required_resource ->
+      player_resources_count = PlayerManager.resources_amount(player, required_resource)
+      count = "#{player_resources_count}/#{required_resource.count}"
+      count_class = required_resource_class(player_resources_count, required_resource)
 
-      {craft_item_name(required_tool), count, count_class}
+      {craft_item_name(required_resource), count, count_class}
     end)
     |> to_ul()
+  end
+
+  defp required_resource_class(%Player{} = player, required_resource) do
+    player
+    |> PlayerManager.resources_amount(required_resource)
+    |> required_resource_class(required_resource)
+  end
+
+  defp required_resource_class(player_resources_count, required_resource) do
+    if player_resources_count >= required_resource.count do
+      "text-blue-500"
+    else
+      "text-red-500"
+    end
   end
 
   defp required_tool_class(%Player{} = player, required_tool) do
@@ -1193,7 +1209,7 @@ defmodule EuropaWeb.GameCompotents do
   defp craft_item_tooltip(item, required_tools, player) do
     requirements =
       ~s|<span class="font-semibold pb-10">| <>
-        gettext("Required items") <> ~s|:</span>| <> craft_tools_requirements(required_tools, player)
+        gettext("Required items") <> ~s|:</span>| <> craft_resources_requirements(required_tools, player)
 
     [item_description(item) | requirements]
   end

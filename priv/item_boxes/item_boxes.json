@@ -53,7 +53,7 @@
         "type": "sun_battery",
         "readable_name": "Sun battery",
         "max_items": 1, 
-        "item_types": ["tool"], 
+        "item_types": ["tool", "resource"], 
         "movable": false, 
         "image_name": "sun_battery",
         "placing": "outdoor",

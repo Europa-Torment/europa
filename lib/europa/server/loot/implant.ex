@@ -31,6 +31,7 @@ defmodule Europa.Server.Loot.Implant do
   end
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :name, String.t()
     field :description, String.t()
@@ -42,6 +43,7 @@ defmodule Europa.Server.Loot.Implant do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
@@ -59,6 +61,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Implant do
   alias Europa.Server.Loot.Implant
   alias Europa.Server.Errors
   alias Europa.Server.Player
+
+  @spec id(Implant.t()) :: atom()
+  def id(%Implant{id: id}), do: id
 
   @spec item_type(Implant.t()) :: :implant
   def item_type(%Implant{}), do: :implant
@@ -141,14 +146,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Implant do
 
   @spec stackable?(Implant.t()) :: false
   def stackable?(%Implant{}), do: false
-
-  @spec disassemblable?(Implant.t()) :: false
-  def disassemblable?(%Implant{}), do: false
-
-  @spec disassemble(Implant.t()) :: {:error, Errors.NotApplicableError.t()}
-  def disassemble(%Implant{}) do
-    {:error, %Errors.NotApplicableError{}}
-  end
 
   @spec weight(Implant.t()) :: Loot.Item.weight()
   def weight(%Implant{weight: weight}) do

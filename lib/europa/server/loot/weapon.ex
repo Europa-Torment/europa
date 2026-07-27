@@ -15,9 +15,9 @@ defmodule Europa.Server.Loot.Weapon do
 
   @type shooting_type() :: unquote(Types.one_of(@allowed_shooting_types))
   @type caliber() :: String.t()
-  @type level() :: pos_integer()
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :equipped, boolean(), default: false
     field :name, String.t()
@@ -31,8 +31,6 @@ defmodule Europa.Server.Loot.Weapon do
     field :damage, pos_integer()
     field :caliber, caliber()
     field :shooting_distance, pos_integer()
-    field :level, level()
-    field :parts_count, pos_integer()
     field :weight, Loot.Item.weight()
     field :image_name, String.t()
     field :sound_name, String.t()
@@ -41,6 +39,7 @@ defmodule Europa.Server.Loot.Weapon do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: Map.fetch!(attrs, :name),
@@ -54,8 +53,6 @@ defmodule Europa.Server.Loot.Weapon do
       damage: Map.fetch!(attrs, :damage),
       caliber: Map.fetch!(attrs, :caliber),
       shooting_distance: Map.fetch!(attrs, :shooting_distance),
-      level: Map.fetch!(attrs, :level),
-      parts_count: Map.fetch!(attrs, :parts_count),
       weight: Map.fetch!(attrs, :weight),
       image_name: Map.fetch!(attrs, :image_name),
       sound_name: Map.fetch!(attrs, :sound_name)
@@ -127,9 +124,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
-  alias Europa.Server.Loot.Tool
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
+
+  @spec id(Weapon.t()) :: atom()
+  def id(%Weapon{id: id}), do: id
 
   @spec item_type(Weapon.t()) :: :weapon
   def item_type(%Weapon{}), do: :weapon
@@ -194,14 +193,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
 
   @spec stackable?(Weapon.t()) :: false
   def stackable?(%Weapon{}), do: false
-
-  @spec disassemblable?(Weapon.t()) :: true
-  def disassemblable?(%Weapon{}), do: true
-
-  @spec disassemble(Weapon.t()) :: list(Tool.t())
-  def disassemble(%Weapon{} = weapon) do
-    {:ok, Tool.from_weapon(weapon)}
-  end
 
   @spec weight(Weapon.t()) :: Loot.Item.weight()
   def weight(%Weapon{weight: weight}) do

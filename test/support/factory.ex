@@ -72,6 +72,7 @@ defmodule Europa.Support.Factory do
   @spec weapon_factory() :: Loot.Weapon.t()
   def weapon_factory do
     %Loot.Weapon{
+      id: sequence(:id, &:"weapon_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: sequence(:name, &"weapon #{&1 + 1}"),
@@ -85,8 +86,6 @@ defmodule Europa.Support.Factory do
       damage: 10,
       caliber: ".40 S&W",
       shooting_distance: 5,
-      level: 1,
-      parts_count: 2,
       weight: 1.0,
       image_name: "default_pistol",
       sound_name: "pistol"
@@ -96,6 +95,7 @@ defmodule Europa.Support.Factory do
   @spec ammo_factory() :: Loot.Weapon.Ammo.t()
   def ammo_factory do
     %Loot.Weapon.Ammo{
+      id: sequence(:id, &:"ammo_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       caliber: ".40 S&W",
       description: "description",
@@ -107,6 +107,7 @@ defmodule Europa.Support.Factory do
   @spec melee_weapon_factory() :: Loot.MeleeWeapon.t()
   def melee_weapon_factory do
     %Loot.MeleeWeapon{
+      id: sequence(:id, &:"melee_weapon_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: sequence(:name, &"melee weapon #{&1 + 1}"),
@@ -122,6 +123,7 @@ defmodule Europa.Support.Factory do
   @spec helmet_factory() :: Loot.Helmet.t()
   def helmet_factory do
     %Loot.Helmet{
+      id: sequence(:id, &:"helmet_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"helmet #{&1 + 1}"),
       description: "description",
@@ -136,6 +138,7 @@ defmodule Europa.Support.Factory do
   @spec suit_factory() :: Loot.Suit.t()
   def suit_factory do
     %Loot.Suit{
+      id: sequence(:id, &:"suit_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"suit #{&1 + 1}"),
       description: "description",
@@ -151,6 +154,7 @@ defmodule Europa.Support.Factory do
   @spec boots_factory() :: Loot.Boots.t()
   def boots_factory do
     %Loot.Boots{
+      id: sequence(:id, &:"boots_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"boots #{&1 + 1}"),
       description: "description",
@@ -165,6 +169,7 @@ defmodule Europa.Support.Factory do
   @spec supply_factory() :: Loot.Supply.t()
   def supply_factory do
     %Loot.Supply{
+      id: sequence(:id, &:"supply_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"supply #{&1 + 1}"),
       description: "description",
@@ -190,6 +195,7 @@ defmodule Europa.Support.Factory do
   @spec implant_factory() :: Loot.Implant.t()
   def implant_factory do
     %Loot.Implant{
+      id: sequence(:id, &:"implant_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
       name: sequence(:name, &"implant #{&1 + 1}"),
       description: "description",
@@ -215,8 +221,8 @@ defmodule Europa.Support.Factory do
   @spec tool_factory() :: Loot.Tool.t()
   def tool_factory do
     %Loot.Tool{
+      id: sequence(:id, &:"tool_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
-      type: :weapon_parts,
       name: sequence(:name, &"tool #{&1 + 1}"),
       description: "description",
       count: 1,
@@ -227,6 +233,18 @@ defmodule Europa.Support.Factory do
     }
   end
 
+  @spec resource_factory() :: Loot.Resource.t()
+  def resource_factory do
+    %Loot.Resource{
+      id: sequence(:id, &:"resource_#{&1 + 1}"),
+      uuid: Ecto.UUID.generate(),
+      name: sequence(:name, &"resource #{&1 + 1}"),
+      description: "description",
+      count: 1,
+      weight: 1.0
+    }
+  end
+
   @spec tool_properties_factory() :: Loot.Tool.Properties.t()
   def tool_properties_factory do
     %Loot.Tool.Properties{
@@ -234,11 +252,11 @@ defmodule Europa.Support.Factory do
     }
   end
 
-  @spec blueprint_factory() :: Loot.Blueprint.t()
+  @spec blueprint_factory() :: Loot.Blueprints.Blueprint.t()
   def blueprint_factory do
-    %Loot.Blueprint{
+    %Loot.Blueprints.Blueprint{
       item: build(:weapon),
-      tools: [build(:tool)]
+      resources: [build(:resource)]
     }
   end
 

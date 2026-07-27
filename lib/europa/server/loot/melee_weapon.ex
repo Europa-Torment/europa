@@ -5,6 +5,7 @@ defmodule Europa.Server.Loot.MeleeWeapon do
   alias Europa.Server.Loot
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :equipped, boolean(), default: false
     field :name, String.t()
@@ -19,6 +20,7 @@ defmodule Europa.Server.Loot.MeleeWeapon do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: Map.fetch!(attrs, :name),
@@ -37,9 +39,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.MeleeWeapon
-  alias Europa.Server.Errors
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
+
+  @spec id(MeleeWeapon.t()) :: atom()
+  def id(%MeleeWeapon{id: id}), do: id
 
   @spec item_type(MeleeWeapon.t()) :: :melee_weapon
   def item_type(%MeleeWeapon{}), do: :melee_weapon
@@ -94,14 +98,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.MeleeWeapon do
 
   @spec stackable?(MeleeWeapon.t()) :: false
   def stackable?(%MeleeWeapon{}), do: false
-
-  @spec disassemblable?(MeleeWeapon.t()) :: false
-  def disassemblable?(%MeleeWeapon{}), do: false
-
-  @spec disassemble(MeleeWeapon.t()) :: {:error, Errors.NotApplicableError.t()}
-  def disassemble(%MeleeWeapon{}) do
-    {:error, %Errors.NotApplicableError{}}
-  end
 
   @spec weight(MeleeWeapon.t()) :: Loot.Item.weight()
   def weight(%MeleeWeapon{weight: weight}) do

@@ -4,6 +4,7 @@ defmodule Europa.Server.Loot.Boots do
   alias Europa.Server.Loot
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :equipped, boolean(), default: false
     field :name, String.t()
@@ -18,6 +19,7 @@ defmodule Europa.Server.Loot.Boots do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: Map.fetch!(attrs, :name),
@@ -36,8 +38,10 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Boots
-  alias Europa.Server.Errors
   alias Europa.Server.Player
+
+  @spec id(Boots.t()) :: atom()
+  def id(%Boots{id: id}), do: id
 
   @spec item_type(Boots.t()) :: :boots
   def item_type(%Boots{}), do: :boots
@@ -95,14 +99,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
 
   @spec stackable?(Boots.t()) :: false
   def stackable?(%Boots{}), do: false
-
-  @spec disassemblable?(Boots.t()) :: false
-  def disassemblable?(%Boots{}), do: false
-
-  @spec disassemble(Boots.t()) :: {:error, Errors.NotApplicableError.t()}
-  def disassemble(%Boots{}) do
-    {:error, %Errors.NotApplicableError{}}
-  end
 
   @spec weight(Boot.t()) :: Loot.Item.weight()
   def weight(%Boots{weight: weight}) do

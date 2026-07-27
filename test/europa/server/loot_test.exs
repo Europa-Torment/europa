@@ -16,6 +16,7 @@ defmodule Europa.Server.Loot.ItemTest do
             build(:weapon),
             build(:ammo),
             build(:tool),
+            build(:resource),
             build(:melee_weapon),
             build(:helmet),
             build(:suit),
@@ -34,6 +35,7 @@ defmodule Europa.Server.Loot.ItemTest do
             build(:weapon),
             build(:ammo),
             build(:tool),
+            build(:resource),
             build(:melee_weapon),
             build(:helmet),
             build(:suit),
@@ -52,6 +54,7 @@ defmodule Europa.Server.Loot.ItemTest do
             build(:weapon),
             build(:ammo),
             build(:tool),
+            build(:resource),
             build(:melee_weapon),
             build(:helmet),
             build(:suit),
@@ -115,6 +118,18 @@ defmodule Europa.Server.Loot.ItemTest do
       ]
 
       assert Item.readable_attrs(tool, player) == expected_attrs
+    end
+
+    test "returns attrs for resource", %{player: player} do
+      resource = build(:resource)
+
+      expected_attrs = [
+        {:name, "Name", resource.name},
+        {:count, "Count", resource.count},
+        {:weight, "Weight", resource.count * resource.weight}
+      ]
+
+      assert Item.readable_attrs(resource, player) == expected_attrs
     end
 
     test "returns attrs for melee weapon", %{player: player} do
@@ -228,6 +243,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.consumable?(tool) == false
     end
 
+    test "returns false for resource" do
+      resource = build(:resource)
+      assert Item.consumable?(resource) == false
+    end
+
     test "returns false for melee weapon" do
       melee_weapon = build(:melee_weapon)
       assert Item.consumable?(melee_weapon) == false
@@ -278,6 +298,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.usable?(tool2) == true
     end
 
+    test "returns false for resource" do
+      resource = build(:resource)
+      assert Item.usable?(resource) == false
+    end
+
     test "returns false for melee weapon" do
       melee_weapon = build(:melee_weapon)
       assert Item.usable?(melee_weapon) == false
@@ -323,6 +348,11 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns false for tool" do
       tool = build(:tool)
       assert Item.equipable?(tool) == false
+    end
+
+    test "returns false for resource" do
+      resource = build(:resource)
+      assert Item.equipable?(resource) == false
     end
 
     test "returns true for melee weapon" do
@@ -372,6 +402,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.stackable?(tool) == true
     end
 
+    test "returns true for resource" do
+      resource = build(:resource)
+      assert Item.stackable?(resource) == true
+    end
+
     test "returns false for melee weapon" do
       melee_weapon = build(:melee_weapon)
       assert Item.stackable?(melee_weapon) == false
@@ -400,53 +435,6 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns false for implant" do
       implant = build(:implant)
       assert Item.stackable?(implant) == false
-    end
-  end
-
-  describe "disassemblable?/1" do
-    test "returns true for weapon" do
-      weapon = build(:weapon)
-      assert Item.disassemblable?(weapon) == true
-    end
-
-    test "returns false for ammo" do
-      ammo = build(:ammo)
-      assert Item.disassemblable?(ammo) == false
-    end
-
-    test "returns false for tool" do
-      tool = build(:tool)
-      assert Item.disassemblable?(tool) == false
-    end
-
-    test "returns false for melee weapon" do
-      melee_weapon = build(:melee_weapon)
-      assert Item.disassemblable?(melee_weapon) == false
-    end
-
-    test "returns false for helmet" do
-      helmet = build(:helmet)
-      assert Item.disassemblable?(helmet) == false
-    end
-
-    test "returns false for suit" do
-      suit = build(:suit)
-      assert Item.disassemblable?(suit) == false
-    end
-
-    test "returns false for boots" do
-      boots = build(:boots)
-      assert Item.disassemblable?(boots) == false
-    end
-
-    test "returns false for supply" do
-      supply = build(:supply)
-      assert Item.disassemblable?(supply) == false
-    end
-
-    test "returns false for implant" do
-      implant = build(:implant)
-      assert Item.disassemblable?(implant) == false
     end
   end
 
@@ -506,18 +494,6 @@ defmodule Europa.Server.Loot.ItemTest do
     test "returns not_applicable error" do
       ammo = build(:ammo)
       assert Item.equip(ammo) == {:error, %Errors.NotApplicableError{}}
-    end
-  end
-
-  describe "disassemble/1" do
-    test "returns list of tools for weapon" do
-      weapon = build(:weapon)
-      assert {:ok, [%Tool{}]} = Item.disassemble(weapon)
-    end
-
-    test "returns not_applicable error" do
-      ammo = build(:ammo)
-      assert Item.disassemble(ammo) == {:error, %Errors.NotApplicableError{}}
     end
   end
 end
@@ -659,8 +635,11 @@ defmodule Europa.Server.LootTest do
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Resource
   alias Europa.Server.Loot.Implant
-  alias Europa.Server.Loot.Blueprint
+  alias Europa.Server.Loot.Blueprints
+  alias Europa.Server.Loot.Blueprints.Blueprint
+  alias Europa.Server.Errors
 
   describe "generate_item/1" do
     test "generates item of given type" do
@@ -704,26 +683,6 @@ defmodule Europa.Server.LootTest do
     end
   end
 
-  describe "blueprints/1" do
-    test "returns list of blueprints" do
-      blueprints = Loot.blueprints()
-
-      assert Enum.all?(blueprints, fn %Blueprint{item: item, tools: tools} ->
-               item?(item) && Enum.all?(tools, &tool?/1)
-             end)
-    end
-
-    test "returns listi of blueprints with given item type" do
-      for item_type <- [:weapon, :tool] do
-        blueprints = Loot.blueprints(item_type)
-
-        assert Enum.all?(blueprints, fn %Blueprint{item: item} ->
-                 Loot.Item.item_type(item) == item_type
-               end)
-      end
-    end
-  end
-
   describe "movable_item_box_types/0" do
     test "returns list of item_box types" do
       assert Loot.movable_item_box_types() |> Enum.any?(&is_atom/1)
@@ -739,6 +698,46 @@ defmodule Europa.Server.LootTest do
     end
   end
 
+  describe "item_disassemblable?/1" do
+    test "returns true or false" do
+      ammo = build(:ammo)
+      %Blueprint{item: item} = Blueprints.blueprints() |> List.first()
+
+      assert Loot.item_disassemblable?(item) == true
+      assert Loot.item_disassemblable?(ammo) == false
+    end
+  end
+
+  describe "disassemble_item/1" do
+    test "returns list of tools for item" do
+      %Blueprint{item: item, resources: expected_resources} = Blueprints.blueprints() |> List.first()
+      expected_resources_id = Enum.map(expected_resources, & &1.id)
+      assert {:ok, resources} = Loot.disassemble_item(item)
+
+      assert Enum.count(resources) == Enum.count(expected_resources)
+      assert Enum.all?(resources, fn %Resource{} = resource -> resource.id in expected_resources_id end)
+    end
+
+    test "returns NotApplicable error" do
+      ammo = build(:ammo)
+      assert Loot.disassemble_item(ammo) == {:error, %Errors.NotApplicableError{}}
+    end
+  end
+
+  describe "decrease_item_count/2" do
+    test "decreases item count" do
+      n = 7
+      supply = build(:supply, count: 10)
+      assert %Supply{count: 3} = Loot.decrease_item_count(supply, n)
+    end
+
+    test "no negative value" do
+      n = 20
+      supply = build(:supply, count: 10)
+      assert %Supply{count: 0} = Loot.decrease_item_count(supply, n)
+    end
+  end
+
   defp item?(%Helmet{}), do: true
   defp item?(%Suit{}), do: true
   defp item?(%Boots{}), do: true
@@ -746,10 +745,8 @@ defmodule Europa.Server.LootTest do
   defp item?(%MeleeWeapon{}), do: true
   defp item?(%Ammo{}), do: true
   defp item?(%Tool{}), do: true
+  defp item?(%Resource{}), do: true
   defp item?(%Supply{}), do: true
   defp item?(%Implant{}), do: true
   defp item?(_), do: false
-
-  defp tool?(%Tool{}), do: true
-  defp tool?(_), do: false
 end

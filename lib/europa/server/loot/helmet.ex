@@ -4,6 +4,7 @@ defmodule Europa.Server.Loot.Helmet do
   alias Europa.Server.Loot
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :equipped, boolean(), default: false
     field :name, String.t()
@@ -18,6 +19,7 @@ defmodule Europa.Server.Loot.Helmet do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: Map.fetch!(attrs, :name),
@@ -36,8 +38,10 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Helmet
-  alias Europa.Server.Errors
   alias Europa.Server.Player
+
+  @spec id(Helmet.t()) :: atom()
+  def id(%Helmet{id: id}), do: id
 
   @spec item_type(Helmet.t()) :: :helmet
   def item_type(%Helmet{}), do: :helmet
@@ -95,14 +99,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
 
   @spec stackable?(Helmet.t()) :: false
   def stackable?(%Helmet{}), do: false
-
-  @spec disassemblable?(Helmet.t()) :: false
-  def disassemblable?(%Helmet{}), do: false
-
-  @spec disassemble(Helmet.t()) :: {:error, Errors.NotApplicableError.t()}
-  def disassemble(%Helmet{}) do
-    {:error, %Errors.NotApplicableError{}}
-  end
 
   @spec weight(Helmet.t()) :: Loot.Item.weight()
   def weight(%Helmet{weight: weight}) do

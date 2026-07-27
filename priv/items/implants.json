@@ -1,5 +1,6 @@
 [
     {
+        "id": "mechanical_eye",
         "name": "Mechanical eye",
         "description": "An optical implant that increases visual acuity and focusing range.",
         "properties": {
@@ -9,6 +10,7 @@
         "random_weight": 0.5
     },
     {
+        "id": "quantum_immunomodulator",
         "name": "Quantum immunomodulator",
         "description": "An arterial-implantable immune cell modulator.",
         "properties": {
@@ -18,6 +20,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "metabolism_stimulant",
         "name": "Metabolism stimulant",
         "description": "Subcutaneous implant that enhances metabolism.",
         "properties": {
@@ -27,6 +30,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "steel_grip",
         "name": "Steel Grip",
         "description": "Increases shotguns damage.",
         "properties": {
@@ -36,6 +40,7 @@
         "random_weight": 0.5
     },
     {
+        "id": "optical_amplifier",
         "name": "Optical amplifier",
         "description": "Increases firearm damage.",
         "properties": {
@@ -45,6 +50,7 @@
         "random_weight": 0.04
     },
     {
+        "id": "response_modulator",
         "name": "Response modulator",
         "description": "Increases melee weapon damage.",
         "properties": {
@@ -54,6 +60,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "spine_activator",
         "name": "Spine activator",
         "description": "Increases load capacity.",
         "properties": {
@@ -63,6 +70,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "concentration_enhancer",
         "name": "Concentration Enhancer",
         "description": "Improves the efficiency of actions.",
         "properties": {
@@ -72,6 +80,7 @@
         "random_weight": 0.08
     },
     {
+        "id": "god_module",
         "name": "God module",
         "description": "A rare implant. A secret development for supersoldiers.",
         "properties": {

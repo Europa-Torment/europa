@@ -1,16 +1,9 @@
 defmodule Europa.Server.Loot.Tool do
   use TypedStruct
 
-  alias Europa.Tools.Types
   alias Europa.Server.Loot
-  alias Europa.Server.Loot.Weapon
   alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Planet.Tiles.Objects.Object
-  alias Europa.Tools.AttrsDeterminator
-
-  @allowed_tool_types [:weapon_parts, :key, :matches, :bonfire_starter_kit, :fire_extinguisher]
-
-  @type tool_type() :: unquote(Types.one_of(@allowed_tool_types))
 
   @type using_type() :: {:put_object, Objects.name()} | nil
 
@@ -28,10 +21,10 @@ defmodule Europa.Server.Loot.Tool do
   end
 
   typedstruct do
+    field :id, atom(), enforce: true
     field :uuid, Loot.uuid(), enforce: true
     field :name, String.t(), enforce: true
     field :description, String.t(), enforce: true
-    field :type, tool_type(), enforce: true
     field :count, pos_integer(), enforce: true
     field :properties, Properties.t(), enforce: true
     field :stackable?, boolean(), enforce: true
@@ -46,8 +39,8 @@ defmodule Europa.Server.Loot.Tool do
     use_cost = Map.get(attrs, :use_cost)
 
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
-      type: Map.fetch!(attrs, :type) |> to_atom() |> validate_type!(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       count: Map.fetch!(attrs, :count),
@@ -58,49 +51,6 @@ defmodule Europa.Server.Loot.Tool do
       weight: Map.fetch!(attrs, :weight),
       sound_name: Map.fetch!(attrs, :sound_name)
     }
-  end
-
-  @spec decrease_count(t(), n :: pos_integer()) :: t()
-  def decrease_count(%__MODULE__{} = tool, n \\ 1) when n > 0 do
-    updated_value = (tool.count - n) |> max(0)
-    struct!(tool, count: updated_value)
-  end
-
-  @spec from_weapon(Weapon.t()) :: list(t())
-  def from_weapon(%Weapon{} = weapon) do
-    weapon_parts =
-      Loot.get_items(:tool)
-      |> Enum.find(fn {tool, _} -> tool.type == "weapon_parts" && tool.properties.level == weapon.level end)
-      |> elem(0)
-      |> AttrsDeterminator.determine_attrs()
-      |> Map.put(:count, weapon.parts_count - 1)
-      |> new()
-
-    [weapon_parts]
-  end
-
-  @spec generate_key() :: t()
-  def generate_key do
-    generate_one_tool("key")
-  end
-
-  @spec generate_matches() :: t()
-  def generate_matches do
-    generate_one_tool("matches")
-  end
-
-  @spec generate_matches() :: t()
-  def generate_fire_extinguisher do
-    generate_one_tool("fire_extinguisher")
-  end
-
-  defp generate_one_tool(type) do
-    Loot.get_items(:tool)
-    |> Enum.filter(fn {tool, _} -> tool.type == type end)
-    |> WeightedRandom.take_one()
-    |> AttrsDeterminator.determine_attrs()
-    |> Map.put(:count, 1)
-    |> new()
   end
 
   defp parse_and_validate_using_type(%{put_object: object_name}, use_cost) do
@@ -114,18 +64,6 @@ defmodule Europa.Server.Loot.Tool do
   end
 
   defp parse_and_validate_using_type(nil, _), do: nil
-
-  defp validate_type!(type) when type in @allowed_tool_types, do: type
-
-  defp validate_type!(type) do
-    raise "invalid tool type: #{inspect(type)}"
-  end
-
-  defp to_atom(value) when is_atom(value), do: value
-
-  defp to_atom(value) when is_binary(value) do
-    String.to_atom(value)
-  end
 end
 
 defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
@@ -136,6 +74,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
   alias Europa.Server.Player
+
+  @spec id(Tool.t()) :: atom()
+  def id(%Tool{id: id}), do: id
 
   @spec item_type(Tool.t()) :: :tool
   def item_type(%Tool{}), do: :tool
@@ -233,14 +174,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
 
   @spec stackable?(Tool.t()) :: boolean()
   def stackable?(%Tool{stackable?: stackable?}), do: stackable?
-
-  @spec disassemblable?(Tool.t()) :: false
-  def disassemblable?(%Tool{}), do: false
-
-  @spec disassemble(Tool.t()) :: {:error, Errors.NotApplicableError.t()}
-  def disassemble(%Tool{}) do
-    {:error, %Errors.NotApplicableError{}}
-  end
 
   @spec weight(Tool.t()) :: Loot.Item.weight()
   def weight(%Tool{weight: weight, count: count}) do

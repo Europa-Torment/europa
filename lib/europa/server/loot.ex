@@ -2,6 +2,7 @@ defmodule Europa.Server.Loot do
   use TypedStruct
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Server.Planet
 
   alias Europa.Tools.Types
@@ -17,6 +18,9 @@ defmodule Europa.Server.Loot do
   alias Europa.Server.Loot.Boots
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Resource
+  alias Europa.Server.Loot.Blueprints
+  alias Europa.Server.Loot.Blueprints.Blueprint
   alias Europa.Server.Loot.Implant
   alias Europa.Server.Loot.Utils.FilesReader
   alias Europa.Server.Enemy
@@ -38,7 +42,8 @@ defmodule Europa.Server.Loot do
     {:ammo, gettext("Ammo"), 0.7},
     {:melee_weapon, gettext("Melee weapons"), 0.7},
     {:supply, gettext("Supplies"), 1.0},
-    {:tool, gettext("Tools"), 0.7},
+    {:tool, gettext("Tools"), 0.3},
+    {:resource, gettext("Resources"), 1.0},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},
     {:boots, gettext("Boots"), 0.4},
@@ -58,12 +63,14 @@ defmodule Europa.Server.Loot do
     boots: "boots.json",
     supply: "supplies.json",
     tool: "tools.json",
+    resource: "resources.json",
     implant: "implants.json"
   }
 
   @items_attrs FilesReader.parse_items_files(@filenames)
 
   @type item_type :: unquote(Types.one_of(@allowed_item_types))
+  @type item_id :: atom()
   @type item_box_type :: unquote(Types.one_of(@allowed_item_box_types))
 
   @type attrs :: map()
@@ -123,6 +130,9 @@ defmodule Europa.Server.Loot do
     @spec item_type(item()) :: Loot.item_type()
     def item_type(item)
 
+    @spec id(item()) :: atom()
+    def id(item)
+
     @spec composed_name(item()) :: String.t()
     def composed_name(item)
 
@@ -146,12 +156,6 @@ defmodule Europa.Server.Loot do
 
     @spec stackable?(item()) :: boolean()
     def stackable?(item)
-
-    @spec disassemblable?(item()) :: boolean()
-    def disassemblable?(item)
-
-    @spec disassemble(item()) :: {:ok, list(item())} | {:error, Errors.NotApplicableError.t()}
-    def disassemble(item)
 
     @spec equip(item()) :: {:ok, item()} | {:error, Errors.NotApplicableError.t()}
     def equip(item)
@@ -288,25 +292,6 @@ defmodule Europa.Server.Loot do
     defp check_weapon(_), do: {:error, %Errors.NotApplicableError{}}
   end
 
-  defmodule Blueprint do
-    alias Europa.Server.Loot
-
-    @type tools :: list(Loot.Tool.t())
-
-    typedstruct enforce: true do
-      field :item, Loot.Item.item()
-      field :tools, tools()
-    end
-
-    @spec new(Loot.Item.item(), tools()) :: t()
-    def new(item, tools) when is_list(tools) do
-      %__MODULE__{
-        item: item,
-        tools: tools
-      }
-    end
-  end
-
   @spec allowed_item_types() :: list()
   def allowed_item_types, do: @item_types
 
@@ -336,6 +321,7 @@ defmodule Europa.Server.Loot do
       :boots -> Boots.new(attrs)
       :supply -> Supply.new(attrs)
       :tool -> Tool.new(attrs)
+      :resource -> Resource.new(attrs)
       :implant -> Implant.new(attrs)
     end
   end
@@ -377,6 +363,21 @@ defmodule Europa.Server.Loot do
       |> AttrsDeterminator.determine_attrs()
 
     new_item(item_type, attrs)
+  end
+
+  @spec generate_item(item_type(), item_id(), count :: pos_integer()) :: Item.t()
+  def generate_item(item_type, item_id, count \\ 1)
+      when item_type in @allowed_item_types and is_atom(item_id) and is_integer(count) and count > 0 do
+    attrs =
+      item_type
+      |> get_items()
+      |> Enum.find(fn {item, _} -> String.to_atom(item.id) == item_id end)
+      |> elem(0)
+      |> AttrsDeterminator.determine_attrs()
+
+    item_type
+    |> new_item(attrs)
+    |> maybe_set_count(count)
   end
 
   @spec generate_item_box() :: ItemBox.t()
@@ -429,13 +430,50 @@ defmodule Europa.Server.Loot do
     Map.fetch!(@items_attrs, category)
   end
 
-  @spec blueprints(item_type() | :all) :: list(Blueprint.t())
-  def blueprints(item_type \\ :all) do
-    blueprints = weapon_blueprints() ++ tool_blueprints()
+  @spec item_disassemblable?(Item.item()) :: boolean()
+  def item_disassemblable?(item) when is_struct(item) do
+    if find_blueprint(item) do
+      true
+    else
+      false
+    end
+  end
 
-    case item_type do
-      :all -> blueprints
-      type -> Enum.filter(blueprints, &(Item.item_type(&1.item) == type))
+  @spec disassemble_item(Item.item()) :: {:ok, list(Resource.t())} | {:error, NotApplicableError.t()}
+  def disassemble_item(item) when is_struct(item) do
+    case find_blueprint(item) do
+      %Blueprint{resources: resources} ->
+        {:ok, resources}
+
+      _ ->
+        {:error, %NotApplicableError{}}
+    end
+  end
+
+  @spec decrease_item_count(Item.item(), n :: pos_integer()) :: Item.item()
+  def decrease_item_count(item, n \\ 1) when is_struct(item) and n > 0 do
+    if Item.stackable?(item) do
+      updated_value = (item.count - n) |> max(0)
+      struct!(item, count: updated_value)
+    else
+      item
+    end
+  end
+
+  defp find_blueprint(item) when is_struct(item) do
+    item_type = Item.item_type(item)
+
+    Blueprints.blueprints()
+    |> Enum.find(fn %Blueprint{item: bp_item} ->
+      Item.item_type(bp_item) == item_type && Item.id(bp_item) == Item.id(item)
+    end)
+  end
+
+  defp maybe_set_count(item, count) do
+    if Item.stackable?(item) do
+      struct!(item, count: count)
+    else
+      item
     end
   end
 
@@ -457,54 +495,5 @@ defmodule Europa.Server.Loot do
       end
 
     struct!(item_box, items: items)
-  end
-
-  defp weapon_blueprints do
-    get_items(:weapon)
-    |> Enum.map(fn {attrs, _} ->
-      weapon =
-        attrs
-        |> AttrsDeterminator.determine_attrs()
-        |> Weapon.new()
-
-      tools =
-        weapon
-        |> Tool.from_weapon()
-        |> Enum.map(&struct!(&1, count: weapon.parts_count))
-
-      Blueprint.new(weapon, tools)
-    end)
-    |> Enum.sort(fn %Blueprint{item: w1}, %Blueprint{item: w2} -> w1.level < w2.level end)
-  end
-
-  defp tool_blueprints do
-    weapon_parts_blueprints()
-  end
-
-  defp weapon_parts_blueprints do
-    weapon_parts =
-      get_items(:tool)
-      |> Enum.map(fn {attrs, _} ->
-        attrs
-        |> AttrsDeterminator.determine_attrs()
-        |> Tool.new()
-        |> struct!(count: 1)
-      end)
-      |> Enum.filter(&(&1.type == :weapon_parts))
-      |> Enum.map(fn wp -> {wp.properties.level, wp} end)
-      |> Enum.into(%{})
-
-    Enum.reduce(weapon_parts, [], fn {level, wp}, acc ->
-      if level > 1 do
-        prev_level_wp =
-          weapon_parts
-          |> Map.fetch!(level - 1)
-          |> struct!(count: level)
-
-        acc ++ [Blueprint.new(wp, [prev_level_wp])]
-      else
-        acc
-      end
-    end)
   end
 end

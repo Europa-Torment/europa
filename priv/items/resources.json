@@ -1,0 +1,202 @@
+[
+    {
+        "id": "simple_weapon_parts",
+        "name": "Parts for primitive weapons",
+        "description": "A set of parts for a primitive earthly weapon.",
+        "count": {"from": 1, "to": 3},
+        "weight": 0.1, 
+        "random_weight": 2.0
+    },
+    {
+        "id": "regular_weapon_parts",
+        "name": "Parts for regular weapons",
+        "description": "Parts for Earth weapons. Nothing complicated, but the instructions are helpful.",
+        "count": {"from": 1, "to": 2},
+        "weight": 0.2, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "advanced_weapon_parts",
+        "name": "Parts for advanced weapons",
+        "description": "A set of parts for complex weapons.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.3, 
+        "random_weight": 0.5
+    },
+    {
+        "id": "science_weapon_parts",
+        "name": "Parts for science weapons",
+        "description": "High-tech scientific equipment suitable for creating powerful weapons.",
+        "count": 1,
+        "weight": 0.4, 
+        "random_weight": 0.05
+    },
+    {
+        "id": "spring",
+        "name": "Steel spring",
+        "description": "A high-quality medium-sized steel spring that can be useful when assembling a weapon.",
+        "count": {"from": 1, "to": 4},
+        "weight": 0.1, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "standard_stock",
+        "name": "Standard stock",
+        "description": "Standard metal stock, great for rifles.",
+        "count": {"from": 1, "to": 2},
+        "weight": 0.7, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "pistol_magazine",
+        "name": "Pistol magazine",
+        "description": "Magazine for pistols.",
+        "count": {"from": 1, "to": 2},
+        "weight": 0.2, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "rifle_magazine",
+        "name": "Rifle magazine",
+        "description": "High capacity magazine for rifles.",
+        "count": {"from": 1, "to": 2},
+        "weight": 0.5, 
+        "random_weight": 0.5
+    },
+    {
+        "id": "short_barrel",
+        "name": "Short barrel",
+        "description": "Standard short barrel suitable for pistols and other light weapons.",
+        "count": {"from": 1, "to": 2},
+        "weight": 1.0, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "long_barrel",
+        "name": "Long barrel",
+        "description": "A long barrel suitable for rifles and shotguns.",
+        "count": {"from": 1, "to": 2},
+        "weight": 1.0, 
+        "random_weight": 0.5
+    },
+    {
+        "id": "sniper_scope",
+        "name": "Sniper scope",
+        "description": "Excellent modern sniper scope.",
+        "count": {"from": 1, "to": 2},
+        "weight": 1.0, 
+        "random_weight": 0.2
+    },
+    {
+        "id": "metal_plate",
+        "name": "Metal plate",
+        "description": "A thin but strong metal plate.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.1, 
+        "random_weight": 1.8
+    },
+    {
+        "id": "glass",
+        "name": "Glass",
+        "description": "Perfectly polished glass.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.1, 
+        "random_weight": 1.4
+    },
+    {
+        "id": "gunpowder",
+        "name": "Gunpowder",
+        "description": "Ordinary gunpowder, with a pleasant smell of sulfur.",
+        "count": {"from": 1, "to": 10},
+        "weight": 0.01, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "pistol_cartridge_case",
+        "name": "Pistol cartridge case",
+        "description": "Universal cartridge case for pistol cartridges.",
+        "count": {"from": 1, "to": 20},
+        "weight": 0.04, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "rifle_cartridge_case",
+        "name": "Rifle cartridge case",
+        "description": "Universal cartridge case for rifle cartridges.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.08, 
+        "random_weight": 0.5
+    },
+    {
+        "id": "shotgun_cartridge_case",
+        "name": "Shotgun cartridge case",
+        "description": "Universal cartridge case for shotgun cartridges.",
+        "count": {"from": 1, "to": 10},
+        "weight": 0.02, 
+        "random_weight": 0.8
+    },
+    {
+        "id": "large_pistol_bullet",
+        "name": "Large pistol bullet",
+        "description": "Bullet for large-caliber pistols",
+        "count": {"from": 1, "to": 10},
+        "weight": 0.02, 
+        "random_weight": 0.8
+    },
+    {
+        "id": "standard_pistol_bullet",
+        "name": "Standard pistol bullet",
+        "description": "Bullet for small-caliber pistols.",
+        "count": {"from": 1, "to": 20},
+        "weight": 0.01, 
+        "random_weight": 1.0
+    },
+    {
+        "id": "rifle_bullet",
+        "name": "Rifle bullet",
+        "description": "Bullet for rifle.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.15, 
+        "random_weight": 0.03
+    },
+    {
+        "id": "heavy_rifle_bullet",
+        "name": "Heavy rifle bullet",
+        "description": "Bullet for sniper rifle.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.15, 
+        "random_weight": 0.03
+    },
+    {
+        "id": "shot",
+        "name": "Shot",
+        "description": "Shotgun shot for shotgun shells.",
+        "count": {"from": 1, "to": 10},
+        "weight": 0.09, 
+        "random_weight": 0.7
+    },
+    {
+        "id": "buckshot",
+        "name": "Buckshot",
+        "description": "Buckshot for high-power shotgun shells.",
+        "count": {"from": 1, "to": 5},
+        "weight": 0.1, 
+        "random_weight": 0.4
+    },
+    {
+        "id": "synthetic_wood",
+        "name": "Synthetic wood",
+        "description": "Synthetic wood is similar in all its characteristics to real earthly wood.",
+        "count": {"from": 1, "to": 10},
+        "weight": 0.01, 
+        "random_weight": 0.5
+    },
+    {
+        "id": "fuel",
+        "name": "Fuel",
+        "description": "Synthetic fuel made from household waste. It burns brilliantly and stinks terribly.",
+        "count": {"from": 1, "to": 2},
+        "weight": 0.4, 
+        "random_weight": 0.5
+    }
+]

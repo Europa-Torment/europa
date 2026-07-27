@@ -1,5 +1,6 @@
 [
     {
+        "id": "guard_pistol",
         "name": "Guard's pistol",
         "description": "An antique Earth pistol. The most popular weapon on Europa. Progress on Europa was focused on science and gunsmithing wasn't very popular, so even this old thing will do.",
         "shot_cost": {"from": 1, "to": 2},
@@ -11,14 +12,13 @@
         "shooting_type": "bullet",
         "damage": {"from": 5, "to": 9},
         "shooting_distance": {"from": 3, "to": 5},
-        "level": 1,
-        "parts_count": 3,
         "weight": 1.5,
         "image_name": "guard_pistol",
         "sound_name": "pistol",
         "random_weight": 2.0
     },
     {
+        "id": "the_equalizer",
         "name": "The Equalizer",
         "description": "A modified Earth pistol with increased power. Better to hold it with both hands!",
         "shot_cost": {"from": 1, "to": 2},
@@ -30,14 +30,13 @@
         "shooting_type": "bullet",
         "damage": {"from": 9, "to": 12},
         "shooting_distance": {"from": 4, "to": 6},
-        "level": 2,
-        "parts_count": 3,
         "weight": 1.8,
         "image_name": "the_equalizer",
         "sound_name": "pistol",
         "random_weight": 1.0
     },
     {
+        "id": "shotgun",
         "name": "Shotgun",
         "description": "Earth Shotgun. An old and tried-and-true weapon for pacifying protesters. It shoots even further in low-gravity conditions.",
         "shot_cost": {"from": 2, "to": 3},
@@ -49,14 +48,13 @@
         "shooting_type": "shot",
         "damage": {"from": 10, "to": 20},
         "shooting_distance": {"from": 2, "to": 4},
-        "level": 2,
-        "parts_count": 4,
         "weight": 4.0,
         "image_name": "shotgun",
         "sound_name": "shotgun",
         "random_weight": 1.0
     },
     {
+        "id": "beast_slayer",
         "name": "Beast Slayer",
         "description": "A modified Earth shotgun. It features an extended barrel, increasing spread and allowing for larger buckshot. It was home-made, so it's not widely available. Monsters will love it.",
         "shot_cost": {"from": 3, "to": 4},
@@ -68,14 +66,13 @@
         "shooting_type": "shot",
         "damage": {"from": 25, "to": 35},
         "shooting_distance": {"from": 3, "to": 6},
-        "level": 3,
-        "parts_count": 4,
         "weight": 10.0,
         "image_name": "beast_slayer",
         "sound_name": "shotgun",
         "random_weight": 0.09
     },
     {
+        "id": "modified_ssb_rifle",
         "name": "Modified SSB rifle",
         "description": "An antique Earth rifle, modified by SSB rebels for use in Europa. It fires short bursts and has a sufficient range.",
         "shot_cost": {"from": 1, "to": 4},
@@ -87,14 +84,13 @@
         "shooting_type": "burst",
         "damage": {"from": 5, "to": 7},
         "shooting_distance": {"from": 6, "to": 10},
-        "level": 3,
-        "parts_count": 4,
         "weight": 7.0,
         "image_name": "ssb_rifle",
         "sound_name": "rifle",
         "random_weight": 0.4
     },
     {
+        "id": "hawks_eye",
         "name": "Hawk's eye",
         "description": "A single-shot sniper rifle, assembled by the WCC military using Earth weapons. It has an incredible range and has proven itself in combat against SSB terrorists.",
         "shot_cost": {"from": 4, "to": 5},
@@ -106,14 +102,13 @@
         "shooting_type": "bullet",
         "damage": {"from": 40, "to": 50},
         "shooting_distance": {"from": 8, "to": 20},
-        "level": 3,
-        "parts_count": 4,
         "weight": 15.5,
         "image_name": "hawks_eye",
         "sound_name": "rifle",
         "random_weight": 0.25
     },
     {
+        "id": "atom_splitter",
         "name": "Atom splitter",
         "description": "A device for splitting atoms in a laboratory setting. It emits a highly focused beam of neutrons accelerated to 99.95% the speed of light. Monsters and people are made of atoms too. Get it?",
         "shot_cost": {"from": 4, "to": 5},
@@ -125,14 +120,13 @@
         "shooting_type": "bullet",
         "damage": {"from": 50, "to": 100},
         "shooting_distance": {"from": 8, "to": 15},
-        "level": 4,
-        "parts_count": 4,
         "weight": 15.0,
         "image_name": "atom_splitter",
         "sound_name": "laser",
         "random_weight": 0.04
     },
     {
+        "id": "etc_laser_cutter",
         "name": "ETC laser cutter",
         "description": "A compact, medium-power hydrogen laser. It was primarily used in construction as a replacement for a drill: its short pulse can create a perfect hole in any building material.",
         "shot_cost": {"from": 2, "to": 4},
@@ -144,8 +138,6 @@
         "shooting_type": "bullet",
         "damage": {"from": 20, "to": 30},
         "shooting_distance": {"from": 4, "to": 6},
-        "level": 4,
-        "parts_count": 2,
         "weight": 0.9,
         "image_name": "etc_laser_cutter",
         "sound_name": "laser",

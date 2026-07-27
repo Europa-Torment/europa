@@ -1,0 +1,28 @@
+[
+    {"item_type": "resource", "item_id": "sniper_scope", "resources": [{"id": "glass", "count": 1}, {"id": "metal_plate", "count": 2}]},
+    {"item_type": "resource", "item_id": "pistol_magazine", "resources": [{"id": "spring", "count": 1}, {"id": "metal_plate", "count": 2}]},
+    {"item_type": "resource", "item_id": "rifle_magazine", "resources": [{"id": "spring", "count": 1}, {"id": "metal_plate", "count": 4}]},
+    {"item_type": "resource", "item_id": "short_barrel", "resources": [{"id": "metal_plate", "count": 4}]},
+    {"item_type": "resource", "item_id": "long_barrel", "resources": [{"id": "metal_plate", "count": 6}]},
+    {"item_type": "resource", "item_id": "short_barrel", "resources": [{"id": "metal_plate", "count": 4}]},
+    {"item_type": "resource", "item_id": "standard_stock", "resources": [{"id": "metal_plate", "count": 10}]},
+    
+    {"item_type": "weapon", "item_id": "guard_pistol", "resources": [{"id": "simple_weapon_parts", "count": 1}, {"id": "short_barrel", "count": 1}, {"id": "pistol_magazine", "count": 1}]},
+    {"item_type": "weapon", "item_id": "the_equalizer", "resources": [{"id": "regular_weapon_parts", "count": 2}, {"id": "short_barrel", "count": 1}, {"id": "pistol_magazine", "count": 1}]},
+    {"item_type": "weapon", "item_id": "shotgun", "resources": [{"id": "regular_weapon_parts", "count": 4}, {"id": "long_barrel", "count": 1}, {"id": "standard_stock", "count": 1}]},
+    {"item_type": "weapon", "item_id": "beast_slayer", "resources": [{"id": "advanced_weapon_parts", "count": 3}, {"id": "long_barrel", "count": 1}, {"id": "standard_stock", "count": 1}]},
+    {"item_type": "weapon", "item_id": "modified_ssb_rifle", "resources": [{"id": "advanced_weapon_parts", "count": 3}, {"id": "long_barrel", "count": 1}, {"id": "standard_stock", "count": 1}, {"id": "rifle_magazine", "count": 1}]},
+    {"item_type": "weapon", "item_id": "hawks_eye", "resources": [{"id": "advanced_weapon_parts", "count": 3}, {"id": "long_barrel", "count": 1}, {"id": "standard_stock", "count": 1}, {"id": "rifle_magazine", "count": 1}, {"id": "sniper_scope", "count": 1}]},
+    {"item_type": "weapon", "item_id": "atom_splitter", "resources": [{"id": "science_weapon_parts", "count": 3}, {"id": "long_barrel", "count": 1}, {"id": "standard_stock", "count": 1}]},
+    {"item_type": "weapon", "item_id": "etc_laser_cutter", "resources": [{"id": "advanced_weapon_parts", "count": 1}, {"id": "short_barrel", "count": 1}, {"id": "pistol_magazine", "count": 1}]},
+
+    {"item_type": "ammo", "item_id": "40_sw", "resources": [{"id": "pistol_cartridge_case", "count": 1}, {"id": "standard_pistol_bullet", "count": 1}, {"id": "gunpowder", "count": 1}]},
+    {"item_type": "ammo", "item_id": "45_acp", "resources": [{"id": "pistol_cartridge_case", "count": 1}, {"id": "large_pistol_bullet", "count": 1}, {"id": "gunpowder", "count": 1}]},
+    {"item_type": "ammo", "item_id": "shotgun", "resources": [{"id": "shotgun_cartridge_case", "count": 1}, {"id": "shot", "count": 1}, {"id": "gunpowder", "count": 2}]},
+    {"item_type": "ammo", "item_id": "buckshot", "resources": [{"id": "shotgun_cartridge_case", "count": 1}, {"id": "buckshot", "count": 1}, {"id": "gunpowder", "count": 2}]},
+    {"item_type": "ammo", "item_id": "5_6mm", "resources": [{"id": "rifle_cartridge_case", "count": 1}, {"id": "rifle_bullet", "count": 1}, {"id": "gunpowder", "count": 2}]},
+    {"item_type": "ammo", "item_id": "50_bmg", "resources": [{"id": "rifle_cartridge_case", "count": 1}, {"id": "heavy_rifle_bullet", "count": 1}, {"id": "gunpowder", "count": 3}]},
+
+    {"item_type": "tool", "item_id": "matches", "resources": [{"id": "synthetic_wood", "count": 1}, {"id": "gunpowder", "count": 1}]},
+    {"item_type": "tool", "item_id": "bonfire_starter_kit", "resources": [{"id": "synthetic_wood", "count": 5}, {"id": "fuel", "count": 1}]}
+]

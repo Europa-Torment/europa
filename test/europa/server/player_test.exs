@@ -11,7 +11,8 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Loot
   alias Europa.Server.Event
   alias Europa.Server.Loot.Weapon.Ammo
-  alias Europa.Server.Loot.Tool
+  alias Europa.Server.Loot.Blueprints
+  alias Europa.Server.Loot.Blueprints.Blueprint
   alias Europa.Server.Errors
 
   import Europa.Tools.Conf
@@ -364,15 +365,31 @@ defmodule Europa.Server.PlayerTest do
 
   describe "disassemble_item/2" do
     setup do
-      weapon = build(:weapon)
-      ammo = build(:ammo, count: 20)
-      player = build(:player, inventory: [weapon, ammo])
+      %Blueprint{item: item, resources: resources} = Blueprints.blueprints() |> List.first()
+      ammo = build(:ammo, id: :shotgun, count: 20)
+      player = build(:player, inventory: [item, ammo])
 
-      {:ok, player: player, weapon: weapon, ammo: ammo}
+      {:ok, player: player, item: item, ammo: ammo, resources: resources}
     end
 
-    test "deletes given item and adds result of disassembly", %{player: player, weapon: weapon, ammo: ammo} do
-      assert {:ok, %Player{inventory: [%Tool{}, ^ammo]}, ^weapon} = Player.disassemble_item(player, weapon.uuid)
+    test "deletes given item and adds result of disassembly", %{
+      player: player,
+      item: item,
+      ammo: ammo,
+      resources: resources
+    } do
+      resources_id = Enum.map(resources, & &1.id)
+      assert {:ok, %Player{inventory: inventory}, ^item} = Player.disassemble_item(player, item.uuid)
+      assert ammo in inventory
+      assert Enum.all?(resources_id, &Enum.find(inventory, fn item -> item.id == &1 end))
+    end
+
+    test "reduces item count if item is stackable", %{
+      player: player,
+      ammo: ammo
+    } do
+      assert {:ok, %Player{inventory: inventory}, _} = Player.disassemble_item(player, ammo.uuid)
+      assert Enum.find(inventory, &(Loot.Item.item_type(&1) == :ammo && &1.count == ammo.count - 1))
     end
   end
 
@@ -548,8 +565,8 @@ defmodule Europa.Server.PlayerTest do
 
   describe "tools_amount/2" do
     setup do
-      tool1 = build(:tool, type: :weapon_parts, properties: build(:tool_properties, level: 1))
-      tool2 = build(:tool, type: :weapon_parts, properties: build(:tool_properties, level: 2))
+      tool1 = build(:tool)
+      tool2 = build(:tool)
       player = build(:player, inventory: [tool1])
 
       {:ok, player: player, tool1: tool1, tool2: tool2}
@@ -566,9 +583,9 @@ defmodule Europa.Server.PlayerTest do
 
   describe "enough_tools?/2" do
     setup do
-      tool1 = build(:tool, type: :weapon_parts, properties: build(:tool_properties, level: 1))
-      tool2 = build(:tool, type: :weapon_parts, properties: build(:tool_properties, level: 2))
-      tool3 = build(:tool, type: :weapon_parts, properties: build(:tool_properties, level: 2))
+      tool1 = build(:tool)
+      tool2 = build(:tool)
+      tool3 = build(:tool)
       player = build(:player, inventory: [tool1, tool2])
 
       {:ok, player: player, tool1: tool1, tool2: tool2, tool3: tool3}
@@ -588,27 +605,85 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
+  describe "resources_amount/2" do
+    setup do
+      resource1 = build(:resource)
+      resource2 = build(:resource)
+      player = build(:player, inventory: [resource1])
+
+      {:ok, player: player, resource1: resource1, resource2: resource2}
+    end
+
+    test "returns amount of given resource", %{player: player, resource1: resource} do
+      assert Player.resources_amount(player, resource) == resource.count
+    end
+
+    test "returns 0 when no given resource in inventory", %{player: player, resource2: resource} do
+      assert Player.resources_amount(player, resource) == 0
+    end
+  end
+
+  describe "enough_resources?/2" do
+    setup do
+      resource1 = build(:resource)
+      resource2 = build(:resource)
+      resource3 = build(:resource)
+      player = build(:player, inventory: [resource1, resource2])
+
+      {:ok, player: player, resource1: resource1, resource2: resource2, resource3: resource3}
+    end
+
+    test "returns true if player has enough amount of given resources", %{
+      player: player,
+      resource1: resource1,
+      resource2: resource2
+    } do
+      assert Player.enough_resources?(player, [resource1, resource2]) == true
+    end
+
+    test "returns false if player hasn't enough amount of given resources", %{
+      player: player,
+      resource1: resource1,
+      resource2: resource2,
+      resource3: resource3
+    } do
+      assert Player.enough_resources?(player, [resource1, resource2, resource3]) == false
+    end
+  end
+
   describe "craft_item/2" do
     setup do
-      tool1 = build(:tool, name: "tool 1", count: 1, type: :weapon_parts, properties: build(:tool_properties, level: 1))
-      tool2 = build(:tool, name: "tool 2", count: 2, type: :weapon_parts, properties: build(:tool_properties, level: 2))
+      resource1 = build(:resource)
+      resource2 = build(:resource, count: 2)
       weapon = build(:weapon)
 
-      {:ok, tool1: tool1, tool2: tool2, weapon: weapon}
+      {:ok, resource1: resource1, resource2: resource2, weapon: weapon}
     end
 
-    test "adds item and decreases required tools count", %{weapon: weapon, tool1: tool1, tool2: tool2} do
-      player = build(:player, inventory: [tool1, tool2])
-      blueprint = build(:blueprint, item: weapon, tools: [struct!(tool1, count: 1), struct!(tool2, count: 1)])
+    test "adds item and decreases required resources count", %{
+      weapon: weapon,
+      resource1: resource1,
+      resource2: resource2
+    } do
+      player = build(:player, inventory: [resource1, resource2])
 
-      assert {:ok, %Player{inventory: [^weapon, tool]}} = Player.craft_item(player, blueprint)
-      assert tool.name == tool2.name
-      assert tool.count == 1
+      blueprint =
+        build(:blueprint, item: weapon, resources: [struct!(resource1, count: 1), struct!(resource2, count: 1)])
+
+      assert {:ok, %Player{inventory: [^weapon, resource]}} = Player.craft_item(player, blueprint)
+      assert resource.id == resource2.id
+      assert resource.count == 1
     end
 
-    test "returns NotApplicableError when player hasn't enough tools", %{weapon: weapon, tool1: tool1, tool2: tool2} do
-      player = build(:player, inventory: [tool1])
-      blueprint = build(:blueprint, item: weapon, tools: [struct!(tool1, count: 1), struct!(tool2, count: 1)])
+    test "returns NotApplicableError when player hasn't enough resources", %{
+      weapon: weapon,
+      resource1: resource1,
+      resource2: resource2
+    } do
+      player = build(:player, inventory: [resource1])
+
+      blueprint =
+        build(:blueprint, item: weapon, resources: [struct!(resource1, count: 1), struct!(resource2, count: 1)])
 
       assert Player.craft_item(player, blueprint) == {:error, %NotApplicableError{}}
     end
@@ -616,8 +691,8 @@ defmodule Europa.Server.PlayerTest do
 
   describe "use_tools/2" do
     setup do
-      tool1 = build(:tool, name: "tool 1", count: 1, type: :weapon_parts, properties: build(:tool_properties, level: 1))
-      tool2 = build(:tool, name: "tool 2", count: 2, type: :weapon_parts, properties: build(:tool_properties, level: 2))
+      tool1 = build(:tool, name: "tool 1", count: 1)
+      tool2 = build(:tool, name: "tool 2", count: 2)
 
       {:ok, tool1: tool1, tool2: tool2}
     end
@@ -638,6 +713,33 @@ defmodule Europa.Server.PlayerTest do
     test "returns NotApplicableError when player hasn't enough tools", %{tool1: tool1, tool2: tool2} do
       player = build(:player, inventory: [tool1])
       assert Player.use_tools(player, [tool1, tool2]) == {:error, %NotApplicableError{}}
+    end
+  end
+
+  describe "use_resources/2" do
+    setup do
+      resource1 = build(:resource)
+      resource2 = build(:resource, count: 2)
+
+      {:ok, resource1: resource1, resource2: resource2}
+    end
+
+    test "decreases resources count", %{resource1: resource1, resource2: resource2} do
+      player = build(:player, inventory: [resource1, resource2])
+
+      resources = [
+        struct!(resource1, count: 1),
+        struct!(resource2, count: 1)
+      ]
+
+      assert {:ok, %Player{inventory: [resource]}} = Player.use_resources(player, resources)
+      assert resource.id == resource2.id
+      assert resource.count == 1
+    end
+
+    test "returns NotApplicableError when player hasn't enough resources", %{resource1: resource1, resource2: resource2} do
+      player = build(:player, inventory: [resource1])
+      assert Player.use_resources(player, [resource1, resource2]) == {:error, %NotApplicableError{}}
     end
   end
 
@@ -882,7 +984,7 @@ defmodule Europa.Server.PlayerTest do
       rounds_loaded = 15
 
       weapon = build(:weapon, caliber: caliber, rounds_loaded: rounds_loaded, magazine_size: rounds_loaded * 2)
-      ammo = build(:ammo, caliber: caliber, count: 5)
+      ammo = build(:ammo, caliber: caliber, id: :"40_sw", count: 5)
       player = build(:player, inventory: [weapon, ammo])
 
       assert {:ok, %Player{inventory: [updated_weapon, updated_ammo]}, updated_weapon} =

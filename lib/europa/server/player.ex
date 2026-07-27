@@ -12,10 +12,8 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Action
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
-  alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Loot.MeleeWeapon
   alias Europa.Server.Loot.Supply
-  alias Europa.Server.Loot.Tool
   alias Europa.Server.Loot.Implant
   alias Europa.Server.Errors
   alias Europa.Server.Event
@@ -298,15 +296,24 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
+  def resources_amount(%__MODULE__{} = player, %Loot.Resource{} = resource) do
+    inventory_resource = find_resource(player, resource)
+
+    if inventory_resource do
+      inventory_resource.count
+    else
+      0
+    end
+  end
+
+  @impl true
   def enough_tools?(%__MODULE__{} = player, tools) when is_list(tools) do
     Enum.all?(tools, fn tool -> tools_amount(player, tool) >= tool.count end)
   end
 
   @impl true
-  def craft_item(%__MODULE__{} = player, %Loot.Blueprint{} = blueprint) do
-    with {:ok, player} <- use_tools(player, blueprint.tools) do
-      add_item(player, blueprint.item)
-    end
+  def enough_resources?(%__MODULE__{} = player, resources) when is_list(resources) do
+    Enum.all?(resources, fn resource -> resources_amount(player, resource) >= resource.count end)
   end
 
   @impl true
@@ -315,6 +322,22 @@ defmodule Europa.Server.Player do
       {:ok, do_use_tools(player, tools)}
     else
       {:error, %Errors.NotApplicableError{}}
+    end
+  end
+
+  @impl true
+  def use_resources(%__MODULE__{} = player, resources) when is_list(resources) do
+    if enough_resources?(player, resources) do
+      {:ok, do_use_resources(player, resources)}
+    else
+      {:error, %Errors.NotApplicableError{}}
+    end
+  end
+
+  @impl true
+  def craft_item(%__MODULE__{} = player, %Loot.Blueprints.Blueprint{} = blueprint) do
+    with {:ok, player} <- use_resources(player, blueprint.resources) do
+      add_item(player, blueprint.item)
     end
   end
 
@@ -656,12 +679,27 @@ defmodule Europa.Server.Player do
       updated_tool =
         player
         |> find_tool(tool)
-        |> Loot.Tool.decrease_count(tool.count)
+        |> Loot.decrease_item_count(tool.count)
 
       if updated_tool.count > 0 do
         update_item(player, updated_tool)
       else
         delete_item(player, updated_tool)
+      end
+    end)
+  end
+
+  defp do_use_resources(%__MODULE__{} = player, resources) when is_list(resources) do
+    Enum.reduce(resources, player, fn resource, player ->
+      updated_resource =
+        player
+        |> find_resource(resource)
+        |> Loot.decrease_item_count(resource.count)
+
+      if updated_resource.count > 0 do
+        update_item(player, updated_resource)
+      else
+        delete_item(player, updated_resource)
       end
     end)
   end
@@ -674,13 +712,22 @@ defmodule Europa.Server.Player do
   end
 
   defp do_disassemble_item(%__MODULE__{} = player, item) do
-    with {:ok, new_items} <- Loot.Item.disassemble(item) do
+    with {:ok, new_items} <- Loot.disassemble_item(item) do
       updated_player =
         player
-        |> delete_item(item)
+        |> delete_item_or_decrease_count(item)
         |> add_items(new_items)
 
       {:ok, updated_player, item}
+    end
+  end
+
+  defp delete_item_or_decrease_count(player, item) do
+    if Loot.Item.stackable?(item) && item.count > 1 do
+      updated_item = Loot.decrease_item_count(item)
+      update_item(player, updated_item)
+    else
+      delete_item(player, item)
     end
   end
 
@@ -873,7 +920,7 @@ defmodule Europa.Server.Player do
   defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do
     stats_changes = Loot.Item.player_stats_changes(supply)
 
-    updated_supply = Supply.decrease_count(supply)
+    updated_supply = Loot.decrease_item_count(supply)
 
     updated_player =
       if updated_supply.count > 0 do
@@ -893,7 +940,14 @@ defmodule Europa.Server.Player do
 
   defp find_tool(%__MODULE__{} = player, %Loot.Tool{} = tool) do
     Enum.find(player.inventory, fn
-      %Loot.Tool{} = item -> tool.type == item.type && tool.name == item.name && tool.properties == item.properties
+      %Loot.Tool{} = item -> tool.id == item.id && tool.name == item.name && tool.properties == item.properties
+      _ -> false
+    end)
+  end
+
+  defp find_resource(%__MODULE__{} = player, %Loot.Resource{} = resource) do
+    Enum.find(player.inventory, fn
+      %Loot.Resource{} = item -> resource.id == item.id
       _ -> false
     end)
   end
@@ -908,7 +962,7 @@ defmodule Europa.Server.Player do
 
       if ammo_count > rounds_needed do
         updated_weapon = Weapon.add_rounds(weapon, rounds_needed)
-        updated_ammo = Ammo.decrease_count(ammo, rounds_needed)
+        updated_ammo = Loot.decrease_item_count(ammo, rounds_needed)
 
         updated_player =
           player
@@ -938,27 +992,27 @@ defmodule Europa.Server.Player do
     end)
     |> Enum.any?(fn inventory_item ->
       case Loot.Item.item_type(inventory_item) do
-        :ammo -> inventory_item.caliber == item.caliber
-        :supply -> inventory_item.name == item.name && inventory_item.properties == item.properties
-        :tool -> inventory_item.name == item.name && inventory_item.properties == item.properties
+        :supply ->
+          Loot.Item.id(inventory_item) == Loot.Item.id(item) && inventory_item.properties == item.properties
+
+        :tool ->
+          Loot.Item.id(inventory_item) == Loot.Item.id(item) && inventory_item.properties == item.properties
+
+        _ ->
+          Loot.Item.id(inventory_item) == Loot.Item.id(item)
       end
     end)
   end
 
   defp stack_items(%__MODULE__{} = player, item) do
     updated_inventory =
-      Enum.map(player.inventory, fn
-        %Weapon.Ammo{caliber: caliber} = inventory_ammo when caliber == item.caliber ->
-          struct!(inventory_ammo, count: inventory_ammo.count + item.count)
-
-        %Supply{name: name} = inventory_supply when name == item.name ->
-          struct!(inventory_supply, count: inventory_supply.count + item.count)
-
-        %Tool{name: name} = inventory_tool when name == item.name ->
-          struct!(inventory_tool, count: inventory_tool.count + item.count)
-
-        item ->
-          item
+      Enum.map(player.inventory, fn inventory_item ->
+        if Loot.Item.item_type(inventory_item) == Loot.Item.item_type(item) &&
+             Loot.Item.id(inventory_item) == Loot.Item.id(item) do
+          struct!(inventory_item, count: inventory_item.count + item.count)
+        else
+          inventory_item
+        end
       end)
 
     {:ok, struct!(player, inventory: updated_inventory)}

@@ -1,5 +1,6 @@
 [
     {
+        "id": "crowbar",
         "name": "Crowbar",
         "description": "High technology is all well and good, but a blow to the head with a few kilograms of Earth iron will pacify even those born outside of Earth.",
         "hit_cost": {"from": 2, "to": 3},
@@ -10,6 +11,7 @@
         "random_weight": 0.07
     },
     {
+        "id": "kitchen_knife",
         "name": "Kitchen knife",
         "description": "Kitchen knife, cuts vegetables perfectly.",
         "hit_cost": {"from": 1, "to": 2},
@@ -20,6 +22,7 @@
         "random_weight": 0.5
     },
     {
+        "id": "baton",
         "name": "Baton",
         "description": "A plastic baton used by security guards. In practice, it has been shown that a serious adult man can withstand up to a hundred such blows.",
         "hit_cost": 1,

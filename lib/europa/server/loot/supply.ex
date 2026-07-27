@@ -26,6 +26,7 @@ defmodule Europa.Server.Loot.Supply do
   end
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :name, String.t()
     field :description, String.t()
@@ -39,6 +40,7 @@ defmodule Europa.Server.Loot.Supply do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
@@ -48,12 +50,6 @@ defmodule Europa.Server.Loot.Supply do
       weight: Map.fetch!(attrs, :weight),
       sound_name: Map.fetch!(attrs, :sound_name)
     }
-  end
-
-  @spec decrease_count(t(), n :: pos_integer()) :: t()
-  def decrease_count(%__MODULE__{} = supply, n \\ 1) when n > 0 do
-    updated_value = (supply.count - n) |> max(0)
-    struct!(supply, count: updated_value)
   end
 end
 
@@ -65,6 +61,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
   alias Europa.Server.Player
+
+  @spec id(Supply.t()) :: atom()
+  def id(%Supply{id: id}), do: id
 
   @spec item_type(Supply.t()) :: :supply
   def item_type(%Supply{}), do: :supply
@@ -147,14 +146,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   @spec stackable?(Supply.t()) :: true
   def stackable?(%Supply{}), do: true
-
-  @spec disassemblable?(Supply.t()) :: false
-  def disassemblable?(%Supply{}), do: false
-
-  @spec disassemble(Supply.t()) :: {:error, Errors.NotApplicableError.t()}
-  def disassemble(%Supply{}) do
-    {:error, %Errors.NotApplicableError{}}
-  end
 
   @spec weight(Supply.t()) :: Loot.Item.weight()
   def weight(%Supply{weight: weight, count: count}) do

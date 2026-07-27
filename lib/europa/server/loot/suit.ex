@@ -4,6 +4,7 @@ defmodule Europa.Server.Loot.Suit do
   alias Europa.Server.Loot
 
   typedstruct enforce: true do
+    field :id, atom()
     field :uuid, Loot.uuid()
     field :equipped, boolean(), default: false
     field :name, String.t()
@@ -19,6 +20,7 @@ defmodule Europa.Server.Loot.Suit do
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
       equipped: false,
       name: Map.fetch!(attrs, :name),
@@ -40,6 +42,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
   alias Europa.Server.Loot.Suit
   alias Europa.Server.Errors
   alias Europa.Server.Player
+
+  @spec id(Suit.t()) :: atom()
+  def id(%Suit{id: id}), do: id
 
   @spec item_type(Suit.t()) :: :suit
   def item_type(%Suit{}), do: :suit
@@ -99,9 +104,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Suit do
 
   @spec stackable?(Suit.t()) :: false
   def stackable?(%Suit{}), do: false
-
-  @spec disassemblable?(Suit.t()) :: false
-  def disassemblable?(%Suit{}), do: false
 
   @spec disassemble(Suit.t()) :: {:error, Errors.NotApplicableError.t()}
   def disassemble(%Suit{}) do

@@ -1,5 +1,6 @@
 [
     {
+        "id": "wcc_medical_kit",
         "name": "WCC medical kit",
         "description": "First aid kit with European antibiotics.",
         "count": {"from": 1, "to": 3},
@@ -12,6 +13,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "steam_cell_inector",
         "name": "Stem cell injector", 
         "description": "A syringe with stem cells. An expensive but effective treatment for injuries.",
         "count": 1,
@@ -24,6 +26,7 @@
         "random_weight": 0.3
     },
     {
+        "id": "self_heating_food_tube",
         "name": "Self-heating food tube", 
         "description": "A self-heating food tube, designed for space travel, has also found use in the European cold. It tastes like low-quality vegetable puree, but it warms you up nicely.",
         "count": {"from": 1, "to": 5},
@@ -38,6 +41,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "freeze_dried_berries",
         "name": "Freeze-dried berries", 
         "description": "Freeze-dried berries. They keep almost forever and contain some vitamins and sugars.",
         "count": {"from": 1, "to": 5},
@@ -52,6 +56,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "bottle_of_pure_water",
         "name": "Bottle of pure water", 
         "description": "Crystal-clear water from a purifier. The laboratories that purified water from radiation were destroyed along with the nuclear reactors, so the clean water became local gold.",
         "count": {"from": 1, "to": 3},
@@ -64,6 +69,7 @@
         "random_weight": 0.7
     },
     {
+        "id": "bottle_of_water_with_radiation",
         "name": "Bottle of water with radiation", 
         "description": "A bottle of water contaminated with radiation. Drink at your own risk.",
         "count": {"from": 1, "to": 3},
@@ -77,6 +83,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "synthetic_milk",
         "name": "Synthetic milk", 
         "description": "A bottle of synthetic milk. Old people adore it for its nostalgic qualities, while young people, who have never seen a real cow, don't understand the need for it as adults.",
         "count": {"from": 1, "to": 2},
@@ -91,6 +98,7 @@
         "random_weight": 0.4
     },
     {
+        "id": "can_of_expired_earth_beer",
         "name": "Can of expired Earth beer", 
         "description": "Many settlers believed that beer and cheese were humanity's most important food inventions. Wheat didn't thrive on Europa, so beer supplies were limited to what they brought from Earth. Much of it had already expired.",
         "count": {"from": 1, "to": 3},
@@ -104,6 +112,7 @@
         "random_weight": 1.2
     },
     {
+        "id": "fish_crackers",
         "name": "Fish crackers", 
         "description": "Good old fish-shaped crackers. They were brought from Earth in huge quantities because they didn't spoil quickly.",
         "count": {"from": 1, "to": 5},
@@ -118,6 +127,7 @@
         "random_weight": 0.8
     },
     {
+        "id": "fish_crackers_with_radiation",
         "name": "Fish crackers with radiation", 
         "description": "These once-good crackers now emit radiation.",
         "count": {"from": 1, "to": 5},
@@ -133,6 +143,7 @@
         "random_weight": 1.0
     },
     {
+        "id": "energy_gel",
         "name": "Energy gel", 
         "description": "A tube of energy gel. Quenches hunger and thirst.",
         "count": {"from": 1, "to": 2},
@@ -147,6 +158,7 @@
         "random_weight": 0.4
     },
     {
+        "id": "energy_gel_with_radiation",
         "name": "Energy gel with radiation", 
         "description": "A tube of energy gel. The dosimeter keeps beeping next to it.",
         "count": {"from": 1, "to": 2},
@@ -162,6 +174,7 @@
         "random_weight": 0.8
     },
     {
+        "id": "wcc_dry_rations",
         "name": "WCC dry rations",
         "description": "A dry ration covering basic needs. An indispensable item at the beginning of colonization, it became popular again after the disaster.", 
         "count": {"from": 1, "to": 2},
@@ -175,6 +188,7 @@
         "random_weight": 0.7
     },
     {
+        "id": "vodka",
         "name": "Vodka", 
         "description": "A strong, warming drink. They say it protects against radiation, but it's harmful to health.",
         "count": {"from": 1, "to": 2},
@@ -191,6 +205,7 @@
         "random_weight": 0.4
     },
     {
+        "id": "canned_beef_stew",
         "name": "Canned beef stew", 
         "description": "Canned meat that can be stored for decades. A highly nutritious food.",
         "count": {"from": 1, "to": 4},
@@ -205,6 +220,7 @@
         "random_weight": 0.4
     },
     {
+        "id": "expired_canned_beef_stew",
         "name": "Expired canned beef stew", 
         "description": "Expired canned meat. Is it worth eating?",
         "count": {"from": 1, "to": 4},
@@ -219,6 +235,7 @@
         "random_weight": 0.8
     },
     {
+        "id": "cystamin",
         "name": "Cystamin",
         "description": "A drug used to reduce the negative effects of radiation on body tissues, including during radiation therapy.",
         "count": {"from": 1, "to": 4},
@@ -231,6 +248,7 @@
         "random_weight": 0.5
     },
     {
+        "id": "tincture_of_monster_bile",
         "name": "Tincture of monster bile",
         "description": "The local monsters are adapted to the local conditions. Their bile stinks horribly of rotten fish, but it's warming and healing good. An incredibly valuable remedy.",
         "count": 1,
@@ -246,6 +264,7 @@
         "random_weight": 0.09
     },
     {
+        "id": "stroganina",
         "name": "Stroganina",
         "description": "Northern Earth peoples warmed themselves with a dish consisting of finely shredded raw fatty fish. It works on Europa too!",
         "count": {"from": 1, "to": 4},

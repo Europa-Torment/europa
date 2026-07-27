@@ -29,4 +29,13 @@ defmodule Europa.Server.Loot.Utils.FilesReader do
       {attrs, Map.fetch!(attrs, :random_weight)}
     end)
   end
+
+  @spec parse_blueprints_file(filename :: String.t()) :: list(map())
+  def parse_blueprints_file(filename) do
+    priv_dir = :code.priv_dir(:europa)
+
+    Path.join([priv_dir, @items_templates_path, filename])
+    |> File.read!()
+    |> Jason.decode!(keys: :atoms)
+  end
 end
