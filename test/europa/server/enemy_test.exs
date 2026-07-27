@@ -143,6 +143,10 @@ defmodule Europa.Server.EnemyTest do
       assert %Enemy{events: [added_event]} = Enemy.add_events(enemy, [event])
       assert added_event.type == event.type
     end
+
+    test "with empty list", %{enemy: enemy} do
+      assert Enemy.add_events(enemy, []) == enemy
+    end
   end
 
   describe "maybe_add_speech_event/1" do

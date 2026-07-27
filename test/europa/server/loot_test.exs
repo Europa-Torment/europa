@@ -48,6 +48,25 @@ defmodule Europa.Server.Loot.ItemTest do
     end
   end
 
+  describe "id/1" do
+    test "returns item id" do
+      for item <- [
+            build(:weapon),
+            build(:ammo),
+            build(:tool),
+            build(:resource),
+            build(:melee_weapon),
+            build(:helmet),
+            build(:suit),
+            build(:boots),
+            build(:supply),
+            build(:implant)
+          ] do
+        assert Item.id(item) |> is_atom()
+      end
+    end
+  end
+
   describe "negative_attrs/1" do
     test "returns list of atoms" do
       for item <- [
@@ -454,6 +473,11 @@ defmodule Europa.Server.Loot.ItemTest do
       assert Item.weight(tool) == tool.count * tool.weight
     end
 
+    test "returns resource weight" do
+      resource = build(:resource, count: 100)
+      assert Item.weight(resource) == resource.count * resource.weight
+    end
+
     test "returns melee weapon weight" do
       melee_weapon = build(:melee_weapon)
       assert Item.weight(melee_weapon) == melee_weapon.weight
@@ -487,8 +511,18 @@ defmodule Europa.Server.Loot.ItemTest do
 
   describe "equip/1" do
     test "changes equipped to true" do
-      weapon = build(:weapon, equipped: false)
-      assert {:ok, %Weapon{equipped: true}} = Item.equip(weapon)
+      items = [
+        build(:weapon, equipped: false),
+        build(:melee_weapon, equipped: false),
+        build(:helmet, equipped: false),
+        build(:suit, equipped: false),
+        build(:boots, equipped: false)
+      ]
+
+      for item <- items do
+        assert {:ok, updated_item} = Item.equip(item)
+        assert updated_item.equipped == true
+      end
     end
 
     test "returns not_applicable error" do

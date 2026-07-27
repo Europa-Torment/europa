@@ -178,6 +178,10 @@ defmodule Europa.Server.PlayerTest do
       assert %Player{events: events} = Player.add_events(player, new_events)
       assert events == player.events
     end
+
+    test "with empty list", %{player: player} do
+      assert Player.add_events(player, []) == player
+    end
   end
 
   describe "remove_last_event/1" do

@@ -145,9 +145,6 @@ defmodule Europa.Server.Loot do
     @spec consumable?(item()) :: boolean()
     def consumable?(item)
 
-    @spec consumable?(item()) :: boolean()
-    def consumable?(item)
-
     @spec usable?(item()) :: boolean()
     def usable?(item)
 
