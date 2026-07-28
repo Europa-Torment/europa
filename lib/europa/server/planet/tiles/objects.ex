@@ -153,7 +153,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
     bonfire: %Object{
       name: gettext("bonfire"),
       image_name: "bonfire",
-      warm?: true,
+      temperature: 40,
       bright?: true,
       gif_tile?: true,
       transforms: [
@@ -180,7 +180,6 @@ defmodule Europa.Server.Planet.Tiles.Objects do
     bonfire_base: %Object{
       name: gettext("extinguished bonfire"),
       image_name: "bonfire_base",
-      warm?: false,
       transforms: [
         %Transform{
           name: :light,
@@ -206,7 +205,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("burning shuttle"),
       image_name: "fire_shuttle",
       gif_tile?: true,
-      warm?: true,
+      temperature: 60,
       bright?: true,
       transforms: [
         %Transform{
@@ -224,7 +223,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("burning vehicle"),
       image_name: "vehicle_burning",
       gif_tile?: true,
-      warm?: true,
+      temperature: 60,
       bright?: true,
       transforms: [
         %Transform{
@@ -242,7 +241,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
       name: gettext("fire"),
       image_name: "fire",
       gif_tile?: true,
-      warm?: true,
+      temperature: 70,
       bright?: true,
       transforms: [
         %Transform{

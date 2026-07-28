@@ -127,12 +127,22 @@ defmodule Europa.Server.PlayerTest do
 
   describe "stand_on/2" do
     setup do
-      player = build(:player, stand_on: @ice)
+      player = build(:player, stand_on: @ice, ambient_temperature: 0)
       {:ok, player: player}
     end
 
     test "changes stand_on", %{player: player} do
       assert %Player{stand_on: @ice_blood} = Player.stand_on(player, @ice_blood)
+    end
+
+    test "changes ambient_temperature to tile temperature", %{player: player} do
+      expected_temperature = Tiles.tile_by_blood_version(@ice_blood).temperature
+      assert %Player{ambient_temperature: ^expected_temperature} = Player.stand_on(player, @ice_blood)
+    end
+
+    test "changes ambient_temperature to given temperature", %{player: player} do
+      temperature = 100
+      assert %Player{ambient_temperature: ^temperature} = Player.stand_on(player, @ice_blood, temperature)
     end
 
     test "changes snow to path", %{player: player} do
@@ -143,6 +153,15 @@ defmodule Europa.Server.PlayerTest do
       assert %Player{stand_on: @path_blood} = Player.stand_on(player, @snow_blood)
       assert %Player{stand_on: %Object{stand_on: @path}} = Player.stand_on(player, object1)
       assert %Player{stand_on: %Object{stand_on: @path_blood}} = Player.stand_on(player, object2)
+    end
+  end
+
+  describe "set_ambient_temperature/2" do
+    test "sets ambient_temperature" do
+      player = build(:player, ambient_temperature: 0)
+      temperature = -20
+
+      assert %Player{ambient_temperature: ^temperature} = Player.set_ambient_temperature(player, temperature)
     end
   end
 
@@ -1097,7 +1116,7 @@ defmodule Europa.Server.PlayerTest do
 
   describe "tick/2" do
     property "damages frozen player" do
-      player = build(:player, health: 100, max_warm: 100, warm: 0)
+      player = build(:player, health: 100, max_warm: 100, warm: 0, ambient_temperature: -30)
 
       check all(_n <- StreamData.integer(1..100)) do
         num_runs = 500
@@ -1121,7 +1140,7 @@ defmodule Europa.Server.PlayerTest do
     end
 
     property "decreases player warm" do
-      player = build(:player, health: 100, max_warm: 100, warm: 100)
+      player = build(:player, health: 100, max_warm: 100, warm: 100, ambient_temperature: -60)
 
       check all(_n <- StreamData.integer(1..100)) do
         num_runs = 500

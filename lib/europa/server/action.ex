@@ -17,7 +17,7 @@ defmodule Europa.Server.Action do
           | :radiation_contamination
           | :radiation_damage
           | :hunger
-          | :warm_up
+          | {:temperature, temperature :: integer()}
           | {:healed, healed_enemy :: Enemy.t(), heal_unit :: pos_integer()}
 
   typedstruct enforce: true do

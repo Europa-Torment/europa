@@ -69,7 +69,6 @@ config :europa, :game_params,
     health: [from: 50, to: 100]
   ],
   player: [
-    warm_up_quantity: 25,
     max_weight: [
       from: 50,
       to: 65

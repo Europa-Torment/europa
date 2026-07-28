@@ -38,7 +38,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
   typedstruct do
     field :name, String.t(), enforce: true
     field :high?, boolean(), default: false
-    field :warm?, boolean(), default: false
+    field :temperature, integer()
     field :bright?, boolean(), default: false
     field :radioactive?, boolean(), default: false
     field :movable?, boolean(), default: false

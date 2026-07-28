@@ -29,14 +29,13 @@ defmodule Europa.Server.Player do
   @max_radiation fetch_config!([:game_params, :player, :max_radiation])
   @aim_accuracy fetch_config!([:game_params, :player, :aim_accuracy])
 
-  @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
-
-  @warm_tiles Tiles.warm_tiles()
   @lethal_tiles Tiles.lethal_tiles()
   @changeable_tiles Tiles.changeable_tiles()
 
   @thin_ice Tiles.tile(:thin_ice)
   @thin_ices [@thin_ice.atom_value, @thin_ice.blood_version]
+
+  @very_cold_temperature -70
 
   typedstruct do
     field :character, Character.t(), enforce: true
@@ -62,6 +61,7 @@ defmodule Europa.Server.Player do
     field :events, list(Event.t()), default: []
     field :max_implants, non_neg_integer(), enforce: true
     field :implant_uuids, list(Loot.uuid()), default: []
+    field :ambient_temperature, integer(), enforce: true
   end
 
   @impl true
@@ -84,6 +84,7 @@ defmodule Europa.Server.Player do
       thirst: thirst(),
       radiation: 0,
       max_implants: 3,
+      ambient_temperature: 0,
       stand_on: Tiles.tile(:snow).atom_value
     }
   end
@@ -144,8 +145,15 @@ defmodule Europa.Server.Player do
 
   @impl true
   def stand_on(%__MODULE__{} = player, tile) do
+    ambient_temperature = get_tile_temperature(tile)
+    stand_on(player, tile, ambient_temperature)
+  end
+
+  @impl true
+  def stand_on(%__MODULE__{} = player, tile, ambient_temperature) do
     player
     |> struct!(stand_on: tile)
+    |> set_ambient_temperature(ambient_temperature)
     |> maybe_change_tile()
     |> maybe_dead_if_tile_is_lethal()
   end
@@ -153,6 +161,23 @@ defmodule Europa.Server.Player do
   @impl true
   def stand_on_lethal_tile?(%__MODULE__{} = player) do
     do_stand_on_lethal_tile?(player.stand_on)
+  end
+
+  @impl true
+  def set_ambient_temperature(%__MODULE__{} = player, temperature) do
+    temperature_factors = [
+      {player.helmet_uuid, _penalty = -10},
+      {player.suit_uuid, _penalty = -20},
+      {player.boots_uuid, _penalty = -15}
+    ]
+
+    temperature =
+      Enum.reduce(temperature_factors, temperature, fn
+        {nil, penalty}, acc -> acc + penalty
+        _, acc -> acc
+      end)
+
+    struct!(player, ambient_temperature: temperature)
   end
 
   @impl true
@@ -795,10 +820,10 @@ defmodule Europa.Server.Player do
 
   defp do_tick(player, moves_count, actions) do
     ticks = [
-      fn player -> get_cold(player) end,
+      fn player -> maybe_warm_up_or_get_cold(player) end,
+      fn player -> maybe_frostbite(player) end,
       fn player -> get_thirsty(player) end,
       fn player -> get_hungry(player) end,
-      fn player -> maybe_warm_up(player) end,
       fn player -> maybe_increase_or_decrease_radiation(player) end,
       fn player -> take_radiation_damage(player) end
     ]
@@ -812,11 +837,40 @@ defmodule Europa.Server.Player do
     do_tick(updated_player, moves_count - 1, actions)
   end
 
-  defp get_cold(%__MODULE__{stand_on: stand_on} = player) when stand_on in @warm_tiles do
-    {player, []}
+  defp maybe_warm_up_or_get_cold(%__MODULE__{ambient_temperature: temperature, warm: warm, max_warm: max_warm} = player) do
+    {change_needed?, warm_units} =
+      cond do
+        temperature > 0 && warm < max_warm ->
+          {true, warm_change(temperature)}
+
+        temperature <= @very_cold_temperature ->
+          {m_to_n(1, 3), warm_change(temperature)}
+
+        temperature < 0 && warm == max_warm ->
+          {!m_to_n?(90, 100), warm_change(temperature)}
+
+        temperature < 0 ->
+          {!m_to_n?(warm, max_warm) && !m_to_n?(3, 5), warm_change(temperature)}
+
+        true ->
+          {false, 0}
+      end
+
+    if change_needed? do
+      actions =
+        if warm_units < 0 do
+          [Action.new(:player, :get_cold)]
+        else
+          []
+        end
+
+      {struct!(player, warm: max(player.warm + warm_units, 0) |> min(max_warm)), actions}
+    else
+      {player, []}
+    end
   end
 
-  defp get_cold(%__MODULE__{warm: 0} = player) do
+  defp maybe_frostbite(%__MODULE__{warm: 0} = player) do
     if m_to_n?(1, 10) do
       {take_damage(player, 1), [Action.new(:player, :frostbite)]}
     else
@@ -824,24 +878,8 @@ defmodule Europa.Server.Player do
     end
   end
 
-  defp get_cold(%__MODULE__{max_warm: max_warm, warm: warm} = player) do
-    is_get_colder =
-      cond do
-        warm == max_warm ->
-          !m_to_n?(90, 100)
-
-        !m_to_n?(warm, max_warm) ->
-          !m_to_n?(3, 5)
-
-        true ->
-          false
-      end
-
-    if is_get_colder do
-      {struct!(player, warm: max(player.warm - 1, 0)), [Action.new(:player, :get_cold)]}
-    else
-      {player, []}
-    end
+  defp maybe_frostbite(%__MODULE__{} = player) do
+    {player, []}
   end
 
   defp get_thirsty(%__MODULE__{thirst: thirst} = player) when thirst >= @max_thirst do
@@ -874,14 +912,6 @@ defmodule Europa.Server.Player do
     else
       {struct!(player, hunger: hunger + 1), []}
     end
-  end
-
-  defp maybe_warm_up(%__MODULE__{stand_on: stand_on} = player) when stand_on in @warm_tiles do
-    {warm_up(player, @warm_up_quantity), []}
-  end
-
-  defp maybe_warm_up(player) do
-    {player, []}
   end
 
   defp maybe_increase_or_decrease_radiation(player) do
@@ -1276,5 +1306,30 @@ defmodule Europa.Server.Player do
     to = fetch_config!([:game_params, :player, :thirst, :to])
 
     m_to_n(from, to)
+  end
+
+  defp get_tile_temperature(%{stand_on: tile}), do: get_tile_temperature(tile)
+
+  defp get_tile_temperature(tile) do
+    tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
+
+    if tile do
+      tile.temperature
+    else
+      0
+    end
+  end
+
+  defp warm_change(temperature) when temperature < 0 do
+    cond do
+      temperature < -70 -> -5
+      temperature < -60 -> -3
+      true -> -1
+    end
+  end
+
+  defp warm_change(temperature) when temperature >= 0 do
+    clamped = min(temperature, 70)
+    round(5 + clamped / 70 * 15)
   end
 end

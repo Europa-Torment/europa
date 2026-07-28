@@ -5,6 +5,9 @@ defmodule Europa.Server.Planet.Tiles do
   alias Europa.Server.Planet.Tiles.Tile
   alias Europa.Tools.Types
 
+  @default_temperature -50
+  @floor_temperature 26
+
   @tiles %{
     snow: %Tile{
       atom_value: :s,
@@ -15,7 +18,8 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "snow",
       changes_to: :path,
       change_possibility: 1,
-      map_color: "#F7F2F2"
+      map_color: "#F7F2F2",
+      temperature: @default_temperature
     },
     path: %Tile{
       atom_value: :p,
@@ -24,7 +28,8 @@ defmodule Europa.Server.Planet.Tiles do
       move_cost: 1,
       movable?: true,
       image_name: "path",
-      map_color: "#DED9D9"
+      map_color: "#DED9D9",
+      temperature: @default_temperature
     },
     ice: %Tile{
       atom_value: :i,
@@ -33,7 +38,8 @@ defmodule Europa.Server.Planet.Tiles do
       move_cost: 1,
       movable?: true,
       image_name: "ice",
-      map_color: "#80B4E8"
+      map_color: "#80B4E8",
+      temperature: @default_temperature
     },
     ice_cracked: %Tile{
       atom_value: :ic,
@@ -43,7 +49,8 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: false,
       image_name: "ice_cracked",
       gif_tile?: true,
-      map_color: "#80B4E8"
+      map_color: "#80B4E8",
+      temperature: @default_temperature
     },
     thin_ice: %Tile{
       atom_value: :ti,
@@ -57,7 +64,8 @@ defmodule Europa.Server.Planet.Tiles do
       # Possibility for overloaded player
       change_possibility: 5,
       high_loot_possibility?: true,
-      map_color: "#95BDE6"
+      map_color: "#95BDE6",
+      temperature: @default_temperature
     },
     thin_ice_cracked: %Tile{
       atom_value: :tic,
@@ -69,7 +77,8 @@ defmodule Europa.Server.Planet.Tiles do
       gif_tile?: true,
       lethal?: true,
       lethal_event: :ice_cracked,
-      map_color: "#95BDE6"
+      map_color: "#95BDE6",
+      temperature: -100
     },
     ice_spikes: %Tile{
       atom_value: :is,
@@ -79,7 +88,8 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: false,
       image_name: "ice_spikes",
       gif_tile?: false,
-      map_color: "#6DA1D6"
+      map_color: "#6DA1D6",
+      temperature: @default_temperature
     },
     water: %Tile{
       atom_value: :w,
@@ -90,7 +100,8 @@ defmodule Europa.Server.Planet.Tiles do
       swimable?: true,
       image_name: "water",
       gif_tile?: true,
-      map_color: "#7752CC"
+      map_color: "#7752CC",
+      temperature: @default_temperature
     },
     radioactive_water: %Tile{
       atom_value: :rw,
@@ -101,7 +112,8 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "radioactive_water",
       gif_tile?: true,
       radioactive?: true,
-      map_color: "#709C27"
+      map_color: "#709C27",
+      temperature: @default_temperature
     },
     warm_water: %Tile{
       atom_value: :ww,
@@ -111,8 +123,8 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: false,
       image_name: "warm_water",
       gif_tile?: true,
-      warm?: true,
-      map_color: "#421F9C"
+      map_color: "#421F9C",
+      temperature: 30
     },
     floor: %Tile{
       atom_value: :fl,
@@ -120,9 +132,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("floor"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "floor",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     bloody_floor: %Tile{
       atom_value: :bfl,
@@ -130,9 +142,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("bloody floor"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "bloody_floor",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     litter_floor: %Tile{
       atom_value: :lfl,
@@ -140,9 +152,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("floor with litter"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "litter_floor",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     open_left_door: %Tile{
       atom_value: :old,
@@ -150,9 +162,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("door"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "door_open_left",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     open_right_door: %Tile{
       atom_value: :ord,
@@ -160,9 +172,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("door"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "door_open_right",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     open_up_door: %Tile{
       atom_value: :oud,
@@ -170,9 +182,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("door"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "door_open_up",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     open_down_door: %Tile{
       atom_value: :odd,
@@ -180,9 +192,9 @@ defmodule Europa.Server.Planet.Tiles do
       readable_name: gettext("door"),
       move_cost: 1,
       movable?: true,
-      warm?: true,
       image_name: "door_open_down",
-      map_color: "#473D36"
+      map_color: "#473D36",
+      temperature: @floor_temperature
     },
     darkness: %Tile{
       atom_value: :d,
@@ -192,7 +204,8 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: false,
       image_name: "darkness",
       gif_tile?: false,
-      map_color: "#000000"
+      map_color: "#000000",
+      temperature: @default_temperature
     },
     concrete: %Tile{
       atom_value: :c,
@@ -201,7 +214,8 @@ defmodule Europa.Server.Planet.Tiles do
       move_cost: 1,
       movable?: true,
       image_name: "concrete",
-      map_color: "#72697D"
+      map_color: "#72697D",
+      temperature: @default_temperature
     },
     concrete_snow: %Tile{
       atom_value: :cs,
@@ -210,7 +224,8 @@ defmodule Europa.Server.Planet.Tiles do
       move_cost: 1,
       movable?: true,
       image_name: "concrete_snow",
-      map_color: "#C3BADE"
+      map_color: "#C3BADE",
+      temperature: @default_temperature
     },
     ruins: %Tile{
       atom_value: :r,
@@ -220,7 +235,8 @@ defmodule Europa.Server.Planet.Tiles do
       movable?: false,
       high?: true,
       image_name: "ruins",
-      map_color: "#4C332F"
+      map_color: "#4C332F",
+      temperature: @default_temperature
     }
   }
 
@@ -256,11 +272,6 @@ defmodule Europa.Server.Planet.Tiles do
   @spec high_tiles() :: list(atom())
   def high_tiles do
     find_tiles(fn tile -> tile.high? end)
-  end
-
-  @spec warm_tiles() :: list(atom())
-  def warm_tiles do
-    find_tiles(fn tile -> tile.warm? end)
   end
 
   @spec radioactive_tiles() :: list(atom())

@@ -10,7 +10,6 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :image_name, String.t(), enforce: true
     field :gif_tile?, boolean(), default: false
     field :high?, boolean(), default: false
-    field :warm?, boolean(), default: false
     field :radioactive?, boolean(), default: false
     field :swimable?, boolean(), default: false
     field :changes_to, atom()
@@ -19,5 +18,6 @@ defmodule Europa.Server.Planet.Tiles.Tile do
     field :lethal_event, atom()
     field :high_loot_possibility?, boolean(), default: false
     field :map_color, String.t(), enforce: true
+    field :temperature, integer(), enforce: true
   end
 end

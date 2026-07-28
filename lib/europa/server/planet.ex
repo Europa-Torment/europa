@@ -107,7 +107,6 @@ defmodule Europa.Server.Planet do
   @enemy_movable_tiles @movable_tiles ++ @swimable_tiles
 
   @high_tiles Tiles.high_tiles()
-  @warm_tiles Tiles.warm_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
   @high_loot_possibility_tiles Tiles.high_loot_possibility_tiles()
 
@@ -553,7 +552,7 @@ defmodule Europa.Server.Planet do
     ticks = [
       fn planet -> maybe_perform_npc_actions(planet) end,
       fn planet -> maybe_perform_enemies_actions(planet) end,
-      fn planet -> maybe_warm_up(planet) end,
+      fn planet -> maybe_add_temperature_action(planet) end,
       fn planet -> maybe_add_radiation(planet) end
     ]
 
@@ -841,11 +840,10 @@ defmodule Europa.Server.Planet do
     struct!(planet, moves_count: planet.moves_count + moves_count)
   end
 
-  defp maybe_warm_up(%__MODULE__{} = planet) do
-    if next_to_warm_tile?(planet) do
-      {planet, [Action.new(:player, :warm_up)]}
-    else
-      {planet, []}
+  defp maybe_add_temperature_action(%__MODULE__{} = planet) do
+    case get_neighbor_objects_temperature(planet) do
+      nil -> {planet, []}
+      temperature -> {planet, [Action.new(:player, {:temperature, temperature})]}
     end
   end
 
@@ -857,13 +855,20 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp next_to_warm_tile?(%__MODULE__{land: land, current_coord: current_coord}) do
-    land
-    |> get_neighbors(current_coord, 1)
-    |> Enum.any?(fn
-      %Object{warm?: true} -> true
-      tile -> tile in @warm_tiles and tile not in @movable_tiles
-    end)
+  defp get_neighbor_objects_temperature(%__MODULE__{land: land, current_coord: current_coord}) do
+    objects =
+      land
+      |> get_neighbors(current_coord, 1)
+      |> Enum.filter(fn
+        %Object{temperature: temperature} when is_integer(temperature) -> true
+        _ -> false
+      end)
+
+    case Enum.count(objects) do
+      0 -> nil
+      1 -> List.first(objects).temperature
+      count -> objects |> Enum.map(& &1.temperature) |> Enum.sum() |> div(count)
+    end
   end
 
   defp next_to_radioactive_tile?(%__MODULE__{land: land, current_coord: current_coord}) do

@@ -285,7 +285,8 @@ defmodule Europa.Support.Factory do
       radiation: 0,
       stand_on: Tiles.tile(:ice).atom_value,
       aim_mode?: false,
-      max_implants: 3
+      max_implants: 3,
+      ambient_temperature: 0
     }
   end
 

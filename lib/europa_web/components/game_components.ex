@@ -135,12 +135,13 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
-  def current_time(assigns) do
+  def planet_info(assigns) do
     ~H"""
     <div class="bg-base-200 p-3 shadow-md text-sm">
       <.icon_image name="clock" /> {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext(
         "year AD"
       )}
+      <.icon_image name="warm" />{@player.ambient_temperature}°
     </div>
     """
   end

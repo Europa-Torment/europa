@@ -37,8 +37,6 @@ defmodule Europa.Server do
 
   @max_efficiency fetch_config!([__MODULE__, :max_efficiency])
 
-  @warm_up_quantity fetch_config!([:game_params, :player, :warm_up_quantity])
-
   @disaster_year fetch_config!([:game_params, :disaster_year])
   @craft_moves_count fetch_config!([:game_params, :craft_moves_count])
   @aim_mode_moves_penalty fetch_config!([:game_params, :player, :aim_mode_moves_penalty])
@@ -300,9 +298,9 @@ defmodule Europa.Server do
 
     player =
       PlayerManager.new(current_character)
-      |> PlayerManager.stand_on(player_initial_stand_on_tile)
       |> add_player_items(items)
       |> equip_player_items(items)
+      |> PlayerManager.stand_on(player_initial_stand_on_tile)
 
     player = PlayerManager.warm_up(player, player.max_warm)
 
@@ -1057,8 +1055,8 @@ defmodule Europa.Server do
           |> PlayerManager.take_damage(npc.weapon.damage)
           |> PlayerManager.stand_on(blood_tile)
 
-        %Action{action_type: :warm_up, subject: :player} ->
-          PlayerManager.warm_up(player, @warm_up_quantity)
+        %Action{action_type: {:temperature, temperature}, subject: :player} ->
+          PlayerManager.set_ambient_temperature(player, temperature)
 
         %Action{action_type: :radiation_contamination, subject: :player} ->
           PlayerManager.increase_radiation(player, 3)
