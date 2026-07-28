@@ -3,6 +3,7 @@ defmodule Europa.Server.Action do
 
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
+  alias Europa.Server.Planet.Storm
 
   @type subject :: Enemy.t() | :player | {Enemy.t(), Npc.t()} | {Npc.t(), Enemy.t() | Npc.t()} | Npc.t()
 
@@ -18,6 +19,7 @@ defmodule Europa.Server.Action do
           | :radiation_damage
           | :hunger
           | {:temperature, temperature :: integer()}
+          | {:storm, Storm.t()}
           | {:healed, healed_enemy :: Enemy.t(), heal_unit :: pos_integer()}
 
   typedstruct enforce: true do

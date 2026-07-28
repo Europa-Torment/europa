@@ -17,6 +17,7 @@ defmodule Europa.Server.Event do
           | {:speech, text :: String.t()}
           | {:dead, death_reason()}
           | {:shoot, Weapon.t()}
+          | {:sound, sound_name :: String.t()}
           | :enemy_killed
           | :interested
           | :great_red_spot

@@ -1,7 +1,8 @@
 defmodule Europa.Server.PlayerTest do
-  alias Europa.Server.Errors.NotApplicableError
   use Europa.DataCase, async: true
   use ExUnitProperties
+
+  alias Europa.Server.Errors.NotApplicableError
 
   alias Europa.Server.Player
   alias Europa.Server.Planet

@@ -56,6 +56,7 @@ defmodule Europa.Server.Enemy do
     field :phrases, list(String.t()), default: []
     field :max_items, pos_integer(), enforce: true
     field :target, target()
+    field :smart?, boolean(), default: false
   end
 
   @spec new(attrs()) :: t()
@@ -75,6 +76,7 @@ defmodule Europa.Server.Enemy do
       healer?: Map.get(attrs, :healer, false),
       heal_possibility: Map.get(attrs, :heal_possibility, 0),
       heal_unit: Map.get(attrs, :heal_unit, 0),
+      smart?: Map.get(attrs, :smart, false),
       phrases: Map.fetch!(attrs, :phrases),
       max_items: Map.fetch!(attrs, :max_items),
       image_name: Map.fetch!(attrs, :image_name),

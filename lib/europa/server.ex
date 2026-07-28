@@ -4,8 +4,9 @@ defmodule Europa.Server do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Games
-  alias Europa.Server.Planet
   alias Europa.Server.PlanetManager
+  alias Europa.Server.Planet
+  alias Europa.Server.Planet.Storm
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Player
@@ -231,6 +232,11 @@ defmodule Europa.Server do
   @spec toggle_aim_mode(pid()) :: :ok | {:error, :no_weapon}
   def toggle_aim_mode(server) do
     GenServer.call(server, :toggle_aim_mode)
+  end
+
+  @spec get_storm(pid()) :: {:ok, Planet.Storm.t()} | {:error, :not_storm}
+  def get_storm(server) do
+    GenServer.call(server, :get_storm)
   end
 
   @spec get_map(pid()) :: Planet.land()
@@ -706,6 +712,10 @@ defmodule Europa.Server do
     end
   end
 
+  def handle_call(:get_storm, _caller_pid, state) do
+    {:reply, PlanetManager.get_storm(state.planet), state, @inactivity_timeout_ms}
+  end
+
   def handle_call(:get_map, _caller_pid, state) do
     {:reply, PlanetManager.get_map(state.planet), state, @inactivity_timeout_ms}
   end
@@ -1058,6 +1068,9 @@ defmodule Europa.Server do
         %Action{action_type: {:temperature, temperature}, subject: :player} ->
           PlayerManager.set_ambient_temperature(player, temperature)
 
+        %Action{action_type: {:storm, %Storm{} = storm}, subject: :player} ->
+          maybe_change_temperature(player, storm)
+
         %Action{action_type: :radiation_contamination, subject: :player} ->
           PlayerManager.increase_radiation(player, 3)
 
@@ -1066,6 +1079,14 @@ defmodule Europa.Server do
       end
     end)
     |> maybe_finish_game(game_uuid, caller_pid)
+  end
+
+  defp maybe_change_temperature(%Player{} = player, %Storm{} = storm) do
+    if player.ambient_temperature < 0 && player.ambient_temperature > storm.temperature do
+      PlayerManager.set_ambient_temperature(player, storm.temperature)
+    else
+      player
+    end
   end
 
   defp maybe_add_radiation(%Player{} = player, %Enemy{radioactive?: true}) do

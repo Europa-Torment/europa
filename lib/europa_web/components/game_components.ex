@@ -137,11 +137,17 @@ defmodule EuropaWeb.GameCompotents do
 
   def planet_info(assigns) do
     ~H"""
-    <div class="bg-base-200 p-3 shadow-md text-sm">
-      <.icon_image name="clock" /> {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext(
-        "year AD"
-      )}
-      <.icon_image name="warm" />{@player.ambient_temperature}°
+    <div class="bg-base-200 p-3 shadow-md text-xs">
+      <ul class="list-inside space-y-2">
+        <li>
+          <.icon_image name="clock" /> {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext(
+            "year AD"
+          )}
+        </li>
+        <li class="tooltip" data-tip={gettext("Ambient temperature")}>
+          <.icon_image name="warm" />{@player.ambient_temperature}°
+        </li>
+      </ul>
     </div>
     """
   end
@@ -1313,6 +1319,9 @@ defmodule EuropaWeb.GameCompotents do
       %Object{name: "", image_name: "", stand_on: tile} ->
         tile_tooltip(tile, player)
 
+      {:storm, _} ->
+        gettext("Storm")
+
       tile ->
         Planet.readable_tile_name(tile)
     end
@@ -1346,6 +1355,10 @@ defmodule EuropaWeb.GameCompotents do
       end)
 
     ~s|<ul class="list-disc list-inside space-y-2">| <> attrs <> ~s|</ul>|
+  end
+
+  defp get_image_name({:storm, direction}, _) do
+    "storm_#{direction}.gif"
   end
 
   defp get_image_name(:player, %Player{stand_on: stand_on} = player) when stand_on in @lethal_tiles do

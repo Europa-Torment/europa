@@ -35,6 +35,10 @@ config :europa, Europa.Server.Planet,
   npc_move_possibility: [from: 10, to: 10],
   predefined_cluster_update_distance: 5000
 
+config :europa, Europa.Server.Planet.Storm,
+  # Keep 100% possibility to tests consistency
+  intensy_possibility: 1
+
 config :europa, Europa.Server, finish_game_on_server_exit: false
 
 config :europa, Europa.Games,

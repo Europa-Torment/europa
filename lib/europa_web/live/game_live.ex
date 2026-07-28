@@ -664,6 +664,9 @@ defmodule EuropaWeb.GameLive do
 
   defp maybe_play_event_sound(:player, event, socket), do: play_player_event_sound(socket, event)
 
+  defp maybe_play_event_sound(_, %Event{type: {:sound, sound_name}}, socket),
+    do: play_sound(socket, sound_name)
+
   defp maybe_play_event_sound(_, %Event{type: {:shoot, %Weapon{sound_name: sound_name}}}, socket),
     do: play_sound(socket, sound_name)
 
@@ -702,6 +705,13 @@ defmodule EuropaWeb.GameLive do
 
   defp play_player_event_sound(socket, _), do: socket
 
+  defp switch_storm_sound(socket) do
+    case Server.get_storm(socket.assigns.server) do
+      {:ok, _} -> play_sound(socket, "storm")
+      _ -> stop_sound(socket, "storm")
+    end
+  end
+
   defp base_assign(socket, _opts \\ []) do
     player = Server.get_player(socket.assigns.server)
     visible_planet = Server.get_visible_planet(socket.assigns.server)
@@ -716,6 +726,7 @@ defmodule EuropaWeb.GameLive do
       aim: get_aim(visible_planet, player),
       current_coord: Server.get_current_coord(socket.assigns.server)
     )
+    |> switch_storm_sound()
     |> push_event("start_events_polling", %{})
   end
 
@@ -743,6 +754,7 @@ defmodule EuropaWeb.GameLive do
     json =
       Jason.encode!(%{
         background_music: %{name: ~p"/sounds/background_music.mp3", volume: 0.1, loop: true},
+        storm: %{name: ~p"/sounds/storm.mp3", volume: 0.03, loop: true},
         snow1: %{name: ~p"/sounds/snow1.mp3", volume: 0.01},
         snow2: %{name: ~p"/sounds/snow2.mp3", volume: 0.01},
         snow3: %{name: ~p"/sounds/snow3.mp3", volume: 0.01},

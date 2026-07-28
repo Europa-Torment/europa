@@ -12,9 +12,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Planet.Templates
   alias Europa.Server.Planet.Region
-
-  alias Europa.Tools.Types
-  alias Europa.Tools.PerlinNoise
+  alias Europa.Server.Planet.Storm
 
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
@@ -27,6 +25,9 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Characters
   alias Europa.Server.Characters.Character
   alias Europa.Server.Npc
+
+  alias Europa.Tools.Types
+  alias Europa.Tools.PerlinNoise
 
   import Europa.Tools.Randomizer
   import Europa.Tools.Conf
@@ -60,6 +61,8 @@ defmodule Europa.Server.Planet do
   @default_predefined_possibility fetch_config!([__MODULE__, :default_predefined_possibility])
   @predefined_cluster_possibility fetch_config!([__MODULE__, :predefined_cluster_possibility])
 
+  @storm_possibility fetch_config!([__MODULE__, :storm_possibility])
+
   @disaster_year fetch_config!([:game_params, :disaster_year])
 
   @player :player
@@ -73,7 +76,9 @@ defmodule Europa.Server.Planet do
 
   @type readable_tile_name :: String.t()
 
-  @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t() | Object.t()
+  @type storm_tile() :: {:storm, direction()}
+
+  @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t() | Object.t() | storm_tile()
 
   @type land :: list(list(tile()))
 
@@ -175,15 +180,16 @@ defmodule Europa.Server.Planet do
     field :region_y_offset, number()
   end
 
-  typedstruct enforce: true do
-    field :land, Land.t()
-    field :current_coord, coord()
-    field :predefined_cluster_coord, coord()
-    field :year, pos_integer()
-    field :moves_count, non_neg_integer()
-    field :great_red_spots, non_neg_integer()
+  typedstruct do
+    field :land, Land.t(), enforce: true
+    field :current_coord, coord(), enforce: true
+    field :predefined_cluster_coord, coord(), enforce: true
+    field :year, pos_integer(), enforce: true
+    field :moves_count, non_neg_integer(), enforce: true
+    field :great_red_spots, non_neg_integer(), enforce: true
     field :characters_pid, pid(), enforce: true
     field :player_fraction, Characters.Character.fraction(), enforce: true
+    field :storm, Storm.t()
   end
 
   ### PUBLIC INTERFACE ###
@@ -249,7 +255,9 @@ defmodule Europa.Server.Planet do
 
     for y <- y_from..y_to do
       for x <- x_from..x_to do
-        get_tile(land, {x, y}) |> tile_or_darkness(current_coord, {x, y}, current_hour, land)
+        get_tile(land, {x, y})
+        |> tile_or_storm(current_coord, {x, y}, planet.storm)
+        |> tile_or_darkness(current_coord, {x, y}, current_hour, land)
       end
     end
   end
@@ -274,6 +282,10 @@ defmodule Europa.Server.Planet do
       end
     end
   end
+
+  @impl true
+  def get_storm(%__MODULE__{storm: nil}), do: {:error, :not_storm}
+  def get_storm(%__MODULE__{storm: storm}), do: {:ok, storm}
 
   @impl true
   def land_size(%__MODULE__{land: land}) do
@@ -387,6 +399,7 @@ defmodule Europa.Server.Planet do
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
     planet
     |> maybe_set_new_predefined_cluster_coord()
+    |> maybe_start_storm()
     |> increment_moves_count(moves_count)
     |> do_tick(moves_count, [])
   end
@@ -550,6 +563,7 @@ defmodule Europa.Server.Planet do
 
   defp do_tick(%__MODULE__{} = planet, moves_count, actions) do
     ticks = [
+      fn planet -> maybe_tick_storm(planet) end,
       fn planet -> maybe_perform_npc_actions(planet) end,
       fn planet -> maybe_perform_enemies_actions(planet) end,
       fn planet -> maybe_add_temperature_action(planet) end,
@@ -836,6 +850,19 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp maybe_start_storm(%__MODULE__{storm: nil} = planet) do
+    if m_to_n?(1, @storm_possibility) do
+      storm = Storm.new()
+      struct!(planet, storm: storm)
+    else
+      planet
+    end
+  end
+
+  defp maybe_start_storm(%__MODULE__{} = planet) do
+    planet
+  end
+
   defp increment_moves_count(%__MODULE__{} = planet, moves_count) when is_integer(moves_count) do
     struct!(planet, moves_count: planet.moves_count + moves_count)
   end
@@ -1094,7 +1121,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_move_npc(%__MODULE__{} = planet, npc_coord, %Npc{} = npc, target_coord) do
-    case calculate_move_coord(planet, npc_coord, target_coord, :npc) do
+    case calculate_move_coord(planet, npc_coord, target_coord, npc) do
       :stay ->
         {planet, []}
 
@@ -1108,14 +1135,58 @@ defmodule Europa.Server.Planet do
           |> Npc.stand_on(target_tile)
           |> Npc.change_view_direction(new_view_direction)
 
-        updated_land =
+        {updated_land, _updated_npc} =
           planet.land
           |> change_tile(npc_coord, npc.stand_on)
           |> change_tile(new_npc_coord, updated_npc)
+          |> maybe_autotransform_target_object(new_npc_coord, updated_npc)
 
         updated_planet = struct!(planet, land: updated_land)
         {updated_planet, []}
     end
+  end
+
+  defp maybe_autotransform_target_object(land, subject_coord, subject) do
+    if smart_subject?(subject) do
+      object =
+        land
+        |> get_neighbors(subject_coord, 1, with_coords?: true, without_diagonal?: true)
+        |> Enum.find(fn
+          {_coord, %Object{} = object} -> Object.autotransformable_for_npc?(object)
+          _ -> false
+        end)
+
+      case object do
+        {coord, object} ->
+          transform = Enum.find(object.transforms, & &1.autotransformable_for_npc?)
+          updated_object = Object.transform(object, transform.name)
+          updated_subject = add_transform_sound_event(subject, transform)
+
+          updated_land =
+            land
+            |> change_tile(coord, updated_object)
+            |> change_tile(subject_coord, updated_subject)
+
+          {updated_land, updated_subject}
+
+        _ ->
+          {land, subject}
+      end
+    else
+      {land, subject}
+    end
+  end
+
+  defp add_transform_sound_event(%Npc{} = npc, %Object.Transform{transform_sound_name: sound_name}) do
+    Npc.add_events(npc, [Event.new({:sound, sound_name})])
+  end
+
+  defp add_transform_sound_event(%Enemy{} = enemy, %Object.Transform{transform_sound_name: sound_name}) do
+    Enemy.add_events(enemy, [Event.new({:sound, sound_name})])
+  end
+
+  defp add_transform_sound_event(subject, _) do
+    subject
   end
 
   defp add_npc_shoot_event(%Npc{weapon: weapon} = npc) do
@@ -1226,7 +1297,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy, target_coord) do
-    case calculate_move_coord(planet, enemy_coord, target_coord, :enemy) do
+    case calculate_move_coord(planet, enemy_coord, target_coord, enemy) do
       :stay ->
         {planet, [Action.new(enemy, :stay)], enemy_coord, enemy}
 
@@ -1234,10 +1305,11 @@ defmodule Europa.Server.Planet do
         target_tile = get_tile(planet.land, new_enemy_coord)
         updated_enemy = struct!(enemy, stand_on: target_tile) |> Enemy.maybe_add_speech_event()
 
-        updated_land =
+        {updated_land, updated_enemy} =
           planet.land
           |> change_tile(enemy_coord, enemy.stand_on)
           |> change_tile(new_enemy_coord, updated_enemy)
+          |> maybe_autotransform_target_object(new_enemy_coord, updated_enemy)
 
         actions = move_enemy_actions(updated_enemy)
 
@@ -1286,6 +1358,21 @@ defmodule Europa.Server.Planet do
   end
 
   defp calculate_move_coord(%__MODULE__{} = planet, {_sx, _sy} = subject_coord, {_tx, _ty} = target_coord, subject) do
+    target_coord =
+      if subject.stand_on in @swimable_tiles do
+        neighbors =
+          neighbor_coords(target_coord, 1)
+          |> Enum.filter(&(movable_tile?(planet.land, &1, subject) && get_tile(planet.land, &1) not in @swimable_tiles))
+
+        if Enum.empty?(neighbors) do
+          :stay
+        else
+          Enum.random(neighbors)
+        end
+      else
+        target_coord
+      end
+
     if subject_coord == target_coord do
       :stay
     else
@@ -1369,6 +1456,20 @@ defmodule Europa.Server.Planet do
     end)
   end
 
+  defp maybe_tick_storm(%__MODULE__{storm: %Storm{} = storm} = planet) do
+    case Storm.tick(storm) do
+      {:ok, updated_storm} ->
+        {struct!(planet, storm: updated_storm), [Action.new(:player, {:storm, storm})]}
+
+      _ ->
+        {struct!(planet, storm: nil), []}
+    end
+  end
+
+  defp maybe_tick_storm(%__MODULE__{} = planet) do
+    {planet, []}
+  end
+
   defp maybe_perform_npc_actions(%__MODULE__{} = planet) do
     npc_actions = [
       fn npc_coords, planet -> trigger_npcs(npc_coords, planet) end,
@@ -1409,7 +1510,7 @@ defmodule Europa.Server.Planet do
   defp movable_tile?(land, coord, subject \\ :player) do
     movable_tiles =
       case subject do
-        :enemy -> @enemy_movable_tiles
+        %Enemy{} -> @enemy_movable_tiles
         _ -> @movable_tiles
       end
 
@@ -1420,10 +1521,17 @@ defmodule Europa.Server.Planet do
       %Object{movable?: true} ->
         true
 
+      %Object{} = object ->
+        smart_subject?(subject) && Object.autotransformable_for_npc?(object)
+
       tile ->
         tile in movable_tiles
     end
   end
+
+  defp smart_subject?(%Npc{}), do: true
+  defp smart_subject?(%Enemy{smart?: true}), do: true
+  defp smart_subject?(_), do: false
 
   defp get_coords_of_structs_with_events_list(%__MODULE__{land: land} = planet) do
     not_empty_events? =
@@ -1558,7 +1666,7 @@ defmodule Europa.Server.Planet do
       |> struct!(land: updated_land, current_coord: target_coord)
       |> maybe_generate_tiles(direction)
 
-    move_cost = move_cost(tile)
+    move_cost = move_cost(tile) |> change_moves_count_in_storm(planet.storm, direction)
 
     {:moved, updated_planet, move_cost, tile, next_to_interactive_tile?(updated_planet)}
   end
@@ -1609,6 +1717,33 @@ defmodule Europa.Server.Planet do
 
   defp move_cost(tile) do
     Map.fetch!(@move_costs, tile)
+  end
+
+  defp change_moves_count_in_storm(moves_count, %Storm{level: level, direction: storm_direction}, player_direction)
+       when level > 4 do
+    cond do
+      player_direction == storm_direction ->
+        max(moves_count - 1, 1)
+
+      opposite_directions?(player_direction, storm_direction) ->
+        moves_count + 1
+
+      true ->
+        moves_count
+    end
+  end
+
+  defp change_moves_count_in_storm(moves_count, _, _), do: moves_count
+
+  defp opposite_directions?(direction1, direction2) do
+    opposite_directions = %{
+      up: :down,
+      down: :up,
+      left: :right,
+      right: :left
+    }
+
+    Map.fetch!(opposite_directions, direction1) == direction2
   end
 
   defp get_tile(land, {x, y}) do
@@ -1769,13 +1904,15 @@ defmodule Europa.Server.Planet do
     |> tile_or_npc(planet)
   end
 
-  defp get_neighbors(land, coord, count, with_coord? \\ false) do
+  defp get_neighbors(land, coord, count, opts \\ []) do
+    without_diagonal? = Keyword.get(opts, :without_diagonal?, false)
+
     coord
-    |> neighbor_coords(count)
+    |> neighbor_coords(count, without_diagonal?: without_diagonal?)
     |> Enum.map(fn coord ->
       tile = get_tile(land, coord)
 
-      if with_coord? do
+      if Keyword.get(opts, :with_coords?) do
         {coord, tile}
       else
         tile
@@ -1783,18 +1920,30 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp neighbor_coords({x, y}, count) do
+  defp neighbor_coords({x, y}, count, opts \\ []) do
+    without_diagonal? = Keyword.get(opts, :without_diagonal?, false)
+
     Enum.map(1..count, fn n ->
-      [
-        {x - n, y - n},
-        {x - n, y},
-        {x - n, y + n},
-        {x, y - n},
-        {x, y + n},
-        {x + n, y - n},
-        {x + n, y},
-        {x + n, y + n}
-      ]
+      base_coords =
+        [
+          {x - n, y},
+          {x, y - n},
+          {x, y + n},
+          {x + n, y}
+        ]
+
+      if without_diagonal? do
+        base_coords
+      else
+        diagonals = [
+          {x - n, y - n},
+          {x - n, y + n},
+          {x + n, y - n},
+          {x + n, y + n}
+        ]
+
+        base_coords ++ diagonals
+      end
     end)
     |> List.flatten()
   end
@@ -1989,6 +2138,19 @@ defmodule Europa.Server.Planet do
     tiles
     |> Enum.filter(fn {coord, _} -> get_tile(land, coord) |> is_nil() end)
     |> Enum.into(%{})
+  end
+
+  defp tile_or_storm(tile, _, _, nil), do: tile
+
+  defp tile_or_storm(tile, current_coord, tile_coord, %Storm{} = storm) do
+    max_view_distance = @view_distance
+    view_distance = max(max_view_distance - storm.level, @min_view_distance)
+
+    if view_distance < max_view_distance && coords_distance(current_coord, tile_coord) > view_distance do
+      {:storm, storm.direction}
+    else
+      tile
+    end
   end
 
   defp tile_or_darkness(tile, current_coord, tile_coord, current_hour, land) do

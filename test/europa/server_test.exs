@@ -1018,6 +1018,26 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "get_storm/1" do
+    test "returns planet storm", %{server: server} do
+      storm = build(:storm)
+
+      PlanetManagerMock
+      |> expect(:get_storm, fn %Planet{} -> {:ok, storm} end)
+
+      assert {:ok, ^storm} = Server.get_storm(server)
+    end
+
+    test "handles not_storm error", %{server: server} do
+      error = {:error, :not_storm}
+
+      PlanetManagerMock
+      |> expect(:get_storm, fn %Planet{} -> error end)
+
+      assert Server.get_storm(server) == error
+    end
+  end
+
   describe "get_map/1" do
     test "returns planet map", %{server: server} do
       map = [[@snow]]

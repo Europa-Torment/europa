@@ -65,6 +65,11 @@ defmodule Europa.Server.PlanetManager do
   @callback get_map(Planet.t()) :: Planet.land()
 
   @doc """
+  Returns current planet storm struct or error.
+  """
+  @callback get_storm(Planet.t()) :: {:ok, Planet.Storm.t()} | {:error, :not_storm}
+
+  @doc """
   Move player in given direction or attack enemy with melee weapon.
   If move succeded response is:
   ```
@@ -176,6 +181,7 @@ defmodule Europa.Server.PlanetManager do
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
   def get_visible_land(planet, current_datetime), do: manager_impl().get_visible_land(planet, current_datetime)
   def get_map(planet), do: manager_impl().get_map(planet)
+  def get_storm(planet), do: manager_impl().get_storm(planet)
   def land_size(planet), do: manager_impl().land_size(planet)
   def move(planet, direction, player), do: manager_impl().move(planet, direction, player)
   def loot(planet, direction), do: manager_impl().loot(planet, direction)

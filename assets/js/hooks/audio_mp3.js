@@ -56,7 +56,12 @@ export const hooks = {
       console.log("SOUNDS FOR NAME", this.sounds[name])
       console.log("SOUNDS", this.sounds)
       if (this.sounds[name]) {
-        this.sounds[name].play()
+        const sound = this.sounds[name]
+        // If the sound is looped and already playing, ignore the request
+        if (sound.loop() && sound.playing()) {
+          return
+        }
+        sound.play()
       }
       else {
         console.warn("PLAY: No sound \"" + name + "\" found")

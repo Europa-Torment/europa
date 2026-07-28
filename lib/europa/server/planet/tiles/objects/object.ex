@@ -27,6 +27,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
       field :transform_sound_name, String.t(), enforce: true
       field :transform_requirements, transform_requirements()
       field :transform_cost, pos_integer()
+      field :autotransformable_for_npc?, boolean(), default: false
     end
 
     @spec set_transform_requirements(t(), transform_requirements()) :: t()
@@ -110,5 +111,13 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
   @spec add_transform(t(), Transform.t()) :: t()
   def add_transform(%__MODULE__{} = object, %Transform{} = transform) do
     struct!(object, transforms: object.transforms ++ [transform])
+  end
+
+  # Here NPC is not only %Npc{}, but smart %Enemy{} too
+  @spec autotransformable_for_npc?(t()) :: boolean()
+  def autotransformable_for_npc?(%__MODULE__{transforms: []}), do: false
+
+  def autotransformable_for_npc?(%__MODULE__{transforms: transforms}) do
+    Enum.any?(transforms, & &1.autotransformable_for_npc?)
   end
 end

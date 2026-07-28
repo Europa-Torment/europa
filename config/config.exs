@@ -47,7 +47,14 @@ config :europa, Europa.Server.Planet,
   predefined_cluster_distance: 40,
   predefined_cluster_update_distance: 200,
   default_predefined_possibility: 70,
-  predefined_cluster_possibility: 15
+  predefined_cluster_possibility: 15,
+  storm_possibility: 5000
+
+config :europa, Europa.Server.Planet.Storm,
+  intensy_possibility: 10,
+  level: [from: 5, to: 12],
+  temperature: [from: -80, to: -100],
+  duration: [from: 60, to: 300]
 
 config :europa, Europa.Server.Planet.Templates, templates_path: "/planet/"
 

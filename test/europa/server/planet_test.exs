@@ -33,7 +33,9 @@ defmodule Europa.Server.PlanetTest do
 
   @initial_enemy_health 20
 
+  @s Tiles.tile(:snow).atom_value
   @i Tiles.tile(:ice).atom_value
+  @is Tiles.tile(:ice_spikes).atom_value
   @p Tiles.tile(:path).atom_value
   @w Tiles.tile(:water).atom_value
   @d Tiles.tile(:darkness).atom_value
@@ -127,7 +129,8 @@ defmodule Europa.Server.PlanetTest do
          healer?: true,
          heal_possibility: 1,
          heal_unit: 2,
-         target: :player
+         target: :player,
+         smart?: true
        )
 
   @n2_uuid Ecto.UUID.generate()
@@ -182,6 +185,7 @@ defmodule Europa.Server.PlanetTest do
   ]
 
   @midday Timex.parse!("2016-02-29T12:00:00-06:00", "{ISO:Extended}")
+  @evening Timex.parse!("2016-02-29T20:00:00-06:00", "{ISO:Extended}")
 
   @land [
           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -210,6 +214,20 @@ defmodule Europa.Server.PlanetTest do
                                  [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                ]
                                |> PlanetLandConverter.from_matrix()
+
+  @land_player_look_right_at_snow [
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @ib, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @pl, @s, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                  ]
+                                  |> PlanetLandConverter.from_matrix()
 
   @land_player_look_down_at_loot [
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -897,6 +915,34 @@ defmodule Europa.Server.PlanetTest do
                           ]
                           |> PlanetLandConverter.from_matrix()
 
+  @land_npc_and_enemy_between_door [
+                                     [@i, @i, @i, @i, @en9, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @dl, @pl, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @n2, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                   ]
+                                   |> PlanetLandConverter.from_matrix()
+
+  @land_player_and_enemy_between_door [
+                                        [@i, @i, @i, @i, @pl, @is, @i, @i, @i, @i],
+                                        [@i, @i, @i, @is, @dl, @is, @i, @i, @i, @i],
+                                        [@i, @i, @i, @is, @i, @en8, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                        [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                      ]
+                                      |> PlanetLandConverter.from_matrix()
+
   setup do
     {:ok, characters_pid} = Characters.start_link()
     planet = Planet.new(year: @year, characters_pid: characters_pid, player_fraction: :neutral)
@@ -976,8 +1022,40 @@ defmodule Europa.Server.PlanetTest do
           [@d, @i, @i, @i, @d]
         ]
 
-      evening = Timex.parse!("2016-02-29T20:00:00-06:00", "{ISO:Extended}")
-      assert Planet.get_visible_land(planet, evening) == expected_visible_land
+      assert Planet.get_visible_land(planet, @evening) == expected_visible_land
+    end
+
+    test "returns visible part of land (with storm)", %{planet: planet} do
+      storm = build(:storm, level: 2)
+      planet = struct!(planet, storm: storm)
+      s = {:storm, storm.direction}
+
+      expected_visible_land =
+        [
+          [s, @i, @i, @i, s],
+          [@i, @i, @ib, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [s, @i, @i, @i, s]
+        ]
+
+      assert Planet.get_visible_land(planet, @midday) == expected_visible_land
+    end
+
+    test "darknes over storm", %{planet: planet} do
+      storm = build(:storm, level: 2)
+      planet = struct!(planet, storm: storm)
+
+      expected_visible_land =
+        [
+          [@d, @i, @i, @i, @d],
+          [@i, @i, @ib, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@d, @i, @i, @i, @d]
+        ]
+
+      assert Planet.get_visible_land(planet, @evening) == expected_visible_land
     end
   end
 
@@ -998,6 +1076,20 @@ defmodule Europa.Server.PlanetTest do
              |> Enum.all?(fn tile ->
                tile == :player || Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
              end)
+    end
+  end
+
+  describe "get_storm/1" do
+    test "returns storm" do
+      storm = build(:storm)
+      planet = build(:planet, storm: storm)
+
+      assert {:ok, ^storm} = Planet.get_storm(planet)
+    end
+
+    test "returns not_storm error" do
+      planet = build(:planet, storm: nil)
+      assert {:error, :not_storm} = Planet.get_storm(planet)
     end
   end
 
@@ -1164,6 +1256,34 @@ defmodule Europa.Server.PlanetTest do
       assert updated_land.max_y == land.max_y + 1
     end
 
+    test "increases moves count when moving towards the storm" do
+      planet =
+        build(:planet,
+          land: @land_player_look_up_at_loot,
+          current_coord: {4, 4},
+          storm: build(:storm, direction: :left, level: 10)
+        )
+
+      player = build_player_stand_on(@i)
+
+      assert {:moved, %Planet{}, move_cost, _, _} = Planet.move(planet, :right, player)
+      assert move_cost == Map.fetch!(@move_costs, @i) + 1
+    end
+
+    test "decreases moves count when moving in stom direction" do
+      planet =
+        build(:planet,
+          land: @land_player_look_right_at_snow,
+          current_coord: {4, 4},
+          storm: build(:storm, direction: :right, level: 10)
+        )
+
+      player = build_player_stand_on(@s)
+
+      assert {:moved, %Planet{}, move_cost, _, _} = Planet.move(planet, :right, player)
+      assert move_cost == Map.fetch!(@move_costs, @s) - 1
+    end
+
     test "damages top enemy" do
       planet = build(:planet, land: @land_player_up_close_to_enemy, current_coord: {4, 7})
       player = build(:player, accuracy: @max_accuracy)
@@ -1319,6 +1439,26 @@ defmodule Europa.Server.PlanetTest do
       assert {:ok, %Planet{land: @land_npc_right_close_to_enemy}, _} = Planet.tick(planet, 1)
     end
 
+    test "npc opens door" do
+      planet = build(:planet, land: @land_npc_and_enemy_between_door, current_coord: {5, 1})
+      assert {:ok, %Planet{land: updated_land}, _} = Planet.tick(planet, 1)
+
+      assert Enum.find(updated_land.tiles, fn
+               {_coord, @dlo} -> true
+               _ -> false
+             end)
+    end
+
+    test "enemy opens door" do
+      planet = build(:planet, land: @land_player_and_enemy_between_door, current_coord: {4, 0})
+      assert {:ok, %Planet{land: updated_land}, _} = Planet.tick(planet, 1)
+
+      assert Enum.find(updated_land.tiles, fn
+               {_coord, @dlo} -> true
+               _ -> false
+             end)
+    end
+
     test "doesn't update predefined_cluster_coord when player not to far from current cluster" do
       current_coord = {4, 7}
 
@@ -1392,6 +1532,46 @@ defmodule Europa.Server.PlanetTest do
                    false
                end)
       end)
+    end
+
+    test "storm intensifying" do
+      storm = build(:storm, level: 1, max_level: 100, duration: 1000)
+      planet = build(:planet, land: @land_player_look_down_at_enemies_with_healer, current_coord: {4, 1}, storm: storm)
+
+      assert {:ok, %Planet{storm: updated_storm}, actions} = Planet.tick(planet, 1)
+      assert updated_storm.level == storm.level + 1
+      assert updated_storm.duration == storm.duration - 1
+
+      assert Enum.find(actions, fn
+               %Action{action_type: {:storm, _}} -> true
+               _ -> false
+             end)
+    end
+
+    test "storm subsiding" do
+      storm = build(:storm, level: 100, max_level: 100, duration: 0)
+      planet = build(:planet, land: @land_player_look_down_at_enemies_with_healer, current_coord: {4, 1}, storm: storm)
+
+      assert {:ok, %Planet{storm: updated_storm}, actions} = Planet.tick(planet, 1)
+      assert updated_storm.level == storm.level - 1
+      assert updated_storm.duration == 0
+
+      assert Enum.find(actions, fn
+               %Action{action_type: {:storm, _}} -> true
+               _ -> false
+             end)
+    end
+
+    test "storm stopped" do
+      storm = build(:storm, level: 1, max_level: 100, duration: 0)
+      planet = build(:planet, land: @land_player_look_down_at_enemies_with_healer, current_coord: {4, 1}, storm: storm)
+
+      assert {:ok, %Planet{storm: nil}, actions} = Planet.tick(planet, 1)
+
+      refute Enum.find(actions, fn
+               %Action{action_type: {:storm, _}} -> true
+               _ -> false
+             end)
     end
 
     @tag perfomance: true

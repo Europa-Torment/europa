@@ -166,4 +166,21 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
       assert Object.transform_confirmation(object, @transform_name) == {:change, object.name, :delete}
     end
   end
+
+  describe "autotransformable_for_npc?/1" do
+    test "returns false when there are no transforms" do
+      object = build(:object, transforms: [])
+      assert Object.autotransformable_for_npc?(object) == false
+    end
+
+    test "returns false when object is not transformable" do
+      object = build(:object, transforms: [build(:object_transform, autotransformable_for_npc?: false)])
+      assert Object.autotransformable_for_npc?(object) == false
+    end
+
+    test "returns true when object is transformable for NPC" do
+      object = build(:object, transforms: [build(:object_transform, autotransformable_for_npc?: true)])
+      assert Object.autotransformable_for_npc?(object) == true
+    end
+  end
 end

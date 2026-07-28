@@ -6,6 +6,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Loot
   alias Europa.Server.Player
   alias Europa.Server.Planet
+  alias Europa.Server.Planet.Storm
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Enemy
@@ -302,7 +303,19 @@ defmodule Europa.Support.Factory do
       moves_count: Map.get(opts, :moves_count, 0),
       great_red_spots: Map.get(opts, :great_red_spots, 0),
       characters_pid: characters_pid,
-      player_fraction: :neutral
+      player_fraction: Map.get(opts, :player_fraction, :neutral),
+      storm: Map.get(opts, :storm)
+    }
+  end
+
+  @spec storm_factory() :: Storm.t()
+  def storm_factory do
+    %Storm{
+      level: 1,
+      max_level: 2,
+      temperature: -100,
+      duration: 10,
+      direction: :up
     }
   end
 

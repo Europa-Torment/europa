@@ -44,6 +44,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_up_door},
+          autotransformable_for_npc?: true,
           transform_sound_name: "open_door"
         }
       ]
@@ -73,6 +74,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_down_door},
+          autotransformable_for_npc?: true,
           transform_sound_name: "open_door"
         }
       ]
@@ -102,6 +104,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_left_door},
+          autotransformable_for_npc?: true,
           transform_sound_name: "open_door"
         }
       ]
@@ -131,6 +134,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_right_door},
+          autotransformable_for_npc?: true,
           transform_sound_name: "open_door"
         }
       ]

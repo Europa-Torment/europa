@@ -52,6 +52,7 @@
         "damage": {"from": 10, "to": 15},
         "accuracy": {"from": 20, "to": 30},
         "radioactive": true,
+        "smart": true,
         "move_distance": 1,
         "max_items": 10,
         "phrases": ["S..tay he#&%..", "Hel... Ghaaa#&^&", "Mother..", "Enter..#%@ the..$&#&@ ocean!", "Submit..to me!", "Fin...&*^#ers.."],
