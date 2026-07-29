@@ -1008,8 +1008,6 @@ defmodule Europa.Server.Planet do
         new_view_direction = coords_position(npc_coord, target_coord)
         npc = Npc.change_view_direction(npc, new_view_direction)
 
-        find_targets(planet, npc_coord, npc.view_direction, npc.weapon)
-
         cond do
           !m_to_n?(@npc_move_possibility_from, @npc_move_possibility_to) ->
             {planet, []}
@@ -1122,13 +1120,15 @@ defmodule Europa.Server.Planet do
 
   defp do_move_npc(%__MODULE__{} = planet, npc_coord, %Npc{} = npc, target_coord) do
     case calculate_move_coord(planet, npc_coord, target_coord, npc) do
+      coord when coord == target_coord ->
+        {planet, []}
+
       :stay ->
         {planet, []}
 
       new_npc_coord ->
         target_tile = get_tile(planet.land, new_npc_coord)
-
-        new_view_direction = coords_position(npc_coord, target_coord)
+        new_view_direction = coords_position(npc_coord, new_npc_coord)
 
         updated_npc =
           npc
@@ -1298,6 +1298,9 @@ defmodule Europa.Server.Planet do
 
   defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy, target_coord) do
     case calculate_move_coord(planet, enemy_coord, target_coord, enemy) do
+      coord when coord == target_coord ->
+        {planet, [], enemy_coord, enemy}
+
       :stay ->
         {planet, [Action.new(enemy, :stay)], enemy_coord, enemy}
 
@@ -1359,7 +1362,7 @@ defmodule Europa.Server.Planet do
 
   defp calculate_move_coord(%__MODULE__{} = planet, {_sx, _sy} = subject_coord, {_tx, _ty} = target_coord, subject) do
     target_coord =
-      if subject.stand_on in @swimable_tiles do
+      if subject.stand_on in @swimable_tiles && coords_distance(subject_coord, target_coord) == 1 do
         neighbors =
           neighbor_coords(target_coord, 1)
           |> Enum.filter(&(movable_tile?(planet.land, &1, subject) && get_tile(planet.land, &1) not in @swimable_tiles))
