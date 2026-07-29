@@ -61,6 +61,11 @@ export const hooks = {
         if (sound.loop() && sound.playing()) {
           return
         }
+
+        if (sound.playing()) {
+          sound.stop();
+        }
+        
         sound.play()
       }
       else {
