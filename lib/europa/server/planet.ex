@@ -111,6 +111,7 @@ defmodule Europa.Server.Planet do
   @swimable_tiles Tiles.swimable_tiles()
   @enemy_movable_tiles @movable_tiles ++ @swimable_tiles
 
+  @warm_tiles Tiles.warm_tiles()
   @high_tiles Tiles.high_tiles()
   @radioactive_tiles Tiles.radioactive_tiles()
   @high_loot_possibility_tiles Tiles.high_loot_possibility_tiles()
@@ -883,18 +884,34 @@ defmodule Europa.Server.Planet do
   end
 
   defp get_neighbor_objects_temperature(%__MODULE__{land: land, current_coord: current_coord}) do
-    objects =
+    temperatures =
       land
       |> get_neighbors(current_coord, 1)
-      |> Enum.filter(fn
-        %Object{temperature: temperature} when is_integer(temperature) -> true
-        _ -> false
+      |> Enum.filter(fn tile ->
+        case tile do
+          %Object{temperature: temperature} when is_integer(temperature) ->
+            true
+
+          tile when tile in @warm_tiles and tile not in @movable_tiles ->
+            tile
+
+          _ ->
+            false
+        end
+      end)
+      |> Enum.map(fn
+        %Object{temperature: temperature} ->
+          temperature
+
+        tile ->
+          tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
+          tile.temperature
       end)
 
-    case Enum.count(objects) do
+    case Enum.count(temperatures) do
       0 -> nil
-      1 -> List.first(objects).temperature
-      count -> objects |> Enum.map(& &1.temperature) |> Enum.sum() |> div(count)
+      1 -> List.first(temperatures)
+      count -> temperatures |> Enum.sum() |> div(count)
     end
   end
 

@@ -28,6 +28,12 @@ defmodule Europa.Server.Planet.TilesTest do
     end
   end
 
+  describe "warm_tiles/0" do
+    test "returns list of warm tiles atom values" do
+      assert Tiles.warm_tiles() |> Enum.all?(&warm_tile?/1)
+    end
+  end
+
   describe "high_tiles/0" do
     test "returns list of high tiles atom values" do
       assert Tiles.high_tiles() |> Enum.all?(&high_tile?/1)
@@ -143,6 +149,11 @@ defmodule Europa.Server.Planet.TilesTest do
   defp gif_tile?(tile) do
     tile = from_atom_value(tile)
     tile.gif_tile?
+  end
+
+  defp warm_tile?(tile) do
+    tile = from_atom_value(tile)
+    tile.temperature > 0
   end
 
   defp high_tile?(tile) do

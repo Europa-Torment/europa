@@ -274,6 +274,11 @@ defmodule Europa.Server.Planet.Tiles do
     find_tiles(fn tile -> tile.high? end)
   end
 
+  @spec warm_tiles() :: list(atom())
+  def warm_tiles do
+    find_tiles(fn tile -> tile.temperature > 0 end)
+  end
+
   @spec radioactive_tiles() :: list(atom())
   def radioactive_tiles do
     find_tiles(fn tile -> tile.radioactive? end)
