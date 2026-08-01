@@ -1,5 +1,6 @@
 {
   "name": "Human corpse",
+  "random_weight": 1.0,
   "content": [
     [
       {"type": "loot", "name": "human_body"},

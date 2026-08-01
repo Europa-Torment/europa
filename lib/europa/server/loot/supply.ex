@@ -28,6 +28,7 @@ defmodule Europa.Server.Loot.Supply do
   typedstruct enforce: true do
     field :id, atom()
     field :uuid, Loot.uuid()
+    field :subtype, Loot.item_subtype()
     field :name, String.t()
     field :description, String.t()
     field :count, pos_integer()
@@ -42,6 +43,7 @@ defmodule Europa.Server.Loot.Supply do
     %__MODULE__{
       id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
+      subtype: Map.fetch!(attrs, :subtype) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       count: Map.fetch!(attrs, :count),
@@ -67,6 +69,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   @spec item_type(Supply.t()) :: :supply
   def item_type(%Supply{}), do: :supply
+
+  @spec item_subtype(Supply.t()) :: Loot.item_subtype()
+  def item_subtype(%Supply{subtype: subtype}), do: subtype
 
   @spec negative_attrs(Supply.t()) :: list(atom())
   def negative_attrs(%Supply{}) do

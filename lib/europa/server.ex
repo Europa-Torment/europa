@@ -342,7 +342,8 @@ defmodule Europa.Server do
   end
 
   def handle_call(:get_visible_planet, _from, state) do
-    {:reply, PlanetManager.get_visible_land(state.planet, state.current_datetime), state, @inactivity_timeout_ms}
+    {:reply, PlanetManager.get_visible_land(state.planet, state.player, state.current_datetime), state,
+     @inactivity_timeout_ms}
   end
 
   def handle_call(:get_player, _from, state) do
@@ -651,9 +652,7 @@ defmodule Europa.Server do
   def handle_call({:use_tool, item_uuid}, {caller_pid, _}, state) do
     case PlayerManager.get_item(state.player, item_uuid) do
       {:ok, tool} ->
-        tool
-        |> struct!(count: 1)
-        |> do_use_tool(state, caller_pid)
+        do_use_tool(tool, state, caller_pid)
 
       _error ->
         process_cannot_use_tool(state)
@@ -689,6 +688,7 @@ defmodule Europa.Server do
       when is_list(required_tools) ->
         case PlayerManager.use_tools(state.player, required_tools) do
           {:ok, updated_player} ->
+            updated_player = maybe_add_items_after_object_transform(updated_player, transform)
             updated_chat = maybe_add_transform_message(state.chat, transform)
 
             {:reply, {:ok, interaction},
@@ -813,7 +813,7 @@ defmodule Europa.Server do
        planet: updated_planet,
        player: updated_player,
        chat: updated_chat,
-       current_datetime: shift_datetime(state.current_datetime, moves_count)
+       current_datetime: shift_datetime(state.current_datetime, moves_count * 10)
      ), @inactivity_timeout_ms}
   end
 
@@ -825,7 +825,23 @@ defmodule Europa.Server do
 
   ### PRIVATE ###
 
+  defp do_use_tool(%Tool{using_type: :switch} = tool, state, caller_pid) do
+    {:ok, updated_tool} = Tool.switch(tool)
+    updated_player = PlayerManager.update_item(state.player, updated_tool)
+    moves_count = tool.use_cost
+    tool_used_message = tool_used_message(updated_tool)
+
+    updated_chat =
+      state.chat
+      |> Chat.add_message(tool_used_message)
+
+    {:reply, {:ok, updated_tool}, struct!(state, player: updated_player, chat: updated_chat),
+     {:continue, {:tick, moves_count, caller_pid}}}
+  end
+
   defp do_use_tool(%Tool{using_type: {:put_object, _}} = tool, state, caller_pid) do
+    tool = struct!(tool, count: 1)
+
     with {:ok, updated_player} <- PlayerManager.use_tools(state.player, [tool]),
          {:ok, updated_planet} <- PlanetManager.use_tool(state.planet, tool, updated_player.view_direction) do
       moves_count = tool.use_cost
@@ -873,7 +889,7 @@ defmodule Europa.Server do
         days_diff + 1
       end
 
-    current_time = Timex.format!(state.current_datetime, "{h24}:{m}")
+    current_time = Timex.format!(state.current_datetime, "{h24}:{m}:{s}")
     {current_year, day, current_time}
   end
 
@@ -1045,6 +1061,17 @@ defmodule Europa.Server do
       end
     end)
   end
+
+  defp maybe_add_items_after_object_transform(%Player{} = player, %Object.Transform{
+         transforms_to: {:loot, [_h | _t] = items}
+       }) do
+    Enum.reduce(items, player, fn item, player ->
+      {:ok, player} = PlayerManager.add_item(player, item)
+      player
+    end)
+  end
+
+  defp maybe_add_items_after_object_transform(player, _), do: player
 
   defp process_actions(%Player{} = player, actions, game_uuid, caller_pid) when is_list(actions) do
     Enum.reduce(actions, player, fn action, player ->
@@ -1506,8 +1533,8 @@ defmodule Europa.Server do
     Timex.now() |> Timex.shift(hours: shift)
   end
 
-  defp shift_datetime(current_datetime, shift_in_minutes) do
-    Timex.shift(current_datetime, minutes: shift_in_minutes)
+  defp shift_datetime(current_datetime, shift_in_seconds) do
+    Timex.shift(current_datetime, seconds: shift_in_seconds)
   end
 
   defp initial_supplies do

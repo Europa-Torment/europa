@@ -7,6 +7,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
   typedstruct enforce: true do
     field :id, atom()
     field :uuid, Loot.uuid()
+    field :subtype, Loot.item_subtype()
     field :caliber, Weapon.caliber()
     field :description, String.t()
     field :weight, Loot.Item.weight()
@@ -18,6 +19,7 @@ defmodule Europa.Server.Loot.Weapon.Ammo do
     %__MODULE__{
       id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
+      subtype: Map.fetch!(attrs, :subtype) |> String.to_atom(),
       caliber: Map.fetch!(attrs, :caliber),
       description: Map.fetch!(attrs, :description),
       weight: Map.fetch!(attrs, :weight),
@@ -40,6 +42,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon.Ammo do
 
   @spec item_type(Ammo.t()) :: :ammo
   def item_type(%Ammo{}), do: :ammo
+
+  @spec item_subtype(Ammo.t()) :: Loot.item_subtype()
+  def item_subtype(%Ammo{subtype: subtype}), do: subtype
 
   @spec negative_attrs(Ammo.t()) :: list(atom())
   def negative_attrs(%Ammo{}) do

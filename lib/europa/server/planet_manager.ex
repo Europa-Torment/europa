@@ -57,7 +57,7 @@ defmodule Europa.Server.PlanetManager do
   Reutrns visible part of planet's land.
   Size of visible land depencs on `view_distance` config param and current datetime (server one, not real).
   """
-  @callback get_visible_land(Planet.t(), DateTime.t()) :: Planet.land()
+  @callback get_visible_land(Planet.t(), Player.t(), DateTime.t()) :: Planet.land()
 
   @doc """
   Returns visible part of planet's map.
@@ -179,7 +179,10 @@ defmodule Europa.Server.PlanetManager do
   def view_distance, do: manager_impl().view_distance()
   def allowed_directions, do: manager_impl().allowed_directions()
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
-  def get_visible_land(planet, current_datetime), do: manager_impl().get_visible_land(planet, current_datetime)
+
+  def get_visible_land(planet, player, current_datetime),
+    do: manager_impl().get_visible_land(planet, player, current_datetime)
+
   def get_map(planet), do: manager_impl().get_map(planet)
   def get_storm(planet), do: manager_impl().get_storm(planet)
   def land_size(planet), do: manager_impl().land_size(planet)

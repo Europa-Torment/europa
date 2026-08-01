@@ -33,6 +33,7 @@ defmodule Europa.Server.Loot.Implant do
   typedstruct enforce: true do
     field :id, atom()
     field :uuid, Loot.uuid()
+    field :subtype, Loot.item_subtype()
     field :name, String.t()
     field :description, String.t()
     field :properties, Properties.t()
@@ -45,6 +46,7 @@ defmodule Europa.Server.Loot.Implant do
     %__MODULE__{
       id: Map.fetch!(attrs, :id) |> String.to_atom(),
       uuid: Ecto.UUID.generate(),
+      subtype: Map.fetch!(attrs, :subtype) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
       description: Map.fetch!(attrs, :description),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
@@ -67,6 +69,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Implant do
 
   @spec item_type(Implant.t()) :: :implant
   def item_type(%Implant{}), do: :implant
+
+  @spec item_subtype(Implant.t()) :: Loot.item_subtype()
+  def item_subtype(%Implant{subtype: subtype}), do: subtype
 
   @spec negative_attrs(Implant.t()) :: list(atom())
   def negative_attrs(%Implant{}) do

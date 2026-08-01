@@ -916,8 +916,8 @@ defmodule Europa.Server.PlanetTest do
                           |> PlanetLandConverter.from_matrix()
 
   @land_npc_and_enemy_between_door [
-                                     [@i, @i, @i, @i, @en9, @i, @i, @i, @i, @i],
-                                     [@i, @i, @i, @i, @dl, @pl, @i, @i, @i, @i],
+                                     [@i, @i, @is, @en9, @i, @is, @i, @i, @i, @i],
+                                     [@i, @i, @i, @is, @dl, @pl, @i, @i, @i, @i],
                                      [@i, @i, @i, @i, @i, @n2, @i, @i, @i, @i],
                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
                                      [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -993,13 +993,15 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
-  describe "get_visible_land/2" do
+  describe "get_visible_land/3" do
     setup do
       planet = build(:planet, land: @land_player_look_up_at_loot, current_coord: {4, 4})
-      {:ok, planet: planet}
+      player = build(:player)
+
+      {:ok, planet: planet, player: player}
     end
 
-    test "returns visible part of land (full view distance)", %{planet: planet} do
+    test "returns visible part of land (full view distance)", %{planet: planet, player: player} do
       expected_visible_land =
         [
           [@i, @i, @i, @i, @i],
@@ -1009,10 +1011,10 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(planet, @midday) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @midday) == expected_visible_land
     end
 
-    test "returns visible part of land (with darkness)", %{planet: planet} do
+    test "returns visible part of land (with darkness)", %{planet: planet, player: player} do
       expected_visible_land =
         [
           [@d, @i, @i, @i, @d],
@@ -1022,10 +1024,32 @@ defmodule Europa.Server.PlanetTest do
           [@d, @i, @i, @i, @d]
         ]
 
-      assert Planet.get_visible_land(planet, @evening) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @evening) == expected_visible_land
     end
 
-    test "returns visible part of land (with storm)", %{planet: planet} do
+    test "returns visible part of land (with flashlight)", %{planet: planet, player: player} do
+      flashlight =
+        build(:tool,
+          using_type: :switch,
+          active?: true,
+          properties: build(:tool_properties, durability: 100, illumination_range: 100)
+        )
+
+      player = struct!(player, inventory: [flashlight])
+
+      expected_visible_land =
+        [
+          [@i, @i, @i, @i, @i],
+          [@i, @i, @ib, @i, @i],
+          [@i, @i, @pl, @i, @i],
+          [@i, @i, @i, @i, @i],
+          [@d, @i, @i, @i, @d]
+        ]
+
+      assert Planet.get_visible_land(planet, player, @evening) == expected_visible_land
+    end
+
+    test "returns visible part of land (with storm)", %{planet: planet, player: player} do
       storm = build(:storm, level: 2)
       planet = struct!(planet, storm: storm)
       s = {:storm, storm.direction}
@@ -1039,10 +1063,10 @@ defmodule Europa.Server.PlanetTest do
           [s, @i, @i, @i, s]
         ]
 
-      assert Planet.get_visible_land(planet, @midday) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @midday) == expected_visible_land
     end
 
-    test "darknes over storm", %{planet: planet} do
+    test "darknes over storm", %{planet: planet, player: player} do
       storm = build(:storm, level: 2)
       planet = struct!(planet, storm: storm)
 
@@ -1055,7 +1079,7 @@ defmodule Europa.Server.PlanetTest do
           [@d, @i, @i, @i, @d]
         ]
 
-      assert Planet.get_visible_land(planet, @evening) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @evening) == expected_visible_land
     end
   end
 
@@ -1115,7 +1139,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, player, @midday) == expected_visible_land
     end
 
     test "moves player left" do
@@ -1139,7 +1163,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, player, @midday) == expected_visible_land
     end
 
     test "moves player up" do
@@ -1163,7 +1187,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(updated_planet, @midday) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, player, @midday) == expected_visible_land
     end
 
     test "moves at monster body" do
@@ -1760,9 +1784,10 @@ defmodule Europa.Server.PlanetTest do
   describe "crop_land/1" do
     test "crops planet land to size of visible land" do
       planet = build(:planet, land: @land, current_coord: {4, 4})
+      player = build(:player)
 
       %Planet.Land{tiles: expected_tiles} =
-        Planet.get_visible_land(planet, @midday) |> PlanetLandConverter.from_matrix()
+        Planet.get_visible_land(planet, player, @midday) |> PlanetLandConverter.from_matrix()
 
       assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {2, 2}, great_red_spots: 1}} =
                Planet.crop_land(planet)

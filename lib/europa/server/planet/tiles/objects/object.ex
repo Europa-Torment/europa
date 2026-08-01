@@ -13,7 +13,11 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
 
   defmodule Transform do
     @type transforms_to ::
-            {:tile, Tiles.name()} | {:object, Objects.name()} | {:item_box, Loot.item_box_type()} | :nothing
+            {:tile, Tiles.name()}
+            | {:object, Objects.name()}
+            | {:item_box, Loot.item_box_type()}
+            | {:loot, list(Loot.Item.item())}
+            | :nothing
 
     @type transform_requirements :: {:tools, list(Tool.t())} | :change_confirmation | nil
 
@@ -73,6 +77,7 @@ defmodule Europa.Server.Planet.Tiles.Objects.Object do
       %Transform{transforms_to: {:tile, tile_name}} -> Tiles.tile(tile_name).atom_value
       %Transform{transforms_to: {:object, object_name}} -> Objects.object(object_name)
       %Transform{transforms_to: {:item_box, item_box_name}} -> Loot.generate_item_box(item_box_name)
+      %Transform{transforms_to: {:loot, _loot}} -> stand_on
       %Transform{transforms_to: :nothing} -> stand_on
       _ -> object
     end

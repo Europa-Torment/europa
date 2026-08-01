@@ -59,7 +59,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_up_door},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :key, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :key)]},
           transform_sound_name: "open_door"
         }
       ]
@@ -89,7 +89,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_down_door},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :key, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :key)]},
           transform_sound_name: "open_door"
         }
       ]
@@ -119,7 +119,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_left_door},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :key, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :key)]},
           transform_sound_name: "open_door"
         }
       ]
@@ -149,7 +149,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           name: :open,
           readable_name: gettext("Open"),
           transforms_to: {:tile, :open_right_door},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :key, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :key)]},
           transform_sound_name: "open_door"
         }
       ]
@@ -166,7 +166,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           readable_name: gettext("Extinguish"),
           message: gettext("You extinguished the bonfire"),
           transforms_to: {:item_box, :bonefire_base},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :fire_extinguisher, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :fire_extinguisher)]},
           transform_sound_name: "fire_extinguisher",
           transform_cost: 1
         },
@@ -190,7 +190,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           readable_name: gettext("Light"),
           message: gettext("You lit a bonfire"),
           transforms_to: {:object, :bonfire},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :matches, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :matches)]},
           transform_sound_name: "matches",
           transform_cost: 1
         },
@@ -217,7 +217,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           readable_name: gettext("Extinguish"),
           message: gettext("You extinguished the burning shuttle"),
           transforms_to: {:item_box, :crashed_shuttle},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :fire_extinguisher, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :fire_extinguisher)]},
           transform_sound_name: "fire_extinguisher",
           transform_cost: 2
         }
@@ -235,7 +235,7 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           readable_name: gettext("Extinguish"),
           message: gettext("You extinguished the burning vehicle"),
           transforms_to: {:item_box, :vehicle},
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :fire_extinguisher, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :fire_extinguisher)]},
           transform_sound_name: "fire_extinguisher",
           transform_cost: 2
         }
@@ -253,9 +253,41 @@ defmodule Europa.Server.Planet.Tiles.Objects do
           readable_name: gettext("Extinguish"),
           message: gettext("You extinguished the fire"),
           transforms_to: :nothing,
-          transform_requirements: {:tools, [Loot.generate_item(:tool, :fire_extinguisher, 1)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :fire_extinguisher)]},
           transform_sound_name: "fire_extinguisher",
           transform_cost: 2
+        }
+      ]
+    },
+    tree: %Object{
+      name: gettext("artificial tree"),
+      image_name: "tree",
+      high?: true,
+      transforms: [
+        %Transform{
+          name: :felling,
+          readable_name: gettext("Cut down"),
+          message: gettext("You cut down the tree"),
+          transforms_to: {:loot, [Loot.generate_item_by_id(:resource, :synthetic_wood)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :axe)]},
+          transform_sound_name: "axe",
+          transform_cost: 5
+        }
+      ]
+    },
+    pine: %Object{
+      name: gettext("artificial tree"),
+      image_name: "pine",
+      high?: true,
+      transforms: [
+        %Transform{
+          name: :felling,
+          readable_name: gettext("Cut down"),
+          message: gettext("You cut down the tree"),
+          transforms_to: {:loot, [Loot.generate_item_by_id(:resource, :synthetic_wood)]},
+          transform_requirements: {:tools, [Loot.generate_item_by_id(:tool, :axe)]},
+          transform_sound_name: "axe",
+          transform_cost: 5
         }
       ]
     }

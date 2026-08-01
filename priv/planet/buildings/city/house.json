@@ -1,5 +1,6 @@
 {
   "name": "house",
+  "random_weight": 1.0,
   "modificators": [
     {
       "name": "burning",
@@ -44,12 +45,14 @@
       {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
     ],
     [
+      {"type": "object", "name": "skip"},
       {"type": "object", "name": "wall_left_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
       {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
       {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
       {"type": "object", "name": "door_down", "or": [{"type": "object", "name": "door_down_locked", "when": {"possibility": {"from": 1, "to": 10}}}]},
       {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
-      {"type": "object", "name": "wall_right_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+      {"type": "object", "name": "wall_right_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "loot", "name": "trash", "or": [{"type": "object", "name": "skip", "when": {"possibility": {"from": 1, "to": 4}}}]}
     ]
   ]
 }

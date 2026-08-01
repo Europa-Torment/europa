@@ -237,6 +237,26 @@ defmodule Europa.Server.Planet.Tiles do
       image_name: "ruins",
       map_color: "#4C332F",
       temperature: @default_temperature
+    },
+    grass: %Tile{
+      atom_value: :g,
+      blood_version: :gb,
+      readable_name: gettext("artificial turf"),
+      move_cost: 1,
+      movable?: true,
+      image_name: "grass",
+      map_color: "#1B8C23",
+      temperature: @default_temperature
+    },
+    asphalt: %Tile{
+      atom_value: :a,
+      blood_version: :ab,
+      readable_name: gettext("asphalt"),
+      move_cost: 1,
+      movable?: true,
+      image_name: "asphalt",
+      map_color: "#0B240C",
+      temperature: @default_temperature
     }
   }
 

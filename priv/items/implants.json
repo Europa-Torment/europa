@@ -2,6 +2,7 @@
     {
         "id": "mechanical_eye",
         "name": "Mechanical eye",
+        "subtype": "implant",
         "description": "An optical implant that increases visual acuity and focusing range.",
         "properties": {
             "accuracy": {"from": 1, "to": 5}
@@ -12,6 +13,7 @@
     {
         "id": "quantum_immunomodulator",
         "name": "Quantum immunomodulator",
+        "subtype": "implant",
         "description": "An arterial-implantable immune cell modulator.",
         "properties": {
             "max_health": {"from": 1, "to": 10}
@@ -22,6 +24,7 @@
     {
         "id": "metabolism_stimulant",
         "name": "Metabolism stimulant",
+        "subtype": "implant",
         "description": "Subcutaneous implant that enhances metabolism.",
         "properties": {
             "max_warm": {"from": 1, "to": 10}
@@ -32,6 +35,7 @@
     {
         "id": "steel_grip",
         "name": "Steel Grip",
+        "subtype": "implant",
         "description": "Increases shotguns damage.",
         "properties": {
             "shotgun_damage": {"from": 2, "to": 5}
@@ -42,6 +46,7 @@
     {
         "id": "optical_amplifier",
         "name": "Optical amplifier",
+        "subtype": "implant",
         "description": "Increases firearm damage.",
         "properties": {
             "shoot_damage": {"from": 1, "to": 5}
@@ -52,6 +57,7 @@
     {
         "id": "response_modulator",
         "name": "Response modulator",
+        "subtype": "implant",
         "description": "Increases melee weapon damage.",
         "properties": {
             "melee_damage": {"from": 1, "to": 3}
@@ -62,6 +68,7 @@
     {
         "id": "spine_activator",
         "name": "Spine activator",
+        "subtype": "implant",
         "description": "Increases load capacity.",
         "properties": {
             "max_weight": {"from": 2, "to": 5}
@@ -72,6 +79,7 @@
     {
         "id": "concentration_enhancer",
         "name": "Concentration Enhancer",
+        "subtype": "implant",
         "description": "Improves the efficiency of actions.",
         "properties": {
             "efficiency": {"from": 1, "to": 10}
@@ -82,6 +90,7 @@
     {
         "id": "god_module",
         "name": "God module",
+        "subtype": "implant",
         "description": "A rare implant. A secret development for supersoldiers.",
         "properties": {
             "accuracy": {"from": 1, "to": 5},

@@ -1,5 +1,6 @@
 {
     "name": "sun batteries",
+    "random_weight": 1.0,
     "content": [
         [
             {"type": "loot", "name": "sun_battery"}, {"type": "loot", "name": "sun_battery"}, {"type": "loot", "name": "sun_battery"}

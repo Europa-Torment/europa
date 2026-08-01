@@ -42,7 +42,7 @@ defmodule Europa.Server.Loot do
     {:ammo, gettext("Ammo"), 0.7},
     {:melee_weapon, gettext("Melee weapons"), 0.7},
     {:supply, gettext("Supplies"), 1.0},
-    {:tool, gettext("Tools"), 0.3},
+    {:tool, gettext("Tools"), 0.5},
     {:resource, gettext("Resources"), 1.0},
     {:helmet, gettext("Helmets"), 0.4},
     {:suit, gettext("Suits"), 0.2},
@@ -70,6 +70,7 @@ defmodule Europa.Server.Loot do
   @items_attrs FilesReader.parse_items_files(@filenames)
 
   @type item_type :: unquote(Types.one_of(@allowed_item_types))
+  @type item_subtype :: atom()
   @type item_id :: atom()
   @type item_box_type :: unquote(Types.one_of(@allowed_item_box_types))
 
@@ -130,6 +131,9 @@ defmodule Europa.Server.Loot do
     @spec item_type(item()) :: Loot.item_type()
     def item_type(item)
 
+    @spec item_subtype(item()) :: Loot.item_subtype()
+    def item_subtype(item)
+
     @spec id(item()) :: atom()
     def id(item)
 
@@ -178,11 +182,12 @@ defmodule Europa.Server.Loot do
     @allowed_placing [:outdoor, :furniture]
 
     @type placing :: unquote(Types.one_of(@allowed_placing))
+    @type item_types :: map() | :all
 
     typedstruct do
       field :type, Loot.item_box_type(), enforce: true
       field :readable_name, String.t(), enforce: true
-      field :item_types, list(Loot.item_type()) | :all, enforce: true
+      field :item_types, item_types(), enforce: true
       field :items, list(Loot.Item.item()), enforce: true
       field :max_items, pos_integer()
       field :movable?, boolean(), enforce: true, default: false
@@ -196,8 +201,11 @@ defmodule Europa.Server.Loot do
     def from_map(attrs) when is_map(attrs) do
       item_types =
         case Map.fetch!(attrs, :item_types) do
-          "all" -> :all
-          types when is_list(types) -> Enum.map(types, &String.to_atom/1)
+          "all" ->
+            :all
+
+          types when is_map(types) ->
+            parse_item_types(types)
         end
 
       %__MODULE__{
@@ -256,6 +264,19 @@ defmodule Europa.Server.Loot do
     @spec stand_on(t(), Planet.tile()) :: t()
     def stand_on(%__MODULE__{} = item_box, tile) do
       struct!(item_box, stand_on: tile)
+    end
+
+    defp parse_item_types(types) do
+      Enum.map(types, fn {category, subcategories} ->
+        subcategories =
+          case subcategories do
+            "all" -> :all
+            subcategories when is_list(subcategories) -> Enum.map(subcategories, &String.to_atom/1)
+          end
+
+        {category, subcategories}
+      end)
+      |> Enum.into(%{})
     end
 
     defp find_item(%ItemBox{} = item_box, item_uuid) do
@@ -336,23 +357,36 @@ defmodule Europa.Server.Loot do
     |> struct!(items: items)
   end
 
-  @spec generate_item_for_types(list() | :all) :: Item.t()
-  def generate_item_for_types(allowed_types) when is_list(allowed_types) or allowed_types == :all do
-    case allowed_types do
-      :all ->
-        @weighted_item_types
+  @spec generate_item_for_types(ItemBox.item_types()) :: Item.t()
+  def generate_item_for_types(allowed_types) when is_map(allowed_types) or allowed_types == :all do
+    item_type =
+      case allowed_types do
+        :all ->
+          @weighted_item_types
 
-      allowed_types ->
-        @weighted_item_types
-        |> Enum.filter(fn {type, _, _} -> type in allowed_types end)
-    end
-    |> Enum.map(fn {item_type, _, weight} -> {item_type, weight} end)
-    |> WeightedRandom.take_one()
-    |> generate_item()
+        allowed_types ->
+          @weighted_item_types
+          |> Enum.filter(fn {type, _, _} -> type in Map.keys(allowed_types) end)
+      end
+      |> Enum.map(fn {item_type, _, weight} -> {item_type, weight} end)
+      |> WeightedRandom.take_one()
+
+    subtypes =
+      case allowed_types do
+        :all -> :all
+        allowed_types -> Map.fetch!(allowed_types, item_type)
+      end
+
+    generate_item(item_type, subtypes)
   end
 
   @spec generate_item(item_type()) :: Item.t()
   def generate_item(item_type) when item_type in @allowed_item_types do
+    generate_item(item_type, :all)
+  end
+
+  @spec generate_item(item_type(), ItemBox.item_types()) :: Item.t()
+  def generate_item(item_type, :all) when item_type in @allowed_item_types do
     attrs =
       item_type
       |> get_items()
@@ -362,8 +396,27 @@ defmodule Europa.Server.Loot do
     new_item(item_type, attrs)
   end
 
-  @spec generate_item(item_type(), item_id(), count :: pos_integer()) :: Item.t()
-  def generate_item(item_type, item_id, count \\ 1)
+  def generate_item(item_type, allowed_subtypes) when item_type in @allowed_item_types when is_list(allowed_subtypes) do
+    case allowed_subtypes do
+      :all ->
+        generate_item(item_type, :all)
+
+      subtypes ->
+        attrs =
+          item_type
+          |> get_items()
+          |> Enum.filter(fn {raw_item, _} ->
+            (Map.fetch!(raw_item, :subtype) |> String.to_atom()) in subtypes
+          end)
+          |> WeightedRandom.take_one()
+          |> AttrsDeterminator.determine_attrs()
+
+        new_item(item_type, attrs)
+    end
+  end
+
+  @spec generate_item_by_id(item_type(), item_id(), count :: pos_integer()) :: Item.t()
+  def generate_item_by_id(item_type, item_id, count \\ 1)
       when item_type in @allowed_item_types and is_atom(item_id) and is_integer(count) and count > 0 do
     attrs =
       item_type

@@ -75,6 +75,7 @@ defmodule Europa.Support.Factory do
     %Loot.Weapon{
       id: sequence(:id, &:"weapon_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :pistol,
       equipped: false,
       name: sequence(:name, &"weapon #{&1 + 1}"),
       description: "description",
@@ -98,6 +99,7 @@ defmodule Europa.Support.Factory do
     %Loot.Weapon.Ammo{
       id: sequence(:id, &:"ammo_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :pistol,
       caliber: ".40 S&W",
       description: "description",
       weight: 1.0,
@@ -110,6 +112,7 @@ defmodule Europa.Support.Factory do
     %Loot.MeleeWeapon{
       id: sequence(:id, &:"melee_weapon_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :melee_weapon,
       equipped: false,
       name: sequence(:name, &"melee weapon #{&1 + 1}"),
       description: "description",
@@ -126,6 +129,7 @@ defmodule Europa.Support.Factory do
     %Loot.Helmet{
       id: sequence(:id, &:"helmet_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :helmet,
       name: sequence(:name, &"helmet #{&1 + 1}"),
       description: "description",
       max_health: 1,
@@ -141,6 +145,7 @@ defmodule Europa.Support.Factory do
     %Loot.Suit{
       id: sequence(:id, &:"suit_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :suit,
       name: sequence(:name, &"suit #{&1 + 1}"),
       description: "description",
       max_health: 1,
@@ -157,6 +162,7 @@ defmodule Europa.Support.Factory do
     %Loot.Boots{
       id: sequence(:id, &:"boots_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :boots,
       name: sequence(:name, &"boots #{&1 + 1}"),
       description: "description",
       max_health: 1,
@@ -172,6 +178,7 @@ defmodule Europa.Support.Factory do
     %Loot.Supply{
       id: sequence(:id, &:"supply_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :food,
       name: sequence(:name, &"supply #{&1 + 1}"),
       description: "description",
       count: 1,
@@ -198,6 +205,7 @@ defmodule Europa.Support.Factory do
     %Loot.Implant{
       id: sequence(:id, &:"implant_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :implant,
       name: sequence(:name, &"implant #{&1 + 1}"),
       description: "description",
       properties: build(:implant_properties),
@@ -224,6 +232,7 @@ defmodule Europa.Support.Factory do
     %Loot.Tool{
       id: sequence(:id, &:"tool_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :common,
       name: sequence(:name, &"tool #{&1 + 1}"),
       description: "description",
       count: 1,
@@ -239,6 +248,7 @@ defmodule Europa.Support.Factory do
     %Loot.Resource{
       id: sequence(:id, &:"resource_#{&1 + 1}"),
       uuid: Ecto.UUID.generate(),
+      subtype: :common,
       name: sequence(:name, &"resource #{&1 + 1}"),
       description: "description",
       count: 1,

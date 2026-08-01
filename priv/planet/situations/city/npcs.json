@@ -1,5 +1,6 @@
 {
   "name": "NPCs",
+  "random_weight": 1.0,
   "content": [
     [
       {"type": "npc"},

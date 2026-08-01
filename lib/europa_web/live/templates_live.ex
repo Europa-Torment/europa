@@ -62,7 +62,12 @@ defmodule EuropaWeb.TemplatesLive do
     case Templates.Template.from_map(raw_template) do
       {:ok, template} ->
         final_template = prepare_template(socket.assigns.planet, template)
-        assign(socket, template: final_template)
+
+        assign(socket,
+          template: final_template,
+          template_width: template_width(template),
+          template_height: template_height(template)
+        )
 
       {:error, reason} ->
         put_flash(socket, :error, reason)
@@ -77,6 +82,14 @@ defmodule EuropaWeb.TemplatesLive do
         Planet.prepare_predefined_tile(tile, {x, y}, planet, @snow)
       end)
     end)
+  end
+
+  defp template_width(template) do
+    template.content |> Enum.map(&length/1) |> Enum.max()
+  end
+
+  defp template_height(template) do
+    length(template.content)
   end
 
   # coveralls-ignore-stop

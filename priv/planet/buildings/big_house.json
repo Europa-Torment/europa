@@ -1,5 +1,6 @@
 {
   "name": "big house",
+  "random_weight": 1.0,
   "modificators": [
     {
       "name": "burning",

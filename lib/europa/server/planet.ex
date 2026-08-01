@@ -39,7 +39,6 @@ defmodule Europa.Server.Planet do
 
   @view_distance fetch_config!([__MODULE__, :view_distance])
   @min_view_distance fetch_config!([__MODULE__, :min_view_distance])
-  @generate_distance fetch_config!([__MODULE__, :generate_distance])
 
   @base_enemy_generate_possibility fetch_config!([__MODULE__, :base_enemy_generate_possibility])
   @enemy_view_distance fetch_config!([__MODULE__, :enemy_view_distance])
@@ -103,6 +102,8 @@ defmodule Europa.Server.Planet do
 
   @concrete Tiles.tile(:concrete).atom_value
   @concrete_snow Tiles.tile(:concrete_snow).atom_value
+
+  @asphalt Tiles.tile(:asphalt).atom_value
   @ruins Tiles.tile(:ruins).atom_value
 
   @darkness Tiles.tile(:darkness).atom_value
@@ -151,13 +152,12 @@ defmodule Europa.Server.Planet do
     %Region{
       city?: true,
       water_tile: @ruins,
-      ice_tile: @concrete_snow,
+      ice_tile: @concrete,
       snow_tile: @concrete_snow,
-      road_tile: @concrete,
+      road_tile: @asphalt,
       enemy_generate_possibility: div(@base_enemy_generate_possibility, 20),
       predefined_possibility: 1,
       predefined_subcategories: ["city"],
-      specific_item_boxes: [:sun_battery],
       noise_threshold: 0.07
     },
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.18},
@@ -165,8 +165,8 @@ defmodule Europa.Server.Planet do
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
 
-  @city_block_size 12
-  @city_road_width 2
+  @city_block_size 11
+  @city_road_width 3
   @city_cell_size @city_block_size + @city_road_width
 
   typedstruct module: Land, enforce: true do
@@ -250,15 +250,20 @@ defmodule Europa.Server.Planet do
   def readable_tile_name(tile), do: Map.get(@tiles_readable_names, tile)
 
   @impl true
-  def get_visible_land(%__MODULE__{land: land, current_coord: current_coord} = planet, %DateTime{} = current_datetime) do
+  def get_visible_land(
+        %__MODULE__{land: land, current_coord: current_coord} = planet,
+        %Player{} = player,
+        %DateTime{} = current_datetime
+      ) do
     current_hour = current_datetime.hour
     {{x_from, x_to}, {y_from, y_to}} = visible_land_intervals(planet)
+    flashlight_coords = flashlight_coords(land, current_coord, player)
 
     for y <- y_from..y_to do
       for x <- x_from..x_to do
         get_tile(land, {x, y})
         |> tile_or_storm(current_coord, {x, y}, planet.storm)
-        |> tile_or_darkness(current_coord, {x, y}, current_hour, land)
+        |> tile_or_darkness(current_coord, {x, y}, current_hour, land, flashlight_coords)
       end
     end
   end
@@ -270,7 +275,7 @@ defmodule Europa.Server.Planet do
     map_tile = fn x, y ->
       tile = get_tile(land, {x, y})
 
-      if tile && y in planet.land.min_y..planet.land.max_y && x in planet.land.min_x..planet.land.max_x do
+      if tile && x in planet.land.min_x..planet.land.max_x && y in planet.land.min_y..planet.land.max_y do
         tile_for_map(tile)
       else
         @darkness
@@ -1396,45 +1401,79 @@ defmodule Europa.Server.Planet do
     if subject_coord == target_coord do
       :stay
     else
-      graph = build_move_graph(planet, subject_coord, target_coord, subject)
-
-      case Graph.get_shortest_path(graph, subject_coord, target_coord) do
-        [_, next_coord | _rest] ->
-          next_coord
-
-        _ ->
-          :stay
+      case a_star(planet, subject_coord, target_coord, subject) do
+        [_, next_coord | _rest] -> next_coord
+        _ -> :stay
       end
     end
   end
 
-  defp build_move_graph(planet, {sx, sy} = subject_coord, {tx, ty} = target_coord, subject) do
-    view_distance = 5
+  defp a_star(planet, start, target, subject) do
+    open_set = %{start => {heuristic(start, target), 0}}
+    came_from = %{}
+    closed_set = MapSet.new()
 
-    min_x = min(sx, tx) - view_distance
-    max_x = max(sx, tx) + view_distance
-    min_y = min(sy, ty) - view_distance
-    max_y = max(sy, ty) + view_distance
+    do_a_star(open_set, closed_set, came_from, target, planet, subject)
+  end
 
-    coords = for x <- min_x..max_x, y <- min_y..max_y, do: {x, y}
+  defp do_a_star(open_set, _closed_set, _came_from, _target, _planet, _subject) when open_set == %{}, do: :stay
 
-    valid? =
-      fn coord ->
-        coord == subject_coord || coord == target_coord || movable_tile?(planet.land, coord, subject)
-      end
+  defp do_a_star(open_set, closed_set, came_from, target, planet, subject) do
+    {current, {_, current_g}} = Enum.min_by(open_set, fn {_coord, {f, _g}} -> f end)
 
-    coords = Enum.filter(coords, valid?)
+    cond do
+      current == target ->
+        reconstruct_path(came_from, current, [current])
 
-    graph = Graph.new()
-    graph = Enum.reduce(coords, graph, fn coord, g -> Graph.add_vertex(g, coord) end)
+      current_g >= @view_distance ->
+        :stay
 
-    Enum.reduce(coords, graph, fn {x, y} = coord, g ->
-      [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
-      |> Enum.filter(&valid?.(&1))
-      |> Enum.reduce(g, fn neighbor, acc ->
-        Graph.add_edge(acc, coord, neighbor)
-      end)
+      true ->
+        open_set = Map.delete(open_set, current)
+        closed_set = MapSet.put(closed_set, current)
+
+        neighbors =
+          planet
+          |> get_valid_neighbors(current, target, subject)
+          |> Enum.reject(&MapSet.member?(closed_set, &1))
+
+        {next_open, next_came} =
+          Enum.reduce(neighbors, {open_set, came_from}, &update_neighbor(&1, &2, current_g, current, target))
+
+        do_a_star(next_open, closed_set, next_came, target, planet, subject)
+    end
+  end
+
+  defp update_neighbor(neighbor, {open_acc, came_acc}, current_g, current, target) do
+    tentative_g = current_g + 1
+
+    case Map.get(open_acc, neighbor) do
+      {_, existing_g} when tentative_g >= existing_g ->
+        {open_acc, came_acc}
+
+      _ ->
+        f_score = tentative_g + heuristic(neighbor, target)
+        {Map.put(open_acc, neighbor, {f_score, tentative_g}), Map.put(came_acc, neighbor, current)}
+    end
+  end
+
+  defp heuristic({x1, y1}, {x2, y2}) do
+    abs(x1 - x2) + abs(y1 - y2)
+  end
+
+  defp get_valid_neighbors(planet, coord, target, subject) do
+    coord
+    |> neighbor_coords(1, without_diagonal?: true)
+    |> Enum.filter(fn coord ->
+      coord == target || movable_tile?(planet.land, coord, subject)
     end)
+  end
+
+  defp reconstruct_path(came_from, current, path) do
+    case Map.get(came_from, current) do
+      nil -> path
+      parent -> reconstruct_path(came_from, parent, [parent | path])
+    end
   end
 
   defp attack_or_miss(%Enemy{} = enemy) do
@@ -1651,6 +1690,22 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp do_move(planet, tile, target_coord, direction, player_stand_on) do
+    updated_land =
+      planet.land
+      |> change_tile(planet.current_coord, player_stand_on)
+      |> change_tile(target_coord, @player)
+
+    updated_planet =
+      planet
+      |> struct!(land: updated_land, current_coord: target_coord)
+      |> maybe_generate_tiles()
+      |> maybe_generate_predefined(direction)
+
+    move_cost = move_cost(tile) |> change_moves_count_in_storm(planet.storm, direction)
+    {:moved, updated_planet, move_cost, tile, next_to_interactive_tile?(updated_planet)}
+  end
+
   defp switch_positions_with_npc(
          %__MODULE__{} = planet,
          %Player{} = player,
@@ -1673,22 +1728,6 @@ defmodule Europa.Server.Planet do
     move_cost = move_cost(new_tile)
 
     {:moved, updated_planet, move_cost, new_tile, next_to_interactive_tile?(updated_planet)}
-  end
-
-  defp do_move(planet, tile, target_coord, direction, player_stand_on) do
-    updated_land =
-      planet.land
-      |> change_tile(planet.current_coord, player_stand_on)
-      |> change_tile(target_coord, @player)
-
-    updated_planet =
-      planet
-      |> struct!(land: updated_land, current_coord: target_coord)
-      |> maybe_generate_tiles(direction)
-
-    move_cost = move_cost(tile) |> change_moves_count_in_storm(planet.storm, direction)
-
-    {:moved, updated_planet, move_cost, tile, next_to_interactive_tile?(updated_planet)}
   end
 
   defp attack_with_melee_weapon_or_stay(planet, player, target_coord, %Npc{player_enemy?: true} = npc) do
@@ -1781,13 +1820,13 @@ defmodule Europa.Server.Planet do
     {{x_from, x_to}, {y_from, y_to}}
   end
 
-  defp visible_land_intervals(%__MODULE__{current_coord: {x, y}, land: land}, view_distance \\ @view_distance) do
+  defp visible_land_intervals(%__MODULE__{current_coord: {x, y}}, view_distance \\ @view_distance) do
     n = div(view_distance, 2)
 
     x_from = x - n
-    x_to = min(x + n, land.max_x)
+    x_to = x + n
     y_from = y - n
-    y_to = min(y + n, land.max_y)
+    y_to = y + n
 
     {{x_from, x_to}, {y_from, y_to}}
   end
@@ -2052,112 +2091,26 @@ defmodule Europa.Server.Planet do
     center_coord()
   end
 
-  defp maybe_generate_tiles(%__MODULE__{current_coord: {x, _y}} = planet, :right) do
-    if (planet.land.max_x - x) in 1..@generate_distance do
-      add_right_column(planet)
-    else
-      planet
-    end
-  end
+  defp maybe_generate_tiles(%__MODULE__{} = planet) do
+    coords = visible_land_coords(planet)
 
-  defp maybe_generate_tiles(%__MODULE__{current_coord: {x, _y}} = planet, :left) do
-    if x in planet.land.min_x..@generate_distance do
-      add_left_column(planet)
-    else
-      planet
-    end
-  end
+    land =
+      Enum.reduce(coords, planet.land, fn {x, y} = coord, land ->
+        if get_tile(land, coord) do
+          land
+        else
+          min_x = min(land.min_x, x)
+          max_x = max(land.max_x, x)
+          min_y = min(land.min_y, y)
+          max_y = max(land.max_y, y)
 
-  defp maybe_generate_tiles(%__MODULE__{current_coord: {_x, y}} = planet, :up) do
-    if y in planet.land.min_y..@generate_distance do
-      add_top_row(planet)
-    else
-      planet
-    end
-  end
+          land
+          |> change_tile(coord, generate_tile(planet, coord))
+          |> struct!(min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y)
+        end
+      end)
 
-  defp maybe_generate_tiles(%__MODULE__{current_coord: {_x, y}} = planet, :down) do
-    if (planet.land.max_y - y) in 1..@generate_distance do
-      add_bottom_row(planet)
-    else
-      planet
-    end
-  end
-
-  defp maybe_generate_tiles(planet, _), do: planet
-
-  defp add_right_column(%__MODULE__{land: land} = planet) do
-    new_max_x = land.max_x + 1
-
-    new_tiles =
-      for y <- land.min_y..land.max_y, into: %{} do
-        {{new_max_x, y}, generate_tile(planet, {new_max_x, y})}
-      end
-      |> filter_exist_tiles(land)
-
-    updated_land =
-      struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_x: new_max_x)
-
-    planet
-    |> struct!(land: updated_land)
-    |> maybe_generate_predefined(:right)
-  end
-
-  defp add_left_column(%__MODULE__{land: land} = planet) do
-    new_min_x = land.min_x - 1
-
-    new_tiles =
-      for y <- land.min_y..land.max_y, into: %{} do
-        {{new_min_x, y}, generate_tile(planet, {new_min_x, y})}
-      end
-      |> filter_exist_tiles(land)
-
-    updated_land =
-      struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: new_min_x)
-
-    planet
-    |> struct!(land: updated_land)
-    |> maybe_generate_predefined(:left)
-  end
-
-  defp add_top_row(%__MODULE__{land: land} = planet) do
-    new_min_y = land.min_y - 1
-
-    new_tiles =
-      for x <- land.min_x..land.max_x, into: %{} do
-        {{x, new_min_y}, generate_tile(planet, {x, new_min_y})}
-      end
-      |> filter_exist_tiles(land)
-
-    updated_land =
-      struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_y: new_min_y)
-
-    planet
-    |> struct!(land: updated_land)
-    |> maybe_generate_predefined(:up)
-  end
-
-  defp add_bottom_row(%__MODULE__{land: land} = planet) do
-    new_max_y = land.max_y + 1
-
-    new_tiles =
-      for x <- land.min_x..land.max_x, into: %{} do
-        {{x, new_max_y}, generate_tile(planet, {x, new_max_y})}
-      end
-      |> filter_exist_tiles(land)
-
-    updated_land =
-      struct!(land, tiles: Map.merge(land.tiles, new_tiles), max_y: new_max_y)
-
-    planet
-    |> struct!(land: updated_land)
-    |> maybe_generate_predefined(:down)
-  end
-
-  defp filter_exist_tiles(tiles, land) do
-    tiles
-    |> Enum.filter(fn {coord, _} -> get_tile(land, coord) |> is_nil() end)
-    |> Enum.into(%{})
+    struct!(planet, land: land)
   end
 
   defp tile_or_storm(tile, _, _, nil), do: tile
@@ -2173,7 +2126,7 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp tile_or_darkness(tile, current_coord, tile_coord, current_hour, land) do
+  defp tile_or_darkness(tile, current_coord, tile_coord, current_hour, land, flashlight_coords) do
     max_view_distance = @view_distance
 
     view_distance =
@@ -2184,11 +2137,46 @@ defmodule Europa.Server.Planet do
       end
 
     if view_distance < max_view_distance && coords_distance(current_coord, tile_coord) > view_distance &&
-         not bright_tile?(tile, tile_coord, land) do
+         not bright_tile?(tile, tile_coord, land) && tile_coord not in flashlight_coords do
       @darkness
     else
       tile
     end
+  end
+
+  defp flashlight_coords(land, {x, y}, %Player{} = player) do
+    coord_fun =
+      case player.view_direction do
+        :up -> fn m, n -> {x + m, y - n} end
+        :down -> fn m, n -> {x + m, y + n} end
+        :left -> fn m, n -> {x - n, y + m} end
+        :right -> fn m, n -> {x + n, y + m} end
+      end
+
+    flashlights =
+      Enum.filter(
+        player.inventory,
+        &(Loot.Item.item_type(&1) == :tool && &1.active? && &1.properties.illumination_range)
+      )
+
+    if Enum.empty?(flashlights) do
+      []
+    else
+      flashlight = Enum.max_by(flashlights, & &1.properties.illumination_range)
+      distance = flashlight.properties.illumination_range
+      calculate_flashlight_coords(land, coord_fun, distance)
+    end
+  end
+
+  defp calculate_flashlight_coords(land, coord_fun, distance) do
+    Enum.map(-distance..distance, fn m_end ->
+      Enum.map(1..distance, fn n ->
+        m = round(m_end * n / distance)
+        coord_fun.(m, n)
+      end)
+      |> stop_on_barrier(land)
+    end)
+    |> List.flatten()
   end
 
   defp bright_tile?(%Object{bright?: true}, _coord, _land), do: true
@@ -2318,20 +2306,20 @@ defmodule Europa.Server.Planet do
 
     template_w =
       case template do
+        [] -> 0
         [first_row | _] -> length(first_row)
-        _ -> 0
       end
 
-    diff_x = @city_cell_size - template_w
-    offset_x = div(diff_x, 2) + if rem(diff_x, 2) != 0, do: 1, else: 0
+    diff_x = @city_block_size - template_w
+    diff_y = @city_block_size - template_h
 
-    diff_y = @city_cell_size - template_h
-    offset_y = div(diff_y, 2) + if rem(diff_y, 2) != 0, do: 1, else: 0
+    offset_x = div(diff_x, 2)
+    offset_y = div(diff_y, 2)
 
-    target_x = bx + offset_x
-    target_y = by + offset_y
+    target_x = bx + @city_road_width + offset_x
+    target_y = by + @city_road_width + offset_y
 
-    fn x, y -> {x + target_x, y + target_y} end
+    fn x, y -> {target_x + x, target_y + y} end
   end
 
   defp generate_template_coord_fun(land, direction, {current_x, current_y}, _region, _template) do

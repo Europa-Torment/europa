@@ -14,6 +14,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Chat
   alias Europa.Server.Compass
   alias Europa.Tools.NumberHelpers
@@ -670,7 +671,7 @@ defmodule EuropaWeb.GameCompotents do
     <ul class="list-disc list-inside space-y-2 text-sm">
       <%= for tool <- @required_tools do %>
         <li class={required_tool_class(@player, tool)}>
-          {Loot.Item.composed_name(tool)}, {gettext("you have")}: {PlayerManager.tools_amount(@player, tool)}
+          {interaction_tool_name(tool)}, {gettext("you have")}: {PlayerManager.tools_amount(@player, tool)}
         </li>
       <% end %>
     </ul>
@@ -856,7 +857,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if Item.usable?(@item) do %>
       <div class="tooltip" data-tip={"#{gettext("Use")}"}>
         <.link phx-click="use_tool" phx-value-uuid={"#{@item.uuid}"}>
-          <.icon_image name="tool" /> <.moves_count moves_count={@item.use_cost} />
+          <.icon_image name={use_item_icon_image(@item)} /> <.moves_count moves_count={@item.use_cost} />
         </.link>
       </div>
     <% end %>
@@ -1089,6 +1090,12 @@ defmodule EuropaWeb.GameCompotents do
   ### Helpers ###
 
   defp coord({x, y}), do: "#{x};#{y}"
+
+  defp interaction_tool_name(%Tool{stackable?: true} = tool) do
+    Loot.Item.composed_name(tool)
+  end
+
+  defp interaction_tool_name(%Tool{name: name}), do: name
 
   defp craft_item_name(%Loot.Weapon{name: name}), do: name
   defp craft_item_name(%Loot.Weapon.Ammo{caliber: caliber}), do: "AMMO: #{caliber}"
@@ -1728,6 +1735,18 @@ defmodule EuropaWeb.GameCompotents do
     else
       "#000000"
     end
+  end
+
+  defp use_item_icon_image(%Tool{using_type: :switch, active?: false}) do
+    "done"
+  end
+
+  defp use_item_icon_image(%Tool{using_type: :switch, active?: true}) do
+    "cross"
+  end
+
+  defp use_item_icon_image(_) do
+    "tool"
   end
 
   # coveralls-ignore-stop

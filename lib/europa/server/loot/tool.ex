@@ -1,21 +1,27 @@
 defmodule Europa.Server.Loot.Tool do
   use TypedStruct
 
+  alias Europa.Server.NotApplicableError
   alias Europa.Server.Loot
   alias Europa.Server.Planet.Tiles.Objects
   alias Europa.Server.Planet.Tiles.Objects.Object
+  alias Europa.Server.Errors.NotApplicableError
 
-  @type using_type() :: {:put_object, Objects.name()} | nil
+  @type using_type() :: {:put_object, Objects.name()} | :switch | nil
 
   defmodule Properties do
     typedstruct do
-      field :level, pos_integer() | nil
+      field :level, pos_integer()
+      field :durability, non_neg_integer()
+      field :illumination_range, pos_integer()
     end
 
     @spec new(map()) :: t()
     def new(attrs) when is_map(attrs) do
       %__MODULE__{
-        level: Map.get(attrs, :level)
+        level: Map.get(attrs, :level),
+        durability: Map.get(attrs, :durability),
+        illumination_range: Map.get(attrs, :illumination_range)
       }
     end
   end
@@ -23,47 +29,99 @@ defmodule Europa.Server.Loot.Tool do
   typedstruct do
     field :id, atom(), enforce: true
     field :uuid, Loot.uuid(), enforce: true
+    field :subtype, Loot.item_subtype(), enforce: true
     field :name, String.t(), enforce: true
     field :description, String.t(), enforce: true
     field :count, pos_integer(), enforce: true
     field :properties, Properties.t(), enforce: true
     field :stackable?, boolean(), enforce: true
+    field :active?, boolean()
     field :using_type, using_type()
     field :use_cost, pos_integer() | nil
     field :weight, Loot.Item.weight(), enforce: true
     field :sound_name, String.t(), enforce: true
   end
 
-  @spec new(map()) :: t()
+  @spec new(map()) :: t() | no_return()
   def new(attrs) when is_map(attrs) do
     use_cost = Map.get(attrs, :use_cost)
+    using_type = Map.get(attrs, :using_type) |> parse_using_type()
 
-    %__MODULE__{
-      id: Map.fetch!(attrs, :id) |> String.to_atom(),
-      uuid: Ecto.UUID.generate(),
-      name: Map.fetch!(attrs, :name),
-      description: Map.fetch!(attrs, :description),
-      count: Map.fetch!(attrs, :count),
-      properties: Map.fetch!(attrs, :properties) |> Properties.new(),
-      stackable?: Map.fetch!(attrs, :stackable),
-      use_cost: use_cost,
-      using_type: Map.get(attrs, :using_type) |> parse_and_validate_using_type(use_cost),
-      weight: Map.fetch!(attrs, :weight),
-      sound_name: Map.fetch!(attrs, :sound_name)
-    }
-  end
+    active? =
+      if using_type == :switch do
+        false
+      else
+        nil
+      end
 
-  defp parse_and_validate_using_type(%{put_object: object_name}, use_cost) do
-    if is_integer(use_cost) and use_cost > 0 do
-      object_name = String.to_atom(object_name)
-      %Object{} = Objects.object(object_name)
-      {:put_object, object_name}
-    else
-      raise "use_cost is requred for usable tools"
+    tool =
+      %__MODULE__{
+        id: Map.fetch!(attrs, :id) |> String.to_atom(),
+        uuid: Ecto.UUID.generate(),
+        subtype: Map.fetch!(attrs, :subtype) |> String.to_atom(),
+        name: Map.fetch!(attrs, :name),
+        description: Map.fetch!(attrs, :description),
+        count: Map.fetch!(attrs, :count),
+        properties: Map.fetch!(attrs, :properties) |> Properties.new(),
+        stackable?: Map.fetch!(attrs, :stackable),
+        active?: active?,
+        use_cost: use_cost,
+        using_type: using_type,
+        weight: Map.fetch!(attrs, :weight),
+        sound_name: Map.fetch!(attrs, :sound_name)
+      }
+
+    if tool.stackable? && tool.properties.durability do
+      raise "tool cannot be stackable and has durability at same time, tool: #{inspect(tool)}"
     end
+
+    if not tool.stackable? && tool.count != 1 do
+      raise "count for not stackable tools should be equal to 1"
+    end
+
+    if tool.using_type && (is_nil(use_cost) || not is_integer(use_cost)) do
+      raise "use_cost is required for usable tools"
+    end
+
+    tool
   end
 
-  defp parse_and_validate_using_type(nil, _), do: nil
+  @spec switch(t()) :: {:ok, t()} | {:error, NotApplicableError.t()}
+  def switch(%__MODULE__{using_type: :switch} = tool) do
+    {:ok, struct!(tool, active?: !tool.active?)}
+  end
+
+  def switch(_) do
+    {:error, %NotApplicableError{}}
+  end
+
+  @spec with_durability?(t()) :: boolean()
+  def with_durability?(%__MODULE__{properties: %Properties{durability: durability}}) when not is_nil(durability) do
+    true
+  end
+
+  def with_durability?(_), do: false
+
+  @spec decrease_durability(t()) :: {:ok, t()} | {:error, NotApplicableError.t()}
+  def decrease_durability(%__MODULE__{properties: %Properties{durability: durability} = properties} = tool)
+      when is_integer(durability) and durability > 0 do
+    updated_properties = struct!(properties, durability: durability - 1)
+    {:ok, struct!(tool, properties: updated_properties)}
+  end
+
+  def decrease_durability(_), do: {:error, %NotApplicableError{}}
+
+  defp parse_using_type(%{put_object: object_name}) do
+    object_name = String.to_atom(object_name)
+    %Object{} = Objects.object(object_name)
+    {:put_object, object_name}
+  end
+
+  defp parse_using_type("switch") do
+    :switch
+  end
+
+  defp parse_using_type(nil), do: nil
 end
 
 defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
@@ -71,15 +129,20 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
 
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Tool
-  alias Europa.Server.Errors
+  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Tools.NumberHelpers
   alias Europa.Server.Player
+
+  @displayable_properties [:level, :durability, :illumination_range]
 
   @spec id(Tool.t()) :: atom()
   def id(%Tool{id: id}), do: id
 
   @spec item_type(Tool.t()) :: :tool
   def item_type(%Tool{}), do: :tool
+
+  @spec item_subtype(Tool.t()) :: Loot.item_subtype()
+  def item_subtype(%Tool{subtype: subtype}), do: subtype
 
   @spec negative_attrs(Tool.t()) :: list(atom())
   def negative_attrs(%Tool{}) do
@@ -132,6 +195,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
         name =
           case property do
             :level -> gettext("Level")
+            :durability -> gettext("Durability")
+            :illumination_range -> gettext("Illumination range")
           end
 
         {property, name, value}
@@ -152,14 +217,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
       ]
   end
 
-  @spec equip(Tool.t()) :: {:error, Errors.NotApplicableError.t()}
+  @spec equip(Tool.t()) :: {:error, NotApplicableError.t()}
   def equip(%Tool{}) do
-    {:error, %Errors.NotApplicableError{}}
+    {:error, %NotApplicableError{}}
   end
 
-  @spec unequip(Tool.t()) :: {:error, Errors.NotApplicableError.t()}
+  @spec unequip(Tool.t()) :: {:error, NotApplicableError.t()}
   def unequip(%Tool{}) do
-    {:error, %Errors.NotApplicableError{}}
+    {:error, %NotApplicableError{}}
   end
 
   @spec equipable?(Tool.t()) :: false
@@ -191,6 +256,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
     |> Enum.map_join(", ", fn {property, value} ->
       case property do
         :level -> "LVL:#{value}"
+        :durability -> "D:#{value}"
+        :illumination_range -> "IR:#{value}"
       end
     end)
   end
@@ -198,6 +265,6 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
   defp significant_properties(%Tool.Properties{} = properties) do
     properties
     |> Map.from_struct()
-    |> Enum.filter(fn {_k, value} -> value != nil end)
+    |> Enum.filter(fn {k, value} -> k in @displayable_properties && value != nil end)
   end
 end

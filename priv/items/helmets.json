@@ -2,6 +2,7 @@
     {
         "id": "civil_helmet",
         "name": "Civil helmet",
+        "subtype": "helmet",
         "description": "A standard helmet designed for civilian use.",
         "accuracy": {"from": 1, "to": 3}, 
         "max_health": {"from": 5, "to": 10},
@@ -13,6 +14,7 @@
     {
         "id": "ssb_helmet",
         "name": "SSB helmet", 
+        "subtype": "helmet",
         "description": "A helmet with improved glare for more precise aiming. Developed by SSB.",
         "accuracy": {"from": 3, "to": 7}, 
         "max_health": {"from": 10, "to": 15},
@@ -24,6 +26,7 @@
     {
         "id": "wcc_military_helmet",
         "name": "WCC military helmet", 
+        "subtype": "helmet",
         "description": "Heavy military helmet.",
         "accuracy": {"from": 3, "to": 5}, 
         "max_health": {"from": 20, "to": 25},

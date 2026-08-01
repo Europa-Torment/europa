@@ -15,6 +15,7 @@ defmodule Europa.Server.Player do
   alias Europa.Server.Loot.MeleeWeapon
   alias Europa.Server.Loot.Supply
   alias Europa.Server.Loot.Implant
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
   alias Europa.Server.Event
   alias Europa.Tools.NumberHelpers
@@ -701,17 +702,38 @@ defmodule Europa.Server.Player do
 
   defp do_use_tools(%__MODULE__{} = player, tools) when is_list(tools) do
     Enum.reduce(tools, player, fn tool, player ->
-      updated_tool =
-        player
-        |> find_tool(tool)
-        |> Loot.decrease_item_count(tool.count)
-
-      if updated_tool.count > 0 do
-        update_item(player, updated_tool)
-      else
-        delete_item(player, updated_tool)
+      cond do
+        tool.stackable? -> do_use_stackable_tool(player, tool)
+        Tool.with_durability?(tool) -> do_use_tool_with_durability(player, tool)
+        true -> player
       end
     end)
+  end
+
+  defp do_use_stackable_tool(player, tool) do
+    updated_tool =
+      player
+      |> find_tool(tool)
+      |> Loot.decrease_item_count(tool.count)
+
+    if updated_tool.count > 0 do
+      update_item(player, updated_tool)
+    else
+      delete_item(player, updated_tool)
+    end
+  end
+
+  defp do_use_tool_with_durability(player, tool) do
+    {:ok, updated_tool} =
+      player
+      |> find_tool(tool)
+      |> Tool.decrease_durability()
+
+    if updated_tool.properties.durability > 0 do
+      update_item(player, updated_tool)
+    else
+      delete_item(player, updated_tool)
+    end
   end
 
   defp do_use_resources(%__MODULE__{} = player, resources) when is_list(resources) do
@@ -825,7 +847,8 @@ defmodule Europa.Server.Player do
       fn player -> get_thirsty(player) end,
       fn player -> get_hungry(player) end,
       fn player -> maybe_increase_or_decrease_radiation(player) end,
-      fn player -> take_radiation_damage(player) end
+      fn player -> take_radiation_damage(player) end,
+      fn player -> decrease_tools_durability(player) end
     ]
 
     {updated_player, actions} =
@@ -947,6 +970,32 @@ defmodule Europa.Server.Player do
     end
   end
 
+  defp decrease_tools_durability(%__MODULE__{} = player) do
+    updated_player =
+      Enum.reduce(player.inventory, player, fn item, player ->
+        if Loot.Item.item_type(item) == :tool && item.using_type == :switch && item.active? do
+          decrease_tool_durability(player, item)
+        else
+          player
+        end
+      end)
+
+    {updated_player, []}
+  end
+
+  defp decrease_tool_durability(%__MODULE__{} = player, %Tool{} = tool) do
+    updated_tool =
+      if tool.properties.durability == 0 do
+        {:ok, updated_tool} = Tool.switch(tool)
+        updated_tool
+      else
+        {:ok, updated_tool} = Tool.decrease_durability(tool)
+        updated_tool
+      end
+
+    update_item(player, updated_tool)
+  end
+
   defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do
     stats_changes = Loot.Item.player_stats_changes(supply)
 
@@ -970,8 +1019,15 @@ defmodule Europa.Server.Player do
 
   defp find_tool(%__MODULE__{} = player, %Loot.Tool{} = tool) do
     Enum.find(player.inventory, fn
-      %Loot.Tool{} = item -> tool.id == item.id && tool.name == item.name && tool.properties == item.properties
-      _ -> false
+      %Loot.Tool{} = item ->
+        if item.stackable? do
+          tool.id == item.id && tool.properties
+        else
+          tool.id == item.id
+        end
+
+      _ ->
+        false
     end)
   end
 

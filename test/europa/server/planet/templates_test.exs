@@ -9,11 +9,12 @@ defmodule Europa.Server.Planet.Templates.TemplateTest do
   alias Europa.Server.Loot
   alias Europa.Server.Enemy
 
-  @wall_up Objects.object(:wall_up)
-  @broken_wall Objects.object(:broken_wall)
-
   @floor Tiles.tile(:floor).atom_value
+  @grass Tiles.tile(:grass).atom_value
   @fire Objects.object(:fire) |> Object.stand_on(@floor)
+
+  @wall_up Objects.object(:wall_up) |> Object.stand_on(@grass)
+  @broken_wall Objects.object(:broken_wall) |> Object.stand_on(@grass)
 
   @raw_template %{
     name: "house",
@@ -21,6 +22,7 @@ defmodule Europa.Server.Planet.Templates.TemplateTest do
       %{name: "burning", possibility: %{from: 1, to: 2}},
       %{name: "broken", possibility: %{from: 1, to: 2}}
     ],
+    default_stand_on_tile: "grass",
     content: [
       [
         %{

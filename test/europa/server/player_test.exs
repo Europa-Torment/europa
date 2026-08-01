@@ -11,6 +11,7 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Loot
   alias Europa.Server.Event
+  alias Europa.Server.Loot.Tool
   alias Europa.Server.Loot.Weapon.Ammo
   alias Europa.Server.Loot.Blueprints
   alias Europa.Server.Loot.Blueprints.Blueprint
@@ -626,6 +627,18 @@ defmodule Europa.Server.PlayerTest do
       tool3: tool3
     } do
       assert Player.enough_tools?(player, [tool1, tool2, tool3]) == false
+    end
+
+    test "ignores properties if tool not stackable" do
+      properties1 = build(:tool_properties, durability: 1)
+      properties2 = build(:tool_properties, durability: 2)
+
+      tool1 = build(:tool, stackable?: false, properties: properties1)
+      tool2 = struct!(tool1, properties: properties2)
+
+      player = build(:player, inventory: [tool1])
+
+      assert Player.enough_tools?(player, [tool2]) == true
     end
   end
 
@@ -1327,6 +1340,25 @@ defmodule Europa.Server.PlayerTest do
           assert decreased_radiation_proportion <= 1.0
         end
       end
+    end
+
+    test "decreases active tools durability" do
+      tool1 = build(:tool, using_type: :switch, active?: true, properties: build(:tool_properties, durability: 100))
+      tool2 = build(:tool, using_type: :switch, active?: true, properties: build(:tool_properties, durability: 0))
+      tool3 = build(:tool, using_type: :switch, active?: false, properties: build(:tool_properties, durability: 1))
+      tool4 = build(:tool, using_type: {:put_object, :bonfire})
+
+      player = build(:player, inventory: [tool1, tool2, tool3, tool4])
+
+      assert {:ok,
+              %Player{
+                inventory: [
+                  %Tool{properties: %Tool.Properties{durability: 99}},
+                  %Tool{active?: false, properties: %Tool.Properties{durability: 0}},
+                  ^tool3,
+                  ^tool4
+                ]
+              }, []} = Player.tick(player, 1)
     end
   end
 

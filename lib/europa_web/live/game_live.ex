@@ -793,6 +793,8 @@ defmodule EuropaWeb.GameLive do
         monster_dead3: %{name: ~p"/sounds/monster_dead3.mp3", volume: 0.2},
         monster_dead4: %{name: ~p"/sounds/monster_dead4.mp3", volume: 0.2},
         fire_extinguisher: %{name: ~p"/sounds/fire_extinguisher.mp3", volume: 0.2},
+        axe: %{name: ~p"/sounds/axe.mp3", volume: 0.2},
+        switch: %{name: ~p"/sounds/switch.mp3", volume: 0.2},
         great_red_spot: %{name: ~p"/sounds/great_red_spot.mp3", volume: 0.09},
         bullet_whistle: %{name: ~p"/sounds/bullet_whistle.mp3", volume: 0.1}
       })

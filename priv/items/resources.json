@@ -2,6 +2,7 @@
     {
         "id": "simple_weapon_parts",
         "name": "Parts for primitive weapons",
+        "subtype": "weapon_parts",
         "description": "A set of parts for a primitive earthly weapon.",
         "count": {"from": 1, "to": 3},
         "weight": 0.1, 
@@ -10,6 +11,7 @@
     {
         "id": "regular_weapon_parts",
         "name": "Parts for regular weapons",
+        "subtype": "weapon_parts",
         "description": "Parts for Earth weapons. Nothing complicated, but the instructions are helpful.",
         "count": {"from": 1, "to": 2},
         "weight": 0.2, 
@@ -18,6 +20,7 @@
     {
         "id": "advanced_weapon_parts",
         "name": "Parts for advanced weapons",
+        "subtype": "weapon_parts",
         "description": "A set of parts for complex weapons.",
         "count": {"from": 1, "to": 5},
         "weight": 0.3, 
@@ -26,6 +29,7 @@
     {
         "id": "science_weapon_parts",
         "name": "Parts for science weapons",
+        "subtype": "weapon_parts",
         "description": "High-tech scientific equipment suitable for creating powerful weapons.",
         "count": 1,
         "weight": 0.4, 
@@ -34,6 +38,7 @@
     {
         "id": "spring",
         "name": "Steel spring",
+        "subtype": "weapon_parts",
         "description": "A high-quality medium-sized steel spring that can be useful when assembling a weapon.",
         "count": {"from": 1, "to": 4},
         "weight": 0.1, 
@@ -42,6 +47,7 @@
     {
         "id": "standard_stock",
         "name": "Standard stock",
+        "subtype": "weapon_parts",
         "description": "Standard metal stock, great for rifles.",
         "count": {"from": 1, "to": 2},
         "weight": 0.7, 
@@ -50,6 +56,7 @@
     {
         "id": "pistol_magazine",
         "name": "Pistol magazine",
+        "subtype": "weapon_parts",
         "description": "Magazine for pistols.",
         "count": {"from": 1, "to": 2},
         "weight": 0.2, 
@@ -58,6 +65,7 @@
     {
         "id": "rifle_magazine",
         "name": "Rifle magazine",
+        "subtype": "weapon_parts",
         "description": "High capacity magazine for rifles.",
         "count": {"from": 1, "to": 2},
         "weight": 0.5, 
@@ -66,6 +74,7 @@
     {
         "id": "short_barrel",
         "name": "Short barrel",
+        "subtype": "weapon_parts",
         "description": "Standard short barrel suitable for pistols and other light weapons.",
         "count": {"from": 1, "to": 2},
         "weight": 1.0, 
@@ -74,6 +83,7 @@
     {
         "id": "long_barrel",
         "name": "Long barrel",
+        "subtype": "weapon_parts",
         "description": "A long barrel suitable for rifles and shotguns.",
         "count": {"from": 1, "to": 2},
         "weight": 1.0, 
@@ -82,6 +92,7 @@
     {
         "id": "sniper_scope",
         "name": "Sniper scope",
+        "subtype": "weapon_parts",
         "description": "Excellent modern sniper scope.",
         "count": {"from": 1, "to": 2},
         "weight": 1.0, 
@@ -90,6 +101,7 @@
     {
         "id": "metal_plate",
         "name": "Metal plate",
+        "subtype": "common",
         "description": "A thin but strong metal plate.",
         "count": {"from": 1, "to": 5},
         "weight": 0.1, 
@@ -98,6 +110,7 @@
     {
         "id": "glass",
         "name": "Glass",
+        "subtype": "common",
         "description": "Perfectly polished glass.",
         "count": {"from": 1, "to": 5},
         "weight": 0.1, 
@@ -106,6 +119,7 @@
     {
         "id": "gunpowder",
         "name": "Gunpowder",
+        "subtype": "common",
         "description": "Ordinary gunpowder, with a pleasant smell of sulfur.",
         "count": {"from": 1, "to": 10},
         "weight": 0.01, 
@@ -114,6 +128,7 @@
     {
         "id": "pistol_cartridge_case",
         "name": "Pistol cartridge case",
+        "subtype": "ammo_parts",
         "description": "Universal cartridge case for pistol cartridges.",
         "count": {"from": 1, "to": 20},
         "weight": 0.04, 
@@ -122,6 +137,7 @@
     {
         "id": "rifle_cartridge_case",
         "name": "Rifle cartridge case",
+        "subtype": "ammo_parts",
         "description": "Universal cartridge case for rifle cartridges.",
         "count": {"from": 1, "to": 5},
         "weight": 0.08, 
@@ -130,6 +146,7 @@
     {
         "id": "shotgun_cartridge_case",
         "name": "Shotgun cartridge case",
+        "subtype": "ammo_parts",
         "description": "Universal cartridge case for shotgun cartridges.",
         "count": {"from": 1, "to": 10},
         "weight": 0.02, 
@@ -138,6 +155,7 @@
     {
         "id": "large_pistol_bullet",
         "name": "Large pistol bullet",
+        "subtype": "ammo_parts",
         "description": "Bullet for large-caliber pistols",
         "count": {"from": 1, "to": 10},
         "weight": 0.02, 
@@ -146,6 +164,7 @@
     {
         "id": "standard_pistol_bullet",
         "name": "Standard pistol bullet",
+        "subtype": "ammo_parts",
         "description": "Bullet for small-caliber pistols.",
         "count": {"from": 1, "to": 20},
         "weight": 0.01, 
@@ -154,6 +173,7 @@
     {
         "id": "rifle_bullet",
         "name": "Rifle bullet",
+        "subtype": "ammo_parts",
         "description": "Bullet for rifle.",
         "count": {"from": 1, "to": 5},
         "weight": 0.15, 
@@ -162,6 +182,7 @@
     {
         "id": "heavy_rifle_bullet",
         "name": "Heavy rifle bullet",
+        "subtype": "ammo_parts",
         "description": "Bullet for sniper rifle.",
         "count": {"from": 1, "to": 5},
         "weight": 0.15, 
@@ -170,6 +191,7 @@
     {
         "id": "shot",
         "name": "Shot",
+        "subtype": "ammo_parts",
         "description": "Shotgun shot for shotgun shells.",
         "count": {"from": 1, "to": 10},
         "weight": 0.09, 
@@ -178,6 +200,7 @@
     {
         "id": "buckshot",
         "name": "Buckshot",
+        "subtype": "ammo_parts",
         "description": "Buckshot for high-power shotgun shells.",
         "count": {"from": 1, "to": 5},
         "weight": 0.1, 
@@ -186,6 +209,7 @@
     {
         "id": "synthetic_wood",
         "name": "Synthetic wood",
+        "subtype": "common",
         "description": "Synthetic wood is similar in all its characteristics to real earthly wood.",
         "count": {"from": 1, "to": 10},
         "weight": 0.01, 
@@ -194,6 +218,7 @@
     {
         "id": "fuel",
         "name": "Fuel",
+        "subtype": "common",
         "description": "Synthetic fuel made from household waste. It burns brilliantly and stinks terribly.",
         "count": {"from": 1, "to": 2},
         "weight": 0.4, 

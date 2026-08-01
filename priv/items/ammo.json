@@ -2,6 +2,7 @@
     {
         "id": "40_sw",
         "caliber": ".40 S&W",
+        "subtype": "pistol",
         "description": "Standard pistol cartridges.",
         "count": {"from": 10, "to": 20},
         "weight": 0.02, "random_weight": 2.0
@@ -9,6 +10,7 @@
     {
         "id": "45_acp",
         "caliber": ".45 ACP", 
+        "subtype": "pistol",
         "description": "Heavy pistol cartridges.",
         "count": {"from": 10, "to": 20}, 
         "weight": 0.02, 
@@ -17,6 +19,7 @@
     {
         "id": "shotgun",
         "caliber": "shotgun",
+        "subtype": "shotgun",
         "description": "Standard shotgun shells.", 
         "count": {"from": 5, "to": 10}, 
         "weight": 0.05, 
@@ -25,6 +28,7 @@
     {
         "id": "buckshot",
         "caliber": "buckshot", 
+        "subtype": "shotgun",
         "description": "Powerful buckshot shotgun shells, perfect for exploring the insides of monsters.",
         "count": {"from": 2, "to": 5}, 
         "weight": 0.1, 
@@ -33,6 +37,7 @@
     {
         "id": "5_6mm",
         "caliber": "5.56mm", 
+        "subtype": "rifle",
         "description": "Automatic rifle cartridges. The rebels' loyal allies from the SSB.",
         "count": {"from": 1, "to": 10}, 
         "weight": 0.1, 
@@ -41,6 +46,7 @@
     {
         "id": "50_bmg",
         "caliber": ".50 BMG",
+        "subtype": "rifle",
         "description": "Heavy sniper rounds. Incredibly rare. Could any living creature survive such a shot?",
         "count": {"from": 1, "to": 5}, 
         "weight": 0.4, 
@@ -49,6 +55,7 @@
     {
         "id": "neutron_cartridges",
         "caliber": "neutron cartridges", 
+        "subtype": "science",
         "description": "A development by European scientists, designed to split atoms in laboratories. An extremely powerful and dangerous tool. Difficult times can weaponize anything...",
         "count": {"from": 1, "to": 5}, 
         "weight": 0.5, 
@@ -57,6 +64,7 @@
     {
         "id": "hydrogen_battery",
         "caliber": "hydrogen battery", 
+        "subtype": "science",
         "description": "Disposable batteries for hydrogen laser.",
         "count": {"from": 1, "to": 10}, 
         "weight": 0.2, 

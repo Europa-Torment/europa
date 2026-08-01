@@ -70,6 +70,16 @@ defmodule Europa.Server.Planet.Tiles.Objects.ObjectTest do
       assert Object.transform(object, @transform_name) == @snow
     end
 
+    test "transforms object to loot (to object stand_on tile)" do
+      object =
+        build(:object,
+          transforms: [build(:object_transform, name: @transform_name, transforms_to: {:loot, [build(:weapon)]})],
+          stand_on: @snow
+        )
+
+      assert Object.transform(object, @transform_name) == @snow
+    end
+
     test "returns unchanged object if not transformable" do
       object = build(:object, transforms: [])
       assert Object.transform(object, @transform_name) == object

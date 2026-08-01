@@ -1,5 +1,6 @@
 {
   "name": "4 rooms house",
+  "random_weight": 1.0,
   "modificators": [
     {
       "name": "burning",

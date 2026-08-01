@@ -89,7 +89,7 @@ defmodule Europa.ServerTest do
       land = PlanetLandConverter.to_matrix(planet.land)
 
       PlanetManagerMock
-      |> expect(:get_visible_land, fn _planet, _current_time ->
+      |> expect(:get_visible_land, fn _planet, _player, _current_time ->
         land
       end)
 
@@ -102,7 +102,7 @@ defmodule Europa.ServerTest do
       assert {year, days, time} = Server.get_current_time(server)
       assert is_integer(year)
       assert is_integer(days)
-      assert [_, _] = String.split(time, ":")
+      assert [_, _, _] = String.split(time, ":")
     end
   end
 
@@ -183,6 +183,35 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.interact(server) == {:ok, interaction}
+    end
+
+    test "adds items after transform", %{server: server} do
+      weapon = build(:weapon)
+      ammo = build(:ammo)
+
+      tools = build_list(3, :tool)
+
+      interaction =
+        {:transform, build(:object),
+         build(:object_transform, transform_requirements: {:tools, tools}, transforms_to: {:loot, [weapon, ammo]})}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, _direction, _opts ->
+        {:ok, planet, interaction}
+      end)
+
+      PlayerManagerMock
+      |> expect(:use_tools, fn player, ^tools ->
+        {:ok, player}
+      end)
+      |> expect(:add_item, fn player, ^weapon ->
+        {:ok, player}
+      end)
+      |> expect(:add_item, fn player, ^ammo ->
+        {:ok, player}
+      end)
+
+      assert Server.interact(server, forced: true) == {:ok, interaction}
     end
 
     test "returns nothing error", %{server: server} do
@@ -890,7 +919,7 @@ defmodule Europa.ServerTest do
   end
 
   describe "use_tool/2" do
-    test "handles success response", %{server: server} do
+    test "handles success response (put_object)", %{server: server} do
       tool = build(:tool, using_type: {:put_object, :bonfire}, use_cost: 1, count: 10)
       expected_tool = struct!(tool, count: 1)
       tool_uuid = tool.uuid
@@ -908,6 +937,39 @@ defmodule Europa.ServerTest do
 
       PlanetManagerMock
       |> expect(:use_tool, fn %Planet{} = planet, ^expected_tool, _direction -> {:ok, planet} end)
+      |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, planet, []}
+      end)
+
+      assert {:ok, ^expected_tool} = Server.use_tool(server, tool_uuid)
+      :timer.sleep(100)
+    end
+
+    test "handles success response (switch)", %{server: server} do
+      tool =
+        build(:tool,
+          using_type: :switch,
+          active?: false,
+          use_cost: 1,
+          properties: build(:tool_properties, durability: 100)
+        )
+
+      expected_tool = struct!(tool, active?: true)
+      tool_uuid = tool.uuid
+      moves_count = tool.use_cost
+
+      PlayerManagerMock
+      |> expect(:get_item, fn %Player{}, ^tool_uuid -> {:ok, tool} end)
+      |> expect(:update_item, fn %Player{} = player, ^expected_tool ->
+        player
+      end)
+      |> expect(:tick, fn %Player{} = player, tick_moves_count ->
+        assert_moves_count(moves_count, tick_moves_count)
+        {:ok, player, []}
+      end)
+
+      PlanetManagerMock
       |> expect(:tick, fn %Planet{} = planet, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
         {:ok, planet, []}

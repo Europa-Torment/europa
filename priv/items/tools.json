@@ -1,7 +1,8 @@
 [
     {
         "id": "key",
-        "name": "Key card", 
+        "name": "Key card",
+        "subtype": "key",
         "description": "A service key card that allows you to open a regular door.",
         "count": {"from": 1, "to": 4},
         "sound_name": "assemble",
@@ -15,6 +16,7 @@
     {
         "id": "matches",
         "name": "Matches", 
+        "subtype": "matches",
         "description": "Good matches that burn even in a thin atmosphere.",
         "count": {"from": 1, "to": 20},
         "sound_name": "matches",
@@ -26,6 +28,7 @@
     {
         "id": "bonfire_starter_kit",
         "name": "Bonfire starter kit", 
+        "subtype": "common",
         "description": "A set of synthetic wood capable of burning in a rarefied atmosphere.",
         "count": {"from": 1, "to": 2},
         "sound_name": "matches",
@@ -39,6 +42,7 @@
     {
         "id": "fire_extinguisher",
         "name": "Fire extinguisher", 
+        "subtype": "common",
         "description": "Carbon dioxide fire extinguisher.",
         "count": {"from": 1, "to": 3},
         "sound_name": "fire_extinguisher",
@@ -46,5 +50,36 @@
         "stackable": true,
         "weight": 1.2, 
         "random_weight": 0.8
+    },
+    {
+        "id": "axe",
+        "name": "Axe", 
+        "subtype": "common",
+        "description": "A good fire axe.",
+        "count": 1,
+        "sound_name": "axe",
+        "properties": {
+            "durability": {"from": 1, "to": 15}
+        },
+        "stackable": false,
+        "weight": 1.5, 
+        "random_weight": 0.8
+    },
+    {
+        "id": "flashlight",
+        "name": "Flashlight", 
+        "subtype": "flashlight",
+        "description": "Compact flashlight. Your best friend on a dark night.",
+        "count": 1,
+        "using_type": "switch",
+        "use_cost": 1,
+        "sound_name": "switch",
+        "properties": {
+            "durability": {"from": 10, "to": 1000},
+            "illumination_range": {"from": 4, "to": 10}
+        },
+        "stackable": false,
+        "weight": 0.5, 
+        "random_weight": 1.0
     }
 ]

@@ -94,7 +94,7 @@ defmodule EuropaWeb.PageComponents do
           <figure class="relative overflow-hidden">
             <img
               src={logo}
-              class="w-full h-48 md:h-56 object-cover"
+              class="w-full object-cover"
             />
           </figure>
           <div class="card-body p-5 md:p-6">

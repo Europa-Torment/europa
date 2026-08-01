@@ -10,6 +10,44 @@ defmodule Europa.Server.Loot.ItemTest do
 
   setup :verify_on_exit!
 
+  describe "item_type/1" do
+    test "returns item type" do
+      for item <- [
+            build(:weapon),
+            build(:ammo),
+            build(:tool),
+            build(:resource),
+            build(:melee_weapon),
+            build(:helmet),
+            build(:suit),
+            build(:boots),
+            build(:supply),
+            build(:implant)
+          ] do
+        assert Item.item_type(item) |> is_atom()
+      end
+    end
+  end
+
+  describe "item_subtype/1" do
+    test "returns item subtype" do
+      for item <- [
+            build(:weapon),
+            build(:ammo),
+            build(:tool),
+            build(:resource),
+            build(:melee_weapon),
+            build(:helmet),
+            build(:suit),
+            build(:boots),
+            build(:supply),
+            build(:implant)
+          ] do
+        assert Item.item_subtype(item) |> is_atom()
+      end
+    end
+  end
+
   describe "composed_name/1" do
     test "returns string with item name" do
       for item <- [
@@ -516,18 +554,64 @@ defmodule Europa.Server.Loot.ItemTest do
         build(:melee_weapon, equipped: false),
         build(:helmet, equipped: false),
         build(:suit, equipped: false),
-        build(:boots, equipped: false)
+        build(:boots, equipped: false),
+        build(:implant)
       ]
 
       for item <- items do
         assert {:ok, updated_item} = Item.equip(item)
-        assert updated_item.equipped == true
+
+        unless Item.item_type(item) == :implant do
+          assert updated_item.equipped == true
+        end
       end
     end
 
-    test "returns not_applicable error" do
-      ammo = build(:ammo)
-      assert Item.equip(ammo) == {:error, %Errors.NotApplicableError{}}
+    test "returns NotApplicableError" do
+      items = [
+        build(:ammo),
+        build(:supply),
+        build(:tool),
+        build(:resource)
+      ]
+
+      for item <- items do
+        assert Item.equip(item) == {:error, %Errors.NotApplicableError{}}
+      end
+    end
+  end
+
+  describe "unequip/1" do
+    test "changes equipped to true" do
+      items = [
+        build(:weapon, equipped: true),
+        build(:melee_weapon, equipped: true),
+        build(:helmet, equipped: true),
+        build(:suit, equipped: true),
+        build(:boots, equipped: true),
+        build(:implant)
+      ]
+
+      for item <- items do
+        assert {:ok, updated_item} = Item.unequip(item)
+
+        unless Item.item_type(item) == :implant do
+          assert updated_item.equipped == false
+        end
+      end
+    end
+
+    test "returns NotApplicableError" do
+      items = [
+        build(:ammo),
+        build(:supply),
+        build(:tool),
+        build(:resource)
+      ]
+
+      for item <- items do
+        assert Item.unequip(item) == {:error, %Errors.NotApplicableError{}}
+      end
     end
   end
 end
@@ -547,7 +631,7 @@ defmodule Europa.Server.Loot.ItemBoxTest do
         type: "monster_body",
         readable_name: "Monster corpse",
         max_items: 4,
-        item_types: ["weapon", "ammo", "melee_weapon", "helmet", "suit", "boots"],
+        item_types: %{weapon: "all", ammo: ["pistol"], melee_weapon: "all", helmet: "all", suit: "all", boots: "all"},
         movable: true,
         image_name: "monster_corpse",
         placing: "furniture",
@@ -558,7 +642,16 @@ defmodule Europa.Server.Loot.ItemBoxTest do
       assert item_box.type == :monster_body
       assert item_box.readable_name == "Monster corpse"
       assert item_box.max_items == 4
-      assert item_box.item_types == [:weapon, :ammo, :melee_weapon, :helmet, :suit, :boots]
+
+      assert item_box.item_types == %{
+               weapon: :all,
+               ammo: [:pistol],
+               melee_weapon: :all,
+               helmet: :all,
+               suit: :all,
+               boots: :all
+             }
+
       assert item_box.image_name == "monster_corpse"
       assert item_box.placing == :furniture
     end
@@ -679,6 +772,20 @@ defmodule Europa.Server.LootTest do
     test "generates item of given type" do
       assert %Weapon{} = Loot.generate_item(:weapon)
       assert %Ammo{} = Loot.generate_item(:ammo)
+    end
+  end
+
+  describe "generate_item/2" do
+    test "generates item of given type and subtype" do
+      subtype = :plant
+      assert %Supply{subtype: ^subtype} = Loot.generate_item(:supply, [subtype])
+    end
+  end
+
+  describe "generate_item_by_id/1" do
+    test "generates item of given type and id" do
+      id = :guard_pistol
+      assert %Weapon{id: ^id} = Loot.generate_item_by_id(:weapon, id)
     end
   end
 

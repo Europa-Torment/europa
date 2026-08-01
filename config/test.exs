@@ -27,7 +27,6 @@ config :europa, Europa.Server.Planet,
   initial_game_field: [width: 20, height: 20],
   view_distance: 5,
   min_view_distance: 1,
-  generate_distance: 1,
   enemy_view_distance: 3,
   # Keep 100% possibility to tests consistency
   enemy_move_possibility: [from: 10, to: 10],

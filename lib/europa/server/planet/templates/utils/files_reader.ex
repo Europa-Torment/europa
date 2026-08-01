@@ -17,16 +17,17 @@ defmodule Europa.Server.Planet.Templates.Utils.FilesReader do
 
     {files, dirs} =
       Enum.split_with(entries, fn entry ->
-        full = Path.join(path, entry)
-        not File.dir?(full)
+        path = Path.join(path, entry)
+        not File.dir?(path)
       end)
 
     base_templates =
       files
       |> Enum.filter(&String.ends_with?(&1, ".json"))
       |> Enum.map(fn file ->
-        full = Path.join(path, file)
-        File.read!(full) |> Jason.decode!(keys: :atoms)
+        path
+        |> Path.join(file)
+        |> parse_template()
       end)
 
     subdirs =
@@ -38,13 +39,21 @@ defmodule Europa.Server.Planet.Templates.Utils.FilesReader do
           |> File.ls!()
           |> Enum.filter(&String.ends_with?(&1, ".json"))
           |> Enum.map(fn file ->
-            full = Path.join(dir_path, file)
-            File.read!(full) |> Jason.decode!(keys: :atoms)
+            dir_path
+            |> Path.join(file)
+            |> parse_template()
           end)
 
         Map.put(acc, dir_name, templates)
       end)
 
     Map.put(subdirs, "base_templates", base_templates)
+  end
+
+  defp parse_template(path) do
+    attrs = File.read!(path) |> Jason.decode!(keys: :atoms)
+    random_weight = Map.fetch!(attrs, :random_weight)
+
+    {attrs, random_weight}
   end
 end

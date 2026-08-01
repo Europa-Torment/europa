@@ -9,6 +9,9 @@ defmodule Europa.Server.Planet.Templates do
   ```
   {
     "name": "Template name",
+    "with_borders": true,
+    "default_stand_on_tile": "snow",
+    "random_weight": 1.0,
     "modificators": [
       {
         "name": "broken",
@@ -32,9 +35,15 @@ defmodule Europa.Server.Planet.Templates do
 
   `modificators` - global modifiers for the entire template. Useful for creating complete variations of a template, such as a burning house.
 
-  `"possibility": {"from": 1, "to": 5}` - probability of application (in this case 1 in 5).
+  `possibility` {"from": 1, "to": 5}` - probability of application (in this case 1 in 5).
+
+  `with_borders` - the need to add a border of empty objects around the template. This is necessary to prevent the templates from being inserted too close to each other.
+
+  `default_stand_on_tile` - default stand_on tile (for units without explicitly specifying)
 
   `content` - content of the template. A list of lists, where each nested list represents a row (x coordinate) of the template. Each element of the nested list represents a separate game tile (in this module this is called as "unit").
+
+  `random_weight` - probability of template selection.
 
   Possible units:
 
@@ -306,6 +315,8 @@ defmodule Europa.Server.Planet.Templates do
     typedstruct do
       field :name, String.t(), enforce: true
       field :modificators, list(Modificator.t()), default: []
+      field :with_borders?, boolean(), default: true
+      field :default_stand_on_tile, Unit.t()
       field :content, list(list(Unit.t()))
     end
 
@@ -315,6 +326,8 @@ defmodule Europa.Server.Planet.Templates do
         %__MODULE__{
           name: Map.fetch!(raw_template, :name),
           modificators: Map.get(raw_template, :modificators) |> parse_modificators(),
+          with_borders?: Map.get(raw_template, :with_borders, true),
+          default_stand_on_tile: Map.get(raw_template, :default_stand_on_tile) |> parse_default_stand_on_tile(),
           content: Map.fetch!(raw_template, :content) |> parse_content()
         }
 
@@ -327,9 +340,16 @@ defmodule Europa.Server.Planet.Templates do
     def determine(%__MODULE__{} = template) do
       modificators = determine_modificators(template)
 
+      default_stand_on_tile =
+        if template.default_stand_on_tile do
+          determine_unit(template.default_stand_on_tile, modificators, nil)
+        else
+          nil
+        end
+
       Enum.map(template.content, fn row ->
         Enum.map(row, fn unit ->
-          unit_to_planet_tile(unit, modificators)
+          unit_to_planet_tile(unit, modificators, default_stand_on_tile)
         end)
       end)
     end
@@ -346,48 +366,50 @@ defmodule Europa.Server.Planet.Templates do
       end)
     end
 
-    defp unit_to_planet_tile(%Unit{or: nil} = unit, modificators) do
-      determine_unit(unit, modificators)
+    defp unit_to_planet_tile(%Unit{or: nil} = unit, modificators, default_stand_on_tile) do
+      determine_unit(unit, modificators, default_stand_on_tile)
     end
 
-    defp unit_to_planet_tile(%Unit{or: conditions} = unit, modificators) do
+    defp unit_to_planet_tile(%Unit{or: conditions} = unit, modificators, default_stand_on_tile) do
       other_unit = Enum.find(conditions, fn possible_unit -> conditions_met?(possible_unit, modificators) end)
 
       if other_unit do
-        unit_to_planet_tile(other_unit, modificators)
+        unit_to_planet_tile(other_unit, modificators, default_stand_on_tile)
       else
-        determine_unit(unit, modificators)
+        determine_unit(unit, modificators, default_stand_on_tile)
       end
     end
 
-    defp determine_unit(%Unit{type: :object, name: name, stand_on: stand_on}, modificators) do
-      stand_on = determine_stand_on(stand_on, modificators)
+    defp determine_unit(%Unit{type: :object, name: name, stand_on: stand_on}, modificators, default_stand_on_tile) do
+      stand_on = determine_stand_on(stand_on, modificators, default_stand_on_tile)
       Objects.object(name) |> Object.stand_on(stand_on)
     end
 
-    defp determine_unit(%Unit{type: :tile, name: name}, _) do
+    defp determine_unit(%Unit{type: :tile, name: name}, _, _) do
       Tiles.tile(name).atom_value
     end
 
-    defp determine_unit(%Unit{type: :npc, stand_on: stand_on}, modificators) do
-      stand_on = determine_stand_on(stand_on, modificators)
+    defp determine_unit(%Unit{type: :npc, stand_on: stand_on}, modificators, default_stand_on_tile) do
+      stand_on = determine_stand_on(stand_on, modificators, default_stand_on_tile)
       {:npc, stand_on}
     end
 
-    defp determine_unit(%Unit{type: :loot, name: name, stand_on: stand_on}, modificators) do
-      stand_on = determine_stand_on(stand_on, modificators)
+    defp determine_unit(%Unit{type: :loot, name: name, stand_on: stand_on}, modificators, default_stand_on_tile) do
+      stand_on = determine_stand_on(stand_on, modificators, default_stand_on_tile)
       Loot.generate_item_box(name, stand_on)
     end
 
-    defp determine_unit(%Unit{type: :enemy, stand_on: stand_on}, modificators) do
-      stand_on = determine_stand_on(stand_on, modificators)
+    defp determine_unit(%Unit{type: :enemy, stand_on: stand_on}, modificators, default_stand_on_tile) do
+      stand_on = determine_stand_on(stand_on, modificators, default_stand_on_tile)
 
       Enemy.generate_enemy()
       |> Enemy.stand_on(stand_on)
     end
 
-    defp determine_stand_on(nil, _), do: nil
-    defp determine_stand_on(%Unit{} = unit, modificators), do: unit_to_planet_tile(unit, modificators)
+    defp determine_stand_on(nil, _, default_stand_on_tile), do: default_stand_on_tile
+
+    defp determine_stand_on(%Unit{} = unit, modificators, default_stand_on_tile),
+      do: unit_to_planet_tile(unit, modificators, default_stand_on_tile)
 
     defp conditions_met?(%Unit{when: nil}, _modificators), do: true
 
@@ -424,6 +446,18 @@ defmodule Europa.Server.Planet.Templates do
 
     defp parse_modificators(_), do: raise("invalid modificators")
 
+    defp parse_default_stand_on_tile(nil), do: nil
+
+    defp parse_default_stand_on_tile(tile_name) when is_binary(tile_name) do
+      tile_name = String.to_atom(tile_name)
+      %Tiles.Tile{} = Tiles.tile(tile_name)
+      %Unit{type: :tile, name: tile_name}
+    end
+
+    defp parse_default_stand_on_tile(tile_name) do
+      raise("Invalid default_stand_on_tile, expected string, got: #{inspect(tile_name)}")
+    end
+
     defp parse_content([h | _t] = raw_content) when is_list(h) do
       Enum.map(raw_content, fn row ->
         Enum.map(row, fn raw_unit ->
@@ -459,12 +493,12 @@ defmodule Europa.Server.Planet.Templates do
     {:ok, template} =
       category
       |> get_templates_with_subcategories(subcategories)
-      |> Enum.random()
+      |> WeightedRandom.take_one()
       |> Template.from_map()
 
     template
     |> Template.determine()
-    |> add_borders()
+    |> add_borders(template.with_borders?)
   end
 
   ### Private ###
@@ -483,9 +517,10 @@ defmodule Europa.Server.Planet.Templates do
     |> List.flatten()
   end
 
-  defp add_borders([]), do: []
+  defp add_borders([], _), do: []
+  defp add_borders(template, false), do: template
 
-  defp add_borders(template) do
+  defp add_borders(template, _) do
     max_len = template |> Enum.map(&length/1) |> Enum.max()
 
     padded =

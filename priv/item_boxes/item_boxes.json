@@ -13,7 +13,7 @@
         "type": "monster_body",
         "readable_name": "Monster corpse",
         "max_items": 4,
-        "item_types": ["weapon", "ammo", "melee_weapon", "helmet", "suit", "boots"],
+        "item_types": {"weapon": "all", "ammo": "all", "melee_weapon": "all", "helmet": "all", "suit": "all", "boots": "all"},
         "movable": true,
         "image_name": "monster_corpse",
         "placing": "outdoor",
@@ -53,7 +53,7 @@
         "type": "sun_battery",
         "readable_name": "Sun battery",
         "max_items": 1, 
-        "item_types": ["tool", "resource"], 
+        "item_types": {"tool": "all", "resource": "all"}, 
         "movable": false, 
         "image_name": "sun_battery",
         "placing": "outdoor",
@@ -77,38 +77,38 @@
         "movable": false, 
         "image_name": "cupboard",
         "placing": "furniture",
-        "random_weight": 0.5
+        "random_weight": 0.0
     },
     {
         "type": "refrigerator",
         "readable_name": "Refrigerator",
         "max_items": 6, 
-        "item_types": ["supply"], 
+        "item_types": {"supply": "all"}, 
         "movable": false, 
         "image_name": "refrigerator",
         "placing": "furniture",
-        "random_weight": 0.3
+        "random_weight": 0.0
     },
     {
         "type": "bed",
         "readable_name": "Bed",
         "max_items": 1, 
-        "item_types": ["supply"], 
+        "item_types": {"supply": "all"}, 
         "movable": false, 
         "image_name": "bed",
         "placing": "furniture",
-        "random_weight": 0.3
+        "random_weight": 0.0
     },
     {
         "type": "table",
         "readable_name": "Table",
         "max_items": 4, 
-        "item_types": ["supply"], 
+        "item_types": {"supply": "all"}, 
         "movable": false, 
         "image_name": "table",
         "empty_image_name": "empty_table",
         "placing": "furniture",
-        "random_weight": 0.5
+        "random_weight": 0.0
     },
     {
         "type": "furniture",
@@ -118,6 +118,71 @@
         "movable": false, 
         "image_name": "furniture",
         "placing": "furniture",
-        "random_weight": 0.5
+        "random_weight": 0.0
+    },
+    {
+        "type": "trash",
+        "readable_name": "Trash",
+        "max_items": 1, 
+        "item_types": {"supply": "all"}, 
+        "movable": false, 
+        "image_name": "trash",
+        "placing": "outdoor",
+        "random_weight": 0.0
+    },
+    {
+        "type": "plant1",
+        "readable_name": "Plant",
+        "max_items": 2, 
+        "item_types": {"supply": ["plant"]}, 
+        "movable": false, 
+        "image_name": "plant1",
+        "empty_image_name": "plant1_empty",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "plant2",
+        "readable_name": "Plant",
+        "max_items": 3, 
+        "item_types": {"supply": ["plant"]}, 
+        "movable": false, 
+        "image_name": "plant2",
+        "empty_image_name": "plant2_empty",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "glass_case_tools",
+        "readable_name": "Glass case with tools",
+        "max_items": 3, 
+        "item_types": {"tool": "all"}, 
+        "movable": false, 
+        "image_name": "glass_case_tools",
+        "empty_image_name": "glass_case_empty",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "glass_case_weapons",
+        "readable_name": "Glass case with weapons",
+        "max_items": 1, 
+        "item_types": {"weapon": "all"}, 
+        "movable": false, 
+        "image_name": "glass_case_weapons",
+        "empty_image_name": "glass_case_empty",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "glass_case_supplies",
+        "readable_name": "Glass case with supplies",
+        "max_items": 3, 
+        "item_types": {"supply": "all"}, 
+        "movable": false, 
+        "image_name": "glass_case_supplies",
+        "empty_image_name": "glass_case_empty",
+        "placing": "furniture",
+        "random_weight": 0.0
     }
 ]

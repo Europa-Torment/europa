@@ -2,6 +2,7 @@
     {
         "id": "wcc_medical_kit",
         "name": "WCC medical kit",
+        "subtype": "medicine",
         "description": "First aid kit with European antibiotics.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -15,6 +16,7 @@
     {
         "id": "steam_cell_inector",
         "name": "Stem cell injector", 
+        "subtype": "medicine",
         "description": "A syringe with stem cells. An expensive but effective treatment for injuries.",
         "count": 1,
         "consume_cost": 2,
@@ -27,7 +29,8 @@
     },
     {
         "id": "self_heating_food_tube",
-        "name": "Self-heating food tube", 
+        "name": "Self-heating food tube",
+        "subtype": "food", 
         "description": "A self-heating food tube, designed for space travel, has also found use in the European cold. It tastes like low-quality vegetable puree, but it warms you up nicely.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 2,
@@ -43,6 +46,7 @@
     {
         "id": "freeze_dried_berries",
         "name": "Freeze-dried berries", 
+        "subtype": "food",
         "description": "Freeze-dried berries. They keep almost forever and contain some vitamins and sugars.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 1,
@@ -58,6 +62,7 @@
     {
         "id": "bottle_of_pure_water",
         "name": "Bottle of pure water", 
+        "subtype": "food",
         "description": "Crystal-clear water from a purifier. The laboratories that purified water from radiation were destroyed along with the nuclear reactors, so the clean water became local gold.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -71,6 +76,7 @@
     {
         "id": "bottle_of_water_with_radiation",
         "name": "Bottle of water with radiation", 
+        "subtype": "food",
         "description": "A bottle of water contaminated with radiation. Drink at your own risk.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -85,6 +91,7 @@
     {
         "id": "synthetic_milk",
         "name": "Synthetic milk", 
+        "subtype": "food",
         "description": "A bottle of synthetic milk. Old people adore it for its nostalgic qualities, while young people, who have never seen a real cow, don't understand the need for it as adults.",
         "count": {"from": 1, "to": 2},
         "consume_cost": 2,
@@ -100,6 +107,7 @@
     {
         "id": "can_of_expired_earth_beer",
         "name": "Can of expired Earth beer", 
+        "subtype": "food",
         "description": "Many settlers believed that beer and cheese were humanity's most important food inventions. Wheat didn't thrive on Europa, so beer supplies were limited to what they brought from Earth. Much of it had already expired.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -114,6 +122,7 @@
     {
         "id": "fish_crackers",
         "name": "Fish crackers", 
+        "subtype": "food",
         "description": "Good old fish-shaped crackers. They were brought from Earth in huge quantities because they didn't spoil quickly.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 1,
@@ -129,6 +138,7 @@
     {
         "id": "fish_crackers_with_radiation",
         "name": "Fish crackers with radiation", 
+        "subtype": "food",
         "description": "These once-good crackers now emit radiation.",
         "count": {"from": 1, "to": 5},
         "consume_cost": 1,
@@ -145,6 +155,7 @@
     {
         "id": "energy_gel",
         "name": "Energy gel", 
+        "subtype": "food",
         "description": "A tube of energy gel. Quenches hunger and thirst.",
         "count": {"from": 1, "to": 2},
         "consume_cost": 1,
@@ -159,7 +170,8 @@
     },
     {
         "id": "energy_gel_with_radiation",
-        "name": "Energy gel with radiation", 
+        "name": "Energy gel with radiation",
+        "subtype": "food", 
         "description": "A tube of energy gel. The dosimeter keeps beeping next to it.",
         "count": {"from": 1, "to": 2},
         "consume_cost": 1,
@@ -176,6 +188,7 @@
     {
         "id": "wcc_dry_rations",
         "name": "WCC dry rations",
+        "subtype": "food",
         "description": "A dry ration covering basic needs. An indispensable item at the beginning of colonization, it became popular again after the disaster.", 
         "count": {"from": 1, "to": 2},
         "consume_cost": 2,
@@ -190,6 +203,7 @@
     {
         "id": "vodka",
         "name": "Vodka", 
+        "subtype": "food",
         "description": "A strong, warming drink. They say it protects against radiation, but it's harmful to health.",
         "count": {"from": 1, "to": 2},
         "consume_cost": 2,
@@ -206,7 +220,8 @@
     },
     {
         "id": "canned_beef_stew",
-        "name": "Canned beef stew", 
+        "name": "Canned beef stew",
+        "subtype": "food", 
         "description": "Canned meat that can be stored for decades. A highly nutritious food.",
         "count": {"from": 1, "to": 4},
         "consume_cost": 2,
@@ -222,6 +237,7 @@
     {
         "id": "expired_canned_beef_stew",
         "name": "Expired canned beef stew", 
+        "subtype": "food",
         "description": "Expired canned meat. Is it worth eating?",
         "count": {"from": 1, "to": 4},
         "consume_cost": 2,
@@ -237,6 +253,7 @@
     {
         "id": "cystamin",
         "name": "Cystamin",
+        "subtype": "medicine",
         "description": "A drug used to reduce the negative effects of radiation on body tissues, including during radiation therapy.",
         "count": {"from": 1, "to": 4},
         "consume_cost": 1,
@@ -250,6 +267,7 @@
     {
         "id": "tincture_of_monster_bile",
         "name": "Tincture of monster bile",
+        "subtype": "medicine",
         "description": "The local monsters are adapted to the local conditions. Their bile stinks horribly of rotten fish, but it's warming and healing good. An incredibly valuable remedy.",
         "count": 1,
         "consume_cost": 2,
@@ -266,6 +284,7 @@
     {
         "id": "stroganina",
         "name": "Stroganina",
+        "subtype": "food",
         "description": "Northern Earth peoples warmed themselves with a dish consisting of finely shredded raw fatty fish. It works on Europa too!",
         "count": {"from": 1, "to": 4},
         "consume_cost": 2,
@@ -274,6 +293,36 @@
             "warm": 40,
             "health": 40,
             "hunger": -40
+        },
+        "weight": 0.25,
+        "random_weight": 0.1
+    },
+    {
+        "id": "apple",
+        "name": "Apple",
+        "subtype": "plant",
+        "description": "Excellent red apple.",
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "eat",
+        "properties": {
+            "health": 10,
+            "hunger": -10
+        },
+        "weight": 0.25,
+        "random_weight": 0.1
+    },
+    {
+        "id": "tomato",
+        "name": "Tomato",
+        "subtype": "plant",
+        "description": "A ripe pink tomato. The product of many years of breeding experiments.",
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "eat",
+        "properties": {
+            "health": 15,
+            "hunger": -5
         },
         "weight": 0.25,
         "random_weight": 0.1
