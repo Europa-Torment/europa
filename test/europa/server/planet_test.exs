@@ -1618,7 +1618,7 @@ defmodule Europa.Server.PlanetTest do
         end
         |> change_tile(player_coord, @pl)
         |> change_tile({px - 1, py - 1}, @en)
-        |> change_tile({px + 1, py}, @en)
+        |> change_tile({px + 1, py}, @n2)
         |> change_tile({px + 2, py}, @en)
         |> change_tile({px, py + 2}, @en)
         |> PlanetLandConverter.from_matrix()

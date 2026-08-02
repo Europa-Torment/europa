@@ -728,8 +728,8 @@ defmodule Europa.Server.Planet do
        when is_list(enemies_coords) do
     damage = PlayerManager.weapon_damage(player)
 
-    %{planet: updated_planet, shooted_enemies: shooted_enemies} =
-      Enum.reduce(enemies_coords, %{shooted_enemies: [], planet: planet}, fn coord, acc ->
+    {updated_planet, shooted_enemies} =
+      Enum.reduce(enemies_coords, {planet, []}, fn coord, {planet, shooted_enemies} = acc ->
         distance_to_target = coords_distance(planet.current_coord, coord)
 
         accuracy =
@@ -740,11 +740,8 @@ defmodule Europa.Server.Planet do
           end
 
         if accuracy >= @max_accuracy || m_to_n?(accuracy, @max_accuracy) do
-          {enemy, updated_land} = shoot_enemy(acc.planet.land, coord, damage)
-
-          acc
-          |> Map.put(:planet, struct!(planet, land: updated_land))
-          |> Map.put(:shooted_enemies, [{enemy, damage} | acc.shooted_enemies])
+          {enemy, updated_land} = shoot_enemy(planet.land, coord, damage)
+          {struct!(planet, land: updated_land), [{enemy, damage} | shooted_enemies]}
         else
           acc
         end
@@ -1699,8 +1696,7 @@ defmodule Europa.Server.Planet do
     updated_planet =
       planet
       |> struct!(land: updated_land, current_coord: target_coord)
-      |> maybe_generate_tiles()
-      |> maybe_generate_predefined(direction)
+      |> maybe_generate_tiles(direction)
 
     move_cost = move_cost(tile) |> change_moves_count_in_storm(planet.storm, direction)
     {:moved, updated_planet, move_cost, tile, next_to_interactive_tile?(updated_planet)}
@@ -2091,26 +2087,35 @@ defmodule Europa.Server.Planet do
     center_coord()
   end
 
-  defp maybe_generate_tiles(%__MODULE__{} = planet) do
+  defp maybe_generate_tiles(%__MODULE__{} = planet, direction) do
     coords = visible_land_coords(planet)
 
-    land =
-      Enum.reduce(coords, planet.land, fn {x, y} = coord, land ->
+    {land, changed?} =
+      Enum.reduce(coords, {planet.land, false}, fn {x, y} = coord, {land, changed?} ->
         if get_tile(land, coord) do
-          land
+          {land, changed?}
         else
           min_x = min(land.min_x, x)
           max_x = max(land.max_x, x)
           min_y = min(land.min_y, y)
           max_y = max(land.max_y, y)
 
-          land
-          |> change_tile(coord, generate_tile(planet, coord))
-          |> struct!(min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y)
+          land =
+            land
+            |> change_tile(coord, generate_tile(planet, coord))
+            |> struct!(min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y)
+
+          {land, true}
         end
       end)
 
-    struct!(planet, land: land)
+    if changed? do
+      planet
+      |> struct!(land: land)
+      |> maybe_generate_predefined(direction)
+    else
+      planet
+    end
   end
 
   defp tile_or_storm(tile, _, _, nil), do: tile
@@ -2335,30 +2340,35 @@ defmodule Europa.Server.Planet do
     end
   end
 
-  defp get_city_blocks({current_x, current_y}, land, direction) do
-    base_min_x = current_x - @view_distance
-    base_max_x = current_x + @view_distance
+  defp get_city_blocks(
+         {current_x, current_y},
+         %Land{min_x: lx_min, max_x: lx_max, min_y: ly_min, max_y: ly_max},
+         direction
+       ) do
+    view_distance = div(@view_distance, 2)
 
-    base_min_y = current_y - @view_distance
-    base_max_y = current_y + @view_distance
+    bx_min = current_x - view_distance
+    bx_max = current_x + view_distance
+    by_min = current_y - view_distance
+    by_max = current_y + view_distance
 
     {min_x, max_x, min_y, max_y} =
       case direction do
-        :up -> {base_min_x, base_max_x, min(base_min_y, land.min_y - @view_distance), base_max_y}
-        :down -> {base_min_x, base_max_x, base_min_y, max(base_max_y, land.max_y + @view_distance)}
-        :left -> {min(base_min_x, land.min_x - @view_distance), base_max_x, base_min_y, base_max_y}
-        :right -> {base_min_x, max(base_max_x, land.max_x + @view_distance), base_min_y, base_max_y}
+        :up -> {bx_min, bx_max, min(by_min, ly_min - view_distance), by_max}
+        :down -> {bx_min, bx_max, by_min, max(by_max, ly_max + view_distance)}
+        :left -> {min(bx_min, lx_min - view_distance), bx_max, by_min, by_max}
+        :right -> {bx_min, max(bx_max, lx_max + view_distance), by_min, by_max}
       end
 
-    start_block_x = Integer.floor_div(min_x, @city_cell_size) * @city_cell_size
-    end_block_x = Integer.floor_div(max_x, @city_cell_size) * @city_cell_size
+    start_idx_x = Integer.floor_div(min_x, @city_cell_size)
+    end_idx_x = Integer.floor_div(max_x, @city_cell_size)
 
-    start_block_y = Integer.floor_div(min_y, @city_cell_size) * @city_cell_size
-    end_block_y = Integer.floor_div(max_y, @city_cell_size) * @city_cell_size
+    start_idx_y = Integer.floor_div(min_y, @city_cell_size)
+    end_idx_y = Integer.floor_div(max_y, @city_cell_size)
 
-    for bx <- :lists.seq(start_block_x, end_block_x, @city_cell_size),
-        by <- :lists.seq(start_block_y, end_block_y, @city_cell_size) do
-      {bx, by}
+    for idx_x <- start_idx_x..end_idx_x,
+        idx_y <- start_idx_y..end_idx_y do
+      {idx_x * @city_cell_size, idx_y * @city_cell_size}
     end
   end
 
