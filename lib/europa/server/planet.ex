@@ -1720,7 +1720,11 @@ defmodule Europa.Server.Planet do
       |> change_tile(planet.current_coord, updated_npc)
       |> change_tile(target_coord, @player)
 
-    updated_planet = struct!(planet, land: updated_land, current_coord: target_coord)
+    updated_planet =
+      planet
+      |> struct!(land: updated_land, current_coord: target_coord)
+      |> maybe_generate_tiles(player.view_direction)
+
     move_cost = move_cost(new_tile)
 
     {:moved, updated_planet, move_cost, new_tile, next_to_interactive_tile?(updated_planet)}
