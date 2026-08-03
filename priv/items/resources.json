@@ -29,7 +29,7 @@
     {
         "id": "science_weapon_parts",
         "name": "Parts for science weapons",
-        "subtype": "weapon_parts",
+        "subtype": "science_weapon_parts",
         "description": "High-tech scientific equipment suitable for creating powerful weapons.",
         "count": 1,
         "weight": 0.4, 
@@ -223,5 +223,32 @@
         "count": {"from": 1, "to": 2},
         "weight": 0.4, 
         "random_weight": 0.5
+    },
+    {
+        "id": "rubbing_alcohol",
+        "name": "Rubbing alcohol",
+        "subtype": "common",
+        "description": "The purest medical alcohol.",
+        "count": {"from": 1, "to": 3},
+        "weight": 0.1, 
+        "random_weight": 0.7
+    },
+    {
+        "id": "cloth",
+        "name": "Сloth",
+        "subtype": "common",
+        "description": "A small piece of fabric.",
+        "count": {"from": 1, "to": 3},
+        "weight": 0.1, 
+        "random_weight": 0.8
+    },
+    {
+        "id": "monster_bile",
+        "name": "Monster's bile",
+        "subtype": "monster_entrails",
+        "description": "The foul-smelling bile of a monster. Suitable for creating medicinal tinctures.",
+        "count": {"from": 1, "to": 2},
+        "weight": 0.2, 
+        "random_weight": 0.1
     }
 ]

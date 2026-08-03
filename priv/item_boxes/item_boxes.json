@@ -184,5 +184,58 @@
         "empty_image_name": "glass_case_empty",
         "placing": "furniture",
         "random_weight": 0.0
+    },
+    {
+        "type": "lab_table",
+        "readable_name": "Laboratory table",
+        "max_items": 4, 
+        "item_types": {"resource": ["medicine", "common"]}, 
+        "movable": false, 
+        "image_name": "lab_table",
+        "empty_image_name": "lab_table_empty",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "lab_table_ghoul",
+        "readable_name": "Operating table",
+        "max_items": 2, 
+        "item_types": {"resource": ["monster_entrails"]}, 
+        "movable": false, 
+        "image_name": "lab_table_ghoul",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "lab_device",
+        "readable_name": "Unknown scientific device",
+        "max_items": 4, 
+        "item_types": {"resource": ["science_weapon_parts", "common"]}, 
+        "movable": false, 
+        "image_name": "lab_device",
+        "empty_image_name": "lab_device_off",
+        "gif_tile": true,
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "lab_refrigerator",
+        "readable_name": "Refrigerator",
+        "max_items": 6, 
+        "item_types": {"supply": ["medicine"], "resource": ["common"]}, 
+        "movable": false, 
+        "image_name": "refrigerator",
+        "placing": "furniture",
+        "random_weight": 0.0
+    },
+    {
+        "type": "cooler",
+        "readable_name": "Cooler",
+        "max_items": 5, 
+        "item_types": {"supply": ["water"]}, 
+        "movable": false, 
+        "image_name": "cooler",
+        "placing": "furniture",
+        "random_weight": 0.0
     }
 ]

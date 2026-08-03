@@ -1388,9 +1388,18 @@ defmodule EuropaWeb.GameCompotents do
     end
   end
 
+  defp get_image_name(%ItemBox{items: [], stand_on: stand_on, empty_image_name: image_name, gif_tile?: true}, _)
+       when not is_nil(image_name) do
+    "#{image_name}_#{landscape_name(stand_on)}.gif"
+  end
+
   defp get_image_name(%ItemBox{items: [], stand_on: stand_on, empty_image_name: image_name}, _)
        when not is_nil(image_name) do
     "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
+  end
+
+  defp get_image_name(%ItemBox{stand_on: stand_on, image_name: image_name, gif_tile?: true}, _) do
+    "#{image_name}_#{landscape_name(stand_on)}.gif"
   end
 
   defp get_image_name(%ItemBox{stand_on: stand_on, image_name: image_name}, _) do

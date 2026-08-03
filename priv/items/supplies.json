@@ -14,6 +14,34 @@
         "random_weight": 1.0
     },
     {
+        "id": "bandage",
+        "name": "Bandage",
+        "subtype": "medicine",
+        "description": "Not the cleanest bandage made from regular fabric.",
+        "count": {"from": 1, "to": 4},
+        "consume_cost": 1,
+        "sound_name": "injection",
+        "properties": {
+            "health": 10
+        },
+        "weight": 0.1,
+        "random_weight": 1.0
+    },
+    {
+        "id": "sterile_bandage",
+        "name": "Sterile bandage",
+        "subtype": "medicine",
+        "description": "A sterile bandage. An essential item.",
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "injection",
+        "properties": {
+            "health": 15
+        },
+        "weight": 0.1,
+        "random_weight": 0.1
+    },
+    {
         "id": "steam_cell_inector",
         "name": "Stem cell injector", 
         "subtype": "medicine",
@@ -62,7 +90,7 @@
     {
         "id": "bottle_of_pure_water",
         "name": "Bottle of pure water", 
-        "subtype": "food",
+        "subtype": "water",
         "description": "Crystal-clear water from a purifier. The laboratories that purified water from radiation were destroyed along with the nuclear reactors, so the clean water became local gold.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,
@@ -76,7 +104,7 @@
     {
         "id": "bottle_of_water_with_radiation",
         "name": "Bottle of water with radiation", 
-        "subtype": "food",
+        "subtype": "water",
         "description": "A bottle of water contaminated with radiation. Drink at your own risk.",
         "count": {"from": 1, "to": 3},
         "consume_cost": 1,

@@ -26,7 +26,7 @@
     [
       {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
       {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}},
-      {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "table", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
+      {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "table", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}, {"type": "loot", "name": "cooler", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
       {"type": "loot", "name": "furniture", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "refrigerator", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
       {"type": "object", "name": "wall_vertical_inside", "stand_on": {"type": "tile", "name": "floor"}},
       {"type": "loot", "name": "bed", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "tile", "name": "floor", "when": {"possibility": {"from": 1, "to": 3}}}, {"type": "loot", "name": "cupboard", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 3}}}]},

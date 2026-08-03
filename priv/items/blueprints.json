@@ -24,5 +24,9 @@
     {"item_type": "ammo", "item_id": "50_bmg", "resources": [{"id": "rifle_cartridge_case", "count": 1}, {"id": "heavy_rifle_bullet", "count": 1}, {"id": "gunpowder", "count": 3}]},
 
     {"item_type": "tool", "item_id": "matches", "resources": [{"id": "synthetic_wood", "count": 1}, {"id": "gunpowder", "count": 1}]},
-    {"item_type": "tool", "item_id": "bonfire_starter_kit", "resources": [{"id": "synthetic_wood", "count": 5}, {"id": "fuel", "count": 1}]}
+    {"item_type": "tool", "item_id": "bonfire_starter_kit", "resources": [{"id": "synthetic_wood", "count": 5}, {"id": "fuel", "count": 1}]},
+
+    {"item_type": "supply", "item_id": "tincture_of_monster_bile", "resources": [{"id": "monster_bile", "count": 1}, {"id": "rubbing_alcohol", "count": 1}]},
+    {"item_type": "supply", "item_id": "bandage", "resources": [{"id": "cloth", "count": 2}]},
+    {"item_type": "supply", "item_id": "sterile_bandage", "resources": [{"id": "cloth", "count": 2}, {"id": "rubbing_alcohol", "count": 1}]}
 ]
