@@ -146,9 +146,9 @@ defmodule Europa.Server.Planet do
   # Follow the ordering by noise_threshold to not get unexpected tiles stacking
   # If there is water in region then next one should be without water
   @regions [
-    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.16},
-    %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.11},
-    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.08},
+    %Region{water_tile: @water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.21},
+    %Region{water_tile: @thin_ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.165},
+    %Region{water_tile: @warm_water, ice_tile: @ice, snow_tile: @snow, noise_threshold: -0.138},
     %Region{
       city?: true,
       water_tile: @ruins,
@@ -157,11 +157,23 @@ defmodule Europa.Server.Planet do
       road_tile: @asphalt,
       enemy_generate_possibility: div(@base_enemy_generate_possibility, 20),
       predefined_possibility: 1,
-      predefined_subcategories: ["city"],
-      noise_threshold: 0.07
+      predefined_subcategories: ["city", "shops"],
+      noise_threshold: 0.012
     },
-    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.18},
-    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.47},
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @ice_spikes, noise_threshold: 0.11},
+    %Region{water_tile: @radioactive_water, ice_tile: @ice, snow_tile: @thin_ice, noise_threshold: 0.369},
+    %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 0.60},
+    %Region{
+      city?: true,
+      water_tile: @ruins,
+      ice_tile: @concrete,
+      snow_tile: @concrete_snow,
+      road_tile: @asphalt,
+      enemy_generate_possibility: div(@base_enemy_generate_possibility, 30),
+      predefined_possibility: 1,
+      predefined_subcategories: ["science_city", "city"],
+      noise_threshold: 0.70
+    },
     %Region{water_tile: @ice, ice_tile: @ice, snow_tile: @snow, noise_threshold: 1.0}
   ]
 

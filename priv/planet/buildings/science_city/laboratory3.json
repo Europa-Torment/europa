@@ -1,0 +1,90 @@
+{
+  "name": "laboratory",
+  "random_weight": 2.0,
+  "modificators": [
+    {
+      "name": "burning",
+      "possibility": {"from": 1, "to": 20}
+    },
+    {
+      "name": "broken",
+      "possibility": {"from": 1, "to": 100}
+    }
+  ],
+  "content": [
+    [
+      {"type": "object", "name": "wall_left_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_right_up", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "loot", "name": "lab_device", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "lab_refrigerator", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
+      {"type": "loot", "name": "lab_device", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "loot", "name": "lab_device", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "loot", "name": "lab_device", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "tile", "name": "floor", "when": {"possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "door_right", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "object", "name": "door_right_locked", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left"},
+      {"type": "object", "name": "wall_down", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "object", "name": "wall_down", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "object", "name": "wall_down", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "object", "name": "wall_down", "stand_on": {"type": "tile", "name": "floor"}},
+      {"type": "object", "name": "wall_right"}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "loot", "name": "lab_table", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "lab_table_ghoul", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 5}}}, {"type": "loot", "name": "refrigerator", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "npc", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 30}}}, {"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "loot", "name": "lab_device", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "loot", "name": "lab_table", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 5}}}, {"type": "npc", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "door_left", "stand_on": {"type": "tile", "name": "floor"}, "or": [{"type": "object", "name": "door_left_locked", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "enemy", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}, {"type": "npc", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 70}}}, {"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "object", "name": "wall_left", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "enemy", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 2}}}, {"type": "npc", "stand_on": {"type": "tile", "name": "floor"}, "when": {"possibility": {"from": 1, "to": 70}}}, {"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "tile", "name": "floor", "or": [{"type": "object", "name": "fire", "stand_on": {"type": "tile", "name": "floor"}, "when": {"modificators": ["burning"], "possibility": {"from": 1, "to": 5}}}, {"type": "tile", "name": "bloody_floor", "when": {"possibility": {"from": 1, "to": 15}}}, {"type": "tile", "name": "litter_floor", "when": {"possibility": {"from": 1, "to": 25}}}]},
+      {"type": "object", "name": "wall_right", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]}
+    ],
+    [
+      {"type": "loot", "name": "trash", "or": [{"type": "object", "name": "skip", "when": {"possibility": {"from": 1, "to": 4}}}]},
+      {"type": "object", "name": "wall_left_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_down"},
+      {"type": "object", "name": "wall_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "wall_right_down", "or": [{"type": "object", "name": "broken_wall", "when": {"modificators": ["broken"], "possibility": {"from": 1, "to": 3}}}]},
+      {"type": "object", "name": "skip"}
+    ]
+  ]
+}

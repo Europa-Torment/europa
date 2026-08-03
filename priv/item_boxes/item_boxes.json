@@ -210,7 +210,7 @@
         "type": "lab_device",
         "readable_name": "Unknown scientific device",
         "max_items": 4, 
-        "item_types": {"resource": ["science_weapon_parts", "common"]}, 
+        "item_types": {"resource": ["science_weapon_parts"]}, 
         "movable": false, 
         "image_name": "lab_device",
         "empty_image_name": "lab_device_off",

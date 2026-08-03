@@ -1,6 +1,6 @@
 {
   "name": "laboratory",
-  "random_weight": 0.08,
+  "random_weight": 0.05,
   "modificators": [
     {
       "name": "burning",
