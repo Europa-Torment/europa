@@ -1101,6 +1101,7 @@ defmodule EuropaWeb.GameCompotents do
   defp craft_item_name(%Loot.Weapon.Ammo{caliber: caliber}), do: "AMMO: #{caliber}"
   defp craft_item_name(%Loot.Resource{} = resource), do: resource.name
   defp craft_item_name(%Loot.Tool{} = tool), do: tool.name
+  defp craft_item_name(%Loot.Supply{} = supply), do: supply.name
 
   defp craft_resources_requirements(resources, %Player{} = player) when is_list(resources) do
     resources
