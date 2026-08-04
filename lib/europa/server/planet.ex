@@ -2103,31 +2103,32 @@ defmodule Europa.Server.Planet do
     center_coord()
   end
 
-  defp maybe_generate_tiles(%__MODULE__{} = planet, direction) do
+  defp maybe_generate_tiles(%__MODULE__{land: land} = planet, direction) do
     coords = visible_land_coords(planet)
+    initial_acc = {%{}, land.min_x, land.max_x, land.min_y, land.max_y, false}
 
-    {land, changed?} =
-      Enum.reduce(coords, {planet.land, false}, fn {x, y} = coord, {land, changed?} ->
+    {new_tiles, min_x, max_x, min_y, max_y, changed?} =
+      Enum.reduce(coords, initial_acc, fn {x, y} = coord,
+                                          {new_tiles, min_x, max_x, min_y, max_y, _changed?} =
+                                            acc ->
         if get_tile(land, coord) do
-          {land, changed?}
+          acc
         else
-          min_x = min(land.min_x, x)
-          max_x = max(land.max_x, x)
-          min_y = min(land.min_y, y)
-          max_y = max(land.max_y, y)
+          min_x = min(min_x, x)
+          max_x = max(max_x, x)
+          min_y = min(min_y, y)
+          max_y = max(max_y, y)
 
-          land =
-            land
-            |> change_tile(coord, generate_tile(planet, coord))
-            |> struct!(min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y)
-
-          {land, true}
+          {Map.put(new_tiles, coord, generate_tile(planet, coord)), min_x, max_x, min_y, max_y, true}
         end
       end)
 
     if changed? do
+      updated_land =
+        struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y)
+
       planet
-      |> struct!(land: land)
+      |> struct!(land: updated_land)
       |> maybe_generate_predefined(direction)
     else
       planet
@@ -2264,26 +2265,22 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  # tries to generate for up to 5 times (because sometimes template not fits on landscape)
+  # tries to generate for up to 3 times (because sometimes template not fits on landscape)
   defp do_generate_predefined(planet, region, direction, current_coord, attempts \\ 1)
 
-  defp do_generate_predefined(%__MODULE__{} = planet, region, direction, current_coord, attempts) when attempts <= 5 do
+  defp do_generate_predefined(%__MODULE__{} = planet, region, direction, current_coord, attempts) when attempts <= 3 do
     template = Templates.generate_random(region.predefined_subcategories)
 
     coord_fun = generate_template_coord_fun(planet.land, direction, current_coord, region, template)
     new_tiles = generate_tiles_for_template(template, coord_fun, planet)
 
-    is_all_tiles_movable =
+    all_tiles_valid? =
       Enum.all?(new_tiles, fn {{x, y} = coord, _} ->
         get_tile(planet.land, coord) |> is_nil() && tile_by_perlin_noise(x, y, planet.land) in @movable_tiles &&
-          not_on_road?(region, coord)
+          not_on_road?(region, coord) && region_by_perlin_noise(x, y, planet.land) == region
       end)
 
-    # Avoid placing region specific predefines in other regions
-    is_all_tiles_in_current_region =
-      Enum.all?(new_tiles, fn {{x, y}, _} -> region_by_perlin_noise(x, y, planet.land) == region end)
-
-    if is_all_tiles_movable && is_all_tiles_in_current_region do
+    if all_tiles_valid? do
       updated_land = struct!(planet.land, tiles: Map.merge(planet.land.tiles, new_tiles))
       struct!(planet, land: updated_land)
     else
