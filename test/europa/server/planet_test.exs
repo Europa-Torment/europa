@@ -1221,63 +1221,56 @@ defmodule Europa.Server.PlanetTest do
       assert %Npc{} = Map.get(updated_planet.land.tiles, {x, y})
     end
 
-    test "generates left column" do
+    test "generates left tiles" do
       planet =
-        %Planet{current_coord: {x, y}, land: land} =
+        %Planet{current_coord: {x, y}} =
         build(:planet, land: @land_player_near_left_border, current_coord: {2, 4})
 
       player = build_player_stand_on(@i)
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _, _next_to_interactive = false} =
+      assert {:moved, %Planet{current_coord: {x2, ^y}}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :left, player)
 
       assert x - x2 == 1
-      assert updated_land.min_x == land.min_x - 1
     end
 
-    test "generates right column" do
+    test "generates right tiles" do
       planet =
-        %Planet{current_coord: {x, y}, land: land} =
+        %Planet{current_coord: {x, y}} =
         build(:planet, land: @land_player_near_right_border, current_coord: {7, 4})
 
       player = build_player_stand_on(@i)
 
-      assert {:moved, %Planet{current_coord: {x2, ^y}, land: updated_land}, _, _, _next_to_interactive = false} =
+      assert {:moved, %Planet{current_coord: {x2, ^y}}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :right, player)
 
       assert x2 == x + 1
-
-      assert updated_land.max_x - land.max_x == 1
     end
 
-    test "generates top row" do
+    test "generates top tiles" do
       planet =
-        %Planet{current_coord: {x, y}, land: land} =
+        %Planet{current_coord: {x, y}} =
         build(:planet, land: @land_player_near_top_border, current_coord: {4, 2})
 
       player = build_player_stand_on(@i)
 
-      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _, _next_to_interactive = false} =
+      assert {:moved, %Planet{current_coord: {^x, y2}}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :up, player)
 
       assert y2 == y - 1
-
-      assert updated_land.min_y == land.min_y - 1
     end
 
-    test "generates bottom row" do
+    test "generates bottom tiles" do
       planet =
-        %Planet{current_coord: {x, y}, land: land} =
+        %Planet{current_coord: {x, y}} =
         build(:planet, land: @land_player_near_down_border, current_coord: {4, 7})
 
       player = build_player_stand_on(@i)
 
-      assert {:moved, %Planet{current_coord: {^x, y2}, land: updated_land}, _, _, _next_to_interactive = false} =
+      assert {:moved, %Planet{current_coord: {^x, y2}}, _, _, _next_to_interactive = false} =
                Planet.move(planet, :down, player)
 
       assert y2 == y + 1
-
-      assert updated_land.max_y == land.max_y + 1
     end
 
     test "increases moves count when moving towards the storm" do

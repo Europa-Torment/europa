@@ -21,10 +21,6 @@ defmodule Europa.Support.PlanetLandConverter do
 
     %Planet.Land{
       tiles: tiles,
-      min_y: 0,
-      max_y: Enum.count(matrix) - 1,
-      min_x: 0,
-      max_x: Enum.count(List.first(matrix)) - 1,
       noise_coef: 0.1,
       region_noise_coef: 0.1,
       region_x_offset: 0,
@@ -37,8 +33,11 @@ defmodule Europa.Support.PlanetLandConverter do
   """
   @spec to_matrix(Planet.Land.t()) :: list(list(Planet.tile()))
   def to_matrix(%Planet.Land{} = land) do
-    for y <- land.min_y..land.max_y do
-      for x <- land.min_x..land.max_x do
+    {{max_x, _}, _} = Enum.max_by(land.tiles, fn {{x, _}, _} -> x end)
+    {{max_y, _}, _} = Enum.max_by(land.tiles, fn {{_, y}, _} -> y end)
+
+    for y <- 0..max_y do
+      for x <- 0..max_x do
         Map.get(land.tiles, {x, y})
       end
     end

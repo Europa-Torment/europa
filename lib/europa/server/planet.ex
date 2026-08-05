@@ -183,10 +183,6 @@ defmodule Europa.Server.Planet do
 
   typedstruct module: Land, enforce: true do
     field :tiles, map(), default: %{}
-    field :min_x, integer()
-    field :max_x, integer()
-    field :min_y, integer()
-    field :max_y, integer()
     field :noise_coef, number()
     field :region_noise_coef, number()
     field :region_x_offset, number()
@@ -287,7 +283,7 @@ defmodule Europa.Server.Planet do
     map_tile = fn x, y ->
       tile = get_tile(land, {x, y})
 
-      if tile && x in planet.land.min_x..planet.land.max_x && y in planet.land.min_y..planet.land.max_y do
+      if tile do
         tile_for_map(tile)
       else
         @darkness
@@ -328,10 +324,7 @@ defmodule Europa.Server.Planet do
       |> List.flatten()
       |> Enum.into(%{})
 
-    max_x = @view_distance
-    max_y = @view_distance
-
-    updated_land = struct!(land, tiles: new_tiles, min_x: 0, max_x: max_x, min_y: 0, max_y: max_y)
+    updated_land = struct!(land, tiles: new_tiles)
     current_coord = {div(@view_distance, 2), div(@view_distance, 2)}
 
     updated_planet =
@@ -1866,19 +1859,12 @@ defmodule Europa.Server.Planet do
   end
 
   defp generate_land do
-    max_x = @initial_game_field_height - 1
-    max_y = @initial_game_field_width - 1
-
     noise_coef = :rand.uniform()
     region_noise_coef = :rand.uniform()
     region_x_offset = round(:rand.uniform() * Enum.random(1..1000))
     region_y_offset = round(:rand.uniform() * Enum.random(1..1000))
 
     %Land{
-      min_x: 0,
-      max_x: max_x,
-      min_y: 0,
-      max_y: max_y,
       noise_coef: noise_coef,
       region_noise_coef: region_noise_coef,
       region_x_offset: region_x_offset,
@@ -1888,8 +1874,11 @@ defmodule Europa.Server.Planet do
   end
 
   defp generate_initial_tiles(%Land{} = land) do
+    max_x = @initial_game_field_height - 1
+    max_y = @initial_game_field_width - 1
+
     tiles =
-      for x <- 0..land.max_x, y <- 0..land.max_y, into: %{} do
+      for x <- 0..max_x, y <- 0..max_y, into: %{} do
         {{x, y}, gen_initial_tile(x, y, land)}
       end
 
@@ -2105,27 +2094,18 @@ defmodule Europa.Server.Planet do
 
   defp maybe_generate_tiles(%__MODULE__{land: land} = planet, direction) do
     coords = visible_land_coords(planet)
-    initial_acc = {%{}, land.min_x, land.max_x, land.min_y, land.max_y, false}
 
-    {new_tiles, min_x, max_x, min_y, max_y, changed?} =
-      Enum.reduce(coords, initial_acc, fn {x, y} = coord,
-                                          {new_tiles, min_x, max_x, min_y, max_y, _changed?} =
-                                            acc ->
+    {new_tiles, changed?} =
+      Enum.reduce(coords, {%{}, false}, fn coord, {new_tiles, _changed?} = acc ->
         if get_tile(land, coord) do
           acc
         else
-          min_x = min(min_x, x)
-          max_x = max(max_x, x)
-          min_y = min(min_y, y)
-          max_y = max(max_y, y)
-
-          {Map.put(new_tiles, coord, generate_tile(planet, coord)), min_x, max_x, min_y, max_y, true}
+          {Map.put(new_tiles, coord, generate_tile(planet, coord)), true}
         end
       end)
 
     if changed? do
-      updated_land =
-        struct!(land, tiles: Map.merge(land.tiles, new_tiles), min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y)
+      updated_land = struct!(land, tiles: Map.merge(land.tiles, new_tiles))
 
       planet
       |> struct!(land: updated_land)
@@ -2252,7 +2232,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp generate_city_predefined(%__MODULE__{} = planet, region, direction) do
-    target_blocks = get_city_blocks(planet.current_coord, planet.land, direction)
+    target_blocks = get_city_blocks(planet.current_coord, direction)
 
     Enum.reduce(target_blocks, planet, fn {bx, by}, planet_acc ->
       tile = get_tile(planet_acc.land, {bx + 2, by + 2})
@@ -2271,7 +2251,7 @@ defmodule Europa.Server.Planet do
   defp do_generate_predefined(%__MODULE__{} = planet, region, direction, current_coord, attempts) when attempts <= 3 do
     template = Templates.generate_random(region.predefined_subcategories)
 
-    coord_fun = generate_template_coord_fun(planet.land, direction, current_coord, region, template)
+    coord_fun = generate_template_coord_fun(direction, current_coord, region, template)
     new_tiles = generate_tiles_for_template(template, coord_fun, planet)
 
     all_tiles_valid? =
@@ -2319,7 +2299,7 @@ defmodule Europa.Server.Planet do
     coords_distance(first_coord, target_coord) < coords_distance(second_coord, target_coord)
   end
 
-  defp generate_template_coord_fun(_land, _direction, {bx, by}, %Region{city?: true}, template) do
+  defp generate_template_coord_fun(_direction, {bx, by}, %Region{city?: true}, template) do
     template_h = length(template)
 
     template_w =
@@ -2340,24 +2320,20 @@ defmodule Europa.Server.Planet do
     fn x, y -> {target_x + x, target_y + y} end
   end
 
-  defp generate_template_coord_fun(land, direction, {current_x, current_y}, _region, _template) do
+  defp generate_template_coord_fun(direction, {current_x, current_y}, _region, _template) do
     padding = fn -> Enum.random(-10..10) end
     x_padding = current_x + padding.()
     y_padding = current_y + padding.()
 
     case direction do
-      :up -> fn x, y -> {x + x_padding, y - abs(land.min_y - @view_distance)} end
-      :down -> fn x, y -> {x + x_padding, y + (land.max_y + @view_distance)} end
-      :left -> fn x, y -> {x - abs(land.min_x - @view_distance), y + y_padding} end
-      :right -> fn x, y -> {x + (land.max_x + @view_distance), y + y_padding} end
+      :up -> fn x, y -> {x + x_padding, y - @view_distance} end
+      :down -> fn x, y -> {x + x_padding, y + @view_distance} end
+      :left -> fn x, y -> {x - @view_distance, y + y_padding} end
+      :right -> fn x, y -> {x + @view_distance, y + y_padding} end
     end
   end
 
-  defp get_city_blocks(
-         {current_x, current_y},
-         %Land{min_x: lx_min, max_x: lx_max, min_y: ly_min, max_y: ly_max},
-         direction
-       ) do
+  defp get_city_blocks({current_x, current_y}, direction) do
     view_distance = div(@view_distance, 2)
 
     bx_min = current_x - view_distance
@@ -2367,15 +2343,14 @@ defmodule Europa.Server.Planet do
 
     {min_x, max_x, min_y, max_y} =
       case direction do
-        :up -> {bx_min, bx_max, min(by_min, ly_min - view_distance), by_max}
-        :down -> {bx_min, bx_max, by_min, max(by_max, ly_max + view_distance)}
-        :left -> {min(bx_min, lx_min - view_distance), bx_max, by_min, by_max}
-        :right -> {bx_min, max(bx_max, lx_max + view_distance), by_min, by_max}
+        :up -> {bx_min, bx_max, by_min - view_distance, by_max}
+        :down -> {bx_min, bx_max, by_min, by_max + view_distance}
+        :left -> {bx_min - view_distance, bx_max, by_min, by_max}
+        :right -> {bx_min, bx_max + view_distance, by_min, by_max}
       end
 
     start_idx_x = Integer.floor_div(min_x, @city_cell_size)
     end_idx_x = Integer.floor_div(max_x, @city_cell_size)
-
     start_idx_y = Integer.floor_div(min_y, @city_cell_size)
     end_idx_y = Integer.floor_div(max_y, @city_cell_size)
 
