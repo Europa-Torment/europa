@@ -96,13 +96,15 @@ defmodule EuropaWeb.GameCompotents do
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div id={"row_#{x}"} class="flex gap-0">
           <%= for {tile, y} <- Enum.with_index(row) do %>
-            <div id={tile_id(tile, x, y)}>
+            <div
+              id={tile_id(tile, x, y)}
+              style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px; #{enemy_npc_filter(tile)}"}
+            >
               <img
                 id={"tile_img_#{x}_#{y}"}
                 phx-hook="Tooltip"
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
-                style={"max-width: #{tile_image_size(@zoom_mode)}px; max-height: #{tile_image_size(@zoom_mode)}px; #{enemy_npc_filter(tile)}"}
                 class="w-full h-full object-contain block mx-auto z-50"
               />
             </div>
