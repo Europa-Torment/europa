@@ -97,7 +97,8 @@ defmodule EuropaWeb.GameCompotents do
         <div id={"row_#{x}"} class="flex flex-row gap-0 p-0 m-0 leading-none">
           <%= for {tile, y} <- Enum.with_index(row) do %>
             <div
-              id={tile_id(tile, x, y)}
+              id={"tile_#{x}_#{y}"}
+              data-uid={tile_uid(tile)}
               class="p-0 m-0"
               style={"width: #{tile_image_size(@zoom_mode)}px; height: #{tile_image_size(@zoom_mode)}px; margin-bottom: -0.5px; #{enemy_npc_filter(tile)}"}
             >
@@ -1705,9 +1706,9 @@ defmodule EuropaWeb.GameCompotents do
     deg + 90
   end
 
-  defp tile_id(:player, _x, _y), do: "tile_player"
-  defp tile_id(%{uuid: uuid}, _x, _y), do: "tile_#{uuid}"
-  defp tile_id(_, x, y), do: "tile_#{x}_#{y}"
+  defp tile_uid(:player), do: "player"
+  defp tile_uid(%{uuid: uuid}), do: "#{uuid}"
+  defp tile_uid(_), do: ""
 
   defp age_at_disaster(age) when age > 0 do
     age

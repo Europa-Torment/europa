@@ -65,17 +65,17 @@ export const hooks = {
         }
       };
 
-      this.applyTooltip = (elementId, tooltipData) => {
-        const element = document.getElementById(elementId);
+      this.applyTooltip = (uid, tooltipData) => {
+        const element = document.querySelector(`[data-uid="${uid}"]`);
         if (element) {
           this.renderTooltip(element, tooltipData);
           element.classList.add("has-tooltip");
         }
       };
 
-      this.removeTooltip = (elementId) => {
-        delete this.activeTooltips[elementId];
-        const element = document.getElementById(elementId);
+      this.removeTooltip = (uid) => {
+        delete this.activeTooltips[uid];
+        const element = document.querySelector(`[data-uid="${uid}"]`);
         if (element) {
           this.removeTooltipElement(element);
           element.classList.remove("has-tooltip");
@@ -84,33 +84,33 @@ export const hooks = {
 
       this.fetchEvents = () => {
         this.pushEvent("get_events", {}, (reply) => {
-          const incomingIds = new Set();
+          const incomingUids = new Set();
           let currentTickFilter = null;
           const now = Date.now();
           const expiresAt = now + this.interval;
 
           if (reply && reply.events && reply.events.length > 0) {
             reply.events.forEach(({ event_owner, event_text, filter, icon }) => {
-              const elementId = `tile_${event_owner}`;
-              incomingIds.add(elementId);
+              const uid = event_owner;
+              incomingUids.add(uid);
 
               if (filter && this.filterStyles[filter]) {
                 currentTickFilter = filter;
               }
 
-              this.activeTooltips[elementId] = {
+              this.activeTooltips[uid] = {
                 text: event_text,
                 icon: icon || null,
                 expiresAt: expiresAt
               };
-              this.applyTooltip(elementId, this.activeTooltips[elementId]);
+              this.applyTooltip(uid, this.activeTooltips[uid]);
             });
           }
 
-          Object.keys(this.activeTooltips).forEach(elementId => {
-            const tooltip = this.activeTooltips[elementId];
-            if (!incomingIds.has(elementId) && now >= tooltip.expiresAt) {
-              this.removeTooltip(elementId);
+          Object.keys(this.activeTooltips).forEach((uid) => {
+            const tooltip = this.activeTooltips[uid];
+            if (!incomingUids.has(uid) && now >= tooltip.expiresAt) {
+              this.removeTooltip(uid);
             }
           });
 
@@ -161,13 +161,13 @@ export const hooks = {
       const now = Date.now();
       let hasActiveEvents = false;
 
-      for (const elementId in this.activeTooltips) {
-        const tooltip = this.activeTooltips[elementId];
+      for (const uid in this.activeTooltips) {
+        const tooltip = this.activeTooltips[uid];
         if (now < tooltip.expiresAt) {
-          this.applyTooltip(elementId, tooltip);
+          this.applyTooltip(uid, tooltip);
           hasActiveEvents = true;
         } else {
-          this.removeTooltip(elementId);
+          this.removeTooltip(uid);
         }
       }
 
@@ -187,8 +187,8 @@ export const hooks = {
 
     destroyed() {
       this.stopTicker();
-      for (const elementId in this.activeTooltips) {
-        this.removeTooltip(elementId);
+      for (const uid in this.activeTooltips) {
+        this.removeTooltip(uid);
       }
     }
   }
