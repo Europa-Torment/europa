@@ -4,7 +4,7 @@
     {"item_type": "resource", "item_id": "rifle_magazine", "resources": [{"id": "spring", "count": 1}, {"id": "metal_plate", "count": 4}]},
     {"item_type": "resource", "item_id": "short_barrel", "resources": [{"id": "metal_plate", "count": 4}]},
     {"item_type": "resource", "item_id": "long_barrel", "resources": [{"id": "metal_plate", "count": 6}]},
-    {"item_type": "resource", "item_id": "short_barrel", "resources": [{"id": "metal_plate", "count": 4}]},
+    {"item_type": "resource", "item_id": "spring", "resources": [{"id": "metal_plate", "count": 2}]},
     {"item_type": "resource", "item_id": "standard_stock", "resources": [{"id": "metal_plate", "count": 10}]},
     
     {"item_type": "weapon", "item_id": "guard_pistol", "resources": [{"id": "simple_weapon_parts", "count": 1}, {"id": "short_barrel", "count": 1}, {"id": "pistol_magazine", "count": 1}]},

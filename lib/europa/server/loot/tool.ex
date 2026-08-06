@@ -174,10 +174,17 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Tool do
         |> Enum.join("")
       end
 
+    count =
+      if tool.stackable? do
+        "(#{tool.count})"
+      else
+        ""
+      end
+
     [
       tool.name,
       properties,
-      "(#{tool.count})"
+      count
     ]
     |> to_string()
   end
