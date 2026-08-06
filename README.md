@@ -2,7 +2,7 @@
 
 Single player browser turn-based survival game that features a loot system, dynamic time of day, health management, procedural generated endless map and more.
 
-![gameplay](/docs/images/gameplay.gif)
+![gameplay](/priv/static/images/gameplay.gif)
 
 **Official game server:** [https://etorment.com](https://etorment.com)
 
