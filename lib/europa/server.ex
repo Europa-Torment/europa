@@ -240,8 +240,8 @@ defmodule Europa.Server do
   end
 
   @spec get_map(pid()) :: Planet.land()
-  def get_map(server) do
-    GenServer.call(server, :get_map)
+  def get_map(server, opts \\ []) do
+    GenServer.call(server, {:get_map, opts})
   end
 
   @spec get_compass(pid()) :: Compass.t()
@@ -716,8 +716,8 @@ defmodule Europa.Server do
     {:reply, PlanetManager.get_storm(state.planet), state, @inactivity_timeout_ms}
   end
 
-  def handle_call(:get_map, _caller_pid, state) do
-    {:reply, PlanetManager.get_map(state.planet), state, @inactivity_timeout_ms}
+  def handle_call({:get_map, opts}, _caller_pid, state) do
+    {:reply, PlanetManager.get_map(state.planet, opts), state, @inactivity_timeout_ms}
   end
 
   def handle_call(:get_compass, _caller_pid, state) do

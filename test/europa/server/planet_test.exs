@@ -1092,8 +1092,8 @@ defmodule Europa.Server.PlanetTest do
     test "returns planet map", %{planet: planet} do
       map = Planet.get_map(planet)
 
-      assert length(hd(map)) == 81
-      assert length(map) == 81
+      assert length(hd(map)) == 61
+      assert length(map) == 61
 
       assert map
              |> List.flatten()

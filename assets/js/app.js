@@ -31,6 +31,7 @@ import * as InputChange from "./hooks/input_change"
 import * as AutoClearFlash from "./hooks/auto_clear_flash"
 import * as Aim from "./hooks/aim"
 import * as EventsProcessor from "./hooks/events_processor"
+import * as Map from "./hooks/map"
 
 import topbar from "../vendor/topbar"
 
@@ -41,6 +42,7 @@ colocatedHooks.InputChange = InputChange.hooks.InputChange;
 colocatedHooks.AutoClearFlash = AutoClearFlash.hooks.AutoClearFlash;
 colocatedHooks.Aim = Aim.hooks.Aim;
 colocatedHooks.EventsProcessor = EventsProcessor.hooks.EventsProcessor;
+colocatedHooks.Map = Map.hooks.Map;
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {

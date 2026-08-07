@@ -1100,14 +1100,15 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "get_map/1" do
+  describe "get_map/2" do
     test "returns planet map", %{server: server} do
       map = [[@snow]]
+      opts = [x_offset: 0, y_offset: 2]
 
       PlanetManagerMock
-      |> expect(:get_map, fn %Planet{} -> map end)
+      |> expect(:get_map, fn %Planet{}, ^opts -> map end)
 
-      assert Server.get_map(server) == map
+      assert Server.get_map(server, opts) == map
     end
   end
 

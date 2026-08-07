@@ -277,8 +277,11 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
-  def get_map(%__MODULE__{land: land} = planet) do
-    {{x_from, x_to}, {y_from, y_to}} = map_land_intervals(planet, 80)
+  def get_map(%__MODULE__{land: land} = planet, opts \\ []) do
+    x_offset = Keyword.get(opts, :x_offset, 0)
+    y_offset = Keyword.get(opts, :y_offset, 0)
+
+    {{x_from, x_to}, {y_from, y_to}} = map_land_intervals(planet, 60, x_offset, y_offset)
 
     map_tile = fn x, y ->
       tile = get_tile(land, {x, y})
@@ -845,6 +848,9 @@ defmodule Europa.Server.Planet do
   defp tile_for_map(%{map_color: color} = tile) when not is_nil(color) do
     tile
   end
+
+  defp tile_for_map(%Npc{} = npc), do: npc
+  defp tile_for_map(%Enemy{} = enemy), do: enemy
 
   defp tile_for_map(tile) do
     tile_to_landscape(tile)
@@ -1814,7 +1820,10 @@ defmodule Europa.Server.Planet do
     Map.get(land.tiles, {x, y})
   end
 
-  defp map_land_intervals(%__MODULE__{current_coord: {x, y}}, view_distance) do
+  defp map_land_intervals(%__MODULE__{current_coord: {x, y}}, view_distance, x_offset, y_offset) do
+    x = x + x_offset
+    y = y + y_offset
+
     n = div(view_distance, 2)
 
     x_from = x - n

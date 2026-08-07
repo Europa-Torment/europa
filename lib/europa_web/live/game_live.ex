@@ -246,6 +246,15 @@ defmodule EuropaWeb.GameLive do
     open_map(socket)
   end
 
+  def handle_event("move_map", %{"offset_x" => ox, "offset_y" => oy}, socket) do
+    {:noreply,
+     assign(socket,
+       map_offset_x: ox,
+       map_offset_y: oy,
+       map: Server.get_map(socket.assigns.server, x_offset: ox, y_offset: oy)
+     )}
+  end
+
   def handle_event("open_compass", _params, socket) do
     open_compass(socket)
   end
@@ -1057,7 +1066,7 @@ defmodule EuropaWeb.GameLive do
 
   defp close_map(socket) do
     socket
-    |> assign(map: nil)
+    |> assign(map: nil, map_offset_x: 0, map_offset_y: 0)
   end
 
   defp open_compass(socket) do

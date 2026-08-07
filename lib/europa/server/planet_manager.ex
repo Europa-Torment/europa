@@ -62,7 +62,7 @@ defmodule Europa.Server.PlanetManager do
   @doc """
   Returns visible part of planet's map.
   """
-  @callback get_map(Planet.t()) :: Planet.land()
+  @callback get_map(Planet.t(), opts :: keyword()) :: Planet.land()
 
   @doc """
   Returns current planet storm struct or error.
@@ -183,7 +183,7 @@ defmodule Europa.Server.PlanetManager do
   def get_visible_land(planet, player, current_datetime),
     do: manager_impl().get_visible_land(planet, player, current_datetime)
 
-  def get_map(planet), do: manager_impl().get_map(planet)
+  def get_map(planet, opts), do: manager_impl().get_map(planet, opts)
   def get_storm(planet), do: manager_impl().get_storm(planet)
   def land_size(planet), do: manager_impl().land_size(planet)
   def move(planet, direction, player), do: manager_impl().move(planet, direction, player)

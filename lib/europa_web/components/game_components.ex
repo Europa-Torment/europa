@@ -911,7 +911,7 @@ defmodule EuropaWeb.GameCompotents do
   def map(assigns) do
     assigns =
       if assigns[:map] do
-        assign(assigns, tile_char: "█", cols: length(hd(assigns.map)), rows: length(assigns.map))
+        assign(assigns, cols: length(hd(assigns.map)), rows: length(assigns.map))
       else
         assigns
       end
@@ -921,42 +921,24 @@ defmodule EuropaWeb.GameCompotents do
       <input type="checkbox" id="map" class="modal-toggle" checked={true} phx-change="close_map" />
       <div class="modal overflow-visible" role="dialog">
         <div class="modal-box overflow-visible mt-[5vh] max-w-2xl @container">
-          <h3 class="text-lg font-bold pb-3">{gettext("Surroundings map")}</h3>
-          <div
-            class="grid mx-auto w-full max-h-[60vh] overflow-hidden justify-center content-center select-none"
-            style={"grid-template-columns: repeat(#{@cols}, minmax(0, 1fr)); aspect-ratio: #{@cols} / #{@rows};"}
+          <h3 class="text-lg font-bold pb-3">{gettext("Map of explored Europa")}</h3>
+
+          <canvas
+            id="map-canvas"
+            phx-hook="Map"
+            data-map={build_map_data(@map)}
+            data-cols={@cols}
+            data-rows={@rows}
+            data-offset-x={@map_offset_x}
+            data-offset-y={@map_offset_y}
+            class="w-full max-w-2xl aspect-square max-h-[70vh] mx-auto"
           >
-            <%= for row <- @map do %>
-              <%= for tile <- row do %>
-                <.map_tile tile={tile} tile_char={@tile_char} cols={@cols} />
-              <% end %>
-            <% end %>
-          </div>
+          </canvas>
 
           <div class="modal-action">
             <label phx-click="close_map" for="map" class="btn">{gettext("Close")}</label>
           </div>
         </div>
-      </div>
-    <% end %>
-    """
-  end
-
-  def map_tile(assigns) do
-    ~H"""
-    <%= if @tile == :player do %>
-      <div
-        class="blink-sharp leading-none text-center flex items-center justify-center"
-        style={"font-size: calc(100cqw / #{@cols}); line-height: 1;"}
-      >
-        @
-      </div>
-    <% else %>
-      <div
-        class="leading-none text-center flex items-center justify-center"
-        style={"font-size: calc(100cqw / #{@cols}); line-height: 1; color: #{map_color(@tile)};"}
-      >
-        {@tile_char}
       </div>
     <% end %>
     """
@@ -1760,7 +1742,30 @@ defmodule EuropaWeb.GameCompotents do
     "/images/equipment/#{category}/#{item.image_name <> ".png"}"
   end
 
+  defp build_map_data(map) do
+    map
+    |> Enum.map(fn row ->
+      Enum.map(row, fn tile ->
+        char = map_tile_char(tile)
+
+        %{
+          color: map_color(tile),
+          text_color: map_text_color(tile),
+          char: char
+        }
+      end)
+    end)
+    |> Jason.encode!()
+  end
+
+  defp map_tile_char(:player), do: "@"
+  defp map_tile_char(%Npc{}), do: "N"
+  defp map_tile_char(%Enemy{}), do: "E"
+  defp map_tile_char(_), do: nil
+
   defp map_color(%{map_color: color}), do: color
+
+  defp map_color(%{stand_on: tile}), do: map_color(tile)
 
   defp map_color(tile) do
     tile = Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
@@ -1771,6 +1776,11 @@ defmodule EuropaWeb.GameCompotents do
       "#000000"
     end
   end
+
+  defp map_text_color(:player), do: "#55cc1e"
+  defp map_text_color(%Npc{}), do: "#042a88"
+  defp map_text_color(%Enemy{}), do: "#a30404"
+  defp map_text_color(_), do: "#ffffff"
 
   defp use_item_icon_image(%Tool{using_type: :switch, active?: false}) do
     "done"

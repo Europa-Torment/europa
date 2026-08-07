@@ -49,7 +49,7 @@
     player={@player}
   />
 
-  <.map map={@map} />
+  <.map map={@map} map_offset_x={@map_offset_x} map_offset_y={@map_offset_y} />
   <.compass compass={@compass} current_coord={@current_coord} />
   <.compass_target_menu compass_target_menu_active={@compass_target_menu_active} />
 <% else %>
