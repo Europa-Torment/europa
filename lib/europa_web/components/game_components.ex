@@ -468,6 +468,27 @@ defmodule EuropaWeb.GameCompotents do
                 <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
               </li>
             <% end %>
+            <%= if Item.consumable?(@item) do %>
+              <li phx-click="consume_supply" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Consume")}<.moves_count moves_count={@item.consume_cost} /></a>
+              </li>
+            <% end %>
+            <%= if Item.usable?(@item) do %>
+              <li phx-click="use_tool" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Use")}<.moves_count moves_count={@item.use_cost} /></a>
+              </li>
+            <% end %>
+            <%= if Item.equipable?(@item) do %>
+              <%= if @item.equipped do %>
+                <li phx-click="unequip_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                  <a>{gettext("Unequip")}</a>
+                </li>
+              <% else %>
+                <li phx-click="equip_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                  <a>{gettext("Equip")}</a>
+                </li>
+              <% end %>
+            <% end %>
             <li phx-click="drop_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
               <a>{gettext("Drop")}</a>
             </li>
