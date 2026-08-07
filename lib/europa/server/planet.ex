@@ -68,7 +68,7 @@ defmodule Europa.Server.Planet do
 
   @type player() :: :player
 
-  @type coord :: {x :: pos_integer(), y :: pos_integer()}
+  @type coord :: {x :: integer(), y :: integer()}
 
   @directions [:up, :down, :right, :left]
   @type direction :: unquote(Types.one_of(@directions))
@@ -79,7 +79,8 @@ defmodule Europa.Server.Planet do
 
   @type tile :: unquote(Types.one_of(Tiles.tiles_values())) | player() | Loot.ItemBox.t() | Object.t() | storm_tile()
 
-  @type land :: list(list(tile()))
+  @type land :: list(list({coord(), tile()}))
+  @type planet_map :: list(list(tile()))
 
   @type interaction ::
           {:confirmation, Object.transform_confirmation_info()}
@@ -89,6 +90,8 @@ defmodule Europa.Server.Planet do
           | {:drink, :radioactive_water}
           | {:transform, Object.t()}
           | {:transform, Object.t(), Object.Transform.t()}
+
+  @type coord_info :: {tile(), direction(), distance :: non_neg_integer()}
 
   @ice Tiles.tile(:ice).atom_value
   @ice_spikes Tiles.tile(:ice_spikes).atom_value
@@ -269,9 +272,12 @@ defmodule Europa.Server.Planet do
 
     for y <- y_from..y_to do
       for x <- x_from..x_to do
-        get_tile(land, {x, y})
-        |> tile_or_storm(current_coord, {x, y}, planet.storm)
-        |> tile_or_darkness(current_coord, {x, y}, current_hour, land, flashlight_coords)
+        tile =
+          get_tile(land, {x, y})
+          |> tile_or_storm(current_coord, {x, y}, planet.storm)
+          |> tile_or_darkness(current_coord, {x, y}, current_hour, land, flashlight_coords)
+
+        {{x, y}, tile}
       end
     end
   end
@@ -298,6 +304,15 @@ defmodule Europa.Server.Planet do
         map_tile.(x, y)
       end
     end
+  end
+
+  @impl true
+  def coord_info(%__MODULE__{} = planet, {_x, _y} = coord) do
+    tile = get_tile(planet.land, coord)
+    direction = coords_position(planet.current_coord, coord)
+    distance = coords_distance(planet.current_coord, coord)
+
+    {tile, direction, distance}
   end
 
   @impl true
@@ -2301,6 +2316,7 @@ defmodule Europa.Server.Planet do
       abs(dx) >= abs(dy) and dx < 0 -> :left
       abs(dy) > abs(dx) and dy > 0 -> :down
       abs(dy) > abs(dx) and dy < 0 -> :up
+      true -> :up
     end
   end
 

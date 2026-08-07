@@ -132,6 +132,11 @@ defmodule Europa.Server do
     GenServer.call(server, :get_current_coord)
   end
 
+  @spec get_coord_info(pid(), Planet.coord()) :: Planet.coord_info()
+  def get_coord_info(server, coord) do
+    GenServer.call(server, {:get_coord_info, coord})
+  end
+
   @spec get_current_time(pid()) :: {year :: pos_integer(), day :: pos_integer(), time :: String.t()}
   def get_current_time(server) do
     GenServer.call(server, :get_current_time)
@@ -370,6 +375,10 @@ defmodule Europa.Server do
 
   def handle_call(:get_current_coord, _from, state) do
     {:reply, state.planet.current_coord, state, @inactivity_timeout_ms}
+  end
+
+  def handle_call({:get_coord_info, coord}, _from, state) do
+    {:reply, PlanetManager.coord_info(state.planet, coord), state, @inactivity_timeout_ms}
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do

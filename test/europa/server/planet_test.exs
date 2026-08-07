@@ -1011,7 +1011,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(planet, player, @midday) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @midday) |> land_without_coords() == expected_visible_land
     end
 
     test "returns visible part of land (with darkness)", %{planet: planet, player: player} do
@@ -1024,7 +1024,7 @@ defmodule Europa.Server.PlanetTest do
           [@d, @i, @i, @i, @d]
         ]
 
-      assert Planet.get_visible_land(planet, player, @evening) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @evening) |> land_without_coords() == expected_visible_land
     end
 
     test "returns visible part of land (with flashlight)", %{planet: planet, player: player} do
@@ -1046,7 +1046,7 @@ defmodule Europa.Server.PlanetTest do
           [@d, @i, @i, @i, @d]
         ]
 
-      assert Planet.get_visible_land(planet, player, @evening) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @evening) |> land_without_coords() == expected_visible_land
     end
 
     test "returns visible part of land (with storm)", %{planet: planet, player: player} do
@@ -1063,7 +1063,7 @@ defmodule Europa.Server.PlanetTest do
           [s, @i, @i, @i, s]
         ]
 
-      assert Planet.get_visible_land(planet, player, @midday) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @midday) |> land_without_coords() == expected_visible_land
     end
 
     test "darknes over storm", %{planet: planet, player: player} do
@@ -1079,7 +1079,7 @@ defmodule Europa.Server.PlanetTest do
           [@d, @i, @i, @i, @d]
         ]
 
-      assert Planet.get_visible_land(planet, player, @evening) == expected_visible_land
+      assert Planet.get_visible_land(planet, player, @evening) |> land_without_coords() == expected_visible_land
     end
   end
 
@@ -1100,6 +1100,21 @@ defmodule Europa.Server.PlanetTest do
              |> Enum.all?(fn tile ->
                tile == :player || Tiles.tile_by_atom_value(tile) || Tiles.tile_by_blood_version(tile)
              end)
+    end
+  end
+
+  describe "coord_info/2" do
+    setup do
+      planet = build(:planet, land: @land, current_coord: {4, 4})
+      {:ok, planet: planet}
+    end
+
+    test "returns coord info", %{planet: planet} do
+      assert {@i, :up, 1} = Planet.coord_info(planet, {4, 3})
+      assert {@i, :down, 1} = Planet.coord_info(planet, {4, 5})
+      assert {@i, :left, 3} = Planet.coord_info(planet, {1, 4})
+      assert {@i, :right, 3} = Planet.coord_info(planet, {7, 4})
+      assert {@i, :right, 2} = Planet.coord_info(planet, {5, 5})
     end
   end
 
@@ -1139,7 +1154,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(updated_planet, player, @midday) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, player, @midday) |> land_without_coords() == expected_visible_land
     end
 
     test "moves player left" do
@@ -1163,7 +1178,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(updated_planet, player, @midday) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, player, @midday) |> land_without_coords() == expected_visible_land
     end
 
     test "moves player up" do
@@ -1187,7 +1202,7 @@ defmodule Europa.Server.PlanetTest do
           [@i, @i, @i, @i, @i]
         ]
 
-      assert Planet.get_visible_land(updated_planet, player, @midday) == expected_visible_land
+      assert Planet.get_visible_land(updated_planet, player, @midday) |> land_without_coords() == expected_visible_land
     end
 
     test "moves at monster body" do
@@ -1780,7 +1795,7 @@ defmodule Europa.Server.PlanetTest do
       player = build(:player)
 
       %Planet.Land{tiles: expected_tiles} =
-        Planet.get_visible_land(planet, player, @midday) |> PlanetLandConverter.from_matrix()
+        Planet.get_visible_land(planet, player, @midday) |> land_without_coords() |> PlanetLandConverter.from_matrix()
 
       assert {:ok, %Planet{land: %Planet.Land{tiles: tiles}, current_coord: {2, 2}, great_red_spots: 1}} =
                Planet.crop_land(planet)
@@ -2846,5 +2861,11 @@ defmodule Europa.Server.PlanetTest do
 
   defp coords_distance({x1, y1}, {x2, y2}) do
     abs(x1 - x2) + abs(y1 - y2)
+  end
+
+  defp land_without_coords(land) do
+    Enum.map(land, fn row ->
+      Enum.map(row, fn {_, tile} -> tile end)
+    end)
   end
 end

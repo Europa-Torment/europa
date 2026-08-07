@@ -31,14 +31,14 @@ defmodule Europa.Support.PlanetLandConverter do
   @doc """
   Converts planet land to matrix (list of lists).
   """
-  @spec to_matrix(Planet.Land.t()) :: list(list(Planet.tile()))
+  @spec to_matrix(Planet.Land.t()) :: Planet.land()
   def to_matrix(%Planet.Land{} = land) do
     {{max_x, _}, _} = Enum.max_by(land.tiles, fn {{x, _}, _} -> x end)
     {{max_y, _}, _} = Enum.max_by(land.tiles, fn {{_, y}, _} -> y end)
 
     for y <- 0..max_y do
       for x <- 0..max_x do
-        Map.get(land.tiles, {x, y})
+        {{x, y}, Map.get(land.tiles, {x, y})}
       end
     end
   end

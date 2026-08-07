@@ -49,6 +49,11 @@ defmodule Europa.Server.PlanetManager do
   @callback land_size(Planet.t()) :: pos_integer()
 
   @doc """
+  Takes coord and returs tile, direction and distance.
+  """
+  @callback coord_info(Planet.t(), Planet.coord()) :: Planet.coord_info()
+
+  @doc """
   Returns human-readable tile name.
   """
   @callback readable_tile_name(Planet.tile()) :: Planet.readable_tile_name()
@@ -62,7 +67,7 @@ defmodule Europa.Server.PlanetManager do
   @doc """
   Returns visible part of planet's map.
   """
-  @callback get_map(Planet.t(), opts :: keyword()) :: Planet.land()
+  @callback get_map(Planet.t(), opts :: keyword()) :: Planet.planet_map()
 
   @doc """
   Returns current planet storm struct or error.
@@ -177,6 +182,7 @@ defmodule Europa.Server.PlanetManager do
   def player, do: manager_impl().player()
   def blood_tile(tile), do: manager_impl().blood_tile(tile)
   def view_distance, do: manager_impl().view_distance()
+  def coord_info(planet, coord), do: manager_impl().coord_info(planet, coord)
   def allowed_directions, do: manager_impl().allowed_directions()
   def readable_tile_name(tile), do: manager_impl().readable_tile_name(tile)
 

@@ -95,9 +95,12 @@ defmodule EuropaWeb.GameCompotents do
     >
       <%= for {row, x} <- Enum.with_index(@visible_planet) do %>
         <div id={"row_#{x}"} class="flex flex-row gap-0 p-0 m-0 leading-none">
-          <%= for {tile, y} <- Enum.with_index(row) do %>
+          <%= for {{{real_x, real_y}, tile}, y} <- Enum.with_index(row) do %>
             <div
               id={"tile_#{x}_#{y}"}
+              phx-click="mouse_action"
+              phx-value-x={real_x}
+              phx-value-y={real_y}
               data-uid={tile_uid(tile)}
               class="p-0 m-0"
               style={"width: #{tile_image_size(@zoom_mode)}px; height: #{tile_image_size(@zoom_mode)}px; margin-bottom: -0.5px; #{enemy_npc_filter(tile)}"}
@@ -354,6 +357,10 @@ defmodule EuropaWeb.GameCompotents do
               <li>{hint}</li>
             <% end %>
           </ul>
+
+          <div class="text-secondary text-sm mt-5">
+            {gettext("You can also perform most actions by left-clicking on the desired area of the game field.")}
+          </div>
 
           <div class="modal-action">
             <label phx-click="close_control_hints" for="control_hints" class="btn">{gettext("Close")}</label>

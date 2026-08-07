@@ -12,6 +12,8 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
   alias Europa.Server.Event
+  alias Europa.Server.Enemy
+  alias Europa.Server.Npc
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Loot.Blueprints
   alias Europa.Server.Planet.Tiles.Objects.Object
@@ -114,32 +116,7 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @move_codes do
     direction = move_code_to_direction(code)
-
-    case Server.move(socket.assigns.server, direction) do
-      {:moved, move_status} ->
-        socket = base_assign(socket)
-
-        socket =
-          socket
-          |> step_sound(socket.assigns.player.stand_on)
-          |> overloaded_sound(move_status)
-          |> low_health_sound(socket.assigns.player)
-
-        {:noreply, socket}
-
-      {:attack, status} ->
-        socket = base_assign(socket)
-
-        socket =
-          socket
-          |> punch_sound(status)
-          |> low_health_sound(socket.assigns.player)
-
-        {:noreply, socket}
-
-      _ ->
-        {:noreply, base_assign(socket)}
-    end
+    do_move(socket, direction)
   end
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @zoom_codes do
@@ -186,15 +163,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @shoot_codes do
-    shoot_result = Server.shoot(socket.assigns.server)
-
-    socket =
-      socket
-      |> base_assign()
-      |> assign_equipment()
-      |> shoot_sound(shoot_result)
-
-    {:noreply, socket}
+    do_shoot(socket)
   end
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @reload_codes do
@@ -221,6 +190,14 @@ defmodule EuropaWeb.GameLive do
     socket = put_flash(socket, :error, message)
 
     {:noreply, socket}
+  end
+
+  def handle_event("mouse_action", %{"x" => x, "y" => y}, socket) do
+    x = to_integer(x)
+    y = to_integer(y)
+
+    {tile, direction, distance} = Server.get_coord_info(socket.assigns.server, {x, y})
+    process_mouse_action(tile, direction, distance, socket.assigns.player, socket)
   end
 
   def handle_event("interact", params, socket) do
@@ -1144,6 +1121,46 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
+  defp do_move(socket, direction) do
+    case Server.move(socket.assigns.server, direction) do
+      {:moved, move_status} ->
+        socket = base_assign(socket)
+
+        socket =
+          socket
+          |> step_sound(socket.assigns.player.stand_on)
+          |> overloaded_sound(move_status)
+          |> low_health_sound(socket.assigns.player)
+
+        {:noreply, socket}
+
+      {:attack, status} ->
+        socket = base_assign(socket)
+
+        socket =
+          socket
+          |> punch_sound(status)
+          |> low_health_sound(socket.assigns.player)
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, base_assign(socket)}
+    end
+  end
+
+  defp do_shoot(socket) do
+    shoot_result = Server.shoot(socket.assigns.server)
+
+    socket =
+      socket
+      |> base_assign()
+      |> assign_equipment()
+      |> shoot_sound(shoot_result)
+
+    {:noreply, socket}
+  end
+
   defp craft_item(item_uuid, blueprints, socket) do
     case Enum.find(blueprints, fn bp -> bp.item.uuid == item_uuid end) do
       nil -> {:noreply, socket}
@@ -1168,6 +1185,57 @@ defmodule EuropaWeb.GameLive do
       _ ->
         {:noreply, socket}
     end
+  end
+
+  defp process_mouse_action(
+         %Enemy{},
+         direction,
+         distance,
+         %Player{weapon_uuid: weapon_uuid, view_direction: direction},
+         socket
+       )
+       when not is_nil(weapon_uuid) do
+    if socket.assigns.weapon.shooting_distance >= distance do
+      do_shoot(socket)
+    else
+      do_move(socket, direction)
+    end
+  end
+
+  defp process_mouse_action(
+         %Npc{player_enemy?: true},
+         direction,
+         distance,
+         %Player{weapon_uuid: weapon_uuid, view_direction: direction},
+         socket
+       )
+       when not is_nil(weapon_uuid) do
+    if socket.assigns.weapon.shooting_distance >= distance do
+      do_shoot(socket)
+    else
+      do_move(socket, direction)
+    end
+  end
+
+  defp process_mouse_action(%Loot.ItemBox{}, direction, distance, %Player{view_direction: direction}, socket)
+       when distance == 1 do
+    open_item_box(socket)
+  end
+
+  defp process_mouse_action(:player, _direction, _distance, %Player{stand_on: %Loot.ItemBox{}}, socket) do
+    open_item_box(socket)
+  end
+
+  defp process_mouse_action(_, direction, distance, %Player{view_direction: direction}, socket) when distance == 1 do
+    interact(socket, %{})
+  end
+
+  defp process_mouse_action(_tile, direction, distance, _player, socket) when distance > 0 do
+    do_move(socket, direction)
+  end
+
+  defp process_mouse_action(_tile, _direction, _distance, _player, socket) do
+    {:noreply, socket}
   end
 
   defp get_player_inventory(socket) do
@@ -1258,7 +1326,9 @@ defmodule EuropaWeb.GameLive do
       visible_planet
       |> Enum.with_index()
       |> Enum.find_value(fn {row, row_id} ->
-        case Enum.find_index(row, &(&1 == :player)) do
+        index = Enum.find_index(row, fn {_, tile} -> tile == :player end)
+
+        case index do
           nil -> nil
           col_id -> {row_id, col_id}
         end
@@ -1333,6 +1403,9 @@ defmodule EuropaWeb.GameLive do
   defp event_filter(:player, %Event{type: {:warm_up, units}}) when units < 0, do: :blue
   defp event_filter(:player, %Event{type: :great_red_spot}), do: :red
   defp event_filter(_, _), do: nil
+
+  defp to_integer(value) when is_binary(value), do: String.to_integer(value)
+  defp to_integer(value) when is_integer(value), do: value
 
   # coveralls-ignore-stop
 end
