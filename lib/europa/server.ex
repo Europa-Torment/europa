@@ -1091,7 +1091,7 @@ defmodule Europa.Server do
 
           player
           |> PlayerManager.take_damage(enemy.damage)
-          |> PlayerManager.stand_on(blood_tile)
+          |> PlayerManager.stand_on(blood_tile, ambient_temperature: :ignore)
           |> maybe_add_radiation(enemy)
           |> maybe_decrease_warm(enemy)
 
@@ -1100,7 +1100,7 @@ defmodule Europa.Server do
 
           player
           |> PlayerManager.take_damage(npc.weapon.damage)
-          |> PlayerManager.stand_on(blood_tile)
+          |> PlayerManager.stand_on(blood_tile, ambient_temperature: :ignore)
 
         %Action{action_type: {:temperature, temperature}, subject: :player} ->
           PlayerManager.set_ambient_temperature(player, temperature)

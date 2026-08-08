@@ -145,13 +145,10 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def stand_on(%__MODULE__{} = player, tile) do
-    ambient_temperature = get_tile_temperature(tile)
-    stand_on(player, tile, ambient_temperature)
-  end
+  def stand_on(%__MODULE__{} = player, tile, opts \\ []) do
+    default_temperature = get_tile_temperature(tile)
+    ambient_temperature = Keyword.get(opts, :ambient_temperature, default_temperature)
 
-  @impl true
-  def stand_on(%__MODULE__{} = player, tile, ambient_temperature) do
     player
     |> struct!(stand_on: tile)
     |> set_ambient_temperature(ambient_temperature)
@@ -165,6 +162,10 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
+  def set_ambient_temperature(%__MODULE__{} = player, :ignore) do
+    player
+  end
+
   def set_ambient_temperature(%__MODULE__{} = player, temperature) do
     temperature_factors = [
       {player.helmet_uuid, _penalty = -10},
@@ -867,7 +868,8 @@ defmodule Europa.Server.Player do
           {true, warm_change(temperature)}
 
         temperature <= @very_cold_temperature ->
-          {m_to_n(1, 3), warm_change(temperature)}
+          abs_temperature = abs(temperature)
+          {m_to_n?(abs_temperature, 450), warm_change(temperature)}
 
         temperature < 0 && warm == max_warm ->
           {!m_to_n?(90, 100), warm_change(temperature)}

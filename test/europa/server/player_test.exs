@@ -144,7 +144,9 @@ defmodule Europa.Server.PlayerTest do
 
     test "changes ambient_temperature to given temperature", %{player: player} do
       temperature = 100
-      assert %Player{ambient_temperature: ^temperature} = Player.stand_on(player, @ice_blood, temperature)
+
+      assert %Player{ambient_temperature: ^temperature} =
+               Player.stand_on(player, @ice_blood, ambient_temperature: temperature)
     end
 
     test "changes snow to path", %{player: player} do

@@ -50,7 +50,7 @@ defmodule EuropaWeb.GameControllerTest do
       PlayerManagerMock
       |> allow_server_mock(user.id)
       |> expect(:new, fn character -> build(:player, character: character) end)
-      |> expect(:stand_on, fn player, ^tile -> player end)
+      |> expect(:stand_on, fn player, ^tile, _opts -> player end)
       |> stub(:add_item, fn player, _ -> {:ok, player} end)
       |> stub(:equip_item, fn player, _ -> {:ok, player} end)
       |> stub(:warm_up, fn player, _warm_units -> player end)

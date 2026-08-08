@@ -1737,7 +1737,7 @@ defmodule Europa.Server.PlanetTest do
       |> expect(:add_item, fn ^player, ^item ->
         {:ok, player}
       end)
-      |> expect(:stand_on, fn ^player, %ItemBox{items: []} -> player end)
+      |> expect(:stand_on, fn ^player, %ItemBox{items: []}, _opts -> player end)
 
       assert {:ok, %Planet{}, %Player{}, %ItemBox{items: []}} = Planet.take_loot(planet, player, item.uuid)
     end
@@ -2741,7 +2741,8 @@ defmodule Europa.Server.PlanetTest do
 
       PlayerManagerMock
       |> expect(:stand_on, fn player,
-                              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0}]} ->
+                              %ItemBox{items: [%Ammo{caliber: ^caliber, count: ^ammo_count}, %Weapon{rounds_loaded: 0}]},
+                              _opts ->
         player
       end)
 

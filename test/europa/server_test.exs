@@ -40,7 +40,7 @@ defmodule Europa.ServerTest do
     |> stub(:new, fn character ->
       build(:player, character: character, stand_on: @player_stand_on_tile, max_weight: 20.0)
     end)
-    |> stub(:stand_on, fn player, @snow -> Player.change_view_direction(player, @direction) end)
+    |> stub(:stand_on, fn player, @snow, _opts -> Player.change_view_direction(player, @direction) end)
     |> stub(:add_item, fn player, _ -> {:ok, player} end)
     |> stub(:equip_item, fn player, _ -> {:ok, player} end)
     |> stub(:warm_up, fn player, _warm_units -> player end)
@@ -245,7 +245,7 @@ defmodule Europa.ServerTest do
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
       |> expect(:add_events, fn %Player{} = player, [%Event{type: :interested}] -> player end)
-      |> stub(:stand_on, fn %Player{} = player, tile ->
+      |> stub(:stand_on, fn %Player{} = player, tile, _opts ->
         struct!(player, stand_on: tile)
       end)
       |> expect(:take_damage, fn %Player{} = player, damage ->
@@ -380,7 +380,7 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> 0 end)
-      |> stub(:stand_on, fn %Player{} = player, tile ->
+      |> stub(:stand_on, fn %Player{} = player, tile, _opts ->
         struct!(player, stand_on: tile)
       end)
       |> expect(:take_damage, 2, fn %Player{} = player, damage ->
@@ -435,7 +435,7 @@ defmodule Europa.ServerTest do
 
       PlayerManagerMock
       |> expect(:weight_ratio, 2, fn %Player{} -> weight_ratio end)
-      |> expect(:stand_on, fn %Player{} = player, @snow ->
+      |> expect(:stand_on, fn %Player{} = player, @snow, _opts ->
         struct!(player, stand_on: @snow)
       end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->

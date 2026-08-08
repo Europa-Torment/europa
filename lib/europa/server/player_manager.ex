@@ -35,18 +35,17 @@ defmodule Europa.Server.PlayerManager do
 
   @doc """
   Changes player stand_on tile.
-  """
-  @callback stand_on(Player.t(), Planet.tile()) :: Player.t()
 
-  @doc """
-  Changes player stand_on tile with given ambient temperature.
+  Supported opts:
+
+  * `ambient_temperature` - Sets player's ambient temperature. integer or :ignore.
   """
-  @callback stand_on(Player.t(), Planet.tile(), ambient_templerature :: integer()) :: Player.t()
+  @callback stand_on(Player.t(), Planet.tile(), opts :: keyword()) :: Player.t()
 
   @doc """
   Sets given ambient temperature.
   """
-  @callback set_ambient_temperature(Player.t(), ambient_templerature :: integer()) :: Player.t()
+  @callback set_ambient_temperature(Player.t(), ambient_templerature :: integer() | :ignore) :: Player.t()
 
   @doc """
   Checks if player stand on lethal tile.
@@ -285,9 +284,7 @@ defmodule Europa.Server.PlayerManager do
 
   def change_view_direction(player, view_direction), do: manager_impl().change_view_direction(player, view_direction)
 
-  def stand_on(player, tile), do: manager_impl().stand_on(player, tile)
-
-  def stand_on(player, tile, ambient_temperature), do: manager_impl().stand_on(player, tile, ambient_temperature)
+  def stand_on(player, tile, opts \\ []), do: manager_impl().stand_on(player, tile, opts)
 
   def set_ambient_temperature(player, ambient_temperature),
     do: manager_impl().set_ambient_temperature(player, ambient_temperature)
