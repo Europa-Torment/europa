@@ -90,7 +90,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Disassembles given item.
   """
-  @callback disassemble_item(Player.t(), Loot.uuid()) ::
+  @callback disassemble_item(Player.t(), Loot.uuid(), count :: pos_integer()) ::
               {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
 
   @doc """
@@ -301,7 +301,7 @@ defmodule Europa.Server.PlayerManager do
 
   def drop_item(player, item_uuid, count), do: manager_impl().drop_item(player, item_uuid, count)
 
-  def disassemble_item(player, item_uuid), do: manager_impl().disassemble_item(player, item_uuid)
+  def disassemble_item(player, item_uuid, count \\ 1), do: manager_impl().disassemble_item(player, item_uuid, count)
 
   def equip_item(player, item_uuid), do: manager_impl().equip_item(player, item_uuid)
 

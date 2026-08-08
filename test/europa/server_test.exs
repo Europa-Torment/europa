@@ -991,13 +991,14 @@ defmodule Europa.ServerTest do
     end
   end
 
-  describe "disassemble_item/2" do
+  describe "disassemble_item/3" do
     test "handles success response", %{server: server} do
       weapon = build(:weapon)
       weapon_uuid = weapon.uuid
+      count = 10
 
       PlayerManagerMock
-      |> expect(:disassemble_item, fn %Player{} = player, ^weapon_uuid ->
+      |> expect(:disassemble_item, fn %Player{} = player, ^weapon_uuid, ^count ->
         {:ok, player, weapon}
       end)
 
@@ -1013,32 +1014,34 @@ defmodule Europa.ServerTest do
         {:ok, player, []}
       end)
 
-      assert Server.disassemble_item(server, weapon_uuid) == :ok
+      assert Server.disassemble_item(server, weapon_uuid, count) == :ok
       :timer.sleep(100)
     end
 
     test "handles not_found response", %{server: server} do
       weapon = build(:weapon)
       error = {:error, :not_found}
+      count = 5
 
       PlayerManagerMock
-      |> expect(:disassemble_item, fn _player, _weapon_uuid ->
+      |> expect(:disassemble_item, fn _player, _weapon_uuid, ^count ->
         error
       end)
 
-      assert Server.disassemble_item(server, weapon.uuid) == error
+      assert Server.disassemble_item(server, weapon.uuid, count) == error
     end
 
     test "handles NotApplicable response", %{server: server} do
       weapon = build(:weapon)
       error = {:error, %Errors.NotApplicableError{}}
+      count = 1
 
       PlayerManagerMock
-      |> expect(:disassemble_item, fn _player, _weapon_uuid ->
+      |> expect(:disassemble_item, fn _player, _weapon_uuid, ^count ->
         error
       end)
 
-      assert Server.disassemble_item(server, weapon.uuid) == error
+      assert Server.disassemble_item(server, weapon.uuid, count) == error
     end
   end
 

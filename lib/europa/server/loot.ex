@@ -491,12 +491,13 @@ defmodule Europa.Server.Loot do
     end
   end
 
-  @spec disassemble_item(Item.item()) :: {:ok, list(Resource.t())} | {:error, NotApplicableError.t()}
-  def disassemble_item(item) when is_struct(item) do
-    case find_blueprint(item) do
-      %Blueprint{resources: resources} ->
-        {:ok, resources}
-
+  @spec disassemble_item(Item.item(), count :: pos_integer()) ::
+          {:ok, list(Resource.t())} | {:error, NotApplicableError.t()}
+  def disassemble_item(item, count \\ 1) when is_struct(item) do
+    with :ok <- check_disassemble_item_count(item, count),
+         %Blueprint{resources: resources} <- find_blueprint(item) do
+      {:ok, multiply_blueprint_resources(resources, count)}
+    else
       _ ->
         {:error, %NotApplicableError{}}
     end
@@ -512,6 +513,18 @@ defmodule Europa.Server.Loot do
     end
   end
 
+  defp check_disassemble_item_count(_item, count) when count < 1 do
+    {:error, %Errors.NotApplicableError{}}
+  end
+
+  defp check_disassemble_item_count(item, count) do
+    if (!Item.stackable?(item) && count > 1) || (Item.stackable?(item) && item.count < count) do
+      {:error, %Errors.NotApplicableError{}}
+    else
+      :ok
+    end
+  end
+
   defp find_blueprint(item) when is_struct(item) do
     item_type = Item.item_type(item)
 
@@ -519,6 +532,10 @@ defmodule Europa.Server.Loot do
     |> Enum.find(fn %Blueprint{item: bp_item} ->
       Item.item_type(bp_item) == item_type && Item.id(bp_item) == Item.id(item)
     end)
+  end
+
+  defp multiply_blueprint_resources(resources, count) when is_list(resources) and count > 0 do
+    Enum.map(resources, &struct!(&1, count: &1.count * count))
   end
 
   defp maybe_set_count(item, count) do

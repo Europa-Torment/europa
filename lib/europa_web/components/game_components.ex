@@ -774,7 +774,29 @@ defmodule EuropaWeb.GameCompotents do
       />
       <div class="modal overflow-visible" role="dialog">
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
-          <h3 class="text-lg font-bold pb-3">{gettext("After disassembling you will receive following items:")}</h3>
+          <h3 class="text-lg font-bold pb-3">{gettext("Item disassemble:")}</h3>
+          <%= if Loot.Item.stackable?(@disassemble_item) do %>
+            <div>
+              <input
+                id="disassemble_item_count"
+                type="number"
+                class="input validator"
+                name="disassemble_item_count"
+                value={@disassemble_item_count}
+                phx-hook="InputChange"
+                data-event="change_disassemble_item_count"
+                required
+                placeholder={gettext("How many?")}
+                min="1"
+                max={@disassemble_item.count}
+                title={gettext("Must be between") <> " 1-#{@disassemble_item.count}"}
+              />
+              <p class="validator-hint">
+                {gettext("Must be between")} 1-{@disassemble_item.count}
+              </p>
+            </div>
+          <% end %>
+          <h4 class="text-md font-bold pb-3">{gettext("After disassembling you will receive following items:")}</h4>
           <div>
             <ul class="list-disc list-inside space-y-2 text-sm">
               <%= for item <- @disassemble_items do %>
@@ -783,7 +805,7 @@ defmodule EuropaWeb.GameCompotents do
                   phx-hook="Tooltip"
                   data-tooltip={item_tooltip(item, @player)}
                 >
-                  {Loot.Item.composed_name(item)}
+                  {disassemble_item_name(item, @disassemble_item_count)}
                 </li>
               <% end %>
             </ul>
@@ -791,7 +813,7 @@ defmodule EuropaWeb.GameCompotents do
           <div class="modal-action">
             <label
               phx-click="confirm_item_disassemble"
-              phx-value-uuid={"#{@disassemble_item_uuid}"}
+              phx-value-uuid={"#{@disassemble_item.uuid}"}
               for="item_disassemble_menu"
               class="btn btn-secondary"
             >
@@ -1800,6 +1822,14 @@ defmodule EuropaWeb.GameCompotents do
   defp use_item_icon_image(_) do
     "tool"
   end
+
+  defp disassemble_item_name(item, count) when count > 1 do
+    item
+    |> struct!(count: item.count * count)
+    |> Loot.Item.composed_name()
+  end
+
+  defp disassemble_item_name(item, _), do: Loot.Item.composed_name(item)
 
   # coveralls-ignore-stop
 end

@@ -390,7 +390,7 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  describe "disassemble_item/2" do
+  describe "disassemble_item/3" do
     setup do
       %Blueprint{item: item, resources: resources} = Blueprints.blueprints() |> List.first()
       ammo = build(:ammo, id: :shotgun, count: 20)
@@ -415,8 +415,9 @@ defmodule Europa.Server.PlayerTest do
       player: player,
       ammo: ammo
     } do
-      assert {:ok, %Player{inventory: inventory}, _} = Player.disassemble_item(player, ammo.uuid)
-      assert Enum.find(inventory, &(Loot.Item.item_type(&1) == :ammo && &1.count == ammo.count - 1))
+      count = 10
+      assert {:ok, %Player{inventory: inventory}, _} = Player.disassemble_item(player, ammo.uuid, count)
+      assert Enum.find(inventory, &(Loot.Item.item_type(&1) == :ammo && &1.count == ammo.count - count))
     end
   end
 

@@ -176,7 +176,7 @@
         "subtype": "ammo_parts",
         "description": "Bullet for rifle.",
         "count": {"from": 1, "to": 5},
-        "weight": 0.15, 
+        "weight": 0.04, 
         "random_weight": 0.03
     },
     {
@@ -185,7 +185,7 @@
         "subtype": "ammo_parts",
         "description": "Bullet for sniper rifle.",
         "count": {"from": 1, "to": 5},
-        "weight": 0.15, 
+        "weight": 0.1, 
         "random_weight": 0.03
     },
     {

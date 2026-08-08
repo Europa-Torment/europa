@@ -849,7 +849,7 @@ defmodule Europa.Server.LootTest do
     end
   end
 
-  describe "disassemble_item/1" do
+  describe "disassemble_item/2" do
     test "returns list of tools for item" do
       %Blueprint{item: item, resources: expected_resources} = Blueprints.blueprints() |> List.first()
       expected_resources_id = Enum.map(expected_resources, & &1.id)
@@ -859,9 +859,36 @@ defmodule Europa.Server.LootTest do
       assert Enum.all?(resources, fn %Resource{} = resource -> resource.id in expected_resources_id end)
     end
 
-    test "returns NotApplicable error" do
+    test "returns list of tools for item (count > 1)" do
+      %Blueprint{item: item, resources: expected_resources} = Blueprints.blueprints() |> List.first()
+      item = struct!(item, count: 10)
+      count = 5
+
+      assert {:ok, resources} = Loot.disassemble_item(item, count)
+
+      assert Enum.all?(resources, fn resource ->
+               resource.count == Enum.find(expected_resources, &(&1.id == resource.id)).count * count
+             end)
+    end
+
+    test "returns NotApplicable error (item not disassembable)" do
       ammo = build(:ammo)
       assert Loot.disassemble_item(ammo) == {:error, %Errors.NotApplicableError{}}
+    end
+
+    test "returns NotApplicable error (item not stackable and count > 1)" do
+      %Blueprint{item: item} = Blueprints.blueprints() |> Enum.find(&(not Loot.Item.stackable?(&1.item)))
+      assert Loot.disassemble_item(item, 2) == {:error, %Errors.NotApplicableError{}}
+    end
+
+    test "returns NotApplicable error (item stackable but count > item.count)" do
+      %Blueprint{item: item} = Blueprints.blueprints() |> Enum.find(&Loot.Item.stackable?(&1.item))
+      assert Loot.disassemble_item(item, 2000) == {:error, %Errors.NotApplicableError{}}
+    end
+
+    test "returns NotApplicable error (count < 1)" do
+      %Blueprint{item: item} = Blueprints.blueprints() |> Enum.find(&Loot.Item.stackable?(&1.item))
+      assert Loot.disassemble_item(item, 0) == {:error, %Errors.NotApplicableError{}}
     end
   end
 

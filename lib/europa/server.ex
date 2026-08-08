@@ -207,10 +207,10 @@ defmodule Europa.Server do
     GenServer.call(server, {:drop_item, item_uuid, count})
   end
 
-  @spec disassemble_item(pid(), Loot.uuid()) ::
+  @spec disassemble_item(pid(), Loot.uuid(), count :: pos_integer()) ::
           :ok | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
-  def disassemble_item(server, item_uuid) do
-    GenServer.call(server, {:disassemble_item, item_uuid})
+  def disassemble_item(server, item_uuid, count \\ 1) do
+    GenServer.call(server, {:disassemble_item, item_uuid, count})
   end
 
   @spec craft_item(pid(), Loot.Blueprints.Blueprint.t()) :: :ok | {:error, Errors.NotApplicableError.t()}
@@ -453,8 +453,8 @@ defmodule Europa.Server do
     end
   end
 
-  def handle_call({:disassemble_item, item_uuid}, caller_pid, state) do
-    case PlayerManager.disassemble_item(state.player, item_uuid) do
+  def handle_call({:disassemble_item, item_uuid, count}, caller_pid, state) do
+    case PlayerManager.disassemble_item(state.player, item_uuid, count) do
       {:ok, updated_player, item} ->
         disassembled_message = disassembled_message(item, @craft_moves_count)
 

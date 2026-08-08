@@ -267,10 +267,10 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def disassemble_item(%__MODULE__{} = player, item_uuid) do
+  def disassemble_item(%__MODULE__{} = player, item_uuid, count \\ 1) do
     with {:ok, item} <- get_item(player, item_uuid) do
       {player, item} = maybe_unequip_item(player, item)
-      do_disassemble_item(player, item)
+      do_disassemble_item(player, item, count)
     end
   end
 
@@ -759,20 +759,20 @@ defmodule Europa.Server.Player do
     end)
   end
 
-  defp do_disassemble_item(%__MODULE__{} = player, item) do
-    with {:ok, new_items} <- Loot.disassemble_item(item) do
+  defp do_disassemble_item(%__MODULE__{} = player, item, count) do
+    with {:ok, new_items} <- Loot.disassemble_item(item, count) do
       updated_player =
         player
-        |> delete_item_or_decrease_count(item)
+        |> delete_item_or_decrease_count(item, count)
         |> add_items(new_items)
 
       {:ok, updated_player, item}
     end
   end
 
-  defp delete_item_or_decrease_count(player, item) do
-    if Loot.Item.stackable?(item) && item.count > 1 do
-      updated_item = Loot.decrease_item_count(item)
+  defp delete_item_or_decrease_count(player, item, count) do
+    if Loot.Item.stackable?(item) && item.count - count > 0 do
+      updated_item = Loot.decrease_item_count(item, count)
       update_item(player, updated_item)
     else
       delete_item(player, item)

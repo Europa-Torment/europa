@@ -407,14 +407,15 @@ defmodule EuropaWeb.GameLive do
     with {:ok, item} <- Server.get_item(socket.assigns.server, item_uuid),
          true <- Loot.item_disassemblable?(item),
          {:ok, items} <- Loot.disassemble_item(item) do
-      {:noreply, assign(socket, disassemble_item_uuid: item_uuid, disassemble_items: items)}
+      {:noreply,
+       assign(socket, disassemble_item: item, disassemble_items: items, disassemble_item_count: 1, input_mode: true)}
     else
       _ -> {:noreply, socket}
     end
   end
 
   def handle_event("confirm_item_disassemble", %{"uuid" => item_uuid}, socket) do
-    case Server.disassemble_item(socket.assigns.server, item_uuid) do
+    case Server.disassemble_item(socket.assigns.server, item_uuid, socket.assigns.disassemble_item_count) do
       :ok ->
         socket =
           socket
@@ -470,6 +471,16 @@ defmodule EuropaWeb.GameLive do
       end
 
     {:noreply, assign(socket, item_drop_count: count)}
+  end
+
+  def handle_event("change_disassemble_item_count", %{"value" => count}, socket) do
+    count =
+      case Integer.parse(count) do
+        {count, _} when is_integer(count) and count > 0 -> count
+        _ -> socket.assigns.disassemble_item_count
+      end
+
+    {:noreply, assign(socket, disassemble_item_count: count)}
   end
 
   def handle_event("change_compass_target_description", params, socket) do
@@ -958,7 +969,7 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp close_item_disassemble_menu(socket) do
-    assign(socket, disassemble_item_uuid: nil, disassemble_items: nil)
+    assign(socket, disassemble_item: nil, disassemble_items: nil, disassemble_item_count: nil, input_mode: false)
   end
 
   defp close_craft_menu(socket) do
