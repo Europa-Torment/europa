@@ -922,6 +922,7 @@ defmodule Europa.Server do
   defp killed_enemies_count(damaged_enemies) do
     Enum.count(damaged_enemies, fn
       {%Enemy{} = enemy, _} -> enemy.health == 0
+      {%Npc{} = npc, _} -> npc.health == 0
       {_, _} -> false
     end)
   end

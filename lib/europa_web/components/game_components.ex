@@ -335,8 +335,8 @@ defmodule EuropaWeb.GameCompotents do
         class="bg-base-200 p-5 shadow-md text-xs"
         {open_inventory_attrs("ammo")}
       >
-        <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")}/#{gettext("In inventory")}"}>
-          <span class="text-lg"><.icon_image name="ammo" /></span> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size}/{@ammo_count}
+        <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")} (#{gettext("In inventory")})"}>
+          <span class="text-lg"><.icon_image name="ammo" /></span> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size} ({@ammo_count})
         </p>
       </div>
     <% end %>
