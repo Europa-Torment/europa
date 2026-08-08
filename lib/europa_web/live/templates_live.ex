@@ -79,7 +79,7 @@ defmodule EuropaWeb.TemplatesLive do
 
     Enum.with_index(determined_template, fn row, x ->
       Enum.with_index(row, fn tile, y ->
-        Planet.prepare_predefined_tile(tile, {x, y}, planet, @snow)
+        {{x, y}, Planet.prepare_predefined_tile(tile, {x, y}, planet, @snow)}
       end)
     end)
   end
