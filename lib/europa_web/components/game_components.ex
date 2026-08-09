@@ -470,11 +470,6 @@ defmodule EuropaWeb.GameCompotents do
                 <a>{gettext("Unload")} <.moves_count moves_count={@item.reload_cost} /></a>
               </li>
             <% end %>
-            <%= if Loot.item_disassemblable?(@item) do %>
-              <li phx-click="disassemble_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
-                <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
-              </li>
-            <% end %>
             <%= if Item.consumable?(@item) do %>
               <li phx-click="consume_supply" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
                 <a>{gettext("Consume")}<.moves_count moves_count={@item.consume_cost} /></a>
@@ -495,6 +490,11 @@ defmodule EuropaWeb.GameCompotents do
                   <a>{gettext("Equip")}</a>
                 </li>
               <% end %>
+            <% end %>
+            <%= if Loot.item_disassemblable?(@item) do %>
+              <li phx-click="disassemble_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
+              </li>
             <% end %>
             <li phx-click="drop_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
               <a>{gettext("Drop")}</a>
