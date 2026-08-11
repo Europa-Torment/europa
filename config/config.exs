@@ -113,6 +113,8 @@ config :europa, :game_params,
 
 config :europa, Europa.Server.Characters, filename: "characters.json"
 
+config :europa, Europa.Server.Player.Diseases, filename: "diseases.json"
+
 config :europa, Europa.Server.Compass,
   max_description_length: 50,
   max_targets: 50

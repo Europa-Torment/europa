@@ -44,6 +44,7 @@ defmodule Europa.ServerTest do
     |> stub(:add_item, fn player, _ -> {:ok, player} end)
     |> stub(:equip_item, fn player, _ -> {:ok, player} end)
     |> stub(:warm_up, fn player, _warm_units -> player end)
+    |> stub(:diseases_additional_moves_count, fn _player -> 0 end)
 
     {:ok, server} = Server.start_link(Ecto.UUID.generate())
     planet = build(:planet)
@@ -161,6 +162,27 @@ defmodule Europa.ServerTest do
       end)
 
       assert Server.interact(server) == {:ok, interaction}
+    end
+
+    test "returns interaction (transform with required tool)", %{server: server} do
+      tool = build(:tool)
+
+      interaction =
+        {:transform, build(:object),
+         build(:object_transform, message: "text", transform_cost: 1, transform_requirements: {:tools, [tool]})}
+
+      PlanetManagerMock
+      |> expect(:interact, fn %Planet{} = planet, _direction, _opts ->
+        {:ok, planet, interaction}
+      end)
+      |> expect(:tick, fn planet, _ -> {:ok, planet, []} end)
+
+      PlayerManagerMock
+      |> expect(:use_tools, fn %Player{} = player, [^tool] -> {:ok, player} end)
+      |> expect(:tick, fn player, _ -> {:ok, player, []} end)
+
+      assert Server.interact(server, forced: true) == {:ok, interaction}
+      :timer.sleep(100)
     end
 
     test "returns confirmation (danger_action)", %{server: server} do
@@ -874,9 +896,11 @@ defmodule Europa.ServerTest do
       supply_uuid = supply.uuid
       moves_count = supply.consume_cost
 
+      new_diseases_id = [:alcoholism]
+
       PlayerManagerMock
       |> expect(:consume_supply, fn %Player{} = player, ^supply_uuid ->
-        {:ok, player, supply}
+        {:ok, player, supply, new_diseases_id}
       end)
       |> expect(:tick, fn %Player{} = player, tick_moves_count ->
         assert_moves_count(moves_count, tick_moves_count)
@@ -889,7 +913,7 @@ defmodule Europa.ServerTest do
         {:ok, planet, []}
       end)
 
-      assert {:ok, ^supply} = Server.consume_supply(server, supply_uuid)
+      assert {:ok, ^supply, ^new_diseases_id} = Server.consume_supply(server, supply_uuid)
       :timer.sleep(100)
     end
 

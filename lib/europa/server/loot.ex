@@ -41,7 +41,7 @@ defmodule Europa.Server.Loot do
     {:weapon, gettext("Weapons"), 0.4},
     {:ammo, gettext("Ammo"), 0.7},
     {:melee_weapon, gettext("Melee weapons"), 0.7},
-    {:supply, gettext("Supplies"), 1.0},
+    {:supply, gettext("Supplies"), 1.5},
     {:tool, gettext("Tools"), 0.5},
     {:resource, gettext("Resources"), 1.0},
     {:helmet, gettext("Helmets"), 0.4},
@@ -53,6 +53,7 @@ defmodule Europa.Server.Loot do
   @item_types Enum.map(@weighted_item_types, fn {k, v, _} -> {k, v} end)
 
   @allowed_item_types Enum.map(@item_types, fn {k, _v} -> k end)
+  @excepted_subtypes %{supply: [:human_entrails]}
 
   @filenames %{
     weapon: "weapons.json",
@@ -392,6 +393,7 @@ defmodule Europa.Server.Loot do
     attrs =
       item_type
       |> get_items()
+      |> filter_excepted_subtypes(item_type)
       |> WeightedRandom.take_one()
       |> AttrsDeterminator.determine_attrs()
 
@@ -474,7 +476,8 @@ defmodule Europa.Server.Loot do
       |> add_items(3)
       |> ItemBox.stand_on(npc.stand_on)
 
-    struct!(item_box, items: [npc.weapon | item_box.items])
+    extra_items = [npc.weapon, generate_item(:supply, [:human_entrails])]
+    struct!(item_box, items: item_box.items ++ extra_items)
   end
 
   @spec get_items(item_type()) :: list()
@@ -510,6 +513,15 @@ defmodule Europa.Server.Loot do
       struct!(item, count: updated_value)
     else
       item
+    end
+  end
+
+  ### Private ###
+
+  defp filter_excepted_subtypes(items, item_type) do
+    case Map.get(@excepted_subtypes, item_type) do
+      nil -> items
+      subtypes -> Enum.filter(items, fn {item, _} -> String.to_atom(item.subtype) not in subtypes end)
     end
   end
 

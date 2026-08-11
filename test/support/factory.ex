@@ -5,6 +5,8 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Chat
   alias Europa.Server.Loot
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases.Disease
+  alias Europa.Server.Player.Buff
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Storm
   alias Europa.Server.Planet.Tiles
@@ -184,6 +186,8 @@ defmodule Europa.Support.Factory do
       count: 1,
       consume_cost: 1,
       properties: build(:supply_properties),
+      diseases: [],
+      buffs: [],
       weight: 1.0,
       sound_name: "eat"
     }
@@ -297,7 +301,9 @@ defmodule Europa.Support.Factory do
       stand_on: Tiles.tile(:ice).atom_value,
       aim_mode?: false,
       max_implants: 3,
-      ambient_temperature: 0
+      ambient_temperature: 0,
+      diseases: [],
+      buffs: []
     }
   end
 
@@ -437,6 +443,39 @@ defmodule Europa.Support.Factory do
       weapon: build(:weapon),
       health: 100,
       accuracy: 50
+    }
+  end
+
+  @spec disease_factory() :: Disease.t()
+  def disease_factory do
+    %Disease{
+      id: sequence(:id, &:"disease_#{&1 + 1}"),
+      name: sequence(:name, &"disease_#{&1 + 1}"),
+      progression_possibility: 1,
+      satisfaction: 100,
+      moves_to_recovery: 100,
+      debuffs: build(:disease_debuffs)
+    }
+  end
+
+  @spec disease_debuffs_factory() :: Disease.Debuffs.t()
+  def disease_debuffs_factory do
+    %Disease.Debuffs{
+      damage: 1,
+      extra_moves_count: 1,
+      efficiency: -1,
+      accuracy: -1,
+      max_health: -1,
+      max_warm: -1
+    }
+  end
+
+  @spec buff_factory() :: Buff.t()
+  def buff_factory do
+    %Buff{
+      stat_name: :max_health,
+      value: 10,
+      duration: 20
     }
   end
 

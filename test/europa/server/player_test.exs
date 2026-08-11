@@ -5,7 +5,11 @@ defmodule Europa.Server.PlayerTest do
   alias Europa.Server.Errors.NotApplicableError
 
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases
+  alias Europa.Server.Player.Diseases.Disease
+  alias Europa.Server.Player.Buff
   alias Europa.Server.Planet
+  alias Europa.Server.Action
   alias Europa.Server.Characters.Character
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
@@ -55,6 +59,12 @@ defmodule Europa.Server.PlayerTest do
       check all(_ <- StreamData.integer(1..100)) do
         assert Player.new(character).view_direction in Planet.allowed_directions()
       end
+    end
+  end
+
+  describe "readable_stat_name/1" do
+    test "returns string" do
+      assert Player.readable_stat_name(:warm) == "Warm"
     end
   end
 
@@ -1054,7 +1064,7 @@ defmodule Europa.Server.PlayerTest do
       supply = build(:supply, count: 3, properties: build(:supply_properties, health: 15))
       player = build(:player, health: 10, inventory: [supply])
 
-      assert {:ok, %Player{health: updated_health, inventory: [updated_supply]}, updated_supply} =
+      assert {:ok, %Player{health: updated_health, inventory: [updated_supply]}, updated_supply, []} =
                Player.consume_supply(player, supply.uuid)
 
       assert updated_health == player.health + supply.properties.health
@@ -1065,7 +1075,7 @@ defmodule Europa.Server.PlayerTest do
       supply = build(:supply, count: 3, properties: build(:supply_properties, health: 1000))
       player = build(:player, health: 10, max_health: 100, inventory: [supply])
 
-      assert {:ok, %Player{health: updated_health}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
+      assert {:ok, %Player{health: updated_health}, %Loot.Supply{}, []} = Player.consume_supply(player, supply.uuid)
       assert updated_health == player.max_health
     end
 
@@ -1073,7 +1083,7 @@ defmodule Europa.Server.PlayerTest do
       supply = build(:supply, count: 3, properties: build(:supply_properties, thirst: -10))
       player = build(:player, thirst: 20, inventory: [supply])
 
-      assert {:ok, %Player{thirst: updated_thirst, inventory: [updated_supply]}, updated_supply} =
+      assert {:ok, %Player{thirst: updated_thirst, inventory: [updated_supply]}, updated_supply, []} =
                Player.consume_supply(player, supply.uuid)
 
       assert updated_thirst == player.thirst + supply.properties.thirst
@@ -1084,7 +1094,7 @@ defmodule Europa.Server.PlayerTest do
       supply = build(:supply, count: 3, properties: build(:supply_properties, hunger: -10))
       player = build(:player, hunger: 20, inventory: [supply])
 
-      assert {:ok, %Player{hunger: updated_hunger, inventory: [updated_supply]}, updated_supply} =
+      assert {:ok, %Player{hunger: updated_hunger, inventory: [updated_supply]}, updated_supply, []} =
                Player.consume_supply(player, supply.uuid)
 
       assert updated_hunger == player.hunger + supply.properties.hunger
@@ -1095,18 +1105,86 @@ defmodule Europa.Server.PlayerTest do
       supply = build(:supply, count: 1, properties: build(:supply_properties, health: 15))
       player = build(:player, health: 10, inventory: [supply])
 
-      assert {:ok, %Player{inventory: []}, %Loot.Supply{}} = Player.consume_supply(player, supply.uuid)
+      assert {:ok, %Player{inventory: []}, %Loot.Supply{}, []} = Player.consume_supply(player, supply.uuid)
     end
 
     test "decreases player radiation" do
       supply = build(:supply, count: 3, properties: build(:supply_properties, radiation: -10))
       player = build(:player, radiation: 100, inventory: [supply])
 
-      assert {:ok, %Player{radiation: updated_radiation, inventory: [updated_supply]}, updated_supply} =
+      assert {:ok, %Player{radiation: updated_radiation, inventory: [updated_supply]}, updated_supply, []} =
                Player.consume_supply(player, supply.uuid)
 
       assert updated_radiation == player.radiation + supply.properties.radiation
       assert updated_supply.count == supply.count - 1
+    end
+
+    test "adds disease" do
+      disease = Diseases.diseases() |> List.first()
+      disease_id = disease.id
+      supply = build(:supply, diseases: [{disease_id, _possibility = 100, _satisfaction = 10}])
+      player = build(:player, radiation: 100, inventory: [supply])
+
+      assert {:ok, %Player{diseases: [^disease]}, _, [^disease_id]} =
+               Player.consume_supply(player, supply.uuid)
+    end
+
+    test "doesnt adds disease if already exists" do
+      disease = Diseases.diseases() |> List.first()
+      disease_id = disease.id
+      supply = build(:supply, diseases: [{disease_id, _possibility = 1, _satisfaction = 10}])
+      player = build(:player, radiation: 100, inventory: [supply], diseases: [disease])
+
+      assert {:ok, %Player{diseases: [updated_disease]}, _, []} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_disease.moves_to_recovery == disease.moves_to_recovery + 1000
+    end
+
+    test "satisfyes disease" do
+      disease = Diseases.diseases() |> List.first()
+      disease_id = disease.id
+      disease = build(:disease, id: disease_id, satisfaction: 5)
+
+      satisfaction = 30
+
+      supply = build(:supply, diseases: [{disease_id, _possibility = 1, satisfaction}])
+      player = build(:player, radiation: 100, inventory: [supply], diseases: [disease])
+
+      assert {:ok, %Player{diseases: [updated_disease]}, _, []} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_disease.satisfaction == disease.satisfaction + satisfaction
+      assert updated_disease.moves_to_recovery == disease.moves_to_recovery + 1000
+    end
+
+    test "cancels disease debuffs" do
+      disease = Diseases.diseases() |> List.first()
+      disease_id = disease.id
+      disease = build(:disease, id: disease_id, satisfaction: 0)
+
+      satisfaction = 10
+
+      supply = build(:supply, diseases: [{disease_id, _possibility = 1, satisfaction}])
+      player = build(:player, inventory: [supply], diseases: [disease])
+
+      assert {:ok, %Player{diseases: [updated_disease]} = updated_player, _, []} =
+               Player.consume_supply(player, supply.uuid)
+
+      assert updated_disease.satisfaction == disease.satisfaction + satisfaction
+
+      assert updated_player.accuracy == player.accuracy - disease.debuffs.accuracy
+      assert updated_player.efficiency == player.efficiency - disease.debuffs.efficiency
+      assert updated_player.max_health == player.max_health - disease.debuffs.max_health
+      assert updated_player.max_warm == player.max_warm - disease.debuffs.max_warm
+    end
+
+    test "adds buffs" do
+      buffs = build_list(10, :buff)
+      supply = build(:supply, buffs: buffs)
+      player = build(:player, buffs: [], inventory: [supply])
+
+      assert {:ok, %Player{buffs: ^buffs}, _, _} = Player.consume_supply(player, supply.uuid)
     end
   end
 
@@ -1363,6 +1441,108 @@ defmodule Europa.Server.PlayerTest do
                 ]
               }, []} = Player.tick(player, 1)
     end
+
+    test "decreases buffs duration" do
+      buff1 = build(:buff, stat_name: :max_warm, value: 1, duration: 3)
+      buff2 = build(:buff, stat_name: :max_health, value: 1, duration: 2)
+      buff3 = build(:buff, stat_name: :accuracy, value: 1, duration: 1)
+
+      player = build(:player, buffs: [buff1, buff2, buff3])
+
+      assert {:ok,
+              %Player{
+                buffs: [%Buff{stat_name: :max_health, duration: 1}, %Buff{stat_name: :max_warm, duration: 2}]
+              } = updated_player, []} = Player.tick(player, 1)
+
+      assert updated_player.accuracy == player.accuracy - buff3.value
+    end
+
+    test "progresses diseases" do
+      [disease1, disease2, disease3] = Diseases.diseases() |> Enum.take(3)
+
+      disease1 = build(:disease, id: disease1.id, progression_possibility: 1, satisfaction: 10)
+      disease2 = build(:disease, id: disease2.id, progression_possibility: 1, satisfaction: 0)
+      disease3 = build(:disease, id: disease3.id, progression_possibility: 1, satisfaction: 1)
+
+      disease3_id = disease3.id
+
+      player = build(:player, diseases: [disease1, disease2, disease3])
+
+      assert {:ok, %Player{diseases: updated_diseases} = updated_player, actions} = Player.tick(player, 1)
+
+      assert %Action{action_type: {:disease, disease3_id}, subject: :player} in actions
+
+      assert updated_diseases == [
+               Disease.change_satisfaction(disease1, -1),
+               Disease.progress_recovery(disease2),
+               Disease.change_satisfaction(disease3, -1)
+             ]
+
+      assert updated_player.accuracy == player.accuracy + disease3.debuffs.accuracy
+      assert updated_player.efficiency == player.efficiency + disease3.debuffs.efficiency
+      assert updated_player.max_health == player.max_health + disease3.debuffs.max_health
+      assert updated_player.max_warm == player.max_warm + disease3.debuffs.max_warm
+    end
+
+    test "recovers disease" do
+      disease = Diseases.diseases() |> List.first()
+      disease_id = disease.id
+      disease = build(:disease, id: disease_id, progression_possibility: 1, moves_to_recovery: 1, satisfaction: 0)
+
+      player = build(:player, diseases: [disease])
+      assert {:ok, %Player{diseases: []} = updated_player, actions} = Player.tick(player, 1)
+
+      assert %Action{action_type: {:recovered_disease, disease_id}, subject: :player} in actions
+
+      assert updated_player.accuracy == player.accuracy - disease.debuffs.accuracy
+      assert updated_player.efficiency == player.efficiency - disease.debuffs.efficiency
+      assert updated_player.max_health == player.max_health - disease.debuffs.max_health
+      assert updated_player.max_warm == player.max_warm - disease.debuffs.max_warm
+    end
+
+    property "takes diseases damage" do
+      [disease1, disease2, disease3] = Diseases.diseases() |> Enum.take(3)
+
+      disease1 = build(:disease, id: disease1.id, progression_possibility: 1, satisfaction: 10)
+
+      disease2 =
+        build(:disease,
+          id: disease2.id,
+          progression_possibility: 1,
+          debuffs: build(:disease_debuffs, damage: 1),
+          satisfaction: 0
+        )
+
+      disease3 =
+        build(:disease,
+          id: disease3.id,
+          progression_possibility: 1,
+          debuffs: build(:disease_debuffs, damage: 10),
+          satisfaction: 0
+        )
+
+      player = build(:player, diseases: [disease1, disease2, disease3])
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 500
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Player.tick(player, 1) end)
+
+          damaged_count =
+            Enum.count(results, fn {:ok, updated_player, actions} ->
+              updated_player.health == player.health - (disease2.debuffs.damage + disease3.debuffs.damage) &&
+                %Action{action_type: :diseases_damage, subject: :player} in actions
+            end)
+
+          damaged_proportion = damaged_count / num_runs
+
+          assert damaged_proportion >= 0.0001
+          assert damaged_proportion <= 1.0
+        end
+      end
+    end
   end
 
   describe "weapon_damage/1" do
@@ -1451,6 +1631,54 @@ defmodule Europa.Server.PlayerTest do
 
       assert Player.melee_weapon_damage(player) ==
                melee_weapon.damage + implant1.properties.melee_damage
+    end
+  end
+
+  describe "add_disease/2" do
+    setup do
+      [disease1, disease2] = Diseases.diseases() |> Enum.take(2)
+      player = build(:player, diseases: [disease1])
+
+      {:ok, player: player, disease1: disease1, disease2: disease2}
+    end
+
+    test "adds disease with given id", %{player: player, disease1: disease1, disease2: disease2} do
+      assert %Player{diseases: [^disease2, ^disease1]} = Player.add_disease(player, disease2.id)
+    end
+
+    test "ignores duplicates", %{player: player, disease1: disease1} do
+      assert %Player{diseases: [^disease1]} = Player.add_disease(player, disease1.id)
+    end
+  end
+
+  describe "diseases_additional_moves_count/1" do
+    test "returns 0 if no not satisfyed diseases" do
+      player = build(:player, diseases: [build(:disease)])
+
+      assert Player.diseases_additional_moves_count(player) == 0
+    end
+
+    test "returns additional moves count" do
+      disease1 = build(:disease, debuffs: build(:disease_debuffs, extra_moves_count: 1), satisfaction: 0)
+      disease2 = build(:disease, debuffs: build(:disease_debuffs, extra_moves_count: 2), satisfaction: 0)
+      player = build(:player, diseases: [disease1, disease2])
+
+      assert Player.diseases_additional_moves_count(player) ==
+               disease1.debuffs.extra_moves_count + disease2.debuffs.extra_moves_count
+    end
+  end
+
+  describe "add_buffs/2" do
+    test "adds buffs" do
+      buff1 = build(:buff, stat_name: :max_warm, value: 1)
+      buff2 = build(:buff, stat_name: :max_health, value: 2)
+      buff3 = build(:buff, stat_name: :accuracy, value: 3)
+
+      player = build(:player, buffs: [buff1])
+
+      assert %Player{buffs: [^buff1, ^buff2, ^buff3]} = updated_player = Player.add_buffs(player, [buff2, buff3])
+      assert updated_player.max_health == player.max_health + buff2.value
+      assert updated_player.accuracy == player.accuracy + buff3.value
     end
   end
 

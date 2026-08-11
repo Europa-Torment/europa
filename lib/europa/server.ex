@@ -10,6 +10,8 @@ defmodule Europa.Server do
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases
+  alias Europa.Server.Player.Diseases.Disease
   alias Europa.Server.PlayerManager
   alias Europa.Server.Chat
   alias Europa.Server.Compass
@@ -219,7 +221,9 @@ defmodule Europa.Server do
   end
 
   @spec consume_supply(pid(), Loot.uuid()) ::
-          {:ok, Loot.Item.item()} | {:error, :not_found} | {:error, Errors.NotApplicableError.t()}
+          {:ok, Loot.Item.item(), new_diseases_id :: list(Disease.id())}
+          | {:error, :not_found}
+          | {:error, Errors.NotApplicableError.t()}
   def consume_supply(server, item_uuid) do
     GenServer.call(server, {:consume_supply, item_uuid})
   end
@@ -473,7 +477,8 @@ defmodule Europa.Server do
   def handle_call({:craft_item, blueprint}, caller_pid, state) do
     case PlayerManager.craft_item(state.player, %Loot.Blueprints.Blueprint{} = blueprint) do
       {:ok, updated_player} ->
-        crafted_message = crafted_message(blueprint.item, @craft_moves_count)
+        moves_count = moves_count(@craft_moves_count, updated_player)
+        crafted_message = crafted_message(blueprint.item, moves_count)
 
         updated_chat =
           state.chat
@@ -490,7 +495,7 @@ defmodule Europa.Server do
   def handle_call(:toggle_aim_mode, caller_pid, state) do
     case PlayerManager.toggle_aim_mode(state.player) do
       {:ok, player} ->
-        moves_count = 1
+        moves_count = moves_count(1, player)
         aim_mode_switched_message = aim_mode_switched_message(moves_count)
 
         updated_chat =
@@ -508,7 +513,8 @@ defmodule Europa.Server do
     case PlanetManager.shoot(state.planet, state.player) do
       {:ok, {updated_planet, updated_player, damaged_enemies, moves_count}} ->
         moves_count =
-          maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
+          moves_count
+          |> moves_count(updated_player)
           |> maybe_increase_moves_count_with_aim_mode(updated_player)
 
         shoot_message = shoot_message(moves_count)
@@ -531,7 +537,8 @@ defmodule Europa.Server do
 
       {:error, :miss, updated_player, moves_count} ->
         moves_count =
-          maybe_decrease_moves_count_with_efficiency(moves_count, updated_player.efficiency)
+          moves_count
+          |> moves_count(updated_player)
           |> maybe_increase_moves_count_with_aim_mode(updated_player)
 
         shoot_message = shoot_message(moves_count)
@@ -566,7 +573,7 @@ defmodule Europa.Server do
 
     case result do
       {:ok, updated_player, weapon} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
+        moves_count = moves_count(weapon.reload_cost, updated_player)
         reloaded_message = reloaded_message(weapon, moves_count)
 
         updated_chat =
@@ -596,7 +603,7 @@ defmodule Europa.Server do
   def handle_call({:unload_weapon, item_uuid}, {caller_pid, _}, state) do
     case PlayerManager.unload_weapon(state.player, item_uuid) do
       {:ok, updated_player, weapon} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
+        moves_count = moves_count(weapon.reload_cost, updated_player)
         unloaded_message = unloaded_message(weapon, moves_count)
 
         updated_chat =
@@ -619,7 +626,7 @@ defmodule Europa.Server do
   def handle_call({:unload_item_box_weapon, item_uuid}, {caller_pid, _}, state) do
     case PlanetManager.unload_item_box_weapon(state.planet, state.player, item_uuid) do
       {:ok, updated_planet, updated_player, updated_item_box, weapon} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(weapon.reload_cost, updated_player.efficiency)
+        moves_count = moves_count(weapon.reload_cost, updated_player)
         unloaded_message = unloaded_message(weapon, moves_count)
 
         updated_chat =
@@ -642,15 +649,15 @@ defmodule Europa.Server do
 
   def handle_call({:consume_supply, item_uuid}, {caller_pid, _}, state) do
     case PlayerManager.consume_supply(state.player, item_uuid) do
-      {:ok, updated_player, supply} ->
-        moves_count = maybe_decrease_moves_count_with_efficiency(supply.consume_cost, updated_player.efficiency)
+      {:ok, updated_player, supply, new_diseases_id} ->
+        moves_count = moves_count(supply.consume_cost, updated_player)
         consumed_supply_message = consumed_supply_message(supply, moves_count)
 
         updated_chat =
           state.chat
           |> Chat.add_message(consumed_supply_message)
 
-        {:reply, {:ok, supply}, struct!(state, player: updated_player, chat: updated_chat),
+        {:reply, {:ok, supply, new_diseases_id}, struct!(state, player: updated_player, chat: updated_chat),
          {:continue, {:tick, moves_count, caller_pid}}}
 
       error ->
@@ -672,7 +679,7 @@ defmodule Europa.Server do
     {:reply, PlayerManager.get_inventory(state.player, type), state, @inactivity_timeout_ms}
   end
 
-  def handle_call({:interact, opts}, _from, state) do
+  def handle_call({:interact, opts}, caller_pid, state) do
     case PlanetManager.interact(state.planet, state.player.view_direction, opts) do
       {:ok, updated_planet, {:drink, :radioactive_water} = interaction} ->
         updated_player =
@@ -698,10 +705,11 @@ defmodule Europa.Server do
         case PlayerManager.use_tools(state.player, required_tools) do
           {:ok, updated_player} ->
             updated_player = maybe_add_items_after_object_transform(updated_player, transform)
-            updated_chat = maybe_add_transform_message(state.chat, transform)
+            {updated_chat, moves_count} = maybe_add_transform_message(state.chat, transform, updated_player)
 
             {:reply, {:ok, interaction},
-             struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat), @inactivity_timeout_ms}
+             struct!(state, planet: updated_planet, player: updated_player, chat: updated_chat),
+             {:continue, {:tick, moves_count, caller_pid}}}
 
           _ ->
             {:reply, {:error, :nothing}, state}
@@ -804,6 +812,10 @@ defmodule Europa.Server do
   end
 
   @impl true
+  def handle_continue({:tick, 0, _}, state) do
+    {:noreply, state, @inactivity_timeout_ms}
+  end
+
   def handle_continue({:tick, moves_count, caller_pid}, state) do
     {:ok, updated_planet, planet_actions} = PlanetManager.tick(state.planet, moves_count)
     {:ok, updated_player, player_actions} = PlayerManager.tick(state.player, moves_count)
@@ -834,10 +846,15 @@ defmodule Europa.Server do
 
   ### PRIVATE ###
 
+  defp moves_count(moves_count, %Player{} = player) do
+    (moves_count + PlayerManager.diseases_additional_moves_count(player))
+    |> maybe_decrease_moves_count_with_efficiency(player.efficiency)
+  end
+
   defp do_use_tool(%Tool{using_type: :switch} = tool, state, caller_pid) do
     {:ok, updated_tool} = Tool.switch(tool)
     updated_player = PlayerManager.update_item(state.player, updated_tool)
-    moves_count = tool.use_cost
+    moves_count = moves_count(tool.use_cost, updated_player)
     tool_used_message = tool_used_message(updated_tool)
 
     updated_chat =
@@ -853,7 +870,7 @@ defmodule Europa.Server do
 
     with {:ok, updated_player} <- PlayerManager.use_tools(state.player, [tool]),
          {:ok, updated_planet} <- PlanetManager.use_tool(state.planet, tool, updated_player.view_direction) do
-      moves_count = tool.use_cost
+      moves_count = moves_count(tool.use_cost, updated_player)
 
       tool_used_message = tool_used_message(tool)
 
@@ -922,13 +939,12 @@ defmodule Europa.Server do
   defp killed_enemies_count(damaged_enemies) do
     Enum.count(damaged_enemies, fn
       {%Enemy{} = enemy, _} -> enemy.health == 0
-      {%Npc{} = npc, _} -> npc.health == 0
       {_, _} -> false
     end)
   end
 
   defp change_view_direction(direction, state, caller_pid) do
-    moves_count = 1
+    moves_count = moves_count(1, state.player)
 
     updated_player =
       state.player
@@ -952,7 +968,7 @@ defmodule Europa.Server do
 
         moves_count =
           moves_count
-          |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
+          |> moves_count(state.player)
           |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
 
         moved_message = moved_message(moves_count, step_on_tile)
@@ -990,7 +1006,7 @@ defmodule Europa.Server do
           else
             moves_count =
               moves_count
-              |> maybe_decrease_moves_count_with_efficiency(state.player.efficiency)
+              |> moves_count(state.player)
               |> maybe_increase_moves_count_with_inventory_weight(weight_ratio)
               |> maybe_increase_moves_count_with_aim_mode(state.player)
 
@@ -1224,18 +1240,18 @@ defmodule Europa.Server do
     [bio, story]
   end
 
-  defp maybe_add_transform_message(chat, %Object.Transform{message: nil}), do: chat
+  defp maybe_add_transform_message(chat, %Object.Transform{message: nil}, _player), do: {chat, 0}
 
-  defp maybe_add_transform_message(chat, %Object.Transform{transform_cost: moves_count} = transform) do
+  defp maybe_add_transform_message(chat, %Object.Transform{transform_cost: moves_count} = transform, player) do
     moves_count =
       if is_integer(moves_count) && moves_count > 0 do
-        moves_count
+        moves_count(moves_count, player)
       else
         0
       end
 
     message = Chat.Message.new(transform.message, :regular, moves_count)
-    Chat.add_message(chat, message)
+    {Chat.add_message(chat, message), moves_count}
   end
 
   defp moved_message(moves_count, step_on_tile) do
@@ -1353,6 +1369,23 @@ defmodule Europa.Server do
       )
 
     Chat.Message.new(msg, :story)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: {:disease, disease_id}}) do
+    disease_name = Diseases.get_by_id(disease_id) |> Disease.readable_name() |> String.downcase()
+    msg = gettext("You have an exacerbation of the disease: %{disease_name}", disease_name: disease_name)
+    Chat.Message.new(msg, :danger)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: {:recovered_disease, disease_id}}) do
+    disease_name = Diseases.get_by_id(disease_id) |> Disease.readable_name() |> String.downcase()
+    msg = gettext("You have recovered from the disease: %{disease_name}", disease_name: disease_name)
+    Chat.Message.new(msg, :story)
+  end
+
+  defp action_message(%Action{subject: :player, action_type: :diseases_damage}) do
+    msg = gettext("You are taking damage from aggravated diseases!")
+    Chat.Message.new(msg, :danger)
   end
 
   defp action_message(%Action{subject: :player, action_type: :frostbite}) do

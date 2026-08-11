@@ -4,6 +4,9 @@ defmodule Europa.Server.Player do
   use TypedStruct
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Player.Buff
+  alias Europa.Server.Player.Diseases
+  alias Europa.Server.Player.Diseases.Disease
   alias Europa.Server.Characters.Character
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
@@ -63,6 +66,8 @@ defmodule Europa.Server.Player do
     field :max_implants, non_neg_integer(), enforce: true
     field :implant_uuids, list(Loot.uuid()), default: []
     field :ambient_temperature, integer(), enforce: true
+    field :diseases, list(Disease.t()), enforce: true
+    field :buffs, list(Buff.t()), enforce: true
   end
 
   @impl true
@@ -86,7 +91,9 @@ defmodule Europa.Server.Player do
       radiation: 0,
       max_implants: 3,
       ambient_temperature: 0,
-      stand_on: Tiles.tile(:snow).atom_value
+      stand_on: Tiles.tile(:snow).atom_value,
+      diseases: [],
+      buffs: []
     }
   end
 
@@ -133,6 +140,22 @@ defmodule Europa.Server.Player do
       {gettext("Suit"), equipped_suit},
       {gettext("Boots"), equipped_boots}
     ]
+  end
+
+  @impl true
+  def readable_stat_name(stat_name) when is_atom(stat_name) do
+    case stat_name do
+      :health -> gettext("Health")
+      :max_health -> gettext("Max health")
+      :warm -> gettext("Warm")
+      :max_warm -> gettext("Max warm")
+      :hunger -> gettext("Hunger")
+      :thirst -> gettext("Thirst")
+      :radiation -> gettext("Radiation")
+      :accuracy -> gettext("Accuracy")
+      :efficiency -> gettext("Efficiency")
+      :max_weight -> gettext("Max weight")
+    end
   end
 
   @impl true
@@ -555,7 +578,44 @@ defmodule Europa.Server.Player do
     end)
   end
 
+  @impl true
+  def add_disease(%__MODULE__{} = player, disease_id) when is_atom(disease_id) do
+    if has_disease?(player, disease_id) do
+      player
+    else
+      disease = Diseases.get_by_id(disease_id)
+      struct!(player, diseases: [disease | player.diseases])
+    end
+  end
+
+  @impl true
+  def diseases_additional_moves_count(%__MODULE__{} = player) do
+    Enum.reduce(player.diseases, 0, fn disease, acc ->
+      if disease.satisfaction == 0 && not is_nil(disease.debuffs.extra_moves_count) do
+        acc + disease.debuffs.extra_moves_count
+      else
+        acc
+      end
+    end)
+  end
+
+  @impl true
+  def add_buffs(%__MODULE__{} = player, []), do: player
+
+  def add_buffs(%__MODULE__{} = player, buffs) when is_list(buffs) do
+    updated_player =
+      Enum.reduce(buffs, player, fn %Buff{} = buff, player ->
+        increase_attrs(player, %{buff.stat_name => buff.value})
+      end)
+
+    struct!(updated_player, buffs: player.buffs ++ buffs)
+  end
+
   ### PRIVATE ###
+
+  defp has_disease?(%__MODULE__{diseases: diseases}, disease_id) do
+    !!Enum.find(diseases, fn disease -> disease.id == disease_id end)
+  end
 
   defp implant_damage_for_weapon(%Implant{properties: properties}, %Weapon{shooting_type: shooting_type}) do
     properties
@@ -849,7 +909,11 @@ defmodule Europa.Server.Player do
       fn player -> get_hungry(player) end,
       fn player -> maybe_increase_or_decrease_radiation(player) end,
       fn player -> take_radiation_damage(player) end,
-      fn player -> decrease_tools_durability(player) end
+      fn player -> decrease_tools_durability(player) end,
+      fn player -> progress_diseases_recovery(player) end,
+      fn player -> progress_diseases(player) end,
+      fn player -> diseases_damage(player) end,
+      fn player -> decrease_buffs_duration(player) end
     ]
 
     {updated_player, actions} =
@@ -998,6 +1062,129 @@ defmodule Europa.Server.Player do
     update_item(player, updated_tool)
   end
 
+  defp progress_diseases_recovery(%__MODULE__{diseases: []} = player), do: {player, []}
+
+  defp progress_diseases_recovery(%__MODULE__{} = player) do
+    {updated_player, recovered_diseases_id} =
+      Enum.reduce(player.diseases, {player, []}, fn disease, {player, recovered_diseases_id} ->
+        cond do
+          disease.satisfaction == 0 && disease.moves_to_recovery == 1 ->
+            {recover_disease(player, disease), [disease.id, recovered_diseases_id]}
+
+          disease.satisfaction == 0 ->
+            {progress_disease_recovery(player, disease), recovered_diseases_id}
+
+          true ->
+            {player, recovered_diseases_id}
+        end
+      end)
+
+    actions = Enum.map(recovered_diseases_id, &Action.new(:player, {:recovered_disease, &1}))
+    {updated_player, actions}
+  end
+
+  defp recover_disease(%__MODULE__{} = player, disease) do
+    stats_changes = Disease.player_stats_changes(disease)
+    updated_diseases = Enum.reject(player.diseases, fn %Disease{id: id} -> id == disease.id end)
+
+    player
+    |> decrease_attrs(stats_changes)
+    |> struct!(diseases: updated_diseases)
+  end
+
+  defp progress_disease_recovery(%__MODULE__{} = player, %Disease{id: disease_id} = disease) do
+    updated_diseases =
+      Enum.map(player.diseases, fn
+        %Disease{id: ^disease_id} ->
+          Disease.progress_recovery(disease)
+
+        player_disease ->
+          player_disease
+      end)
+
+    struct!(player, diseases: updated_diseases)
+  end
+
+  defp progress_diseases(%__MODULE__{diseases: []} = player), do: {player, []}
+
+  defp progress_diseases(%__MODULE__{} = player) do
+    {updated_player, not_satisfied_diseases_id} =
+      Enum.reduce(player.diseases, {player, []}, fn disease, {player, not_satisfied_diseases_id} ->
+        if disease.satisfaction > 0 && m_to_n?(1, disease.progression_possibility) do
+          player
+          |> progress_disease(disease.id)
+          |> maybe_apply_disease_debuffs(disease.id, not_satisfied_diseases_id)
+        else
+          {player, not_satisfied_diseases_id}
+        end
+      end)
+
+    actions = Enum.map(not_satisfied_diseases_id, &Action.new(:player, {:disease, &1}))
+    {updated_player, actions}
+  end
+
+  defp progress_disease(%__MODULE__{} = player, disease_id) do
+    updated_diseases =
+      Enum.map(player.diseases, fn disease ->
+        if disease.id == disease_id do
+          Disease.change_satisfaction(disease, -1)
+        else
+          disease
+        end
+      end)
+
+    struct!(player, diseases: updated_diseases)
+  end
+
+  defp maybe_apply_disease_debuffs(%__MODULE__{} = player, disease_id, not_satisfied_diseases_id) do
+    disease = find_disease(player, disease_id)
+
+    if disease.satisfaction == 0 do
+      stats_changes = Disease.player_stats_changes(disease)
+      {increase_attrs(player, stats_changes), [disease_id | not_satisfied_diseases_id]}
+    else
+      {player, not_satisfied_diseases_id}
+    end
+  end
+
+  defp diseases_damage(%__MODULE__{} = player) do
+    damage =
+      Enum.reduce(player.diseases, 0, fn disease, acc ->
+        damage = disease.debuffs.damage
+
+        if disease.satisfaction == 0 && not is_nil(damage) && m_to_n?(1, 5) do
+          acc + damage
+        else
+          acc
+        end
+      end)
+
+    if damage > 0 do
+      {take_damage(player, damage), [Action.new(:player, :diseases_damage)]}
+    else
+      {player, []}
+    end
+  end
+
+  defp decrease_buffs_duration(%__MODULE__{} = player) do
+    updated_player =
+      Enum.reduce(player.buffs, player, fn buff, player ->
+        if buff.duration == 1 do
+          updated_buffs = List.delete(player.buffs, buff)
+
+          player
+          |> struct!(buffs: updated_buffs)
+          |> decrease_attrs(%{buff.stat_name => buff.value})
+        else
+          updated_buff = Buff.decrease_duration(buff)
+          updated_buffs = [updated_buff | List.delete(player.buffs, buff)]
+          struct!(player, buffs: updated_buffs)
+        end
+      end)
+
+    {updated_player, []}
+  end
+
   defp do_consume_supply(%__MODULE__{} = player, %Supply{} = supply) do
     stats_changes = Loot.Item.player_stats_changes(supply)
 
@@ -1013,11 +1200,62 @@ defmodule Europa.Server.Player do
         |> increase_attrs(stats_changes)
         |> delete_item(supply)
       end
+      |> add_buffs(supply.buffs)
 
-    {:ok, updated_player, updated_supply}
+    {updated_player, new_diseases_id} = maybe_add_diseases(updated_player, supply)
+    {:ok, updated_player, updated_supply, new_diseases_id}
   end
 
   defp do_consume_supply(_player, _supply), do: {:error, %Errors.NotApplicableError{}}
+
+  defp maybe_add_diseases(%__MODULE__{} = player, %Supply{diseases: []}), do: {player, []}
+
+  defp maybe_add_diseases(%__MODULE__{} = player, %Supply{} = supply) do
+    Enum.reduce(supply.diseases, {player, []}, fn {disease_id, possibility, _satisfaction} = disease,
+                                                  {player, new_diseases} ->
+      cond do
+        !has_disease?(player, disease_id) && m_to_n?(possibility, 100) ->
+          {add_disease(player, disease_id), [disease_id | new_diseases]}
+
+        has_disease?(player, disease_id) ->
+          {satisfy_disease(player, disease), new_diseases}
+
+        true ->
+          {player, new_diseases}
+      end
+    end)
+  end
+
+  defp satisfy_disease(%__MODULE__{} = player, {disease_id, _possibility, satisfaction}) do
+    disease = find_disease(player, disease_id)
+
+    updated_diseases =
+      Enum.map(player.diseases, fn disease ->
+        if disease.id == disease_id do
+          disease
+          |> Disease.increase_moves_to_recovery(1000)
+          |> Disease.change_satisfaction(satisfaction)
+        else
+          disease
+        end
+      end)
+
+    updated_player =
+      if disease.satisfaction == 0 do
+        stats_changes = Disease.player_stats_changes(disease)
+
+        player
+        |> decrease_attrs(stats_changes)
+      else
+        player
+      end
+
+    struct!(updated_player, diseases: updated_diseases)
+  end
+
+  defp find_disease(%__MODULE__{} = player, disease_id) do
+    Enum.find(player.diseases, fn disease -> disease.id == disease_id end)
+  end
 
   defp find_tool(%__MODULE__{} = player, %Loot.Tool{} = tool) do
     Enum.find(player.inventory, fn
@@ -1176,20 +1414,20 @@ defmodule Europa.Server.Player do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
         :max_weight ->
-          struct!(player, max_weight: player.max_weight - attr_value)
+          struct!(player, max_weight: max(player.max_weight - attr_value, 0))
 
         :accuracy ->
-          struct!(player, accuracy: player.accuracy - attr_value)
+          struct!(player, accuracy: max(player.accuracy - attr_value, 0))
 
         :efficiency ->
-          struct!(player, efficiency: player.efficiency - attr_value)
+          struct!(player, efficiency: max(player.efficiency - attr_value, 0))
 
         :max_health ->
-          max_health = player.max_health - attr_value
+          max_health = max(player.max_health - attr_value, 0)
           struct!(player, max_health: max_health, health: min(player.health, max_health))
 
         :max_warm ->
-          max_warm = player.max_warm - attr_value
+          max_warm = max(player.max_warm - attr_value, 0)
           struct!(player, max_warm: max_warm, warm: min(player.warm, max_warm))
 
         _ ->
@@ -1202,16 +1440,16 @@ defmodule Europa.Server.Player do
     Enum.reduce(attrs, player, fn {attr_name, attr_value}, player ->
       case attr_name do
         :max_weight ->
-          struct!(player, max_weight: player.max_weight + attr_value)
+          struct!(player, max_weight: max(player.max_weight + attr_value, 0))
 
         :accuracy ->
-          struct!(player, accuracy: player.accuracy + attr_value)
+          struct!(player, accuracy: max(player.accuracy + attr_value, 0))
 
         :efficiency ->
-          struct!(player, efficiency: player.efficiency + attr_value)
+          struct!(player, efficiency: max(player.efficiency + attr_value, 0))
 
         :max_health ->
-          struct!(player, max_health: player.max_health + attr_value)
+          struct!(player, max_health: max(player.max_health + attr_value, 0))
 
         :health ->
           player
@@ -1220,7 +1458,7 @@ defmodule Europa.Server.Player do
           |> check_if_dead()
 
         :max_warm ->
-          struct!(player, max_warm: player.max_warm + attr_value)
+          struct!(player, max_warm: max(player.max_warm + attr_value, 0))
 
         :warm ->
           struct!(player, warm: min(player.max_warm, player.warm + attr_value) |> max(0))

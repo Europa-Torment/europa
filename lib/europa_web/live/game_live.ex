@@ -9,6 +9,7 @@ defmodule EuropaWeb.GameLive do
   alias Europa.Server
   alias Europa.Server.Planet
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases
   alias Europa.Server.PlayerManager
   alias Europa.Server.Loot
   alias Europa.Server.Event
@@ -219,6 +220,10 @@ defmodule EuropaWeb.GameLive do
     |> open_inventory()
   end
 
+  def handle_event("open_diseases_menu", _params, socket) do
+    open_diseases_menu(socket)
+  end
+
   def handle_event("open_map", _params, socket) do
     open_map(socket)
   end
@@ -345,6 +350,14 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_craft_menu", _, socket) do
     {:noreply, close_craft_menu(socket)}
+  end
+
+  def handle_event("close_new_diseases_info", _, socket) do
+    {:noreply, close_new_diseases_info(socket)}
+  end
+
+  def handle_event("close_diseases_menu", _params, socket) do
+    {:noreply, close_diseases_menu(socket)}
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -531,12 +544,13 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("consume_supply", %{"uuid" => item_uuid}, socket) do
     case Server.consume_supply(socket.assigns.server, item_uuid) do
-      {:ok, supply} ->
+      {:ok, supply, new_diseases_id} ->
         socket =
           socket
           |> base_assign()
           |> assign(inventory: get_player_inventory(socket))
           |> play_sound(supply.sound_name)
+          |> maybe_assign_diseases(new_diseases_id)
 
         {:noreply, socket}
 
@@ -625,6 +639,16 @@ defmodule EuropaWeb.GameLive do
   end
 
   ### Private ###
+
+  defp maybe_assign_diseases(socket, [_ | _] = diseases_id) do
+    diseases = Enum.map(diseases_id, &Diseases.get_by_id/1)
+
+    socket
+    |> assign(new_diseases: diseases)
+    |> play_sound("diseases")
+  end
+
+  defp maybe_assign_diseases(socket, _), do: socket
 
   defp get_events(socket) do
     case Server.events_tick(socket.assigns.server) do
@@ -770,6 +794,7 @@ defmodule EuropaWeb.GameLive do
         eat: %{name: ~p"/sounds/eat.mp3", volume: 0.08},
         drink: %{name: ~p"/sounds/drink.mp3", volume: 0.5},
         injection: %{name: ~p"/sounds/injection.mp3", volume: 0.08},
+        inhaler: %{name: ~p"/sounds/inhaler.mp3", volume: 0.2},
         click: %{name: ~p"/sounds/click.mp3", volume: 0.6},
         damage1: %{name: ~p"/sounds/damage1.mp3", volume: 0.05},
         damage2: %{name: ~p"/sounds/damage2.mp3", volume: 0.05},
@@ -780,6 +805,7 @@ defmodule EuropaWeb.GameLive do
         injured: %{name: ~p"/sounds/injured.mp3", volume: 0.05},
         dead: %{name: ~p"/sounds/dead.mp3", volume: 0.2},
         game_over: %{name: ~p"/sounds/game_over.mp3", volume: 0.1},
+        diseases: %{name: ~p"/sounds/diseases.mp3", volume: 0.2},
         open_door: %{name: ~p"/sounds/open_door.mp3", volume: 0.03},
         matches: %{name: ~p"/sounds/matches.mp3", volume: 0.3},
         radiation: %{name: ~p"/sounds/radiation.mp3", volume: 0.1},
@@ -941,57 +967,28 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
-  defp open_inventory(socket) do
-    inventory = get_player_inventory(socket)
-
-    socket =
-      socket
-      |> close_all()
-      |> assign(inventory: inventory)
-
-    {:noreply, socket}
+  defp toggle_control_hints(socket) do
+    if socket.assigns.show_control_hints do
+      {:noreply, close_control_hints(socket)}
+    else
+      {:noreply, assign(socket, show_control_hints: true)}
+    end
   end
 
-  defp close_inventory(socket) do
-    assign(socket, inventory: nil)
+  defp toggle_compass(socket) do
+    if socket.assigns.compass do
+      {:noreply, close_compass(socket)}
+    else
+      open_compass(socket)
+    end
   end
 
-  defp close_control_hints(socket) do
-    assign(socket, show_control_hints: false)
-  end
-
-  defp close_item_drop_menu(socket) do
-    assign(socket, item_drop_menu: false, item_to_drop: nil, item_drop_count: nil, input_mode: false)
-  end
-
-  defp close_dialog(socket) do
-    assign(socket, dialog: nil)
-  end
-
-  defp close_item_disassemble_menu(socket) do
-    assign(socket, disassemble_item: nil, disassemble_items: nil, disassemble_item_count: nil, input_mode: false)
-  end
-
-  defp close_craft_menu(socket) do
-    assign(socket, blueprints: nil, blueprints_type: nil)
-  end
-
-  defp close_interaction(socket) do
-    assign(socket, interaction_confirmation: nil, transform_name: nil)
-  end
-
-  defp close_all(socket) do
-    socket
-    |> close_map()
-    |> close_compass()
-    |> close_inventory()
-    |> close_item_box()
-    |> close_control_hints()
-    |> close_item_drop_menu()
-    |> close_dialog()
-    |> close_item_disassemble_menu()
-    |> close_craft_menu()
-    |> close_interaction()
+  defp toggle_map(socket) do
+    if socket.assigns.map do
+      {:noreply, close_map(socket)}
+    else
+      open_map(socket)
+    end
   end
 
   defp open_craft_menu(socket) do
@@ -1020,45 +1017,82 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
-  defp close_item_box(socket) do
-    assign(socket, item_box: nil)
+  defp open_diseases_menu(socket) do
+    socket =
+      socket
+      |> close_all()
+      |> assign(show_diseases_menu: true)
+
+    {:noreply, socket}
   end
 
-  defp toggle_control_hints(socket) do
-    if socket.assigns.show_control_hints do
-      {:noreply, close_control_hints(socket)}
-    else
-      {:noreply, assign(socket, show_control_hints: true)}
-    end
-  end
+  defp open_inventory(socket) do
+    inventory = get_player_inventory(socket)
 
-  defp toggle_compass(socket) do
-    if socket.assigns.compass do
-      {:noreply, close_compass(socket)}
-    else
-      open_compass(socket)
-    end
-  end
+    socket =
+      socket
+      |> close_all()
+      |> assign(inventory: inventory)
 
-  defp toggle_map(socket) do
-    if socket.assigns.map do
-      {:noreply, close_map(socket)}
-    else
-      open_map(socket)
-    end
+    {:noreply, socket}
   end
 
   defp open_map(socket) do
     {:noreply, assign(socket, map: Server.get_map(socket.assigns.server))}
   end
 
+  defp open_compass(socket) do
+    socket =
+      socket
+      |> close_all()
+      |> assign(compass: Server.get_compass(socket.assigns.server))
+
+    {:noreply, socket}
+  end
+
+  defp close_inventory(socket) do
+    assign(socket, inventory: nil)
+  end
+
+  defp close_diseases_menu(socket) do
+    assign(socket, show_diseases_menu: false)
+  end
+
+  defp close_control_hints(socket) do
+    assign(socket, show_control_hints: false)
+  end
+
+  defp close_item_drop_menu(socket) do
+    assign(socket, item_drop_menu: false, item_to_drop: nil, item_drop_count: nil, input_mode: false)
+  end
+
+  defp close_dialog(socket) do
+    assign(socket, dialog: nil)
+  end
+
+  defp close_item_disassemble_menu(socket) do
+    assign(socket, disassemble_item: nil, disassemble_items: nil, disassemble_item_count: nil, input_mode: false)
+  end
+
+  defp close_craft_menu(socket) do
+    assign(socket, blueprints: nil, blueprints_type: nil)
+  end
+
+  defp close_interaction(socket) do
+    assign(socket, interaction_confirmation: nil, transform_name: nil)
+  end
+
+  defp close_new_diseases_info(socket) do
+    assign(socket, new_diseases: nil)
+  end
+
+  defp close_item_box(socket) do
+    assign(socket, item_box: nil)
+  end
+
   defp close_map(socket) do
     socket
     |> assign(map: nil, map_offset_x: 0, map_offset_y: 0)
-  end
-
-  defp open_compass(socket) do
-    {:noreply, assign(socket, compass: Server.get_compass(socket.assigns.server))}
   end
 
   defp close_compass(socket) do
@@ -1069,6 +1103,22 @@ defmodule EuropaWeb.GameLive do
 
   defp close_compass_target_menu(socket) do
     assign(socket, compass_target_menu_active: false, compass_target_description: nil, input_mode: false)
+  end
+
+  defp close_all(socket) do
+    socket
+    |> close_map()
+    |> close_compass()
+    |> close_inventory()
+    |> close_item_box()
+    |> close_control_hints()
+    |> close_item_drop_menu()
+    |> close_dialog()
+    |> close_item_disassemble_menu()
+    |> close_craft_menu()
+    |> close_interaction()
+    |> close_new_diseases_info()
+    |> close_diseases_menu()
   end
 
   defp interact(socket, params) do

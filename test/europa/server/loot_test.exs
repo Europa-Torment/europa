@@ -7,6 +7,7 @@ defmodule Europa.Server.Loot.ItemTest do
   alias Europa.Server.Loot.Tool
   alias Europa.Server.Errors
   alias Europa.Server.PlayerManagerMock
+  alias Europa.Server.Player.Diseases
 
   setup :verify_on_exit!
 
@@ -254,6 +255,47 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:health, "Health", supply.properties.health},
         {:hunger, "Hunger", supply.properties.hunger},
+        {:radiation, "Radiation", supply.properties.radiation},
+        {:thirst, "Thirst", supply.properties.thirst},
+        {:warm, "Warm", supply.properties.warm},
+        {:count, "Count", supply.count},
+        {:consume_cost, "Consume cost", supply.consume_cost},
+        {:weight, "Weight", supply.count * supply.weight}
+      ]
+
+      assert Item.readable_attrs(supply, player) == expected_attrs
+    end
+
+    test "returns attrs for supply (with diseases)", %{player: player} do
+      [disease1, disease2] = Diseases.diseases() |> Enum.take(2)
+      supply = build(:supply, diseases: [{disease1.id, 100, 100}, {disease2.id, 1, 50}])
+
+      expected_attrs = [
+        {:health, "Health", supply.properties.health},
+        {:hunger, "Hunger", supply.properties.hunger},
+        {:radiation, "Radiation", supply.properties.radiation},
+        {:thirst, "Thirst", supply.properties.thirst},
+        {:warm, "Warm", supply.properties.warm},
+        {:diseases, "May cause diseases", "#{disease1.name} (100%), #{disease2.name} (1%)"},
+        {:diseases_satisfaction, "Relief of diseases", "#{disease1.name} (100%), #{disease2.name} (50%)"},
+        {:count, "Count", supply.count},
+        {:consume_cost, "Consume cost", supply.consume_cost},
+        {:weight, "Weight", supply.count * supply.weight}
+      ]
+
+      assert Item.readable_attrs(supply, player) == expected_attrs
+    end
+
+    test "returns attrs for supply (with buffs)", %{player: player} do
+      buff1 = build(:buff, stat_name: :max_warm, value: 1, duration: 20)
+      buff2 = build(:buff, stat_name: :max_health, value: 2, duration: 30)
+      supply = build(:supply, buffs: [buff1, buff2])
+
+      expected_attrs = [
+        {:health, "Health", supply.properties.health},
+        {:hunger, "Hunger", supply.properties.hunger},
+        {:max_health, "Max health", "#{buff2.value} (for #{buff2.duration} moves)"},
+        {:max_warm, "Max warm", "#{buff1.value} (for #{buff1.duration} moves)"},
         {:radiation, "Radiation", supply.properties.radiation},
         {:thirst, "Thirst", supply.properties.thirst},
         {:warm, "Warm", supply.properties.warm},
@@ -820,6 +862,7 @@ defmodule Europa.Server.LootTest do
       assert is_list(items)
 
       assert Enum.all?(items, fn item -> item?(item) end)
+      assert Enum.find(items, fn item -> Loot.Item.item_subtype(item) == :human_entrails end)
       assert weapon in items
     end
   end

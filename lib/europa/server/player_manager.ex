@@ -7,6 +7,8 @@ defmodule Europa.Server.PlayerManager do
   alias Europa.Server
   alias Europa.Server.Action
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases.Disease
+  alias Europa.Server.Player.Buff
   alias Europa.Server.Planet
   alias Europa.Server.Loot
   alias Europa.Server.Event
@@ -19,6 +21,11 @@ defmodule Europa.Server.PlayerManager do
   Creates new player.
   """
   @callback new(Character.t()) :: Player.t()
+
+  @doc """
+  Returns readable player stat name.
+  """
+  @callback readable_stat_name(stat_name :: atom()) :: String.t()
 
   @doc """
   Returns list of readable player stats in format:
@@ -223,7 +230,7 @@ defmodule Europa.Server.PlayerManager do
   @callback increase_radiation(Player.t(), radiation_units :: pos_integer()) :: Player.t()
 
   @callback consume_supply(Player.t(), Loot.uuid()) ::
-              {:ok, Player.t(), item :: Loot.Item.item()}
+              {:ok, Player.t(), item :: Loot.Item.item(), new_diseases_id :: list(Disease.id())}
               | {:error, :not_found}
               | {:error, Errors.NotApplicableError.t()}
 
@@ -276,9 +283,26 @@ defmodule Europa.Server.PlayerManager do
   """
   @callback melee_weapon_damage(Player.t(), Loot.MeleeWeapon.t()) :: pos_integer()
 
+  @doc """
+  Adds disease with given id.
+  """
+  @callback add_disease(Player.t(), Disease.id()) :: Player.t()
+
+  @doc """
+  Reutrns number of additional moves count by player's not satisfyed deseases
+  """
+  @callback diseases_additional_moves_count(Player.t()) :: non_neg_integer()
+
+  @doc """
+  Adds player's buffs.
+  """
+  @callback add_buffs(Player.t(), list(Buff.t())) :: Player.t()
+
   ### Implementation callers ###
 
   def new(character), do: manager_impl().new(character)
+
+  def readable_stat_name(stat_name), do: manager_impl().new(stat_name)
 
   def readable_stats(player), do: manager_impl().readable_stats(player)
 
@@ -370,6 +394,12 @@ defmodule Europa.Server.PlayerManager do
   def melee_weapon_damage(player), do: manager_impl().melee_weapon_damage(player)
 
   def melee_weapon_damage(player, melee_weapon), do: manager_impl().melee_weapon_damage(player, melee_weapon)
+
+  def add_disease(player, disease_id), do: manager_impl().add_disease(player, disease_id)
+
+  def diseases_additional_moves_count(player), do: manager_impl().diseases_additional_moves_count(player)
+
+  def add_buffs(player, buffs), do: manager_impl().add_buffs(player, buffs)
 
   ### PRIVATE ###
 

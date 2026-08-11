@@ -3,6 +3,11 @@ defmodule Europa.Server.Loot.Supply do
 
   alias Europa.Server
   alias Europa.Server.Loot
+  alias Europa.Server.Player.Diseases
+  alias Europa.Server.Player.Diseases.Disease
+  alias Europa.Server.Player.Buff
+
+  @type disease_possibility :: {Disease.id(), possibility :: pos_integer(), satisfaction :: pos_integer()}
 
   defmodule Properties do
     typedstruct do
@@ -34,6 +39,8 @@ defmodule Europa.Server.Loot.Supply do
     field :count, pos_integer()
     field :consume_cost, Server.move_cost()
     field :properties, Properties.t()
+    field :diseases, list(disease_possibility())
+    field :buffs, list(Buff.t())
     field :weight, Loot.Item.weight()
     field :sound_name, String.t()
   end
@@ -49,9 +56,28 @@ defmodule Europa.Server.Loot.Supply do
       count: Map.fetch!(attrs, :count),
       consume_cost: Map.fetch!(attrs, :consume_cost),
       properties: Map.fetch!(attrs, :properties) |> Properties.new(),
+      diseases: Map.get(attrs, :diseases, []) |> parse_diseases(),
+      buffs: Map.get(attrs, :buffs, []) |> parse_buffs(),
       weight: Map.fetch!(attrs, :weight),
       sound_name: Map.fetch!(attrs, :sound_name)
     }
+  end
+
+  defp parse_diseases(diseases) when is_list(diseases) do
+    Enum.map(diseases, fn %{id: id, possibility: possibility, satisfaction: satisfaction} = disease ->
+      id = String.to_atom(id)
+      %Disease{} = Diseases.get_by_id(id)
+
+      unless is_integer(possibility) && possibility > 0 && is_integer(satisfaction) && satisfaction > 0 do
+        raise "invalid disease, expected pos_integer possibility and pos_integer satisfaction, got: #{inspect(disease)}"
+      end
+
+      {id, possibility, satisfaction}
+    end)
+  end
+
+  defp parse_buffs(buffs) when is_list(buffs) do
+    Enum.map(buffs, &Buff.from_map/1)
   end
 end
 
@@ -63,6 +89,8 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
   alias Europa.Server.Errors
   alias Europa.Tools.NumberHelpers
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases
+  alias Europa.Server.Player.Diseases.Disease
 
   @spec id(Supply.t()) :: atom()
   def id(%Supply{id: id}), do: id
@@ -105,24 +133,56 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
 
   @spec readable_attrs(Supply.t(), Player.t()) :: list()
   def readable_attrs(%Supply{} = supply, _player) do
+    significant_properties =
+      significant_properties(supply.properties) |> Enum.map(fn {name, value} -> {name, value, :permanent} end)
+
+    buffs = Enum.map(supply.buffs, &{&1.stat_name, &1.value, &1.duration})
+
     properties_attrs =
-      supply.properties
-      |> significant_properties()
+      (significant_properties ++ buffs)
       |> Enum.sort()
-      |> Enum.map(fn {property, value} ->
-        name =
-          case property do
-            :health -> gettext("Health")
-            :warm -> gettext("Warm")
-            :hunger -> gettext("Hunger")
-            :thirst -> gettext("Thirst")
-            :radiation -> gettext("Radiation")
+      |> Enum.map(fn {property, value, duration} ->
+        name = Player.readable_stat_name(property)
+
+        value =
+          if duration == :permanent do
+            value
+          else
+            "#{value} (" <> gettext("for %{count} moves", count: duration) <> ")"
           end
 
         {property, name, value}
       end)
 
+    diseases_info =
+      if Enum.empty?(supply.diseases) do
+        []
+      else
+        disiases_names =
+          Enum.map_join(supply.diseases, ", ", fn {disease_id, possibility, _} ->
+            disease = Diseases.get_by_id(disease_id)
+            Disease.readable_name(disease) <> " (#{possibility}%)"
+          end)
+
+        [{:diseases, gettext("May cause diseases"), disiases_names}]
+      end
+
+    diseases_satisfaction_info =
+      if Enum.empty?(supply.diseases) do
+        []
+      else
+        disiases_info =
+          Enum.map_join(supply.diseases, ", ", fn {disease_id, _, satisfaction} ->
+            disease = Diseases.get_by_id(disease_id)
+            Disease.readable_name(disease) <> " (#{satisfaction}%)"
+          end)
+
+        [{:diseases_satisfaction, gettext("Relief of diseases"), disiases_info}]
+      end
+
     properties_attrs ++
+      diseases_info ++
+      diseases_satisfaction_info ++
       [
         {:count, gettext("Count"), supply.count},
         {:consume_cost, gettext("Consume cost"), supply.consume_cost},

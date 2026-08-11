@@ -8,6 +8,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.PlayerManager
   alias Europa.Server.Player
+  alias Europa.Server.Player.Diseases.Disease
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
   alias Europa.Server.Characters.Character
@@ -132,7 +133,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def chat(assigns) do
     ~H"""
-    <div class="h-80 overflow-y-auto bg-base-200 p-5 shadow-md text-xs">
+    <div class="min-h-[40vh] max-h-[40vh] overflow-y-auto bg-base-200 p-5 shadow-md text-xs">
       <%= for message <- Enum.reverse(@chat.messages) do %>
         <p class={"break-words p-1.5 #{chat_color(message)}"}>
           <span class="italic text-gray-400 text-[10px]">{message.id}.</span> {message.text}
@@ -146,7 +147,7 @@ defmodule EuropaWeb.GameCompotents do
   def planet_info(assigns) do
     ~H"""
     <div class="bg-base-200 p-3 shadow-md text-xs">
-      <ul class="list-inside space-y-2">
+      <ul class="inline-flex items-center gap-2">
         <li>
           <.icon_image name="clock" /> {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext(
             "year AD"
@@ -160,10 +161,101 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def player_diseases_indicator(assigns) do
+    {text, color} = diseases_info(assigns.player.diseases)
+    assigns = assign(assigns, text: text, color: color)
+
+    ~H"""
+    <div id="diseases_indicator" class="bg-base-200 p-3 shadow-md text-xs" style={"color: #{@color}"}>
+      <.link phx-click="open_diseases_menu">{@text}</.link>
+    </div>
+    """
+  end
+
+  def new_diseases_info(assigns) do
+    ~H"""
+    <%= if @new_diseases do %>
+      <input
+        type="checkbox"
+        id="new_diseases_info"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_new_diseases_info"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+          <h3 class="text-lg font-bold pb-2">{gettext("You have developed new diseases")}:</h3>
+          <ul class="list-disc list-inside space-y-2 text-md">
+            <%= for disease <- @new_diseases do %>
+              <li id={"new_disease_#{disease.id}"} phx-hook="Tooltip" data-tooltip={disease_tooltip(disease)}>
+                {Disease.readable_name(disease)}
+              </li>
+            <% end %>
+          </ul>
+
+          <div class="text-secondary text-sm mt-5">
+            {gettext("Now, to maintain a normal condition, you need to take supplies that alleviate given diseases")}.
+          </div>
+
+          <div class="modal-action">
+            <label phx-click="close_new_diseases_info" for="new_diseases_info" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def diseases_menu(assigns) do
+    ~H"""
+    <%= if @show_diseases_menu do %>
+      <input
+        type="checkbox"
+        id="diseases_menu"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_diseases_menu"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+          <%= if Enum.empty?(@player.diseases) do %>
+            <h3 class="text-lg font-bold pb-2">{gettext("You are not sick with anything")}</h3>
+          <% else %>
+            <h3 class="text-lg font-bold pb-2">{gettext("You have the following diseases")}:</h3>
+            <ul class="list-disc list-inside space-y-2 text-md">
+              <%= for disease <- @player.diseases do %>
+                <li id={"disease_#{disease.id}"} phx-hook="Tooltip" data-tooltip={disease_tooltip(disease)}>
+                  {Disease.readable_name(disease)}
+                  <span class="text-xs" style={"color: #{disease_color(disease.satisfaction)}"}>
+                    {disease.satisfaction}% {gettext("satisfied")}
+                  </span>
+                  <%= if disease.satisfaction == 0 do %>
+                    <span class="text-xs text-secondary">
+                      ({gettext("%{count} moves to recovery", count: disease.moves_to_recovery)})
+                    </span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+
+            <div class="text-secondary text-xs mt-5">
+              {gettext("Take the supplies you depend on to relieve symptoms")}.
+            </div>
+          <% end %>
+
+          <div class="modal-action">
+            <label phx-click="close_diseases_menu" for="diseases_menu" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
   def player_stats(assigns) do
     ~H"""
-    <div class={"bg-base-200 p-5 shadow-md text-#{@text_size}"}>
-      <ul class="grid grid-cols-2 grid-rows-3 gap-3">
+    <div class={"bg-base-200 p-3 shadow-md text-#{@text_size}"}>
+      <ul class="grid grid-cols-2 grid-rows-3 gap-0.5 sm:gap-3">
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"health-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:health)}>
             <.icon_image name="heart" /> {@player_stats.health}/{@player_stats.max_health}
@@ -1238,6 +1330,19 @@ defmodule EuropaWeb.GameCompotents do
   defp weapon?(%Loot.Weapon{}), do: true
   defp weapon?(_), do: false
 
+  defp disease_tooltip(disease) do
+    debuffs =
+      disease
+      |> Disease.readable_debuffs()
+      |> Enum.map(fn {_, name, value} -> {name, value} end)
+      |> to_ul()
+
+    description =
+      gettext("In case of complete dissatisfaction with the disease, you will receive the following effects") <> ":"
+
+    [description(description), debuffs]
+  end
+
   defp item_tooltip(item, player) do
     current_item =
       case Item.item_type(item) do
@@ -1830,6 +1935,35 @@ defmodule EuropaWeb.GameCompotents do
   end
 
   defp disassemble_item_name(item, _), do: Loot.Item.composed_name(item)
+
+  defp diseases_info([_ | _] = diseases) do
+    count = Enum.count(diseases)
+    disease = Enum.min_by(diseases, fn disease -> disease.satisfaction end)
+    text = disease_state(disease.satisfaction)
+    color = disease_color(disease.satisfaction)
+
+    {gettext("Diseases") <> ": #{text} (#{count})", color}
+  end
+
+  defp diseases_info(_), do: {gettext("No diseases"), "#99c627"}
+
+  defp disease_state(satisfaction) do
+    cond do
+      satisfaction == 0 -> gettext("exacerbation")
+      satisfaction < 20 -> gettext("critical condition")
+      satisfaction < 70 -> gettext("discomfort")
+      true -> gettext("normal")
+    end
+  end
+
+  defp disease_color(satisfaction) do
+    cond do
+      satisfaction == 0 -> "#991212"
+      satisfaction < 20 -> "#d81515"
+      satisfaction < 70 -> "#d24f17"
+      true -> "#5e8e2c"
+    end
+  end
 
   # coveralls-ignore-stop
 end

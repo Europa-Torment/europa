@@ -144,6 +144,9 @@
             "thirst": -30,
             "health": -5
         },
+        "diseases": [
+            {"id": "alcoholism", "possibility": 2, "satisfaction": 20}
+        ],
         "weight": 0.5,
         "random_weight": 1.2
     },
@@ -243,6 +246,9 @@
             "radiation": -5,
             "warm": 50
         },
+        "diseases": [
+            {"id": "alcoholism", "possibility": 30, "satisfaction": 100}
+        ],
         "weight": 0.5,
         "random_weight": 0.4
     },
@@ -310,6 +316,44 @@
         "random_weight": 0.09
     },
     {
+        "id": "human_liver",
+        "name": "Human liver",
+        "subtype": "human_entrails",
+        "description": "Raw human liver. Are you really capable of this?",
+        "count": 1,
+        "consume_cost": 3,
+        "sound_name": "eat",
+        "properties": {
+            "warm": 20,
+            "health": 20,
+            "hunger": -60
+        },
+        "diseases": [
+            {"id": "cannibalism", "possibility": 70, "satisfaction": 100}
+        ],
+        "weight": 1.2,
+        "random_weight": 0.01
+    },
+    {
+        "id": "human_meat",
+        "name": "Human meat",
+        "subtype": "human_entrails",
+        "description": "A piece of raw human flesh.",
+        "count": 1,
+        "consume_cost": 3,
+        "sound_name": "eat",
+        "properties": {
+            "warm": 10,
+            "health": 10,
+            "hunger": -40
+        },
+        "diseases": [
+            {"id": "cannibalism", "possibility": 70, "satisfaction": 80}
+        ],
+        "weight": 1.2,
+        "random_weight": 0.09
+    },
+    {
         "id": "stroganina",
         "name": "Stroganina",
         "subtype": "food",
@@ -354,5 +398,29 @@
         },
         "weight": 0.25,
         "random_weight": 0.1
+    },
+    {
+        "id": "blue_ice_inhaler",
+        "name": "Blue ice inhaler",
+        "subtype": "drug",
+        "description": "A homemade inhaler containing a substance that dramatically increases a person's abilities.",
+        "count": {"from": 1, "to": 3},
+        "consume_cost": 1,
+        "sound_name": "inhaler",
+        "properties": {
+            "health": -5
+        },
+        "diseases": [
+            {"id": "drug_addiction", "possibility": 50, "satisfaction": 100}
+        ],
+        "buffs": [
+            {"stat_name": "max_health", "value": 20, "duration": 25},
+            {"stat_name": "max_weight", "value": 20, "duration": 25},
+            {"stat_name": "max_warm", "value": -10, "duration": 25},
+            {"stat_name": "accuracy", "value": 10, "duration": 25},
+            {"stat_name": "efficiency", "value": 10, "duration": 25}
+        ],
+        "weight": 0.25,
+        "random_weight": 0.5
     }
 ]

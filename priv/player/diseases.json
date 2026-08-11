@@ -1,0 +1,38 @@
+[
+    {
+        "id": "alcoholism",
+        "name": "Alcoholism",
+        "progression_possibility": 25,
+        "moves_to_recovery": 1000,
+        "debuffs": {
+            "efficiency": -5,
+            "extra_moves_count": 1,
+            "accuracy": -5,
+            "max_warm": -10
+        }
+    },
+    {
+        "id": "drug_addiction",
+        "name": "Drug addiction",
+        "progression_possibility": 25,
+        "moves_to_recovery": 2000,
+        "debuffs": {
+            "efficiency": -10,
+            "extra_moves_count": 1,
+            "accuracy": -10,
+            "max_health": -20,
+            "damage": 1
+        }
+    },
+    {
+        "id": "cannibalism",
+        "name": "Сannibalism",
+        "progression_possibility": 30,
+        "moves_to_recovery": 5000,
+        "debuffs": {
+            "max_health": -40,
+            "max_weight": -10,
+            "efficiency": -10
+        }
+    }
+]
