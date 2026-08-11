@@ -4,6 +4,7 @@
         "name": "Alcoholism",
         "progression_possibility": 25,
         "moves_to_recovery": 1000,
+        "moves_to_recovery_penalty": 500,
         "debuffs": {
             "efficiency": -5,
             "extra_moves_count": 1,
@@ -16,6 +17,7 @@
         "name": "Drug addiction",
         "progression_possibility": 25,
         "moves_to_recovery": 2000,
+        "moves_to_recovery_penalty": 1000,
         "debuffs": {
             "efficiency": -10,
             "extra_moves_count": 1,
@@ -29,10 +31,25 @@
         "name": "Сannibalism",
         "progression_possibility": 30,
         "moves_to_recovery": 5000,
+        "moves_to_recovery_penalty": 5000,
         "debuffs": {
             "max_health": -40,
             "max_weight": -10,
             "efficiency": -10
+        }
+    },
+    {
+        "id": "poisoning",
+        "name": "Poisoning",
+        "progression_possibility": 3,
+        "moves_to_recovery": 150,
+        "moves_to_recovery_penalty": 50,
+        "debuffs": {
+            "max_health": -20,
+            "max_weight": -20,
+            "max_warm": -10,
+            "efficiency": -20,
+            "accuracy": -5
         }
     }
 ]

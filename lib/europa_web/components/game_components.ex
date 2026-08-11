@@ -194,7 +194,9 @@ defmodule EuropaWeb.GameCompotents do
           </ul>
 
           <div class="text-secondary text-sm mt-5">
-            {gettext("Now, to maintain a normal condition, you need to take supplies that alleviate given diseases")}.
+            {gettext(
+              "Now, to maintain a normal condition, you need to take supplies that alleviate given diseases, or wait for recovery"
+            )}.
           </div>
 
           <div class="modal-action">
@@ -239,7 +241,7 @@ defmodule EuropaWeb.GameCompotents do
             </ul>
 
             <div class="text-secondary text-xs mt-5">
-              {gettext("Take the supplies you depend on to relieve symptoms")}.
+              {gettext("Take the supplies you depend on to relieve symptoms or wait for recovery")}.
             </div>
           <% end %>
 

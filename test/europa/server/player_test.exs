@@ -1138,7 +1138,7 @@ defmodule Europa.Server.PlayerTest do
       assert {:ok, %Player{diseases: [updated_disease]}, _, []} =
                Player.consume_supply(player, supply.uuid)
 
-      assert updated_disease.moves_to_recovery == disease.moves_to_recovery + 1000
+      assert updated_disease.moves_to_recovery == disease.moves_to_recovery + disease.moves_to_recovery_penalty
     end
 
     test "satisfyes disease" do
@@ -1155,7 +1155,7 @@ defmodule Europa.Server.PlayerTest do
                Player.consume_supply(player, supply.uuid)
 
       assert updated_disease.satisfaction == disease.satisfaction + satisfaction
-      assert updated_disease.moves_to_recovery == disease.moves_to_recovery + 1000
+      assert updated_disease.moves_to_recovery == disease.moves_to_recovery + disease.moves_to_recovery_penalty
     end
 
     test "cancels disease debuffs" do

@@ -1069,7 +1069,7 @@ defmodule Europa.Server.Player do
       Enum.reduce(player.diseases, {player, []}, fn disease, {player, recovered_diseases_id} ->
         cond do
           disease.satisfaction == 0 && disease.moves_to_recovery == 1 ->
-            {recover_disease(player, disease), [disease.id, recovered_diseases_id]}
+            {recover_disease(player, disease), [disease.id | recovered_diseases_id]}
 
           disease.satisfaction == 0 ->
             {progress_disease_recovery(player, disease), recovered_diseases_id}
@@ -1211,13 +1211,13 @@ defmodule Europa.Server.Player do
   defp maybe_add_diseases(%__MODULE__{} = player, %Supply{diseases: []}), do: {player, []}
 
   defp maybe_add_diseases(%__MODULE__{} = player, %Supply{} = supply) do
-    Enum.reduce(supply.diseases, {player, []}, fn {disease_id, possibility, _satisfaction} = disease,
+    Enum.reduce(supply.diseases, {player, []}, fn {disease_id, possibility, satisfaction} = disease,
                                                   {player, new_diseases} ->
       cond do
         !has_disease?(player, disease_id) && m_to_n?(possibility, 100) ->
           {add_disease(player, disease_id), [disease_id | new_diseases]}
 
-        has_disease?(player, disease_id) ->
+        has_disease?(player, disease_id) && satisfaction > 0 ->
           {satisfy_disease(player, disease), new_diseases}
 
         true ->
@@ -1233,7 +1233,7 @@ defmodule Europa.Server.Player do
       Enum.map(player.diseases, fn disease ->
         if disease.id == disease_id do
           disease
-          |> Disease.increase_moves_to_recovery(1000)
+          |> Disease.increase_moves_to_recovery()
           |> Disease.change_satisfaction(satisfaction)
         else
           disease

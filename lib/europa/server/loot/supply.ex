@@ -7,7 +7,7 @@ defmodule Europa.Server.Loot.Supply do
   alias Europa.Server.Player.Diseases.Disease
   alias Europa.Server.Player.Buff
 
-  @type disease_possibility :: {Disease.id(), possibility :: pos_integer(), satisfaction :: pos_integer()}
+  @type disease_possibility :: {Disease.id(), possibility :: pos_integer(), satisfaction :: non_neg_integer()}
 
   defmodule Properties do
     typedstruct do
@@ -68,8 +68,8 @@ defmodule Europa.Server.Loot.Supply do
       id = String.to_atom(id)
       %Disease{} = Diseases.get_by_id(id)
 
-      unless is_integer(possibility) && possibility > 0 && is_integer(satisfaction) && satisfaction > 0 do
-        raise "invalid disease, expected pos_integer possibility and pos_integer satisfaction, got: #{inspect(disease)}"
+      unless is_integer(possibility) && possibility > 0 && is_integer(satisfaction) && satisfaction >= 0 do
+        raise "invalid disease, expected non_neg_integer possibility and pos_integer satisfaction, got: #{inspect(disease)}"
       end
 
       {id, possibility, satisfaction}
@@ -167,12 +167,14 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Supply do
         [{:diseases, gettext("May cause diseases"), disiases_names}]
       end
 
+    diseases_with_satisfaction = Enum.filter(supply.diseases, fn {_, _, satisfaction} -> satisfaction > 0 end)
+
     diseases_satisfaction_info =
-      if Enum.empty?(supply.diseases) do
+      if Enum.empty?(diseases_with_satisfaction) do
         []
       else
         disiases_info =
-          Enum.map_join(supply.diseases, ", ", fn {disease_id, _, satisfaction} ->
+          Enum.map_join(diseases_with_satisfaction, ", ", fn {disease_id, _, satisfaction} ->
             disease = Diseases.get_by_id(disease_id)
             Disease.readable_name(disease) <> " (#{satisfaction}%)"
           end)

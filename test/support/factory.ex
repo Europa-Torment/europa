@@ -454,6 +454,7 @@ defmodule Europa.Support.Factory do
       progression_possibility: 1,
       satisfaction: 100,
       moves_to_recovery: 100,
+      moves_to_recovery_penalty: 5,
       debuffs: build(:disease_debuffs)
     }
   end

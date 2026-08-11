@@ -268,7 +268,7 @@ defmodule Europa.Server.Loot.ItemTest do
 
     test "returns attrs for supply (with diseases)", %{player: player} do
       [disease1, disease2] = Diseases.diseases() |> Enum.take(2)
-      supply = build(:supply, diseases: [{disease1.id, 100, 100}, {disease2.id, 1, 50}])
+      supply = build(:supply, diseases: [{disease1.id, 100, 100}, {disease2.id, 1, 0}])
 
       expected_attrs = [
         {:health, "Health", supply.properties.health},
@@ -277,7 +277,7 @@ defmodule Europa.Server.Loot.ItemTest do
         {:thirst, "Thirst", supply.properties.thirst},
         {:warm, "Warm", supply.properties.warm},
         {:diseases, "May cause diseases", "#{disease1.name} (100%), #{disease2.name} (1%)"},
-        {:diseases_satisfaction, "Relief of diseases", "#{disease1.name} (100%), #{disease2.name} (50%)"},
+        {:diseases_satisfaction, "Relief of diseases", "#{disease1.name} (100%)"},
         {:count, "Count", supply.count},
         {:consume_cost, "Consume cost", supply.consume_cost},
         {:weight, "Weight", supply.count * supply.weight}

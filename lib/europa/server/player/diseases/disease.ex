@@ -44,7 +44,8 @@ defmodule Europa.Server.Player.Diseases.Disease do
     field :progression_possibility, pos_integer()
     field :debuffs, Debuffs.t()
     field :satisfaction, non_neg_integer()
-    field :moves_to_recovery, non_neg_integer()
+    field :moves_to_recovery, pos_integer()
+    field :moves_to_recovery_penalty, non_neg_integer()
   end
 
   @spec from_map(map()) :: t()
@@ -55,7 +56,8 @@ defmodule Europa.Server.Player.Diseases.Disease do
       progression_possibility: Map.fetch!(attrs, :progression_possibility) |> pos_integer!(),
       debuffs: Map.fetch!(attrs, :debuffs) |> Debuffs.from_map(),
       satisfaction: 100,
-      moves_to_recovery: Map.fetch!(attrs, :moves_to_recovery) |> pos_integer!()
+      moves_to_recovery: Map.fetch!(attrs, :moves_to_recovery) |> pos_integer!(),
+      moves_to_recovery_penalty: Map.fetch!(attrs, :moves_to_recovery_penalty) |> non_neg_integer!()
     }
   end
 
@@ -99,9 +101,9 @@ defmodule Europa.Server.Player.Diseases.Disease do
     struct!(disease, satisfaction: new_value)
   end
 
-  @spec increase_moves_to_recovery(t(), pos_integer()) :: t()
-  def increase_moves_to_recovery(%__MODULE__{} = disease, value) when is_integer(value) and value > 0 do
-    struct!(disease, moves_to_recovery: disease.moves_to_recovery + value)
+  @spec increase_moves_to_recovery(t()) :: t()
+  def increase_moves_to_recovery(%__MODULE__{} = disease) do
+    struct!(disease, moves_to_recovery: disease.moves_to_recovery + disease.moves_to_recovery_penalty)
   end
 
   @spec progress_recovery(t()) :: t()
@@ -122,5 +124,13 @@ defmodule Europa.Server.Player.Diseases.Disease do
 
   defp pos_integer!(value) do
     raise "expected pos_integer, got: #{inspect(value)}"
+  end
+
+  defp non_neg_integer!(value) when is_integer(value) and value >= 0 do
+    value
+  end
+
+  defp non_neg_integer!(value) do
+    raise "expected non_neg_integer, got: #{inspect(value)}"
   end
 end

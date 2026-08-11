@@ -145,7 +145,8 @@
             "health": -5
         },
         "diseases": [
-            {"id": "alcoholism", "possibility": 2, "satisfaction": 20}
+            {"id": "alcoholism", "possibility": 2, "satisfaction": 20},
+            {"id": "poisoning", "possibility": 25, "satisfaction": 0}
         ],
         "weight": 0.5,
         "random_weight": 1.2
@@ -247,7 +248,10 @@
             "warm": 50
         },
         "diseases": [
-            {"id": "alcoholism", "possibility": 30, "satisfaction": 100}
+            {"id": "alcoholism", "possibility": 20, "satisfaction": 100}
+        ],
+        "buffs": [
+            {"stat_name": "accuracy", "value": -5, "duration": 50}
         ],
         "weight": 0.5,
         "random_weight": 0.4
@@ -281,6 +285,9 @@
             "health": -15,
             "warm": 5
         },
+        "diseases": [
+            {"id": "poisoning", "possibility": 50, "satisfaction": 0}
+        ],
         "weight": 0.5,
         "random_weight": 0.8
     },

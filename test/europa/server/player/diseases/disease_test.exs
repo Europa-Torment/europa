@@ -11,6 +11,7 @@ defmodule Europa.Server.Player.Diseases.DiseaseTest do
         name: "Alcoholism",
         progression_possibility: 20,
         moves_to_recovery: 1000,
+        moves_to_recovery_penalty: 5,
         debuffs: %{
           efficiency: -5,
           extra_moves_count: 1,
@@ -23,6 +24,7 @@ defmodule Europa.Server.Player.Diseases.DiseaseTest do
                name: "Alcoholism",
                progression_possibility: 20,
                moves_to_recovery: 1000,
+               moves_to_recovery_penalty: 5,
                debuffs: %Disease.Debuffs{
                  efficiency: -5,
                  extra_moves_count: 1,
@@ -76,10 +78,10 @@ defmodule Europa.Server.Player.Diseases.DiseaseTest do
     end
   end
 
-  describe "increase_moves_to_recovery/2" do
+  describe "increase_moves_to_recovery/1" do
     test "increases moves_to_recovery" do
-      disease = build(:disease, moves_to_recovery: 10)
-      %Disease{moves_to_recovery: 15} = Disease.increase_moves_to_recovery(disease, 5)
+      disease = build(:disease, moves_to_recovery: 10, moves_to_recovery_penalty: 5)
+      %Disease{moves_to_recovery: 15} = Disease.increase_moves_to_recovery(disease)
     end
   end
 
