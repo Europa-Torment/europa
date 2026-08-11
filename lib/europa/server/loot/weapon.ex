@@ -165,7 +165,7 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Weapon do
     [
       {:name, gettext("Name"), weapon.name},
       {:damage, gettext("Damage"), PlayerManager.weapon_damage(player, weapon)},
-      {:accuracy, gettext("Accuracy"), weapon.accuracy},
+      {:accuracy, Player.readable_stat_name(:accuracy), weapon.accuracy},
       {:shooting_distance, gettext("Shooting distance"), weapon.shooting_distance},
       {:shooting_type, gettext("Shooting type"), weapon.shooting_type},
       {:shot_cost, gettext("Shot cost"), weapon.shot_cost},

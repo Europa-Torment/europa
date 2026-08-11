@@ -76,9 +76,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Boots do
   def readable_attrs(%Boots{} = boots, _player) do
     [
       {:name, gettext("Name"), boots.name},
-      {:efficiency, gettext("Efficiency"), boots.efficiency},
-      {:health, gettext("Health"), boots.max_health},
-      {:warm, gettext("Warm"), boots.max_warm},
+      {:efficiency, Player.readable_stat_name(:efficiency), boots.efficiency},
+      {:max_health, Player.readable_stat_name(:max_health), boots.max_health},
+      {:max_warm, Player.readable_stat_name(:max_warm), boots.max_warm},
       {:weight, gettext("Weight"), boots.weight}
     ]
   end

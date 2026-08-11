@@ -111,11 +111,11 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Implant do
       |> Enum.map(fn {property, value} ->
         name =
           case property do
-            :max_health -> gettext("Health")
-            :max_warm -> gettext("Warm")
-            :max_weight -> gettext("Max weight")
-            :accuracy -> gettext("Accuracy")
-            :efficiency -> gettext("Efficiency")
+            :max_health -> Player.readable_stat_name(:max_health)
+            :max_warm -> Player.readable_stat_name(:max_warm)
+            :max_weight -> Player.readable_stat_name(:max_weight)
+            :accuracy -> Player.readable_stat_name(:accuracy)
+            :efficiency -> Player.readable_stat_name(:efficiency)
             :shoot_damage -> gettext("Shoot damage")
             :shotgun_damage -> gettext("Shotgun damage")
             :melee_damage -> gettext("Melee weapon damage")

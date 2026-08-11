@@ -76,9 +76,9 @@ defimpl Europa.Server.Loot.Item, for: Europa.Server.Loot.Helmet do
   def readable_attrs(%Helmet{} = helmet, _player) do
     [
       {:name, gettext("Name"), helmet.name},
-      {:accuracy, gettext("Accuracy"), helmet.accuracy},
-      {:health, gettext("Health"), helmet.max_health},
-      {:warm, gettext("Warm"), helmet.max_warm},
+      {:accuracy, Player.readable_stat_name(:accuracy), helmet.accuracy},
+      {:max_health, Player.readable_stat_name(:max_health), helmet.max_health},
+      {:max_warm, Player.readable_stat_name(:max_warm), helmet.max_warm},
       {:weight, gettext("Weight"), helmet.weight}
     ]
   end

@@ -73,6 +73,7 @@ defmodule Europa.Server.Npc do
     events =
       Enum.uniq_by(npc.events ++ events, fn event ->
         case event.type do
+          {type, _} when type == :shoot -> type
           type when is_atom(type) -> type
           _ -> event.uuid
         end

@@ -212,8 +212,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:name, "Name", helmet.name},
         {:accuracy, "Accuracy", helmet.accuracy},
-        {:health, "Health", helmet.max_health},
-        {:warm, "Warm", helmet.max_warm},
+        {:max_health, "Max health", helmet.max_health},
+        {:max_warm, "Max warm", helmet.max_warm},
         {:weight, "Weight", helmet.weight}
       ]
 
@@ -226,8 +226,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:name, "Name", suit.name},
         {:efficiency, "Efficiency", suit.efficiency},
-        {:health, "Health", suit.max_health},
-        {:warm, "Warm", suit.max_warm},
+        {:max_health, "Max health", suit.max_health},
+        {:max_warm, "Max warm", suit.max_warm},
         {:max_weight, "Max weight", suit.max_weight},
         {:weight, "Weight", suit.weight}
       ]
@@ -241,8 +241,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:name, "Name", boots.name},
         {:efficiency, "Efficiency", boots.efficiency},
-        {:health, "Health", boots.max_health},
-        {:warm, "Warm", boots.max_warm},
+        {:max_health, "Max health", boots.max_health},
+        {:max_warm, "Max warm", boots.max_warm},
         {:weight, "Weight", boots.weight}
       ]
 
@@ -313,8 +313,8 @@ defmodule Europa.Server.Loot.ItemTest do
       expected_attrs = [
         {:accuracy, "Accuracy", implant.properties.accuracy},
         {:efficiency, "Efficiency", implant.properties.efficiency},
-        {:max_health, "Health", implant.properties.max_health},
-        {:max_warm, "Warm", implant.properties.max_warm},
+        {:max_health, "Max health", implant.properties.max_health},
+        {:max_warm, "Max warm", implant.properties.max_warm},
         {:max_weight, "Max weight", implant.properties.max_weight},
         {:melee_damage, "Melee weapon damage", implant.properties.melee_damage},
         {:shoot_damage, "Shoot damage", implant.properties.shoot_damage},
