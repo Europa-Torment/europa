@@ -15,7 +15,7 @@
     {
         "id": "drug_addiction",
         "name": "Drug addiction",
-        "progression_possibility": 25,
+        "progression_possibility": 15,
         "moves_to_recovery": 2000,
         "moves_to_recovery_penalty": 1000,
         "debuffs": {
@@ -29,7 +29,7 @@
     {
         "id": "cannibalism",
         "name": "Сannibalism",
-        "progression_possibility": 30,
+        "progression_possibility": 10,
         "moves_to_recovery": 5000,
         "moves_to_recovery_penalty": 5000,
         "debuffs": {
