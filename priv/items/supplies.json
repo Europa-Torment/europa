@@ -421,6 +421,6 @@
             {"stat_name": "efficiency", "value": 10, "duration": 25}
         ],
         "weight": 0.25,
-        "random_weight": 0.5
+        "random_weight": 0.3
     }
 ]

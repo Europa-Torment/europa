@@ -2,6 +2,7 @@ defmodule Europa.Server.Loot.Blueprints.Blueprint do
   use TypedStruct
 
   alias Europa.Server.Loot
+  alias Europa.Server.Loot.Weapon
 
   @type resources :: list(Loot.Resource.t())
 
@@ -22,7 +23,7 @@ defmodule Europa.Server.Loot.Blueprints.Blueprint do
   def from_map(%{item_type: item_type, item_id: item_id, resources: resources}) do
     item_type = String.to_atom(item_type)
     item_id = String.to_atom(item_id)
-    item = Loot.generate_item_by_id(item_type, item_id, 1)
+    item = Loot.generate_item_by_id(item_type, item_id, 1) |> maybe_unload_weapon()
 
     resources =
       Enum.map(resources, fn %{id: id, count: count} ->
@@ -32,4 +33,11 @@ defmodule Europa.Server.Loot.Blueprints.Blueprint do
 
     new(item, resources)
   end
+
+  defp maybe_unload_weapon(%Weapon{rounds_loaded: rounds_loaded} = weapon) when rounds_loaded > 0 do
+    {:ok, {updated_weapon, _}} = Weapon.unload(weapon)
+    updated_weapon
+  end
+
+  defp maybe_unload_weapon(item), do: item
 end
