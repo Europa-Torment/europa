@@ -275,7 +275,7 @@ msgstr ""
 
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
-msgid "After the explosion, the WSS is weaker than ever. There's no one left to prove anything to, but I want to find Davies, if he's still alive. If not, I'll shoot what's left of him, then build a new reactor on his snowy grave and blow it up again."
+msgid "After the explosion, the WCC is weaker than ever. There's no one left to prove anything to, but I want to find Davies, if he's still alive. If not, I'll shoot what's left of him, then build a new reactor on his snowy grave and blow it up again."
 msgstr ""
 
 #: lib/europa/server/npc.ex:27
@@ -2164,7 +2164,7 @@ msgstr ""
 
 #: lib/europa/server/characters.ex:0
 #, elixir-autogen, elixir-format
-msgid "What's going to happen to us now? We've dreamed of destroying the WSS our whole lives, but what do we do now? Do we have a plan?"
+msgid "What's going to happen to us now? We've dreamed of destroying the WCC our whole lives, but what do we do now? Do we have a plan?"
 msgstr ""
 
 #: lib/europa/server/characters.ex:0
