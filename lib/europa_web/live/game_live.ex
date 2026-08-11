@@ -1236,6 +1236,7 @@ defmodule EuropaWeb.GameLive do
           socket
           |> base_assign()
           |> assign(inventory: get_player_inventory(socket))
+          |> assign_equipment()
           |> play_sound("assemble")
 
         {:noreply, socket}
