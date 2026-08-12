@@ -133,7 +133,11 @@ defmodule EuropaWeb.GameCompotents do
 
   def chat(assigns) do
     ~H"""
-    <div class="min-h-[40vh] max-h-[40vh] overflow-y-auto bg-base-200 p-5 shadow-md text-xs">
+    <div
+      id="chat"
+      class="min-h-[40vh] max-h-[40vh] overflow-y-auto bg-base-200 p-5 shadow-md text-xs"
+      phx-hook="ScrollOnChange"
+    >
       <%= for message <- Enum.reverse(@chat.messages) do %>
         <p class={"break-words p-1.5 #{chat_color(message)}"}>
           <span class="italic text-gray-400 text-[10px]">{message.id}.</span> {message.text}

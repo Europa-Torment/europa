@@ -32,6 +32,7 @@ import * as AutoClearFlash from "./hooks/auto_clear_flash"
 import * as Aim from "./hooks/aim"
 import * as EventsProcessor from "./hooks/events_processor"
 import * as Map from "./hooks/map"
+import * as ScrollOnChange from "./hooks/scroll_on_change"
 
 import topbar from "../vendor/topbar"
 
@@ -43,6 +44,7 @@ colocatedHooks.AutoClearFlash = AutoClearFlash.hooks.AutoClearFlash;
 colocatedHooks.Aim = Aim.hooks.Aim;
 colocatedHooks.EventsProcessor = EventsProcessor.hooks.EventsProcessor;
 colocatedHooks.Map = Map.hooks.Map;
+colocatedHooks.ScrollOnChange = ScrollOnChange.hooks.ScrollOnChange;
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
