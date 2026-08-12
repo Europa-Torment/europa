@@ -6,7 +6,7 @@
   <div class="relative w-full overflow-hidden shadow-2xl mb-8 group">
     <img
       src={~p"/images/game_art.png"}
-      class="w-full object-cover h-[280px] md:h-[420px] transition-transform duration-700 group-hover:scale-105"
+      class="w-full object-cover h-[280px] md:h-[500px] transition-transform duration-700 group-hover:scale-105"
     />
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end justify-center pb-8">
       <span class="text-white/80 text-sm font-display tracking-widest">EUROPA TORMENT</span>
@@ -25,7 +25,7 @@
     </p>
   </div>
 
-  <div class="carousel w-full overflow-hidden shadow-2xl mb-6">
+  <div class="carousel w-full overflow-hidden shadow-2xl mb-6 rounded-lg">
     <div id="item1" class="carousel-item relative w-full">
       <img src={~p"/images/gameplay.gif"} class="w-full object-cover h-[440px]" alt="game screen" />
       <div class="absolute inset-0 carousel-overlay flex items-center justify-start p-8 md:p-12">
@@ -35,6 +35,20 @@
           </h3>
           <p class="text-cyan-200 text-sm">{"Become one of the last surviving humans in the galaxy"}</p>
         </div>
+      </div>
+      <div class="absolute flex justify-between transform -translate-y-1/2 left-3 right-3 top-1/2 z-10 pointer-events-none">
+        <a
+          href="#item5"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❮
+        </a>
+        <a
+          href="#item2"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❯
+        </a>
       </div>
     </div>
 
@@ -48,6 +62,20 @@
           <p class="text-cyan-200 text-sm">{gettext("Play for free right in your browser!")}</p>
         </div>
       </div>
+      <div class="absolute flex justify-between transform -translate-y-1/2 left-3 right-3 top-1/2 z-10 pointer-events-none">
+        <a
+          href="#item1"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❮
+        </a>
+        <a
+          href="#item3"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❯
+        </a>
+      </div>
     </div>
 
     <div id="item3" class="carousel-item relative w-full">
@@ -60,6 +88,20 @@
           <p class="text-cyan-200 text-sm">{gettext("Randomized starting conditions in each game session")}</p>
         </div>
       </div>
+      <div class="absolute flex justify-between transform -translate-y-1/2 left-3 right-3 top-1/2 z-10 pointer-events-none">
+        <a
+          href="#item2"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❮
+        </a>
+        <a
+          href="#item4"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❯
+        </a>
+      </div>
     </div>
 
     <div id="item4" class="carousel-item relative w-full">
@@ -71,6 +113,20 @@
           </h3>
           <p class="text-cyan-200 text-sm">{gettext("With dynamic day/night cycles")}</p>
         </div>
+      </div>
+      <div class="absolute flex justify-between transform -translate-y-1/2 left-3 right-3 top-1/2 z-10 pointer-events-none">
+        <a
+          href="#item3"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❮
+        </a>
+        <a
+          href="#item5"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❯
+        </a>
       </div>
     </div>
 
@@ -86,40 +142,21 @@
           </p>
         </div>
       </div>
+      <div class="absolute flex justify-between transform -translate-y-1/2 left-3 right-3 top-1/2 z-10 pointer-events-none">
+        <a
+          href="#item4"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❮
+        </a>
+        <a
+          href="#item1"
+          class="btn btn-circle btn-ghost text-white border border-white/40 hover:bg-cyan-700/70 hover:border-cyan-400 transition-all duration-200 w-11 h-11 md:w-13 md:h-13 text-xl md:text-2xl pointer-events-auto shadow-lg backdrop-blur-sm bg-black/30"
+        >
+          ❯
+        </a>
+      </div>
     </div>
-  </div>
-
-  <div class="flex flex-wrap justify-center gap-3 py-4 mb-8">
-    <a
-      href="#item1"
-      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
-    >
-      1
-    </a>
-    <a
-      href="#item2"
-      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
-    >
-      2
-    </a>
-    <a
-      href="#item3"
-      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
-    >
-      3
-    </a>
-    <a
-      href="#item4"
-      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
-    >
-      4
-    </a>
-    <a
-      href="#item5"
-      class="btn btn-pixel btn-sm btn-outline btn-ghost text-white border-white/30 hover:bg-cyan-700/60 hover:border-cyan-400 transition-all duration-200 rounded-none w-10"
-    >
-      5
-    </a>
   </div>
 
   <div class="text-center my-12">
