@@ -4,18 +4,36 @@ defmodule Europa.Server.Characters do
   use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Characters.Utils.FilesReader
+  alias Europa.Server.Characters.Profession
 
   import Europa.Tools.Conf
 
   @filename fetch_config!([__MODULE__, :filename])
-  @raw_characters FilesReader.parse_file(@filename)
+  @raw_characters FilesReader.parse_characters_file(@filename)
+  @raw_playable_characters Map.fetch!(@raw_characters, "playable")
 
-  for {character, i} <- Enum.with_index(@raw_characters) do
-    fun_name = String.to_atom("__extract_strings_for_#{i}")
+  @names %{
+    male: Map.fetch!(@raw_characters, "not_playable") |> Map.fetch!("male_names"),
+    female: Map.fetch!(@raw_characters, "not_playable") |> Map.fetch!("female_names")
+  }
+
+  @lastnames Map.fetch!(@raw_characters, "not_playable") |> Map.fetch!("lastnames")
+
+  @professions Profession.professions()
+
+  for {name, i} <- Map.fetch!(@names, :male) ++ Map.fetch!(@names, :female) ++ @lastnames do
+    fun_name = String.to_atom("__extract_strings_for_not_playable_character_#{i}")
+
+    def unquote(fun_name)() do
+      gettext(unquote(name))
+    end
+  end
+
+  for {character, i} <- Enum.with_index(@raw_playable_characters) do
+    fun_name = String.to_atom("__extract_strings_for_playable_character_#{i}")
 
     def unquote(fun_name)() do
       gettext(unquote(character["name"]))
-      gettext(unquote(character["profession"]))
 
       unquote_splicing(
         for phrase <- Map.get(character, "short_phrases", []) do
@@ -48,7 +66,7 @@ defmodule Europa.Server.Characters do
   defmodule Character do
     use Gettext, backend: Europa.Gettext
 
-    @type gender :: :male | :female
+    alias Europa.Tools.Types
 
     @type story :: String.t()
     @type stories :: list(story())
@@ -57,12 +75,30 @@ defmodule Europa.Server.Characters do
     @type short_phrase :: String.t()
     @type short_phrases :: list(short_phrase())
 
-    @type fraction :: :neutral | :wcc | :ssb | :etc
+    @fractions %{
+      neutral: %{enemies: []},
+      wcc: %{enemies: [:ssb]},
+      ssb: %{enemies: [:wcc]},
+      etc: %{enemies: []}
+    }
+
+    @type fraction :: unquote(Types.one_of(Map.keys(@fractions)))
+
+    @genders [:male, :female]
+    @type gender :: unquote(Types.one_of(@genders))
+
+    @allowed_professions Profession.professions() |> Map.keys()
+
+    @type profession :: unquote(Types.one_of(@allowed_professions))
+
+    @profession_names Profession.professions()
+                      |> Enum.map(fn {id, profession} -> {id, profession.name} end)
+                      |> Enum.into(%{})
 
     typedstruct do
       field :name, String.t(), enforce: true
       field :gender, gender(), enforce: true
-      field :profession, String.t(), enforce: true
+      field :profession, profession(), enforce: true
       field :fraction, fraction(), enforce: true
       field :enemy_fractions, list(fraction()), enforce: true, default: []
       field :age_at_disaster, integer(), enforce: true
@@ -74,12 +110,22 @@ defmodule Europa.Server.Characters do
       field :not_playable?, boolean(), enforce: true, default: false
     end
 
+    @spec fractions() :: map()
+    def fractions do
+      @fractions
+    end
+
+    @spec genders() :: list(gender())
+    def genders do
+      @genders
+    end
+
     @spec from_map!(map()) :: t()
     def from_map!(%{} = raw_character) do
       %Character{
         name: Map.fetch!(raw_character, "name"),
-        gender: Map.fetch!(raw_character, "gender") |> String.to_atom(),
-        profession: Map.fetch!(raw_character, "profession"),
+        gender: Map.fetch!(raw_character, "gender") |> String.to_atom() |> validate_gender!(),
+        profession: Map.fetch!(raw_character, "profession") |> String.to_atom() |> validate_profession!(),
         fraction: Map.fetch!(raw_character, "fraction") |> String.to_atom(),
         enemy_fractions: Map.get(raw_character, "enemy_fractions", []) |> Enum.map(&String.to_atom/1),
         age_at_disaster: Map.fetch!(raw_character, "age_at_disaster"),
@@ -89,7 +135,7 @@ defmodule Europa.Server.Characters do
         short_phrases: Map.get(raw_character, "short_phrases", []),
         not_playable?: Map.get(raw_character, "not_playable", false),
         # will be determined later
-        current_age: 0
+        current_age: Map.get(raw_character, :current_age, 0)
       }
     end
 
@@ -116,6 +162,12 @@ defmodule Europa.Server.Characters do
       end
     end
 
+    @spec readable_profession(t()) :: String.t()
+    def readable_profession(%__MODULE__{profession: profession}) do
+      profession_name = Map.fetch!(@profession_names, profession)
+      Gettext.gettext(Europa.Gettext, profession_name)
+    end
+
     @spec random_story(t()) :: story()
     def random_story(%__MODULE__{not_playable?: true}), do: nil
 
@@ -137,6 +189,22 @@ defmodule Europa.Server.Characters do
 
     def short_phrase(%__MODULE__{short_phrases: phrases}) do
       Enum.random(phrases)
+    end
+
+    defp validate_profession!(profession) do
+      if profession in @allowed_professions do
+        profession
+      else
+        raise "unexpected profession #{inspect(profession)}, allowed: #{inspect(@allowed_professions)}"
+      end
+    end
+
+    defp validate_gender!(gender) when gender in @genders do
+      gender
+    end
+
+    defp validate_gender!(gender) do
+      raise "unexpected gender #{inspect(gender)}, allowed: #{inspect(@genders)}"
     end
 
     defp parse_years(%{"from" => from, "to" => to}) when is_integer(from) and is_integer(to) and from < to do
@@ -178,8 +246,8 @@ defmodule Europa.Server.Characters do
 
   @impl true
   def init(_args) do
-    init_characters = Enum.map(@raw_characters, &Character.from_map!/1)
-    state = %State{main_character_picked?: false, characters: init_characters}
+    playable_characters = Enum.map(@raw_playable_characters, &Character.from_map!/1)
+    state = %State{main_character_picked?: false, characters: playable_characters}
     {:ok, state}
   end
 
@@ -197,7 +265,7 @@ defmodule Europa.Server.Characters do
     current_year_after_disaster = Enum.random(main_character.years)
 
     filtered_characters =
-      characters
+      (characters ++ generate_characters(current_year_after_disaster))
       |> List.delete(main_character)
       |> contemporaries(main_character, current_year_after_disaster)
 
@@ -205,10 +273,10 @@ defmodule Europa.Server.Characters do
     {:reply, {:ok, main_character}, struct!(state, characters: filtered_characters, main_character_picked?: true)}
   end
 
-  def handle_call({:pick, current_year_after_disaster}, _from, %State{characters: characters} = state) do
-    case do_pick(characters, current_year_after_disaster) do
-      {:ok, {character, rest_characters}} ->
-        {:reply, {:ok, character}, struct!(state, characters: rest_characters)}
+  def handle_call({:pick, current_year_after_disaster}, _from, %State{} = state) do
+    case do_pick(state, current_year_after_disaster) do
+      {:ok, {character, state}} ->
+        {:reply, {:ok, character}, state}
 
       error ->
         {:reply, error, state}
@@ -217,23 +285,60 @@ defmodule Europa.Server.Characters do
 
   ### PRIVATE ###
 
-  defp do_pick(characters, current_year_after_disaster) do
+  defp do_pick(%State{characters: characters} = state, current_year_after_disaster) do
     case Enum.filter(characters, fn character -> current_year_after_disaster in character.years end) do
       [] ->
         {:error, :no_characters}
 
       characters ->
         character = Enum.random(characters)
+        rest_characters = List.delete(characters, character)
 
-        rest_characters =
-          if character.not_playable? do
-            characters
-          else
-            List.delete(characters, character)
-          end
-
-        {:ok, {Character.determine_current_age(character, current_year_after_disaster), rest_characters}}
+        {:ok,
+         {Character.determine_current_age(character, current_year_after_disaster),
+          struct!(state, characters: rest_characters)}}
     end
+  end
+
+  defp generate_characters(current_year_after_disaster) do
+    limit = max(100 - current_year_after_disaster, 10)
+
+    for gender <- Character.genders(),
+        name <- Map.fetch!(@names, gender),
+        lastname <- @lastnames do
+      generate_character("#{name} #{lastname}", gender)
+    end
+    |> List.flatten()
+    |> Enum.shuffle()
+    |> Enum.take(limit)
+  end
+
+  defp generate_character(full_name, gender) do
+    fraction = Character.fractions() |> Map.keys() |> Enum.random()
+    enemy_fractions = Character.fractions() |> Map.fetch!(fraction) |> Map.fetch!(:enemies)
+    profession = profession_by_fraction(fraction)
+    age_at_disaster = Enum.random(16..40)
+
+    %Character{
+      name: full_name,
+      gender: gender,
+      profession: profession,
+      fraction: fraction,
+      enemy_fractions: enemy_fractions,
+      age_at_disaster: age_at_disaster,
+      years: 1..100,
+      stories: [],
+      special_stories: %{},
+      short_phrases: [],
+      not_playable?: true
+    }
+  end
+
+  defp profession_by_fraction(fraction) do
+    @professions
+    |> Enum.filter(fn {_id, profession} -> fraction in profession.fractions && !profession.not_pickable? end)
+    |> Enum.random()
+    |> elem(0)
   end
 
   defp contemporaries(characters, main_character, current_year_after_disaster) do

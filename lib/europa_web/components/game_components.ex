@@ -5,6 +5,7 @@ defmodule EuropaWeb.GameCompotents do
 
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Tiles
+  alias Europa.Server.Planet.Squad
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.PlayerManager
   alias Europa.Server.Player
@@ -12,6 +13,7 @@ defmodule EuropaWeb.GameCompotents do
   alias Europa.Server.Enemy
   alias Europa.Server.Npc
   alias Europa.Server.Characters.Character
+  alias Europa.Server.Characters.Profession
   alias Europa.Server.Loot
   alias Europa.Server.Loot.ItemBox
   alias Europa.Server.Loot.Item
@@ -42,6 +44,7 @@ defmodule EuropaWeb.GameCompotents do
   @zoom_keys fetch_config!([:control_bindings, :zoom]).keys
   @compass_keys fetch_config!([:control_bindings, :compass]).keys
   @map_keys fetch_config!([:control_bindings, :map]).keys
+  @squad_keys fetch_config!([:control_bindings, :squad]).keys
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -57,6 +60,8 @@ defmodule EuropaWeb.GameCompotents do
   @gif_tiles Tiles.gif_tiles()
   @lethal_tiles Tiles.lethal_tiles()
   @swimable_tiles Tiles.swimable_tiles()
+
+  @professions Profession.professions()
 
   def start_screen(assigns) do
     ~H"""
@@ -104,7 +109,7 @@ defmodule EuropaWeb.GameCompotents do
               phx-value-y={real_y}
               data-uid={tile_uid(tile)}
               class="p-0 m-0"
-              style={"width: #{tile_image_size(@zoom_mode)}px; height: #{tile_image_size(@zoom_mode)}px; margin-bottom: -0.5px; #{enemy_npc_filter(tile)}"}
+              style={"width: #{tile_image_size(@zoom_mode)}px; height: #{tile_image_size(@zoom_mode)}px; margin-bottom: -0.5px; #{npc_color_filter(tile, @squad)}"}
             >
               <img
                 id={"tile_img_#{x}_#{y}"}
@@ -150,7 +155,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def planet_info(assigns) do
     ~H"""
-    <div class="bg-base-200 p-3 shadow-md text-xs">
+    <div class="bg-base-200 p-3 shadow-md text-sm">
       <ul class="inline-flex items-center gap-2">
         <li>
           <.icon_image name="clock" /> {@current_time.time}, {gettext("day")} {@current_time.day}, {@current_time.year} {gettext(
@@ -170,8 +175,20 @@ defmodule EuropaWeb.GameCompotents do
     assigns = assign(assigns, text: text, color: color)
 
     ~H"""
-    <div id="diseases_indicator" class="bg-base-200 p-3 shadow-md text-xs" style={"color: #{@color}"}>
+    <div id="diseases_indicator" class="bg-base-200 p-3 shadow-md text-sm" style={"color: #{@color}"}>
       <.link phx-click="open_diseases_menu">{@text}</.link>
+    </div>
+    """
+  end
+
+  def squad_indicator(assigns) do
+    assigns =
+      assign(assigns, members_count: Enum.count(assigns.squad.members), satisfaction: Squad.satisfaction(assigns.squad))
+
+    ~H"""
+    <div id="squad_indicator" class="bg-base-200 p-3 shadow-md text-sm">
+      <.link phx-click="open_squad_menu">{gettext("Squad")} ({@members_count})</.link>
+      <span class="text-xs" style={"color: #{squad_satisfaction_color(@satisfaction)}"}>{@satisfaction}%</span>
     </div>
     """
   end
@@ -261,15 +278,11 @@ defmodule EuropaWeb.GameCompotents do
   def player_stats(assigns) do
     ~H"""
     <div class={"bg-base-200 p-3 shadow-md text-#{@text_size}"}>
-      <ul class="grid grid-cols-2 grid-rows-3 gap-0.5 sm:gap-3">
+      <ul class="grid grid-cols-4 grid-rows-2 gap-0.8 sm:gap-1">
+        <!-- все li-элементы без изменений -->
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"health-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:health)}>
             <.icon_image name="heart" /> {@player_stats.health}/{@player_stats.max_health}
-          </div>
-        </li>
-        <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div id={"warm-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:warm)}>
-            <.icon_image name="warm" /> {@player_stats.warm}/{@player_stats.max_warm}
           </div>
         </li>
         <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
@@ -277,9 +290,9 @@ defmodule EuropaWeb.GameCompotents do
             <.icon_image name="backpack" /> {@player_stats.inventory_weight}/{@player_stats.max_weight}
           </div>
         </li>
-        <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
-          <div id={"thirst-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:thirst)}>
-            <.icon_image name="thirst" /> {@player_stats.thirst}
+        <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
+          <div id={"warm-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:warm)}>
+            <.icon_image name="warm" /> {@player_stats.warm}/{@player_stats.max_warm}
           </div>
         </li>
         <li>
@@ -287,19 +300,24 @@ defmodule EuropaWeb.GameCompotents do
             <.icon_image name="accuracy" /> {@player_stats.accuracy}
           </div>
         </li>
+        <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
+          <div id={"thirst-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:thirst)}>
+            <.icon_image name="thirst" /> {@player_stats.thirst}
+          </div>
+        </li>
         <li class={"#{hunger_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"hunger-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:hunger)}>
             <.icon_image name="hunger" /> {@player_stats.hunger}
           </div>
         </li>
-        <li>
-          <div id={"efficiency-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:efficiency)}>
-            <.icon_image name="efficiency" /> {@player_stats.efficiency}
-          </div>
-        </li>
         <li class={"#{radiation_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"radiation-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:radiation)}>
             <.icon_image name="radiation" /> {@player_stats.radiation}
+          </div>
+        </li>
+        <li>
+          <div id={"efficiency-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:efficiency)}>
+            <.icon_image name="efficiency" /> {@player_stats.efficiency}
           </div>
         </li>
       </ul>
@@ -309,7 +327,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def compass_link(assigns) do
     ~H"""
-    <div class="bg-base-200 p-5 shadow-md text-xs">
+    <div class="bg-base-200 p-5 shadow-md text-sm">
       <.link phx-click="open_compass"><.icon_image name="compass" /> {gettext("Compass")}</.link>
     </div>
     """
@@ -319,7 +337,7 @@ defmodule EuropaWeb.GameCompotents do
     assigns = Map.put(assigns, :version, @game_version)
 
     ~H"""
-    <div class="bg-base-200 p-5 shadow-md text-xs">
+    <div class="bg-base-200 p-5 shadow-md text-sm">
       <.link phx-click="show_control_hints"><.icon_image name="book" /> {gettext("Control hints")}</.link>
     </div>
     <div class="p-1 text-center text-xs">
@@ -430,7 +448,7 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @weapon do %>
       <div
         style="display: inline-flex; align-items: center; gap: 0;"
-        class="bg-base-200 p-5 shadow-md text-xs"
+        class="bg-base-200 p-5 shadow-md text-sm"
         {open_inventory_attrs("ammo")}
       >
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")} (#{gettext("In inventory")})"}>
@@ -556,7 +574,7 @@ defmodule EuropaWeb.GameCompotents do
         </span>
         <.item_quick_action item={@item} />
         <div class="dropdown dropdown-top" id={"item-#{@item.uuid}-dropdown"} phx-hook="Dropdown">
-          <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
+          <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">{gettext("actions")}</div>
           <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
             <%= if weapon?(@item) && @item.rounds_loaded < @item.magazine_size do %>
               <li phx-click="reload_weapon" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
@@ -655,7 +673,9 @@ defmodule EuropaWeb.GameCompotents do
                     </.link>
                     <%= if weapon?(item) && item.rounds_loaded > 0 do %>
                       <div class="dropdown dropdown-top" id={"item-#{item.uuid}-dropdown"} phx-hook="Dropdown">
-                        <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">actions</div>
+                        <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">
+                          {gettext("actions")}
+                        </div>
                         <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
                           <li phx-click="unload_item_box_weapon" phx-value-uuid={"#{item.uuid}"} {dropdown_attrs()}>
                             <a>{gettext("Unload")}</a>
@@ -685,18 +705,54 @@ defmodule EuropaWeb.GameCompotents do
       <input type="checkbox" id="dialog" class="modal-toggle" checked={true} phx-change="close_dialog" />
       <div class="modal overflow-visible" role="dialog">
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
-          <h3 class="text-lg font-bold pb-3">{@dialog.npc.character.name}</h3>
+          <div class="card w-full max-w-lg bg-base-100 shadow-xl border border-base-300 mb-3">
+            <div class="card-body">
+              <h2 class="card-title flex items-center gap-2">
+                {@dialog.npc.character.name}
+                <span class="badge badge-secondary text-xs">{Character.readable_fraction(@dialog.npc.character)}</span>
+              </h2>
 
-          <ul class="list-disc list-inside space-y-2 text-sm mb-5">
-            <li><b>{gettext("Age")}:</b> {@dialog.npc.character.current_age}</li>
-            <li><b>{gettext("Gender")}:</b> {Character.readable_gender(@dialog.npc.character)}</li>
-            <li><b>{gettext("Profession")}:</b> {@dialog.npc.character.profession}</li>
-            <li><b>{gettext("Age at disaster")}:</b> {age_at_disaster(@dialog.npc.character.age_at_disaster)}</li>
+              <div class="grid grid-cols-[120px_1fr] gap-y-2 gap-x-4 mt-4 text-sm">
+                <span class="font-semibold text-base-content/70">{gettext("Age")}</span>
+                <span>{@dialog.npc.character.current_age}</span>
+
+                <span class="font-semibold text-base-content/70">{gettext("Gender")}</span>
+                <span>{Character.readable_gender(@dialog.npc.character)}</span>
+
+                <span class="font-semibold text-base-content/70">{gettext("Profession")}</span>
+                <span>
+                  {Character.readable_profession(@dialog.npc.character)}
+                  <button
+                    id={"npc_#{@dialog.npc.uuid}_profession_info"}
+                    phx-hook="Tooltip"
+                    data-tooltip={profession_tooltip(@dialog.npc.character.profession)}
+                    class="btn btn-circle btn-xs btn-outline"
+                  >
+                    ?
+                  </button>
+                </span>
+
+                <span class="font-semibold text-base-content/70">{gettext("Age at disaster")}</span>
+                <span>{age_at_disaster(@dialog.npc.character.age_at_disaster)}</span>
+              </div>
+            </div>
+          </div>
+
+          <%= unless @dialog.npc.character.not_playable? do %>
+            <blockquote class="italic text-sm border-l-2 border-secondary p-2">
+              {npc_story(@dialog.npc, @player)}
+            </blockquote>
+          <% end %>
+
+          <ul class="list-disc list-inside space-y-2 text-sm mb-5 mt-2">
+            <%= if !Squad.member?(@squad, @dialog.npc) && !Squad.declined?(@squad, @dialog.npc) do %>
+              <li>
+                <.link id="recruit_squad_member" class="text-primary" phx-click="recruit_squad_member">
+                  {gettext("Invite to the squad")}
+                </.link>
+              </li>
+            <% end %>
           </ul>
-
-          <blockquote class="italic text-sm border-l-2 border-secondary p-2">
-            {npc_story(@dialog.npc, @player)}
-          </blockquote>
 
           <div class="modal-action">
             <label phx-click="close_dialog" for="dialog" class="btn">{gettext("Close")}</label>
@@ -1206,6 +1262,268 @@ defmodule EuropaWeb.GameCompotents do
     """
   end
 
+  def squad_menu(assigns) do
+    assigns =
+      assign(assigns, members_count: Enum.count(assigns.squad.members), satisfaction: Squad.satisfaction(assigns.squad))
+
+    ~H"""
+    <%= if @show_squad_menu do %>
+      <input type="checkbox" id="squad_menu" class="modal-toggle" checked={true} phx-change="close_squad_menu" />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl">
+          <h3 class="text-lg font-bold pb-3">
+            {gettext("Squad")}
+            <span
+              id="squad_satisfaction"
+              phx-hook="Tooltip"
+              data-tooltip={
+                gettext(
+                  "Squad status. Depends on the number of resources and members. The higher this value, the more attractive your squad is for new members to join."
+                )
+              }
+              class="text-xs text-secondary"
+              style={"color: #{squad_satisfaction_color(@satisfaction)}"}
+            >
+              {gettext("Satisfaction")} {@satisfaction}%
+            </span>
+          </h3>
+
+          <.squad_resources squad={@squad} loot_types={@squad.loot_types} />
+          <.squad_members members={@squad.members} />
+
+          <div class="modal-action">
+            <label phx-click="close_squad_menu" for="squad_menu" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def squad_resources(assigns) do
+    ~H"""
+    <div class="bg-base-200 p-4 shadow-md text-md">
+      <h4 class="text-md font-bold pb-3">{gettext("Resources")}</h4>
+
+      <ul class="list-disc list-inside space-y-2 mt-2 text-sm">
+        <.squad_resource
+          name={gettext("Supplies")}
+          resource_type={:supplies}
+          value={@squad.resources.supplies}
+          squad={@squad}
+          description={gettext("Amount of supplies. Consumed when healing squad members.")}
+        />
+        <.squad_resource
+          name={gettext("Ammo")}
+          resource_type={:ammo}
+          value={@squad.resources.ammo}
+          squad={@squad}
+          description={gettext("Ammo capacity. Consumed by squad members when firing. Obtained from ammo and weapons.")}
+        />
+        <.squad_resource
+          name={gettext("General needs")}
+          resource_type={:other}
+          value={@squad.resources.other}
+          squad={@squad}
+          description={
+            gettext(
+              "Amount of resources for general needs. Periodically spent on squad needs. Obtained from all types of loot except weapons, ammo, and supplies."
+            )
+          }
+        />
+      </ul>
+    </div>
+
+    <div class="bg-base-200 p-4 shadow-md text-md mt-2">
+      <h4 class="text-md font-bold pb-3">
+        {gettext("Allow the squad to collect following types of loot")}
+        <button
+          id="squad_loot_info"
+          phx-hook="Tooltip"
+          data-tooltip={
+            gettext(
+              "Squad members will automatically collect items of the selected types and replenish the squad's resources. Click on the desired type to allow or prohibit its collection."
+            )
+          }
+          class="btn btn-circle btn-xs btn-outline"
+        >
+          ?
+        </button>
+      </h4>
+
+      <div class="flex flex-wrap gap-2">
+        <%= for {item_type, item_type_name} <- Loot.allowed_item_types() do %>
+          <label class={"btn btn-sm gap-2 #{if item_type in @loot_types, do: "text-primary"}"}>
+            <input
+              type="checkbox"
+              name="loot_types"
+              value={item_type}
+              checked={item_type in @loot_types}
+              phx-click="toggle_squad_loot_type"
+              phx-value-type={item_type}
+              class="hidden"
+            />
+            <span>{item_type_name}</span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  def squad_resource(assigns) do
+    assigns = assign(assigns, satisfaction: Squad.resource_satisfaction(assigns.squad, assigns.resource_type))
+
+    ~H"""
+    <li id={"squad_resource_#{@resource_type}"} phx-hook="Tooltip" data-tooltip={@description}>
+      <span class="font-bold text-primary">{@name}:</span>
+      <span style={"color: #{squad_satisfaction_color(@satisfaction)}"}>{@value} ({@satisfaction}%)</span>
+    </li>
+    """
+  end
+
+  def squad_members(assigns) do
+    ~H"""
+    <div class="bg-base-200 p-4 shadow-md text-md mt-2">
+      <h4 class="text-md font-bold pb-3">{gettext("Members")}</h4>
+
+      <%= if Enum.empty?(@members) do %>
+        <span class="text-secondary">
+          {gettext("There's no one in your squad. Look for survivors and invite them to join.")}
+        </span>
+      <% else %>
+        <ul class="list-disc list-inside space-y-2 mt-2 text-sm">
+          <%= for {uuid, member} <- @members do %>
+            <li>
+              <span id={"squad_member_#{uuid}_name"} phx-hook="Tooltip" data-tooltip={npc_tooltip(member.npc)}>
+                {member.npc.character.name}
+              </span>
+              <span class="text-secondary text-xs">{gettext("Health")} {member.npc.health}</span>
+
+              <span
+                id={"squad_member_#{uuid}_profession"}
+                phx-hook="Tooltip"
+                data-tooltip={profession_tooltip(member.npc.character.profession)}
+                class="badge badge-primary badge-sm"
+              >
+                {Character.readable_profession(member.npc.character)}
+              </span>
+
+              <div class="dropdown dropdown-top" id={"squad_member_#{uuid}-dropdown"} phx-hook="Dropdown">
+                <div tabindex="0" role="button" class="btn btn-xs btn-dash m-1 item-dropdown-button">
+                  {gettext("actions")}
+                </div>
+                <ul tabindex="-1" class="dropdown-content menu bg-neutral z-1 w-52 p-2 shadow-sm">
+                  <li
+                    phx-click="fire_squad_member"
+                    phx-value-uuid={"#{uuid}"}
+                    data-confirm={gettext("Are you sure you want to kick this member from the squad?")}
+                    {dropdown_attrs()}
+                  >
+                    <a>{gettext("Fire")}</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+    """
+  end
+
+  def squad_event(assigns) do
+    ~H"""
+    <%= if @squad_event do %>
+      <input type="checkbox" id="squad_event" class="modal-toggle" checked={true} phx-change="close_squad_event" />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh] max-w-2xl bg-base-200">
+          <h3 class="text-lg font-bold pb-3">
+            {gettext("Squad event")}
+          </h3>
+
+          <.squad_event_message squad_event={@squad_event} />
+
+          <div class="modal-action">
+            <label phx-click="close_squad_event" for="squad_event" class="btn btn-accent">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def squad_event_message(assigns) do
+    case assigns.squad_event do
+      {:recruited, %Squad.Member{npc: npc}} ->
+        assigns = assign(assigns, npc: npc)
+
+        ~H"""
+        <div>
+          <span id="recruited_npc" phx-hook="Tooltip" data-tooltip={npc_tooltip(@npc)} class="text-md text-primary">
+            {@npc.character.name}
+          </span>
+          <span class="text-secondary">{gettext("joined your squad")}!</span>
+        </div>
+        """
+
+      {:declined, %Npc{} = npc} ->
+        assigns = assign(assigns, npc: npc)
+
+        ~H"""
+        <div>
+          <span id="declined_npc" phx-hook="Tooltip" data-tooltip={npc_tooltip(@npc)} class="text-md text-primary">
+            {@npc.character.name}
+          </span>
+          <span class="text-red-500">
+            {gettext("rejected your offer because your squad is not developed enough.")}
+          </span>
+        </div>
+
+        <div class="text-sm mt-3">
+          {gettext(
+            "You'll be able to invite again after some time. In the meantime, focus on gathering resources for your squad."
+          )}
+        </div>
+        """
+
+      {:member_died, %Squad.Member{npc: npc, coord: coord}} ->
+        assigns = assign(assigns, npc: npc, coord: coord)
+
+        ~H"""
+        <div>
+          <span id="died_npc" phx-hook="Tooltip" data-tooltip={npc_tooltip(@npc)} class="text-md text-primary">
+            {@npc.character.name}
+          </span>
+          <span class="text-red-500">{gettext("died at")} {coord(@coord)}</span>
+        </div>
+        """
+
+      {:member_left_squad, %Squad.Member{npc: npc}} ->
+        assigns = assign(assigns, npc: npc)
+
+        ~H"""
+        <div>
+          <span id="left_npc" phx-hook="Tooltip" data-tooltip={npc_tooltip(@npc)} class="text-md text-primary">
+            {@npc.character.name}
+          </span>
+          <span class="text-red-500">{gettext("has left the squad")}.</span>
+        </div>
+
+        <div class="text-sm mt-3">{gettext("Monitor the squad's resources to ensure members remain in the squad.")}</div>
+        """
+
+      :low_resources ->
+        ~H"""
+        <div class="text-md text-red-500">
+          {gettext(
+            "The level of important resources has dropped to a critical level; if you don't replenish them, people will start leaving the squad."
+          )}
+        </div>
+        """
+    end
+  end
+
   def mascot_image(assigns) do
     image =
       Enum.random([
@@ -1376,6 +1694,30 @@ defmodule EuropaWeb.GameCompotents do
     [item_description(item) | requirements]
   end
 
+  defp npc_tooltip(%Npc{} = npc) do
+    npc
+    |> Npc.readable_stats()
+    |> to_ul()
+  end
+
+  defp profession_tooltip(profession) do
+    profession = Map.fetch!(@professions, profession)
+
+    properties =
+      Enum.map(profession.properties, fn %Profession.Property{id: property_id, level: level} ->
+        {Profession.Property.property_description(property_id), "#{gettext("level")} #{level}"}
+      end)
+
+    description =
+      if Enum.empty?(properties) do
+        gettext("Does not have any special skills.")
+      else
+        gettext("Possesses skills that are useful to the squad") <> ":"
+      end
+
+    [description(description), to_ul(properties)]
+  end
+
   defp enemy_tooltip(%Enemy{stand_on: tile}) when tile in @swimable_tiles do
     gettext("Something under water")
   end
@@ -1468,7 +1810,7 @@ defmodule EuropaWeb.GameCompotents do
         enemy_tooltip(enemy)
 
       %Npc{} = npc ->
-        Npc.readable_stats(npc) |> to_ul()
+        npc_tooltip(npc)
 
       # this is for "skip" object, see Objects module
       %Object{name: "", image_name: "", stand_on: tile} ->
@@ -1673,6 +2015,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Aim mode"), @aim_keys),
       control_hint(gettext("Zoom mode"), @zoom_keys),
       control_hint(gettext("Map"), @map_keys),
+      control_hint(gettext("Squad menu"), @squad_keys),
       control_hint(gettext("Compass"), @compass_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
@@ -1859,15 +2202,20 @@ defmodule EuropaWeb.GameCompotents do
 
   defp age_at_disaster(_), do: gettext("Not yet born")
 
-  defp enemy_npc_filter(%Npc{} = npc) do
-    if npc.target == :player || npc.player_enemy? do
-      "filter: sepia(0.6) hue-rotate(330deg) saturate(1.8) brightness(0.9);"
-    else
-      ""
+  defp npc_color_filter(%Npc{} = npc, squad) do
+    cond do
+      Squad.member?(squad, npc) ->
+        "filter: sepia(0.6) hue-rotate(185deg) saturate(1.8) brightness(0.9);"
+
+      npc.target == :player || npc.player_enemy? ->
+        "filter: sepia(0.6) hue-rotate(330deg) saturate(1.8) brightness(0.9);"
+
+      true ->
+        ""
     end
   end
 
-  defp enemy_npc_filter(_), do: ""
+  defp npc_color_filter(_, _), do: ""
 
   defp item_image_path(item) do
     category =
@@ -1968,6 +2316,15 @@ defmodule EuropaWeb.GameCompotents do
       satisfaction < 20 -> "#d81515"
       satisfaction < 70 -> "#d24f17"
       true -> "#5e8e2c"
+    end
+  end
+
+  defp squad_satisfaction_color(satisfaction) when is_integer(satisfaction) do
+    cond do
+      satisfaction >= 100 -> "#4a57e9"
+      satisfaction >= 70 -> "#5ac421"
+      satisfaction >= 50 -> "#d85627"
+      true -> "#de0b0b"
     end
   end
 

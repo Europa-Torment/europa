@@ -246,6 +246,12 @@ defmodule Europa.Server.Loot do
       end
     end
 
+    @spec take_items_by_types(ItemBox.t(), list(Loot.item_type())) :: {:ok, list(Item.t()), ItemBox.t()}
+    def take_items_by_types(%ItemBox{} = item_box, item_types) when is_list(item_types) do
+      items = Enum.filter(item_box.items, &(Loot.Item.item_type(&1) in item_types))
+      {:ok, items, struct!(item_box, items: item_box.items -- items)}
+    end
+
     @spec unload_weapon(ItemBox.t(), Loot.uuid()) ::
             {:ok, ItemBox.t(), Weapon.t()}
             | {:error, :no_item}

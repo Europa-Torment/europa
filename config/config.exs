@@ -71,8 +71,13 @@ config :europa, :weapons,
 config :europa, :game_params,
   disaster_year: 2152,
   craft_moves_count: 3,
+  squad: [
+    base_heal: 10,
+    moves_before_re_invite: 500
+  ],
   npc: [
-    health: [from: 50, to: 100]
+    health: [from: 50, to: 100],
+    base_accuracy: 20
   ],
   player: [
     max_weight: [
@@ -134,6 +139,7 @@ config :europa, :control_bindings,
   zoom: %{keys: ["Z", "z"], codes: ["KeyZ"]},
   compass: %{keys: ["C", "c"], codes: ["KeyC"]},
   map: %{keys: ["M", "m"], codes: ["KeyM"]},
+  squad: %{keys: ["T", "t"], codes: ["KeyT"]},
   close: %{keys: ["Escape"], codes: ["Escape"]}
 
 # Configure esbuild (the version is required)

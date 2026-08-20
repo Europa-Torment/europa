@@ -755,6 +755,24 @@ defmodule Europa.Server.Loot.ItemBoxTest do
     end
   end
 
+  describe "take_items_by_types/2" do
+    setup do
+      weapons = build_list(5, :weapon)
+      ammo = build_list(10, :ammo)
+
+      item_box = build(:loot_item_box, items: weapons ++ ammo)
+
+      {:ok, item_box: item_box, weapons: weapons, ammo: ammo}
+    end
+
+    test "takes items of given types", %{item_box: item_box, weapons: weapons, ammo: ammo} do
+      assert {:ok, items, %ItemBox{items: []}} = ItemBox.take_items_by_types(item_box, [:weapon, :ammo])
+      assert items == weapons ++ ammo
+
+      assert {:ok, ^weapons, %ItemBox{items: ^ammo}} = ItemBox.take_items_by_types(item_box, [:weapon])
+    end
+  end
+
   describe "unload_weapon/2" do
     test "unloads weapon" do
       ammo_count = 52

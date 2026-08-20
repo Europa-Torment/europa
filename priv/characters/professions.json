@@ -1,0 +1,14 @@
+{
+    "guard": {"name": "Guard", "fractions": ["wcc"], "properties": [{"id": "accuracy", "level": 1}]},
+    "soldier": {"name": "Soldier", "fractions": ["wcc"], "properties": [{"id": "accuracy", "level": 2}]},
+    "politician": {"name": "Politican", "fractions": ["wcc"], "properties": [{"id": "accuracy", "level": 2}, {"id": "resources_economy", "level": 1}], "not_pickable": true},
+    "rebel": {"name": "Rebel", "fractions": ["ssb"], "properties": [{"id": "accuracy", "level": 1}]},
+    "rebel_commander": {"name": "Rebels commander", "fractions": ["ssb"], "properties": [{"id": "accuracy", "level": 2}]},
+    "rebel_leader": {"name": "Leader of Rebels", "fractions": ["ssb"], "properties": [{"id": "accuracy", "level": 2}, {"id": "resources_economy", "level": 1}], "not_pickable": true},
+    "junior_engineer": {"name": "Junior Engineer", "fractions": ["etc", "neutral"], "properties": [{"id": "resources_economy", "level": 1}]},
+    "engineer": {"name": "Engineer", "fractions": ["etc", "neutral"], "properties": [{"id": "resources_economy", "level": 2}]},
+    "nuclear_physicist": {"name": "Nuclear Physicist", "fractions": ["etc"], "properties": [{"id": "resources_economy", "level": 3}], "not_pickable": true},
+    "doctor": {"name": "Doctor", "fractions": ["neutral"], "properties": [{"id": "heal", "level": 1}]},
+    "rescuer": {"name": "Rescuer", "fractions": ["neutral"], "properties": [{"id": "heal", "level": 2}]},
+    "unemployed": {"name": "Unemployed", "fractions": ["neutral"], "properties": []}
+}

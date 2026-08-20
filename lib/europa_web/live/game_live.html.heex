@@ -23,13 +23,14 @@
       <.control_hints_link />
     </div>
 
-    <.game_field visible_planet={@visible_planet} player={@player} aim={@aim} zoom_mode={@zoom_mode} />
+    <.game_field visible_planet={@visible_planet} player={@player} aim={@aim} zoom_mode={@zoom_mode} squad={@squad} />
 
     <div class="w-2/6 flex flex-col gap-4 m-5">
       <.chat chat={@chat} />
       <.planet_info current_time={@current_time} player={@player} />
-      <.player_stats player_stats={@player_stats} text_size="sm" display_type="main" />
+      <.player_stats player_stats={@player_stats} text_size="xs" display_type="main" />
       <.player_diseases_indicator player={@player} />
+      <.squad_indicator squad={@squad} />
     </div>
   </div>
 
@@ -44,7 +45,7 @@
   />
   <.craft_menu player={@player} blueprints={@blueprints} blueprints_type={@blueprints_type} />
   <.control_hints show_control_hints={@show_control_hints} />
-  <.dialog dialog={@dialog} player={@player} />
+  <.dialog dialog={@dialog} player={@player} squad={@squad} />
   <.interaction_confirmation
     interaction_confirmation={@interaction_confirmation}
     transform_name={@transform_name}
@@ -57,6 +58,8 @@
 
   <.new_diseases_info new_diseases={@new_diseases} />
   <.diseases_menu show_diseases_menu={@show_diseases_menu} player={@player} />
+  <.squad_menu show_squad_menu={@show_squad_menu} squad={@squad} player={@player} />
+  <.squad_event squad_event={@squad_event} />
 <% else %>
   <.background />
   <.start_screen />

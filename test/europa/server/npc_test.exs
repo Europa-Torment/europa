@@ -7,19 +7,29 @@ defmodule Europa.Server.NpcTest do
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Event
 
+  import Europa.Tools.Conf
+
   @snow Tiles.tile(:snow).atom_value
   @snow_blood Tiles.tile(:snow).blood_version
 
+  @base_accuracy fetch_config!([:game_params, :npc, :base_accuracy])
+
   describe "new/2" do
     test "creates NPC" do
-      character = build(:character)
-      assert %Npc{character: ^character, stand_on: @snow} = Npc.new(character, @snow)
+      character = build(:character, profession: :engineer)
+      assert %Npc{character: ^character, stand_on: @snow, accuracy: @base_accuracy} = Npc.new(character, @snow)
+    end
+
+    test "increases accuracy by profession properties" do
+      character = build(:character, profession: :guard)
+      assert %Npc{character: ^character, stand_on: @snow, accuracy: accuracy} = Npc.new(character, @snow)
+      assert accuracy > @base_accuracy
     end
   end
 
   describe "readable_stats/1" do
     test "returns stats" do
-      npc = build(:npc, character: build(:character, gender: :female, fraction: :wcc))
+      npc = build(:npc, character: build(:character, gender: :female, fraction: :wcc, profession: :doctor))
 
       expected_stats =
         [
@@ -27,6 +37,7 @@ defmodule Europa.Server.NpcTest do
           {"Age", npc.character.current_age},
           {"Gender", "Female"},
           {"Fraction", "WCC"},
+          {"Profession", "Doctor"},
           {"Health", npc.health}
         ]
 

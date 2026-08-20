@@ -1203,6 +1203,96 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "recruit_squad_member/1" do
+    test "returns success response", %{server: server} do
+      PlanetManagerMock
+      |> expect(:recruit_squad_member, fn %Planet{} = planet, _direction ->
+        {:ok, planet}
+      end)
+
+      assert {:ok, %Planet.Squad{}} = Server.recruit_squad_member(server)
+    end
+
+    test "handles NotApplicable error", %{server: server} do
+      error = {:error, %Errors.NotApplicableError{}}
+
+      PlanetManagerMock
+      |> expect(:recruit_squad_member, fn %Planet{}, _direction ->
+        error
+      end)
+
+      assert Server.recruit_squad_member(server) == error
+    end
+  end
+
+  describe "fire_squad_member/1" do
+    test "returns success response", %{server: server} do
+      npc_uuid = Ecto.UUID.generate()
+
+      PlanetManagerMock
+      |> expect(:fire_squad_member, fn %Planet{} = planet, ^npc_uuid ->
+        {:ok, planet}
+      end)
+
+      assert {:ok, %Planet.Squad{}} = Server.fire_squad_member(server, npc_uuid)
+    end
+
+    test "handles NotApplicable error", %{server: server} do
+      npc_uuid = Ecto.UUID.generate()
+      error = {:error, %Errors.NotApplicableError{}}
+
+      PlanetManagerMock
+      |> expect(:fire_squad_member, fn %Planet{}, ^npc_uuid ->
+        error
+      end)
+
+      assert Server.fire_squad_member(server, npc_uuid) == error
+    end
+  end
+
+  describe "set_squad_loot_types/2" do
+    test "returns squad", %{server: server} do
+      loot_types = [:weapon, :ammo]
+
+      PlanetManagerMock
+      |> expect(:set_squad_loot_types, fn %Planet{} = planet, ^loot_types ->
+        {:ok, planet}
+      end)
+
+      assert {:ok, %Planet.Squad{}} = Server.set_squad_loot_types(server, loot_types)
+    end
+  end
+
+  describe "get_squad/1" do
+    test "returns squad", %{server: server} do
+      assert %Planet.Squad{} = Server.get_squad(server)
+    end
+  end
+
+  describe "get_squad_event/1" do
+    test "returns event", %{server: server} do
+      event = :low_resources
+
+      PlanetManagerMock
+      |> expect(:remove_last_squad_event, fn %Planet{} = planet ->
+        {:ok, planet, event}
+      end)
+
+      assert {:ok, ^event} = Server.get_squad_event(server)
+    end
+
+    test "handles no_events error", %{server: server} do
+      error = {:error, :no_events}
+
+      PlanetManagerMock
+      |> expect(:remove_last_squad_event, fn %Planet{} = planet ->
+        {:ok, planet, nil}
+      end)
+
+      assert Server.get_squad_event(server) == error
+    end
+  end
+
   defp assert_chat_message(server, category, text) do
     messages = Server.get_chat(server).messages
 

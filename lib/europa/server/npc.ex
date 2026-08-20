@@ -4,6 +4,7 @@ defmodule Europa.Server.Npc do
 
   alias Europa.Server.Planet
   alias Europa.Server.Characters.Character
+  alias Europa.Server.Characters.Profession
   alias Europa.Server.Loot
   alias Europa.Server.Loot.Weapon
   alias Europa.Server.Event
@@ -15,14 +16,19 @@ defmodule Europa.Server.Npc do
 
   @health_from fetch_config!([:game_params, :npc, :health, :from])
   @health_to fetch_config!([:game_params, :npc, :health, :to])
+  @base_accuracy fetch_config!([:game_params, :npc, :base_accuracy])
 
-  @type target() :: :player | Ecto.UUID.t() | nil
+  @professions Profession.professions()
+
+  @type uuid :: Ecto.UUID.t()
+  @type target() :: :player | Ecto.UUID.t() | Planet.coord() | nil
 
   typedstruct do
-    field :uuid, Ecto.UUID.t(), enforce: true
+    field :uuid, uuid(), enforce: true
     field :character, Character.t(), enforce: true
     field :story, Character.story()
     field :stand_on, Planet.tile(), enforce: true
+    field :max_health, pos_integer(), enforce: true
     field :health, non_neg_integer(), enforce: true
     field :accuracy, pos_integer(), enforce: true
     field :view_direction, Planet.direction(), enforce: true
@@ -39,8 +45,9 @@ defmodule Europa.Server.Npc do
       character: character,
       story: Character.random_story(character),
       stand_on: stand_on,
+      max_health: @health_to,
       health: health(),
-      accuracy: accuracy(),
+      accuracy: accuracy(character),
       view_direction: Planet.allowed_directions() |> Enum.random(),
       weapon: Loot.generate_item(:weapon)
     }
@@ -53,6 +60,7 @@ defmodule Europa.Server.Npc do
       {gettext("Age"), character.current_age},
       {gettext("Gender"), Character.readable_gender(character)},
       {gettext("Fraction"), Character.readable_fraction(character)},
+      {gettext("Profession"), Character.readable_profession(character)},
       {gettext("Health"), npc.health}
     ]
   end
@@ -64,6 +72,15 @@ defmodule Europa.Server.Npc do
     npc
     |> struct!(health: updated_health)
     |> add_events([Event.new({:damaged, damage})])
+  end
+
+  @spec heal(t(), health :: pos_integer()) :: t()
+  def heal(%__MODULE__{} = npc, health) when is_integer(health) and health > 0 do
+    updated_health = min(npc.max_health, npc.health + health)
+
+    npc
+    |> struct!(health: updated_health)
+    |> add_events([Event.new({:healed, health})])
   end
 
   @spec add_events(t(), list(Event.t())) :: t()
@@ -134,11 +151,15 @@ defmodule Europa.Server.Npc do
     struct!(npc, player_enemy?: true)
   end
 
-  defp accuracy do
-    from = div(@max_accuracy, 2)
-    to = @max_accuracy
+  defp accuracy(%Character{profession: profession}) do
+    profession = Map.fetch!(@professions, profession)
 
-    Enum.random(from..to)
+    additional_accuracy =
+      profession.properties
+      |> Enum.filter(&(&1.id == :accuracy))
+      |> Enum.sum_by(&(&1.level + 5))
+
+    min(@base_accuracy + additional_accuracy, @max_accuracy)
   end
 
   defp health do

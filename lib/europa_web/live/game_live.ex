@@ -41,6 +41,7 @@ defmodule EuropaWeb.GameLive do
   @zoom_codes fetch_config!([:control_bindings, :zoom]).codes
   @compass_codes fetch_config!([:control_bindings, :compass]).codes
   @map_codes fetch_config!([:control_bindings, :map]).codes
+  @squad_codes fetch_config!([:control_bindings, :squad]).codes
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -186,6 +187,14 @@ defmodule EuropaWeb.GameLive do
     end
   end
 
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @squad_codes do
+    if socket.assigns.show_squad_menu do
+      {:noreply, close_squad_menu(socket)}
+    else
+      open_squad_menu(socket)
+    end
+  end
+
   def handle_event("key_pressed", _params, socket) do
     message = gettext("This key doesn't do anything. Press H to get control hints.")
     socket = put_flash(socket, :error, message)
@@ -203,6 +212,53 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("interact", params, socket) do
     interact(socket, params)
+  end
+
+  def handle_event("recruit_squad_member", _params, socket) do
+    case Server.recruit_squad_member(socket.assigns.server) do
+      {:ok, squad} ->
+        socket =
+          socket
+          |> close_dialog()
+          |> assign(show_squad_menu: true, squad: squad)
+          |> base_assign()
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("fire_squad_member", %{"uuid" => uuid}, socket) do
+    case Server.fire_squad_member(socket.assigns.server, uuid) do
+      {:ok, squad} ->
+        socket =
+          socket
+          |> close_dialog()
+          |> assign(show_squad_menu: true, squad: squad)
+          |> base_assign()
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("toggle_squad_loot_type", %{"type" => type}, socket) do
+    type = String.to_existing_atom(type)
+    current_loot_types = socket.assigns.squad.loot_types
+
+    loot_types =
+      if Enum.member?(current_loot_types, type) do
+        current_loot_types -- [type]
+      else
+        [type | current_loot_types]
+      end
+
+    {:ok, updated_squad} = Server.set_squad_loot_types(socket.assigns.server, loot_types)
+    {:noreply, assign(socket, squad: updated_squad)}
   end
 
   def handle_event("reload_weapon", %{"uuid" => item_uuid}, socket) do
@@ -315,6 +371,10 @@ defmodule EuropaWeb.GameLive do
     |> open_craft_menu()
   end
 
+  def handle_event("open_squad_menu", _params, socket) do
+    open_squad_menu(socket)
+  end
+
   def handle_event("show_control_hints", _, socket) do
     socket
     |> toggle_control_hints()
@@ -358,6 +418,14 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("close_diseases_menu", _params, socket) do
     {:noreply, close_diseases_menu(socket)}
+  end
+
+  def handle_event("close_squad_menu", _params, socket) do
+    {:noreply, close_squad_menu(socket)}
+  end
+
+  def handle_event("close_squad_event", _, socket) do
+    {:noreply, close_squad_event(socket)}
   end
 
   def handle_event("take_item", %{"uuid" => item_uuid}, socket) do
@@ -745,7 +813,9 @@ defmodule EuropaWeb.GameLive do
       chat: Server.get_chat(socket.assigns.server),
       current_time: get_current_time(socket.assigns.server),
       aim: get_aim(visible_planet, player),
-      current_coord: Server.get_current_coord(socket.assigns.server)
+      current_coord: Server.get_current_coord(socket.assigns.server),
+      squad: get_squad(socket.assigns.server),
+      squad_event: get_squad_event(socket)
     )
     |> switch_storm_sound()
     |> push_event("start_events_polling", %{})
@@ -1050,12 +1120,24 @@ defmodule EuropaWeb.GameLive do
     {:noreply, socket}
   end
 
+  defp open_squad_menu(socket) do
+    {:noreply, assign(socket, show_squad_menu: true)}
+  end
+
   defp close_inventory(socket) do
     assign(socket, inventory: nil)
   end
 
   defp close_diseases_menu(socket) do
     assign(socket, show_diseases_menu: false)
+  end
+
+  defp close_squad_menu(socket) do
+    assign(socket, show_squad_menu: false)
+  end
+
+  defp close_squad_event(socket) do
+    assign(socket, squad_event: nil)
   end
 
   defp close_control_hints(socket) do
@@ -1119,6 +1201,8 @@ defmodule EuropaWeb.GameLive do
     |> close_interaction()
     |> close_new_diseases_info()
     |> close_diseases_menu()
+    |> close_squad_menu()
+    |> close_squad_event()
   end
 
   defp interact(socket, params) do
@@ -1373,6 +1457,23 @@ defmodule EuropaWeb.GameLive do
   defp get_current_time(server) do
     {year, day, time} = Server.get_current_time(server)
     %{year: year, day: day, time: time}
+  end
+
+  defp get_squad(server) do
+    Server.get_squad(server)
+  end
+
+  defp get_squad_event(socket) do
+    current_event = socket.assigns[:squad_event]
+
+    if current_event do
+      current_event
+    else
+      case Server.get_squad_event(socket.assigns.server) do
+        {:ok, event} -> event
+        _ -> nil
+      end
+    end
   end
 
   defp get_aim(visible_planet, %Player{aim_mode?: true} = player) do

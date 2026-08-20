@@ -3,6 +3,7 @@ defmodule Europa.Server do
   use TypedStruct
   use Gettext, backend: Europa.Gettext
 
+  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Games
   alias Europa.Server.PlanetManager
   alias Europa.Server.Planet
@@ -236,6 +237,31 @@ defmodule Europa.Server do
   @spec interact(pid(), opts :: keyword()) :: {:ok, Planet.interaction()} | {:error, :nothing}
   def interact(server, opts \\ []) do
     GenServer.call(server, {:interact, opts})
+  end
+
+  @spec recruit_squad_member(pid()) :: {:ok, Planet.Squad.t()} | {:error, NotApplicableError.t()}
+  def recruit_squad_member(server) do
+    GenServer.call(server, :recruit_squad_member)
+  end
+
+  @spec fire_squad_member(pid(), Npc.uuid()) :: {:ok, Planet.Squad.t()} | {:error, NotApplicableError.t()}
+  def fire_squad_member(server, npc_uuid) do
+    GenServer.call(server, {:fire_squad_member, npc_uuid})
+  end
+
+  @spec set_squad_loot_types(pid(), list(Loot.item_type())) :: {:ok, Planet.Squad.t()}
+  def set_squad_loot_types(server, loot_types) when is_list(loot_types) do
+    GenServer.call(server, {:set_squad_loot_types, loot_types})
+  end
+
+  @spec get_squad(pid()) :: Planet.Squad.t()
+  def get_squad(server) do
+    GenServer.call(server, :get_squad)
+  end
+
+  @spec get_squad_event(pid()) :: {:ok, Planet.Squad.event()} | {:error, :no_events}
+  def get_squad_event(server) do
+    GenServer.call(server, :get_squad_event)
   end
 
   @spec toggle_aim_mode(pid()) :: :ok | {:error, :no_weapon}
@@ -726,6 +752,50 @@ defmodule Europa.Server do
           |> Chat.add_message(nothing_to_interact_message)
 
         {:reply, {:error, :nothing}, struct!(state, chat: updated_chat), @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call(:recruit_squad_member, _caller_pid, state) do
+    case PlanetManager.recruit_squad_member(state.planet, state.player.view_direction) do
+      {:ok, updated_planet} ->
+        {:reply, {:ok, updated_planet.squad}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
+
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call({:fire_squad_member, npc_uuid}, _caller_pid, state) do
+    case PlanetManager.fire_squad_member(state.planet, npc_uuid) do
+      {:ok, updated_planet} ->
+        {:reply, {:ok, updated_planet.squad}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
+
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call({:set_squad_loot_types, loot_types}, _caller_pid, state) do
+    case PlanetManager.set_squad_loot_types(state.planet, loot_types) do
+      {:ok, updated_planet} ->
+        {:reply, {:ok, updated_planet.squad}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
+
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call(:get_squad, _callber_pid, state) do
+    {:reply, state.planet.squad, state, @inactivity_timeout_ms}
+  end
+
+  def handle_call(:get_squad_event, _caller_pid, state) do
+    case PlanetManager.remove_last_squad_event(state.planet) do
+      {:ok, _planet, nil} ->
+        {:reply, {:error, :no_events}, state, @inactivity_timeout_ms}
+
+      {:ok, updated_planet, event} ->
+        {:reply, {:ok, event}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
     end
   end
 

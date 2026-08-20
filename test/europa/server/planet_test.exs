@@ -144,7 +144,7 @@ defmodule Europa.Server.PlanetTest do
          target: @n2_uuid
        )
 
-  @n build(:npc, accuracy: 0)
+  @n build(:npc, accuracy: 0, health: 90)
 
   @n2 build(:npc,
         uuid: @n2_uuid,
@@ -648,6 +648,20 @@ defmodule Europa.Server.PlanetTest do
                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                   ]
                                   |> PlanetLandConverter.from_matrix()
+
+  @land_player_down_close_to_npc_with_loot [
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @pl, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @n, @i, @ib, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                             [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                           ]
+                                           |> PlanetLandConverter.from_matrix()
 
   @land_player_right_close_to_enemy_npc [
                                           [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -1491,6 +1505,25 @@ defmodule Europa.Server.PlanetTest do
              end)
     end
 
+    test "npc from squad takes loot" do
+      npc_uuid = @n.uuid
+      npc_coord = {4, 2}
+
+      squad =
+        build(:squad,
+          members: %{npc_uuid => build(:squad_member, npc: @n, coord: npc_coord)},
+          resources: build(:squad_resources, ammo: 0),
+          loot_types: [:weapon]
+        )
+
+      planet = build(:planet, land: @land_player_down_close_to_npc_with_loot, current_coord: {4, 1}, squad: squad)
+
+      assert {:ok, %Planet{land: updated_land, squad: updated_squad}, _} = Planet.tick(planet, 2)
+      assert updated_squad.resources.ammo == 10
+      assert Map.fetch!(updated_land.tiles, {5, 2}) == Npc.change_view_direction(@n, :right)
+      assert %ItemBox{items: []} = Map.fetch!(updated_land.tiles, {6, 2})
+    end
+
     test "doesn't update predefined_cluster_coord when player not to far from current cluster" do
       current_coord = {4, 7}
 
@@ -1604,6 +1637,39 @@ defmodule Europa.Server.PlanetTest do
                %Action{action_type: {:storm, _}} -> true
                _ -> false
              end)
+    end
+
+    property "heals squad members" do
+      npc_uuid = @n.uuid
+      npc_coord = {4, 2}
+
+      squad =
+        build(:squad,
+          members: %{npc_uuid => build(:squad_member, npc: @n, coord: npc_coord)},
+          resources: build(:squad_resources, supplies: 10)
+        )
+
+      planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1}, squad: squad)
+
+      check all(_n <- StreamData.integer(1..100)) do
+        num_runs = 100
+        generator = list_of(constant(:ok), min_length: num_runs, max_length: num_runs)
+
+        check all(_ <- generator) do
+          results = Enum.map(1..num_runs, fn _ -> Planet.tick(planet, 1) end)
+
+          healed_count =
+            Enum.count(results, fn {:ok, %Planet{squad: updated_squad}, _actions} ->
+              Map.fetch!(updated_squad.members, npc_uuid).npc.health == @n.health + 10 &&
+                updated_squad.resources.supplies == squad.resources.supplies - 1
+            end)
+
+          healed_proportion = healed_count / num_runs
+
+          assert healed_proportion >= 0.01
+          assert healed_proportion <= 0.9
+        end
+      end
     end
 
     @tag perfomance: true
@@ -1998,6 +2064,36 @@ defmodule Europa.Server.PlanetTest do
 
     defp test_closes_door(planet, target_coord) do
       assert %Object{} = tile_at(planet.land, target_coord)
+    end
+  end
+
+  describe "recruit_squad_member/2" do
+    test "recruits npc" do
+      npc_uuid = @n.uuid
+
+      player = build(:player, view_direction: :down)
+      planet = build(:planet, land: @land_player_down_close_to_npc, current_coord: {4, 1})
+
+      assert {:ok, %Planet{squad: %Planet.Squad{members: %{^npc_uuid => %Planet.Squad.Member{npc: @n, coord: {4, 2}}}}}} =
+               Planet.recruit_squad_member(planet, player.view_direction)
+    end
+  end
+
+  describe "fire_squad_member/2" do
+    test "recruits npc" do
+      npc_uuid = @n.uuid
+
+      planet =
+        build(:planet,
+          land: @land_player_down_close_to_npc,
+          current_coord: {4, 1},
+          squad: build(:squad, members: %{npc_uuid => build(:squad_member, npc: @n)})
+        )
+
+      assert {:ok, %Planet{squad: %Planet.Squad{members: updated_members}}} =
+               Planet.fire_squad_member(planet, npc_uuid)
+
+      assert Enum.empty?(updated_members)
     end
   end
 

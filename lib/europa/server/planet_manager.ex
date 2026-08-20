@@ -175,6 +175,14 @@ defmodule Europa.Server.PlanetManager do
   """
   @callback crop_land(Planet.t()) :: {:ok, Planet.t()}
 
+  @callback recruit_squad_member(Planet.t(), Planet.direction()) :: {:ok, Planet.t()} | {:error, NotApplicableError.t()}
+
+  @callback fire_squad_member(Planet.t(), Npc.uuid()) :: {:ok, Planet.t()} | {:error, NotApplicableError.t()}
+
+  @callback set_squad_loot_types(Planet.t(), list(Loot.item_type())) :: {:ok, Planet.t()}
+
+  @callback remove_last_squad_event(Planet.t()) :: {:ok, Planet.t(), Planet.Squad.event() | nil}
+
   ### Implementation callers ###
 
   def new(options), do: manager_impl().new(options)
@@ -208,6 +216,14 @@ defmodule Europa.Server.PlanetManager do
   def crop_land(planet), do: manager_impl().crop_land(planet)
 
   def interact(planet, direction, opts), do: manager_impl().interact(planet, direction, opts)
+
+  def recruit_squad_member(planet, direction), do: manager_impl().recruit_squad_member(planet, direction)
+
+  def fire_squad_member(planet, npc_uuid), do: manager_impl().fire_squad_member(planet, npc_uuid)
+
+  def set_squad_loot_types(planet, loot_types), do: manager_impl().set_squad_loot_types(planet, loot_types)
+
+  def remove_last_squad_event(planet), do: manager_impl().remove_last_squad_event(planet)
 
   ### PRIVATE ###
 

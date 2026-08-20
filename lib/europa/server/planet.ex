@@ -5,7 +5,6 @@ defmodule Europa.Server.Planet do
   use TypedStruct
   use Gettext, backend: Europa.Gettext
 
-  alias Europa.Server.Errors.NotApplicableError
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Tile
   alias Europa.Server.Planet.Tiles.Objects
@@ -13,6 +12,7 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Planet.Templates
   alias Europa.Server.Planet.Region
   alias Europa.Server.Planet.Storm
+  alias Europa.Server.Planet.Squad
 
   alias Europa.Server.Player
   alias Europa.Server.PlayerManager
@@ -25,6 +25,8 @@ defmodule Europa.Server.Planet do
   alias Europa.Server.Characters
   alias Europa.Server.Characters.Character
   alias Europa.Server.Npc
+
+  alias Europa.Server.Errors.NotApplicableError
 
   alias Europa.Tools.Types
   alias Europa.Tools.PerlinNoise
@@ -202,6 +204,7 @@ defmodule Europa.Server.Planet do
     field :characters_pid, pid(), enforce: true
     field :player_fraction, Characters.Character.fraction(), enforce: true
     field :storm, Storm.t()
+    field :squad, Squad.t(), enforce: true
   end
 
   ### PUBLIC INTERFACE ###
@@ -223,7 +226,8 @@ defmodule Europa.Server.Planet do
         moves_count: 0,
         great_red_spots: 0,
         characters_pid: characters_pid,
-        player_fraction: player_fraction
+        player_fraction: player_fraction,
+        squad: Squad.new()
       }
 
     # Re-generate planet if player spawned on non movable tile or in non spawnable region
@@ -417,11 +421,35 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
-  def interact(%__MODULE__{land: land} = planet, direction, opts \\ []) do
+  def interact(%__MODULE__{land: land} = planet, direction, opts \\ []) when direction in @directions do
     target_coord = target_coord(planet, direction)
     target_tile = get_tile(land, target_coord)
 
     do_interact(target_tile, planet, direction, opts)
+  end
+
+  @impl true
+  def recruit_squad_member(%__MODULE__{} = planet, direction) when direction in @directions do
+    target_coord = target_coord(planet, direction)
+
+    case get_tile(planet.land, target_coord) do
+      %Npc{} = npc -> do_recruit_squad_member(planet, npc, target_coord)
+      _ -> {:error, %NotApplicableError{}}
+    end
+  end
+
+  @impl true
+  def fire_squad_member(%__MODULE__{} = planet, npc_uuid) do
+    case Squad.remove_member(planet.squad, npc_uuid, :fired) do
+      {:ok, updated_squad} -> {:ok, struct!(planet, squad: updated_squad)}
+      _ -> {:error, %NotApplicableError{}}
+    end
+  end
+
+  @impl true
+  def set_squad_loot_types(%__MODULE__{} = planet, loot_types) when is_list(loot_types) do
+    {:ok, updated_squad} = Squad.set_loot_types(planet.squad, loot_types)
+    {:ok, struct!(planet, squad: updated_squad)}
   end
 
   @impl true
@@ -441,15 +469,44 @@ defmodule Europa.Server.Planet do
   def remove_last_events(%__MODULE__{} = planet) do
     coords = get_coords_of_structs_with_events_list(planet)
 
-    {planet, events} =
-      Enum.reduce(coords, {planet, []}, fn coord, {pl, events} ->
-        %{uuid: uuid, events: [event | rest_events]} = tile = get_tile(pl.land, coord)
-        updated_tile = struct!(tile, events: rest_events)
-        updated_land = change_tile(pl.land, coord, updated_tile)
-        {struct!(planet, land: updated_land), [{uuid, event} | events]}
+    not_visible_squad_members_coords = Squad.member_coords(planet.squad) -- coords
+
+    # skip events from not visible squad members
+    changed_squad_tiles =
+      Enum.reduce(not_visible_squad_members_coords, %{}, fn coord, tiles ->
+        case get_tile(planet.land, coord) do
+          %Npc{events: [_h | _t]} = npc ->
+            updated_npc = struct!(npc, events: [])
+            Map.put(tiles, coord, updated_npc)
+
+          _ ->
+            tiles
+        end
       end)
 
-    {:ok, planet, events}
+    {changed_tiles, events} =
+      Enum.reduce(coords, {%{}, []}, fn coord, {tiles, events} ->
+        %{uuid: uuid, events: [event | rest_events]} = tile = get_tile(planet.land, coord)
+        updated_tile = struct!(tile, events: rest_events)
+        {Map.put(tiles, coord, updated_tile), [{uuid, event} | events]}
+      end)
+
+    new_tiles = Map.merge(changed_squad_tiles, changed_tiles)
+
+    if Enum.empty?(new_tiles) do
+      {:ok, planet, []}
+    else
+      updated_land = struct!(planet.land, tiles: Map.merge(planet.land.tiles, new_tiles))
+      {:ok, struct!(planet, land: updated_land), events}
+    end
+  end
+
+  @impl true
+  def remove_last_squad_event(%__MODULE__{} = planet) do
+    case Squad.remove_last_event(planet.squad) do
+      {:ok, updated_squad, event} -> {:ok, struct!(planet, squad: updated_squad), event}
+      _ -> {:ok, planet, nil}
+    end
   end
 
   @spec prepare_predefined_tile(tile() | {:npc, tile() | nil}, coord(), t(), tile() | nil) :: tile()
@@ -486,6 +543,13 @@ defmodule Europa.Server.Planet do
 
   ### PRIVATE ###
 
+  defp do_recruit_squad_member(%__MODULE__{} = planet, %Npc{} = npc, {_x, _y} = coord) do
+    case Squad.recruit_member(planet.squad, npc, coord) do
+      {:ok, squad} -> {:ok, struct!(planet, squad: squad)}
+      error -> error
+    end
+  end
+
   defp tile_to_landscape(%{stand_on: tile}), do: tile_to_landscape(tile)
   defp tile_to_landscape(tile), do: tile
 
@@ -499,7 +563,7 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp do_interact(%Npc{target: nil, character: %Character{not_playable?: false}} = npc, planet, _view_direction, _opts) do
+  defp do_interact(%Npc{target: nil, character: %Character{}} = npc, planet, _view_direction, _opts) do
     {:ok, planet, {:talk, npc}}
   end
 
@@ -596,7 +660,9 @@ defmodule Europa.Server.Planet do
       fn planet -> maybe_perform_npc_actions(planet) end,
       fn planet -> maybe_perform_enemies_actions(planet) end,
       fn planet -> maybe_add_temperature_action(planet) end,
-      fn planet -> maybe_add_radiation(planet) end
+      fn planet -> maybe_add_radiation(planet) end,
+      fn planet -> tick_squad(planet) end,
+      fn planet -> heal_squad_npcs(planet) end
     ]
 
     {updated_planet, actions} =
@@ -657,7 +723,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp find_direct_targets(
-         %__MODULE__{land: land},
+         %__MODULE__{land: land} = planet,
          {x, y},
          view_direction,
          shooting_distance
@@ -677,7 +743,7 @@ defmodule Europa.Server.Planet do
       |> Enum.find(fn coord ->
         case get_tile(land, coord) do
           %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
-          %Npc{} -> true
+          %Npc{} = npc -> not Squad.member?(planet.squad, npc)
           :player -> true
           _ -> false
         end
@@ -690,7 +756,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp find_shotgun_targets(
-         %__MODULE__{land: land},
+         %__MODULE__{land: land} = planet,
          coord,
          view_direction,
          shooting_distance
@@ -702,7 +768,7 @@ defmodule Europa.Server.Planet do
     |> Enum.filter(fn coord ->
       case get_tile(land, coord) do
         %Enemy{stand_on: tile} when tile not in @swimable_tiles -> true
-        %Npc{} -> true
+        %Npc{} = npc -> not Squad.member?(planet.squad, npc)
         :player -> true
         _ -> false
       end
@@ -911,6 +977,45 @@ defmodule Europa.Server.Planet do
     end
   end
 
+  defp tick_squad(%__MODULE__{} = planet) do
+    {:ok, updated_squad, actions} = Squad.tick(planet.squad)
+    {struct!(planet, squad: updated_squad), actions}
+  end
+
+  defp heal_squad_npcs(%__MODULE__{} = planet) do
+    updated_planet =
+      planet.squad
+      |> Squad.member_coords()
+      |> Enum.reduce(planet, fn coord, planet ->
+        case get_tile(planet.land, coord) do
+          %Npc{health: health, max_health: max_health} = npc when health < max_health ->
+            maybe_heal_squad_npc(planet, npc, coord)
+
+          _ ->
+            planet
+        end
+      end)
+
+    {updated_planet, []}
+  end
+
+  defp maybe_heal_squad_npc(%__MODULE__{} = planet, %Npc{} = npc, {_x, _y} = npc_coord) do
+    if m_to_n?(1, 3) do
+      case Squad.use_supply(planet.squad) do
+        {:ok, updated_squad, health} ->
+          updated_npc = Npc.heal(npc, health)
+          updated_land = change_tile(planet.land, npc_coord, updated_npc)
+          {:ok, updated_squad} = Squad.update_member(updated_squad, updated_npc, npc_coord)
+          struct!(planet, land: updated_land, squad: updated_squad)
+
+        _ ->
+          planet
+      end
+    else
+      planet
+    end
+  end
+
   defp get_neighbor_objects_temperature(%__MODULE__{land: land, current_coord: current_coord}) do
     temperatures =
       land
@@ -985,7 +1090,8 @@ defmodule Europa.Server.Planet do
       |> Enum.filter(fn coord ->
         case get_tile(planet.land, coord) do
           %Npc{} = other_npc ->
-            Characters.enemies?(npc.character, other_npc.character)
+            Characters.enemies?(npc.character, other_npc.character) || other_npc.target == :player ||
+              other_npc.player_enemy?
 
           _ ->
             false
@@ -993,7 +1099,7 @@ defmodule Europa.Server.Planet do
       end)
 
     {new_target_coord, new_target} =
-      closest_target(planet, npc_coord, enemy_coords ++ enemy_npc_coords, without_player: true)
+      closest_target(planet, npc_coord, enemy_coords ++ enemy_npc_coords, npc, without_player: true)
 
     enemy_fraction? = planet.player_fraction in npc.character.enemy_fractions && npc.character.not_playable?
 
@@ -1006,20 +1112,53 @@ defmodule Europa.Server.Planet do
         is_nil(new_target) && enemy_fraction? ->
           :player
 
+        Squad.member?(planet.squad, npc) && planet.squad.resources.ammo == 0 ->
+          get_closest_loot_coord_for_squad(planet, npc, npc_coord)
+
         new_target ->
           new_target
 
+        Squad.member?(planet.squad, npc) ->
+          get_closest_loot_coord_for_squad(planet, npc, npc_coord)
+
         true ->
-          {planet, []}
+          nil
       end
 
     updated_npc = Npc.trigger(npc, new_target)
     updated_land = change_tile(planet.land, npc_coord, updated_npc)
 
-    {struct!(planet, land: updated_land), []}
+    updated_squad =
+      if coord?(new_target) do
+        Squad.assign_coord(planet.squad, new_target)
+      else
+        planet.squad
+      end
+
+    {struct!(planet, land: updated_land, squad: updated_squad), []}
   end
 
   defp trigger_npc(%__MODULE__{} = planet, _, _, _, _), do: {planet, []}
+
+  defp get_closest_loot_coord_for_squad(%__MODULE__{squad: %Squad{loot_types: []}}, _, _) do
+    nil
+  end
+
+  defp get_closest_loot_coord_for_squad(%__MODULE__{} = planet, %Npc{} = npc, {_x, _y} = npc_coord) do
+    coords =
+      planet
+      |> get_coords_of_visible_loot()
+      |> Enum.filter(
+        &(&1 not in planet.squad.assigned_coords && calculate_move_coord(planet, &1, npc_coord, npc) != :stay)
+      )
+      |> Enum.sort_by(&coords_distance(npc_coord, &1))
+
+    if Enum.empty?(coords) do
+      nil
+    else
+      List.first(coords)
+    end
+  end
 
   defp move_npcs([], planet), do: {planet, []}
 
@@ -1037,16 +1176,20 @@ defmodule Europa.Server.Planet do
   end
 
   defp move_npc(%__MODULE__{} = planet, npc_coord, %Npc{target: nil} = npc) do
-    updated_npc = Npc.maybe_add_speech_event(npc)
-    updated_land = change_tile(planet.land, npc_coord, updated_npc)
+    if Squad.member?(planet.squad, npc) do
+      do_move_npc(planet, npc_coord, npc, planet.current_coord)
+    else
+      updated_npc = Npc.maybe_add_speech_event(npc)
+      updated_land = change_tile(planet.land, npc_coord, updated_npc)
 
-    {struct!(planet, land: updated_land), []}
+      {struct!(planet, land: updated_land), []}
+    end
   end
 
   defp move_npc(%__MODULE__{} = planet, npc_coord, %Npc{weapon: %Weapon{shooting_distance: shooting_distance}} = npc) do
     case get_target_coord(planet, npc) do
       nil ->
-        skip_npc_trigger(planet, npc_coord, npc)
+        {skip_npc_trigger(planet, npc_coord, npc), []}
 
       target_coord ->
         target = get_tile(planet.land, target_coord)
@@ -1057,6 +1200,10 @@ defmodule Europa.Server.Planet do
           !m_to_n?(@npc_move_possibility_from, @npc_move_possibility_to) ->
             {planet, []}
 
+          loot?(target) && coords_on_same_line?(npc_coord, target_coord) &&
+              coords_distance(npc_coord, target_coord) in 0..1 ->
+            take_squad_resources(planet, npc, npc_coord, target, target_coord)
+
           target != nil && coords_on_same_line?(npc_coord, target_coord) &&
             coords_distance(npc_coord, target_coord) in 1..shooting_distance &&
               target_coord in find_targets(planet, npc_coord, npc.view_direction, npc.weapon) ->
@@ -1066,20 +1213,67 @@ defmodule Europa.Server.Planet do
             do_move_npc(planet, npc_coord, npc, target_coord)
 
           true ->
-            skip_npc_trigger(planet, npc_coord, npc)
+            {skip_npc_trigger(planet, npc_coord, npc), []}
         end
     end
   end
 
+  defp take_squad_resources(
+         %__MODULE__{} = planet,
+         %Npc{} = npc,
+         {_nx, _ny} = npc_coord,
+         %Loot.ItemBox{} = item_box,
+         {_tx, _ty} = target_coord
+       ) do
+    {:ok, items, updated_item_box} = Loot.ItemBox.take_items_by_types(item_box, planet.squad.loot_types)
+    updated_land = change_tile(planet.land, target_coord, updated_item_box)
+
+    {:ok, updated_squad} =
+      planet.squad
+      |> Squad.take_items(items)
+
+    updated_planet =
+      planet
+      |> struct!(land: updated_land, squad: updated_squad)
+      |> skip_npc_trigger(npc_coord, npc)
+
+    {updated_planet, []}
+  end
+
   defp skip_npc_trigger(%__MODULE__{} = planet, npc_coord, npc) do
+    updated_squad =
+      if coord?(npc.target) do
+        Squad.remove_assigned_coord(planet.squad, npc.target)
+      else
+        planet.squad
+      end
+
     updated_npc = trigger_npc(npc, nil)
     updated_land = change_tile(planet.land, npc_coord, updated_npc)
-    {struct!(planet, land: updated_land), []}
+
+    struct!(planet, land: updated_land, squad: updated_squad)
   end
 
   defp trigger_npc(%Npc{} = npc, target), do: Npc.trigger(npc, target)
 
   defp npc_attack(%__MODULE__{} = planet, npc_coord, %Npc{} = npc, target_coord) do
+    cond do
+      Squad.member?(planet.squad, npc) && planet.squad.resources.ammo > 0 ->
+        updated_squad = Squad.register_shoot(planet.squad)
+
+        planet
+        |> struct!(squad: updated_squad)
+        |> npc_attack_or_miss(npc_coord, npc, target_coord)
+
+      Squad.member?(planet.squad, npc) ->
+        {skip_npc_trigger(planet, npc_coord, npc), []}
+
+      true ->
+        npc_attack_or_miss(planet, npc_coord, npc, target_coord)
+    end
+  end
+
+  defp npc_attack_or_miss(%__MODULE__{} = planet, npc_coord, %Npc{} = npc, target_coord) do
     if m_to_n?(npc.accuracy, @max_accuracy) do
       do_npc_attack(planet, npc_coord, npc, target_coord)
     else
@@ -1117,7 +1311,11 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_npc_attack_by_target_uuid(%__MODULE__{} = planet, %Npc{} = npc, npc_coord, target_coord, target) do
-    updated_target = damage_object(target, npc.weapon.damage, npc.uuid)
+    {updated_target, updated_squad} =
+      target
+      |> damage_object(npc.weapon.damage, npc.uuid)
+      |> maybe_update_squad_after_attack(target, planet.squad, target_coord)
+
     updated_npc = add_npc_shoot_event(npc)
 
     updated_land =
@@ -1125,7 +1323,7 @@ defmodule Europa.Server.Planet do
       |> change_tile(target_coord, updated_target)
       |> change_tile(npc_coord, updated_npc)
 
-    {struct!(planet, land: updated_land), attack_actions(npc, target)}
+    {struct!(planet, land: updated_land, squad: updated_squad), attack_actions(npc, target)}
   end
 
   defp get_target_coord(%__MODULE__{current_coord: current_coord}, %{target: :player}), do: current_coord
@@ -1140,6 +1338,8 @@ defmodule Europa.Server.Planet do
       end
     end)
   end
+
+  defp get_target_coord(%__MODULE__{}, %{target: {_x, _y} = coord}), do: coord
 
   defp get_target_coord(_, _), do: nil
 
@@ -1169,7 +1369,7 @@ defmodule Europa.Server.Planet do
         {planet, []}
 
       :stay ->
-        {planet, []}
+        {skip_npc_trigger(planet, npc_coord, npc), []}
 
       new_npc_coord ->
         target_tile = get_tile(planet.land, new_npc_coord)
@@ -1180,13 +1380,21 @@ defmodule Europa.Server.Planet do
           |> Npc.stand_on(target_tile)
           |> Npc.change_view_direction(new_view_direction)
 
+        updated_squad =
+          if Squad.member?(planet.squad, npc) do
+            {:ok, updated_squad} = Squad.update_member(planet.squad, npc, new_npc_coord)
+            updated_squad
+          else
+            planet.squad
+          end
+
         {updated_land, _updated_npc} =
           planet.land
           |> change_tile(npc_coord, npc.stand_on)
           |> change_tile(new_npc_coord, updated_npc)
           |> maybe_autotransform_target_object(new_npc_coord, updated_npc)
 
-        updated_planet = struct!(planet, land: updated_land)
+        updated_planet = struct!(planet, land: updated_land, squad: updated_squad)
         {updated_planet, []}
     end
   end
@@ -1251,7 +1459,7 @@ defmodule Europa.Server.Planet do
   end
 
   defp trigger_enemy(%__MODULE__{} = planet, enemy_coord, %Enemy{} = enemy, npc_coords) do
-    {_, new_target} = closest_target(planet, enemy_coord, npc_coords)
+    {_, new_target} = closest_target(planet, enemy_coord, npc_coords, enemy)
     updated_enemy = Enemy.trigger(enemy, new_target)
     updated_land = change_tile(planet.land, enemy_coord, updated_enemy)
 
@@ -1298,7 +1506,7 @@ defmodule Europa.Server.Planet do
 
       true ->
         if m_to_n?(@enemy_move_possibility_from, @enemy_move_possibility_to) &&
-             enemy_see_target?(enemy_coord, target_coord, enemy) do
+             enemy_see_target?(enemy_coord, target_coord, enemy, planet.squad) do
           do_move_enemy(planet, enemy_coord, enemy, target_coord)
         else
           {planet, actions ++ [Action.new(enemy, :stay)], enemy_coord, enemy}
@@ -1332,13 +1540,17 @@ defmodule Europa.Server.Planet do
          target_coord,
          target
        ) do
-    updated_target = damage_object(target, enemy.damage, enemy.uuid)
+    {updated_target, updated_squad} =
+      target
+      |> damage_object(enemy.damage, enemy.uuid)
+      |> maybe_update_squad_after_attack(target, planet.squad, target_coord)
 
     updated_land =
       planet.land
       |> change_tile(target_coord, updated_target)
 
-    {struct!(planet, land: updated_land), actions ++ attack_actions(enemy, target), enemy_coord, enemy}
+    {struct!(planet, land: updated_land, squad: updated_squad), actions ++ attack_actions(enemy, target), enemy_coord,
+     enemy}
   end
 
   defp do_move_enemy(%__MODULE__{} = planet, enemy_coord, enemy, target_coord) do
@@ -1374,7 +1586,17 @@ defmodule Europa.Server.Planet do
     []
   end
 
-  defp closest_target(%__MODULE__{} = planet, object_coord, target_coords, opts \\ []) do
+  defp closest_target(%__MODULE__{} = planet, object_coord, target_coords, subject, opts \\ []) do
+    if npc?(subject) && Squad.member?(planet.squad, subject) && planet.squad.resources.ammo == 0 do
+      {nil, nil}
+    else
+      do_closest_target(planet, object_coord, target_coords, subject, opts)
+    end
+  end
+
+  defp do_closest_target(%__MODULE__{} = planet, object_coord, target_coords, subject, opts) do
+    target_coords = Enum.filter(target_coords, &(calculate_move_coord(planet, object_coord, &1, subject) != :stay))
+
     {closest_coord, closest_uuid} =
       if Enum.empty?(target_coords) do
         {nil, nil}
@@ -1396,8 +1618,7 @@ defmodule Europa.Server.Planet do
     if Keyword.get(opts, :without_player) == true do
       {closest_coord, closest_uuid}
     else
-      if closest_coord && closest_uuid &&
-           first_coord_closed?(closest_coord, planet.current_coord, object_coord) do
+      if closest_coord && closest_uuid && first_coord_closed?(closest_coord, planet.current_coord, object_coord) do
         {closest_coord, closest_uuid}
       else
         {planet.current_coord, :player}
@@ -1444,11 +1665,18 @@ defmodule Europa.Server.Planet do
   defp do_a_star(open_set, closed_set, came_from, target, planet, subject) do
     {current, {_, current_g}} = Enum.min_by(open_set, fn {_coord, {f, _g}} -> f end)
 
+    view_distance =
+      if npc_and_squad_member?(planet.squad, subject) do
+        1000
+      else
+        @view_distance
+      end
+
     cond do
       current == target ->
         reconstruct_path(came_from, current, [current])
 
-      current_g >= @view_distance ->
+      current_g >= view_distance ->
         :stay
 
       true ->
@@ -1559,7 +1787,7 @@ defmodule Europa.Server.Planet do
     ]
 
     Enum.reduce(npc_actions, {planet, []}, fn action_fn, {planet, actions} ->
-      npc_coords = get_coords_of_visible_npc(planet)
+      npc_coords = (get_coords_of_visible_npc(planet) ++ Squad.member_coords(planet.squad)) |> Enum.uniq()
 
       {updated_planet, new_actions} = action_fn.(npc_coords, planet)
       {updated_planet, actions ++ new_actions}
@@ -1588,6 +1816,31 @@ defmodule Europa.Server.Planet do
   end
 
   defp damage_object(object, _, _), do: object
+
+  defp maybe_update_squad_after_attack(
+         %Loot.ItemBox{type: :human_body} = item_box,
+         %Npc{} = npc,
+         %Squad{} = squad,
+         _coord
+       ) do
+    if Squad.member?(squad, npc) do
+      {:ok, updated_squad} = Squad.remove_member(squad, npc, :died)
+      {item_box, updated_squad}
+    else
+      {item_box, squad}
+    end
+  end
+
+  defp maybe_update_squad_after_attack(%Npc{} = npc, _, %Squad{} = squad, coord) do
+    if Squad.member?(squad, npc) do
+      {:ok, updated_squad} = Squad.update_member(squad, npc, coord)
+      {npc, updated_squad}
+    else
+      {npc, squad}
+    end
+  end
+
+  defp maybe_update_squad_after_attack(object, _initial_object, squad, _coord), do: {object, squad}
 
   defp movable_tile?(land, coord, subject \\ :player) do
     movable_tiles =
@@ -1665,14 +1918,37 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp enemy_see_target?(enemy_coord, target_coord, %Enemy{target: :player}) do
-    enemy_see_player?(enemy_coord, target_coord)
+  defp get_coords_of_visible_loot(%__MODULE__{land: land, squad: %Squad{loot_types: loot_types}} = planet) do
+    planet
+    |> visible_land_coords()
+    |> Enum.filter(fn coord ->
+      case get_tile(land, coord) do
+        %Loot.ItemBox{items: items} ->
+          Enum.any?(items, &(Loot.Item.item_type(&1) in loot_types))
+
+        _ ->
+          false
+      end
+    end)
   end
 
-  defp enemy_see_target?(_, _, _), do: true
+  defp enemy_see_target?(enemy_coord, target_coord, %Enemy{target: :player}, %Squad{} = squad) do
+    enemy_see_player?(enemy_coord, target_coord, squad)
+  end
 
-  defp enemy_see_player?(enemy_coord, player_coord) do
-    coords_distance(enemy_coord, player_coord) <= @enemy_view_distance
+  defp enemy_see_target?(_, _, _, _), do: true
+
+  defp enemy_see_player?(enemy_coord, player_coord, %Squad{} = squad) do
+    members_count = Enum.count(squad.members)
+
+    squad_penalty =
+      if members_count > 0 do
+        members_count + 2
+      else
+        0
+      end
+
+    coords_distance(enemy_coord, player_coord) <= @enemy_view_distance + squad_penalty
   end
 
   defp do_take_loot(
@@ -1741,6 +2017,14 @@ defmodule Europa.Server.Planet do
       |> Npc.stand_on(player.stand_on)
       |> Npc.add_events([Event.new({:speech, excuse})])
 
+    updated_squad =
+      if Squad.member?(planet.squad, updated_npc) do
+        {:ok, updated_squad} = Squad.update_member(planet.squad, updated_npc, planet.current_coord)
+        updated_squad
+      else
+        planet.squad
+      end
+
     updated_land =
       planet.land
       |> change_tile(planet.current_coord, updated_npc)
@@ -1748,7 +2032,7 @@ defmodule Europa.Server.Planet do
 
     updated_planet =
       planet
-      |> struct!(land: updated_land, current_coord: target_coord)
+      |> struct!(land: updated_land, current_coord: target_coord, squad: updated_squad)
       |> maybe_generate_tiles(player.view_direction)
 
     move_cost = move_cost(new_tile)
@@ -2083,9 +2367,19 @@ defmodule Europa.Server.Planet do
   end
 
   defp generate_enemy_possibility(%__MODULE__{} = planet, {x, y} = coord) do
-    case region_by_perlin_noise(x, y, planet.land) do
-      %Region{enemy_generate_possibility: nil} -> default_generate_enemy_possibility(planet, coord)
-      %Region{enemy_generate_possibility: possibility} -> {1, possibility}
+    {m, n} =
+      case region_by_perlin_noise(x, y, planet.land) do
+        %Region{enemy_generate_possibility: nil} -> default_generate_enemy_possibility(planet, coord)
+        %Region{enemy_generate_possibility: possibility} -> {1, possibility}
+      end
+
+    squad_members_count = Enum.count(planet.squad.members)
+
+    if squad_members_count > 0 && m_to_n?(1, 10) do
+      squad_penalty = squad_members_count * 5
+      {m + squad_penalty, n}
+    else
+      {m, n}
     end
   end
 
@@ -2223,6 +2517,21 @@ defmodule Europa.Server.Planet do
       end
     end)
   end
+
+  defp npc_and_squad_member?(%Squad{} = squad, %Npc{} = npc) do
+    Squad.member?(squad, npc)
+  end
+
+  defp npc_and_squad_member?(%Squad{}, _), do: false
+
+  defp coord?({x, y}) when is_integer(x) and is_integer(y), do: true
+  defp coord?(_), do: false
+
+  defp loot?(%Loot.ItemBox{}), do: true
+  defp loot?(_), do: false
+
+  defp npc?(%Npc{}), do: true
+  defp npc?(_), do: false
 
   # TODO: figure out how to test this
   # coveralls-ignore-start

@@ -9,6 +9,7 @@ defmodule Europa.Support.Factory do
   alias Europa.Server.Player.Buff
   alias Europa.Server.Planet
   alias Europa.Server.Planet.Storm
+  alias Europa.Server.Planet.Squad
   alias Europa.Server.Planet.Tiles
   alias Europa.Server.Planet.Tiles.Objects.Object
   alias Europa.Server.Enemy
@@ -320,7 +321,45 @@ defmodule Europa.Support.Factory do
       great_red_spots: Map.get(opts, :great_red_spots, 0),
       characters_pid: characters_pid,
       player_fraction: Map.get(opts, :player_fraction, :neutral),
-      storm: Map.get(opts, :storm)
+      storm: Map.get(opts, :storm),
+      squad: Map.get(opts, :squad, build(:squad))
+    }
+  end
+
+  @spec squad_factory() :: Squad.t()
+  def squad_factory do
+    %Squad{
+      members: %{},
+      resources: build(:squad_resources),
+      loot_types: [],
+      assigned_coords: [],
+      events: [],
+      declined_npcs: []
+    }
+  end
+
+  @spec squad_resources_factory() :: Squad.Resources.t()
+  def squad_resources_factory do
+    %Squad.Resources{
+      supplies: 0,
+      ammo: 0,
+      other: 0
+    }
+  end
+
+  @spec squad_member_factory() :: Squad.Member.t()
+  def squad_member_factory do
+    %Squad.Member{
+      npc: build(:npc),
+      coord: sequence(:coord, &{1, &1 + 1})
+    }
+  end
+
+  @spec squad_declined_npc_factory() :: Squad.DeclinedNpc.t()
+  def squad_declined_npc_factory do
+    %Squad.DeclinedNpc{
+      uuid: Ecto.UUID.generate(),
+      rest_moves: 10
     }
   end
 
@@ -417,7 +456,7 @@ defmodule Europa.Support.Factory do
     %Character{
       name: sequence(:name, &"Character #{&1 + 1}"),
       gender: :male,
-      profession: "Game developer",
+      profession: :guard,
       fraction: :neutral,
       enemy_fractions: [],
       not_playable?: false,
@@ -441,6 +480,7 @@ defmodule Europa.Support.Factory do
       stand_on: Tiles.tile(:ice).atom_value,
       view_direction: :down,
       weapon: build(:weapon),
+      max_health: 100,
       health: 100,
       accuracy: 50
     }
