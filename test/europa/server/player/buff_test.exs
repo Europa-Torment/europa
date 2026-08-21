@@ -11,6 +11,18 @@ defmodule Europa.Server.Player.BuffTest do
                duration: 20
              }
     end
+
+    test "validates value" do
+      assert_raise RuntimeError, fn ->
+        Buff.from_map(%{stat_name: "max_warm", value: "fake", duration: 20})
+      end
+    end
+
+    test "validates duration" do
+      assert_raise RuntimeError, fn ->
+        Buff.from_map(%{stat_name: "max_warm", value: 10, duration: -20})
+      end
+    end
   end
 
   describe "decrease_duration/1" do
