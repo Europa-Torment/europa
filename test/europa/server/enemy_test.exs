@@ -18,6 +18,7 @@ defmodule Europa.Server.EnemyTest do
         expected_enemy
         |> Map.from_struct()
         |> Map.put(:type, to_string(expected_enemy.type))
+        |> Map.put(:id, to_string(expected_enemy.id))
 
       assert Enemy.new(attrs) |> struct!(uuid: uuid) == struct!(expected_enemy, uuid: uuid)
     end
@@ -53,6 +54,13 @@ defmodule Europa.Server.EnemyTest do
       assert_pos_integer(enemy.damage)
       assert_pos_integer(enemy.move_distance)
       assert_pos_integer(enemy.accuracy)
+    end
+  end
+
+  describe "generate_enemy/1" do
+    test "generates enemy with given id" do
+      id = :slug
+      assert %Enemy{id: ^id} = Enemy.generate_enemy(id)
     end
   end
 

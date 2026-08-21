@@ -1901,6 +1901,10 @@ defmodule EuropaWeb.GameCompotents do
     "water_with_monster.gif"
   end
 
+  defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on, gif_tile?: true}, _) do
+    "#{image_name}_#{landscape_name(stand_on)}.gif"
+  end
+
   defp get_image_name(%Enemy{image_name: image_name, stand_on: stand_on}, _) do
     "#{image_name}_#{landscape_name(stand_on)}" <> ext_by_stand_on(stand_on)
   end

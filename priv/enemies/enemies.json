@@ -1,5 +1,6 @@
 [
     {
+        "id": "fishlike_ghoul",
         "type": "monster",
         "name": "Fishlike ghoul",
         "description": "A foul-smelling monster resembling an anthropomorphic deep-sea fish from Earth. The first creature to emerge onto the surface.",
@@ -14,6 +15,7 @@
         "random_weight": 2.0
     },
     {
+        "id": "deep_sea_semi_worm",
         "type": "monster",
         "name": "Deep-sea semi-worm",
         "description": "Something that looks like a cross between a giant slimy worm and a seal. The Geiger counter goes off the charts next to them.",
@@ -29,6 +31,7 @@
         "random_weight": 0.5
     },
     {
+        "id": "stinking_toad",
         "type": "monster",
         "name": "Stinking Toad",
         "description": "A nauseating ocean toad. It moves in sudden jerks.",
@@ -44,6 +47,7 @@
         "random_weight": 0.5
     },
     {
+        "id": "human_race_betrayer",
         "type": "monster",
         "name": "Human race betrayer",
         "description": "A hybrid of a human and a local underwater monster. Rumor has it that some people, for some reason, deliberately dived into the ocean and subsequently became like this.",
@@ -60,6 +64,7 @@
         "random_weight": 0.05
     },
     {
+        "id": "blistered_ghoul",
         "type": "monster",
         "name": "Blistered Ghoul",
         "description": "A hideous, foul-smelling, fish-like monster exuding a strange energy.",
@@ -78,6 +83,7 @@
         "random_weight": 0.9
     },
     {
+        "id": "ice_ghoul",
         "type": "monster",
         "name": "Ice Ghoul",
         "description": "An underwater ghoul that exudes even more cold than everything around it.",
@@ -91,5 +97,38 @@
         "phrases": ["Bluah!", "Bluen!"],
         "image_name": "ice_ghoul",
         "random_weight": 0.9
+    },
+    {
+        "id": "slug",
+        "type": "monster",
+        "name": "Slug",
+        "description": "An unsightly, mobile slug.",
+        "max_health": {"from": 15, "to": 20},
+        "health": {"from": 10, "to": {"attr": "max_health"}},
+        "damage": {"from": 5, "to": 10},
+        "accuracy": {"from": 10, "to": 25},
+        "move_distance": 1,
+        "max_items": 1,
+        "phrases": [],
+        "morphs_to": {"type": "around", "id": "worms"},
+        "image_name": "slug",
+        "gif_tile": true,
+        "random_weight": 0.4
+    },
+    {
+        "id": "worms",
+        "type": "monster",
+        "name": "Worms",
+        "description": "A bunch of sickening worms.",
+        "max_health": 5,
+        "health": 5,
+        "damage": {"from": 1, "to": 2},
+        "accuracy": {"from": 10, "to": 20},
+        "move_distance": 1,
+        "max_items": 1,
+        "phrases": [],
+        "image_name": "worms",
+        "gif_tile": true,
+        "random_weight": 0.0
     }
 ]

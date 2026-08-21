@@ -862,7 +862,7 @@ defmodule Europa.Server.Planet do
     if updated_enemy.health > 0 do
       {updated_enemy, change_tile(land, coord, updated_enemy)}
     else
-      {updated_enemy, change_tile(land, coord, generate_monster_body(updated_enemy))}
+      {updated_enemy, generate_monster_body(land, coord, updated_enemy)}
     end
   end
 
@@ -876,41 +876,65 @@ defmodule Europa.Server.Planet do
     if updated_npc.health > 0 do
       {updated_npc, change_tile(land, coord, updated_npc)}
     else
-      {updated_npc, change_tile(land, coord, generate_human_body(updated_npc))}
+      {updated_npc, generate_human_body(land, coord, updated_npc)}
     end
   end
 
   defp maybe_delete_empty_item_box(%Loot.ItemBox{type: :bag, items: [], stand_on: stand_on}), do: stand_on
   defp maybe_delete_empty_item_box(item_box), do: item_box
 
-  defp generate_monster_body(%Enemy{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = enemy) do
+  defp generate_monster_body(land, coord, %Enemy{morphs_to: {:around, enemy_id}}) do
+    neighbor_coords = neighbor_coords(coord, 1) |> Enum.filter(&movable_tile?(land, &1))
+
+    new_tiles =
+      [coord | neighbor_coords]
+      |> Enum.map(fn coord ->
+        tile = tile_by_perlin_noise(coord, land)
+        enemy = Enemy.generate_enemy(enemy_id) |> Enemy.stand_on(tile)
+        {coord, enemy}
+      end)
+      |> Enum.into(%{})
+
+    struct!(land, tiles: Map.merge(land.tiles, new_tiles))
+  end
+
+  defp generate_monster_body(land, coord, %Enemy{morphs_to: {:single, enemy_id}, stand_on: stand_on}) do
+    new_enemy = Enemy.generate_enemy(enemy_id) |> Enemy.stand_on(stand_on)
+    change_tile(land, coord, new_enemy)
+  end
+
+  defp generate_monster_body(land, coord, %Enemy{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = enemy) do
     monster_body =
       enemy
       |> Enemy.stand_on(stand_on)
       |> Loot.generate_item_box_from_enemy()
 
-    struct!(monster_body, items: items ++ monster_body.items)
+    monster_body = struct!(monster_body, items: items ++ monster_body.items)
+    change_tile(land, coord, monster_body)
   end
 
-  defp generate_monster_body(%Enemy{stand_on: tile}) when tile in @swimable_tiles do
-    tile
+  defp generate_monster_body(land, _coord, %Enemy{stand_on: tile}) when tile in @swimable_tiles do
+    land
   end
 
-  defp generate_monster_body(%Enemy{} = enemy) do
-    Loot.generate_item_box_from_enemy(enemy)
+  defp generate_monster_body(land, coord, %Enemy{} = enemy) do
+    monster_body = Loot.generate_item_box_from_enemy(enemy)
+    change_tile(land, coord, monster_body)
   end
 
-  defp generate_human_body(%Npc{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = npc) do
+  defp generate_human_body(land, coord, %Npc{stand_on: %Loot.ItemBox{items: items, stand_on: stand_on}} = npc) do
     human_body =
       npc
       |> Npc.stand_on(stand_on)
       |> Loot.generate_item_box_from_npc()
 
-    struct!(human_body, items: items ++ human_body.items)
+    human_body = struct!(human_body, items: items ++ human_body.items)
+    change_tile(land, coord, human_body)
   end
 
-  defp generate_human_body(%Npc{} = npc) do
-    Loot.generate_item_box_from_npc(npc)
+  defp generate_human_body(land, coord, %Npc{} = npc) do
+    human_body = Loot.generate_item_box_from_npc(npc)
+    change_tile(land, coord, human_body)
   end
 
   # this is for "skip" object, see Objects module
@@ -1311,17 +1335,11 @@ defmodule Europa.Server.Planet do
   end
 
   defp do_npc_attack_by_target_uuid(%__MODULE__{} = planet, %Npc{} = npc, npc_coord, target_coord, target) do
-    {updated_target, updated_squad} =
-      target
-      |> damage_object(npc.weapon.damage, npc.uuid)
-      |> maybe_update_squad_after_attack(target, planet.squad, target_coord)
+    updated_land = damage_object(planet.land, target_coord, target, npc.weapon.damage, npc.uuid)
+    updated_squad = maybe_update_squad_after_attack(updated_land, target, target_coord, planet.squad)
 
     updated_npc = add_npc_shoot_event(npc)
-
-    updated_land =
-      planet.land
-      |> change_tile(target_coord, updated_target)
-      |> change_tile(npc_coord, updated_npc)
+    updated_land = change_tile(updated_land, npc_coord, updated_npc)
 
     {struct!(planet, land: updated_land, squad: updated_squad), attack_actions(npc, target)}
   end
@@ -1540,14 +1558,8 @@ defmodule Europa.Server.Planet do
          target_coord,
          target
        ) do
-    {updated_target, updated_squad} =
-      target
-      |> damage_object(enemy.damage, enemy.uuid)
-      |> maybe_update_squad_after_attack(target, planet.squad, target_coord)
-
-    updated_land =
-      planet.land
-      |> change_tile(target_coord, updated_target)
+    updated_land = damage_object(planet.land, target_coord, target, enemy.damage, enemy.uuid)
+    updated_squad = maybe_update_squad_after_attack(updated_land, target, target_coord, planet.squad)
 
     {struct!(planet, land: updated_land, squad: updated_squad), actions ++ attack_actions(enemy, target), enemy_coord,
      enemy}
@@ -1794,53 +1806,54 @@ defmodule Europa.Server.Planet do
     end)
   end
 
-  defp damage_object(%Enemy{} = enemy, damage, _subject) do
+  defp damage_object(land, coord, %Enemy{} = enemy, damage, _subject) do
     if enemy.health - damage > 0 do
-      enemy
-      |> Enemy.take_damage(damage)
-      |> Enemy.stand_on(blood_tile(enemy.stand_on))
+      updated_enemy =
+        enemy
+        |> Enemy.take_damage(damage)
+        |> Enemy.stand_on(blood_tile(enemy.stand_on))
+
+      change_tile(land, coord, updated_enemy)
     else
-      generate_monster_body(enemy)
+      generate_monster_body(land, coord, enemy)
     end
   end
 
-  defp damage_object(%Npc{} = npc, damage, subject) do
+  defp damage_object(land, coord, %Npc{} = npc, damage, subject) do
     if npc.health - damage > 0 do
-      npc
-      |> Npc.take_damage(damage)
-      |> Npc.stand_on(blood_tile(npc.stand_on))
-      |> trigger_npc(subject)
+      updated_npc =
+        npc
+        |> Npc.take_damage(damage)
+        |> Npc.stand_on(blood_tile(npc.stand_on))
+        |> trigger_npc(subject)
+
+      change_tile(land, coord, updated_npc)
     else
-      generate_human_body(npc)
+      generate_human_body(land, coord, npc)
     end
   end
 
-  defp damage_object(object, _, _), do: object
+  defp damage_object(land, _, _, _, _), do: land
 
-  defp maybe_update_squad_after_attack(
-         %Loot.ItemBox{type: :human_body} = item_box,
-         %Npc{} = npc,
-         %Squad{} = squad,
-         _coord
-       ) do
-    if Squad.member?(squad, npc) do
-      {:ok, updated_squad} = Squad.remove_member(squad, npc, :died)
-      {item_box, updated_squad}
-    else
-      {item_box, squad}
+  defp maybe_update_squad_after_attack(land, %Npc{} = npc, npc_coord, %Squad{} = squad) do
+    member? = Squad.member?(squad, npc)
+    tile = get_tile(land, npc_coord)
+
+    cond do
+      member? && npc?(tile) ->
+        {:ok, updated_squad} = Squad.update_member(squad, tile, npc_coord)
+        updated_squad
+
+      member? ->
+        {:ok, updated_squad} = Squad.remove_member(squad, npc, :died)
+        updated_squad
+
+      true ->
+        squad
     end
   end
 
-  defp maybe_update_squad_after_attack(%Npc{} = npc, _, %Squad{} = squad, coord) do
-    if Squad.member?(squad, npc) do
-      {:ok, updated_squad} = Squad.update_member(squad, npc, coord)
-      {npc, updated_squad}
-    else
-      {npc, squad}
-    end
-  end
-
-  defp maybe_update_squad_after_attack(object, _initial_object, squad, _coord), do: {object, squad}
+  defp maybe_update_squad_after_attack(_, _, _, squad), do: squad
 
   defp movable_tile?(land, coord, subject \\ :player) do
     movable_tiles =
@@ -2214,6 +2227,8 @@ defmodule Europa.Server.Planet do
         tile_by_perlin_noise(x, y, land)
     end
   end
+
+  defp tile_by_perlin_noise({x, y}, %Land{} = land), do: tile_by_perlin_noise(x, y, land)
 
   defp tile_by_perlin_noise(x, y, %Land{} = land) do
     region = region_by_perlin_noise(x, y, land)

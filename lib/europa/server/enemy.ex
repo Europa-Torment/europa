@@ -11,12 +11,15 @@ defmodule Europa.Server.Enemy do
   import Europa.Tools.Randomizer
 
   @enemies_attrs FilesReader.parse_file()
+  @enemies_ids Enum.map(@enemies_attrs, fn {attrs, _} -> String.to_atom(attrs.id) end)
 
   @allowed_enemy_types [:monster]
 
+  @type id :: unquote(Types.one_of(@enemies_ids))
   @type attrs :: map()
   @type enemy_type :: unquote(Types.one_of(@allowed_enemy_types))
-  @type target() :: :player | Ecto.UUID.t() | nil
+  @type target :: :player | Ecto.UUID.t() | nil
+  @type morphs_to :: {:single, id()} | {:around, id()}
 
   for {{enemy, _}, i} <- Enum.with_index(@enemies_attrs) do
     fun_name = String.to_atom("__extract_strings_for_#{i}")
@@ -36,6 +39,7 @@ defmodule Europa.Server.Enemy do
   end
 
   typedstruct do
+    field :id, id(), enforce: true
     field :uuid, Ecto.UUID.t(), enforce: true
     field :type, enemy_type(), enforce: true
     field :name, String.t(), enforce: true
@@ -52,6 +56,8 @@ defmodule Europa.Server.Enemy do
     field :heal_unit, non_neg_integer(), enforce: true
     field :stand_on, Planet.tile()
     field :image_name, String.t(), enforce: true
+    field :gif_tile?, boolean(), enforce: true, default: false
+    field :morphs_to, morphs_to()
     field :events, list(Event.t()), default: []
     field :phrases, list(String.t()), default: []
     field :max_items, pos_integer(), enforce: true
@@ -62,6 +68,7 @@ defmodule Europa.Server.Enemy do
   @spec new(attrs()) :: t()
   def new(attrs) when is_map(attrs) do
     %__MODULE__{
+      id: Map.fetch!(attrs, :id) |> String.to_atom() |> validate_id!(),
       uuid: Ecto.UUID.generate(),
       type: Map.fetch!(attrs, :type) |> String.to_atom(),
       name: Map.fetch!(attrs, :name),
@@ -80,6 +87,8 @@ defmodule Europa.Server.Enemy do
       phrases: Map.fetch!(attrs, :phrases),
       max_items: Map.fetch!(attrs, :max_items),
       image_name: Map.fetch!(attrs, :image_name),
+      gif_tile?: Map.get(attrs, :gif_tile, false),
+      morphs_to: Map.get(attrs, :morphs_to) |> parse_morphs_to(),
       stand_on: nil
     }
   end
@@ -106,6 +115,15 @@ defmodule Europa.Server.Enemy do
   def generate_enemy do
     @enemies_attrs
     |> WeightedRandom.take_one()
+    |> AttrsDeterminator.determine_attrs()
+    |> new()
+  end
+
+  @spec generate_enemy(id()) :: t()
+  def generate_enemy(id) do
+    @enemies_attrs
+    |> Enum.find(fn {enemy, _} -> enemy.id == Atom.to_string(id) end)
+    |> elem(0)
     |> AttrsDeterminator.determine_attrs()
     |> new()
   end
@@ -163,4 +181,26 @@ defmodule Europa.Server.Enemy do
   end
 
   def maybe_add_speech_event(%__MODULE__{} = enemy), do: enemy
+
+  defp parse_morphs_to(nil), do: nil
+
+  defp parse_morphs_to(%{type: "around", id: id}) do
+    {:around, String.to_atom(id) |> validate_id!()}
+  end
+
+  defp parse_morphs_to(%{type: "sigle", id: id}) do
+    {:single, String.to_atom(id) |> validate_id!()}
+  end
+
+  defp parse_morphs_to(value) do
+    raise "unexpected morphs_to: #{inspect(value)}"
+  end
+
+  defp validate_id!(id) when id in @enemies_ids do
+    id
+  end
+
+  defp validate_id!(id) do
+    raise "unexpected id: #{inspect(id)}, allowed: #{inspect(@enemies_ids)}"
+  end
 end

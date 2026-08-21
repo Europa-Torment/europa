@@ -431,6 +431,7 @@ defmodule Europa.Support.Factory do
   @spec enemy_factory() :: Enemy.t()
   def enemy_factory do
     %Enemy{
+      id: :fishlike_ghoul,
       uuid: Ecto.UUID.generate(),
       type: :monster,
       name: sequence(:name, &"Enemy #{&1 + 1}"),
@@ -447,7 +448,8 @@ defmodule Europa.Support.Factory do
       heal_unit: 0,
       max_items: 5,
       stand_on: Tiles.tile(:ice).atom_value,
-      image_name: "monster_semiworm"
+      image_name: "monster_semiworm",
+      gif_tile?: false
     }
   end
 
