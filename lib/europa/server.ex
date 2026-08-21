@@ -145,6 +145,11 @@ defmodule Europa.Server do
     GenServer.call(server, :get_current_time)
   end
 
+  @spec skip_turn(pid()) :: :ok
+  def skip_turn(server) do
+    GenServer.call(server, :skip_turn)
+  end
+
   @spec move(pid(), Planet.direction()) :: {:moved, :normal | :overloaded} | :stay | {:attack, Loot.Item.item()}
   def move(server, direction) do
     GenServer.call(server, {:move, direction})
@@ -409,6 +414,10 @@ defmodule Europa.Server do
 
   def handle_call({:get_coord_info, coord}, _from, state) do
     {:reply, PlanetManager.coord_info(state.planet, coord), state, @inactivity_timeout_ms}
+  end
+
+  def handle_call(:skip_turn, caller_pid, state) do
+    {:reply, :ok, state, {:continue, {:tick, 1, caller_pid}}}
   end
 
   def handle_call({:move, direction}, {caller_pid, _}, state) do
@@ -891,21 +900,26 @@ defmodule Europa.Server do
     {:ok, updated_player, player_actions} = PlayerManager.tick(state.player, moves_count)
 
     actions = planet_actions ++ player_actions
-
-    updated_player = process_actions(updated_player, actions, state.game_uuid, caller_pid)
+    updated_player = process_actions(updated_player, actions)
 
     updated_chat =
       state.chat
       |> add_action_messages_to_chat(actions)
       |> maybe_add_radiation_contamination_message(state.player, updated_player)
 
-    {:noreply,
-     struct!(state,
-       planet: updated_planet,
-       player: updated_player,
-       chat: updated_chat,
-       current_datetime: shift_datetime(state.current_datetime, moves_count * 10)
-     ), @inactivity_timeout_ms}
+    updated_state =
+      struct!(state,
+        planet: updated_planet,
+        player: updated_player,
+        chat: updated_chat,
+        current_datetime: shift_datetime(state.current_datetime, moves_count * 10)
+      )
+
+    if updated_player.health == 0 do
+      finish_game(state.game_uuid, caller_pid)
+    end
+
+    {:noreply, updated_state, @inactivity_timeout_ms}
   end
 
   @impl true
@@ -1051,7 +1065,6 @@ defmodule Europa.Server do
           state.player
           |> PlayerManager.stand_on(step_on_tile)
           |> maybe_add_interested_event(next_to_interactive?)
-          |> maybe_finish_game(state.game_uuid, caller_pid)
 
         {:reply, {:moved, status},
          struct!(state,
@@ -1169,7 +1182,7 @@ defmodule Europa.Server do
 
   defp maybe_add_items_after_object_transform(player, _), do: player
 
-  defp process_actions(%Player{} = player, actions, game_uuid, caller_pid) when is_list(actions) do
+  defp process_actions(%Player{} = player, actions) when is_list(actions) do
     Enum.reduce(actions, player, fn action, player ->
       case action do
         %Action{action_type: :attack, subject: %Enemy{} = enemy} ->
@@ -1201,7 +1214,6 @@ defmodule Europa.Server do
           player
       end
     end)
-    |> maybe_finish_game(game_uuid, caller_pid)
   end
 
   defp maybe_change_temperature(%Player{} = player, %Storm{} = storm) do
@@ -1258,19 +1270,18 @@ defmodule Europa.Server do
     end
   end
 
-  defp maybe_finish_game(%Player{health: 0} = player, game_uuid, caller_pid) do
+  defp finish_game(game_uuid, caller_pid) do
     Games.finish_game(game_uuid, :died)
 
-    if is_pid(caller_pid) && Process.alive?(caller_pid) do
-      caller_pid |> send(:game_over)
+    case caller_pid do
+      {pid, _tag} ->
+        send(pid, :game_over)
+
+      _ ->
+        send(caller_pid, :game_over)
     end
 
     Process.send_after(self(), :game_over, 800)
-    player
-  end
-
-  defp maybe_finish_game(player, _, _) do
-    player
   end
 
   defp finish_game_if_active(game_uuid) do

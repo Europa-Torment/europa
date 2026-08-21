@@ -42,6 +42,7 @@ defmodule EuropaWeb.GameLive do
   @compass_codes fetch_config!([:control_bindings, :compass]).codes
   @map_codes fetch_config!([:control_bindings, :map]).codes
   @squad_codes fetch_config!([:control_bindings, :squad]).codes
+  @skip_turn_codes fetch_config!([:control_bindings, :skip_turn]).codes
 
   @low_health_ratio fetch_config!([:game_params, :player, :low_health_ratio])
 
@@ -75,7 +76,6 @@ defmodule EuropaWeb.GameLive do
         |> assign(
           game_field_size: length(socket.assigns.visible_planet),
           game_started: false,
-          game_over: false,
           game_page: true,
           inventory_type: nil,
           zoom_mode: false,
@@ -185,6 +185,11 @@ defmodule EuropaWeb.GameLive do
       _ ->
         {:noreply, socket}
     end
+  end
+
+  def handle_event("key_pressed", %{"code" => code}, socket) when code in @skip_turn_codes do
+    :ok = Server.skip_turn(socket.assigns.server)
+    {:noreply, base_assign(socket)}
   end
 
   def handle_event("key_pressed", %{"code" => code}, socket) when code in @squad_codes do

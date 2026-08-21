@@ -140,6 +140,7 @@ config :europa, :control_bindings,
   compass: %{keys: ["C", "c"], codes: ["KeyC"]},
   map: %{keys: ["M", "m"], codes: ["KeyM"]},
   squad: %{keys: ["T", "t"], codes: ["KeyT"]},
+  skip_turn: %{keys: ["Shift"], codes: ["ShiftLeft", "ShiftRight"]},
   close: %{keys: ["Escape"], codes: ["Escape"]}
 
 # Configure esbuild (the version is required)

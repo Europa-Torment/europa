@@ -248,6 +248,19 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "skip_turn/1" do
+    test "ticks 1 time", %{server: server} do
+      PlanetManagerMock
+      |> expect(:tick, fn planet, 1 -> {:ok, planet, []} end)
+
+      PlayerManagerMock
+      |> expect(:tick, fn player, 1 -> {:ok, player, []} end)
+
+      assert Server.skip_turn(server) == :ok
+      :timer.sleep(100)
+    end
+  end
+
   describe "move/2" do
     test "returns success response (moved)", %{server: server, planet: planet} do
       moves_count = 10

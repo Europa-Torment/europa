@@ -45,6 +45,7 @@ defmodule EuropaWeb.GameCompotents do
   @compass_keys fetch_config!([:control_bindings, :compass]).keys
   @map_keys fetch_config!([:control_bindings, :map]).keys
   @squad_keys fetch_config!([:control_bindings, :squad]).keys
+  @skip_turn_keys fetch_config!([:control_bindings, :skip_turn]).keys
 
   @max_thirst fetch_config!([:game_params, :player, :max_thirst])
   @max_hunger fetch_config!([:game_params, :player, :max_hunger])
@@ -2017,6 +2018,7 @@ defmodule EuropaWeb.GameCompotents do
       control_hint(gettext("Map"), @map_keys),
       control_hint(gettext("Squad menu"), @squad_keys),
       control_hint(gettext("Compass"), @compass_keys),
+      control_hint(gettext("Skip turn"), @skip_turn_keys),
       control_hint(gettext("Close"), @close_keys)
     ]
   end
