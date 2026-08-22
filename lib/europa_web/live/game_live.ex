@@ -520,12 +520,30 @@ defmodule EuropaWeb.GameLive do
 
   def handle_event("drop_item", %{"uuid" => item_uuid}, socket) do
     case Server.drop_item(socket.assigns.server, item_uuid, socket.assigns.item_drop_count) do
-      {:ok, _updated_player} ->
+      :ok ->
         socket =
           socket
           |> base_assign()
           |> assign_equipment()
           |> close_item_drop_menu()
+          |> assign(inventory: get_player_inventory(socket))
+          |> play_sound("equip")
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("give_item_to_squad", %{"uuid" => item_uuid}, socket) do
+    case Server.give_item_to_squad(socket.assigns.server, item_uuid, socket.assigns.item_to_squad_count) do
+      :ok ->
+        socket =
+          socket
+          |> base_assign()
+          |> assign_equipment()
+          |> close_item_to_squad_menu()
           |> assign(inventory: get_player_inventory(socket))
           |> play_sound("equip")
 
@@ -557,6 +575,29 @@ defmodule EuropaWeb.GameLive do
       end
 
     {:noreply, assign(socket, item_drop_count: count)}
+  end
+
+  def handle_event("open_item_to_squad_menu", %{"uuid" => item_uuid}, socket) do
+    with {:ok, item} <- Server.get_item(socket.assigns.server, item_uuid),
+         true <- Loot.Item.stackable?(item) do
+      {:noreply, assign(socket, item_to_squad: item, item_to_squad_count: 1, input_mode: true)}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("close_item_to_squad_menu", _, socket) do
+    {:noreply, close_item_to_squad_menu(socket)}
+  end
+
+  def handle_event("change_item_to_squad_count", %{"value" => count}, socket) do
+    count =
+      case Integer.parse(count) do
+        {count, _} when is_integer(count) and count > 0 -> count
+        _ -> socket.assigns.item_to_squad_count
+      end
+
+    {:noreply, assign(socket, item_to_squad_count: count)}
   end
 
   def handle_event("change_disassemble_item_count", %{"value" => count}, socket) do
@@ -670,6 +711,11 @@ defmodule EuropaWeb.GameLive do
     else
       {:reply, [], socket}
     end
+  end
+
+  def handle_event("set_input_max", %{"id" => id}, socket) do
+    socket = push_event(socket, "apply_max", %{id: id})
+    {:noreply, socket}
   end
 
   def handle_event(_, _, socket) do
@@ -1150,7 +1196,11 @@ defmodule EuropaWeb.GameLive do
   end
 
   defp close_item_drop_menu(socket) do
-    assign(socket, item_drop_menu: false, item_to_drop: nil, item_drop_count: nil, input_mode: false)
+    assign(socket, item_to_drop: nil, item_drop_count: nil, input_mode: false)
+  end
+
+  defp close_item_to_squad_menu(socket) do
+    assign(socket, item_to_squad: nil, item_to_squad_count: nil, input_mode: false)
   end
 
   defp close_dialog(socket) do
@@ -1200,6 +1250,7 @@ defmodule EuropaWeb.GameLive do
     |> close_item_box()
     |> close_control_hints()
     |> close_item_drop_menu()
+    |> close_item_to_squad_menu()
     |> close_dialog()
     |> close_item_disassemble_menu()
     |> close_craft_menu()

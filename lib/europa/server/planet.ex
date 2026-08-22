@@ -453,6 +453,12 @@ defmodule Europa.Server.Planet do
   end
 
   @impl true
+  def add_squad_loot(%__MODULE__{} = planet, item) do
+    {:ok, updated_squad} = Squad.take_items(planet.squad, [item])
+    {:ok, struct!(planet, squad: updated_squad)}
+  end
+
+  @impl true
   def tick(%__MODULE__{} = planet, moves_count) when moves_count > 0 do
     planet
     |> maybe_set_new_predefined_cluster_coord()

@@ -2875,6 +2875,26 @@ defmodule Europa.Server.PlanetTest do
     end
   end
 
+  describe "set_squad_loot_types/2" do
+    test "updates squad loot_types" do
+      planet = build(:planet, squad: build(:squad, loot_types: []))
+      loot_types = [:weapon, :ammo]
+
+      assert {:ok, %Planet{squad: %Planet.Squad{loot_types: ^loot_types}}} =
+               Planet.set_squad_loot_types(planet, loot_types)
+    end
+  end
+
+  describe "add_squad_loot/2" do
+    test "updates squad resources" do
+      planet = build(:planet, squad: build(:squad, resources: build(:squad_resources, ammo: 10)))
+      item = build(:ammo, count: 5)
+
+      assert {:ok, %Planet{squad: %Planet.Squad{resources: %Planet.Squad.Resources{ammo: 15}}}} =
+               Planet.add_squad_loot(planet, item)
+    end
+  end
+
   describe "prepare_predefined_tile/6" do
     setup do
       {:ok, planet: build(:planet, year: 2153)}

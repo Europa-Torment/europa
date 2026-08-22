@@ -274,15 +274,15 @@ defmodule Europa.Server.Player do
   end
 
   @impl true
-  def drop_item(%__MODULE__{} = player, item_uuid, count \\ nil) do
+  def drop_item(%__MODULE__{} = player, item_uuid, count \\ nil, opts \\ []) do
     with {:ok, item} <- get_item(player, item_uuid) do
       {player, item} = maybe_unequip_item(player, item)
 
       {updated_player, dropped_item} =
         if Loot.Item.stackable?(item) && is_integer(count) && item.count > count do
-          drop_stackable_item(player, item, count)
+          drop_stackable_item(player, item, count, opts)
         else
-          drop_regular_item(player, item)
+          drop_regular_item(player, item, opts)
         end
 
       {:ok, updated_player, dropped_item}
@@ -848,49 +848,61 @@ defmodule Europa.Server.Player do
     end
   end
 
-  defp drop_regular_item(player, item) do
+  defp drop_regular_item(player, item, opts) do
     updated_player =
       player
       |> delete_item(item)
-      |> do_drop_item(item)
+      |> do_drop_item(item, opts)
 
     {updated_player, item}
   end
 
-  defp drop_stackable_item(player, item, count) do
+  defp drop_stackable_item(player, item, count, opts) do
     dropped_item = struct!(item, uuid: Ecto.UUID.generate(), count: count)
     updated_item = struct!(item, count: item.count - count)
 
     updated_player =
       player
       |> update_item(updated_item)
-      |> do_drop_item(dropped_item)
+      |> do_drop_item(dropped_item, opts)
 
     {updated_player, dropped_item}
   end
 
-  defp do_drop_item(%__MODULE__{stand_on: %Object{movable?: true} = object} = player, item) do
-    item_box =
-      Loot.new_item_box(:bag, [item])
-      |> Loot.ItemBox.stand_on(object)
+  defp do_drop_item(%__MODULE__{stand_on: %Object{movable?: true} = object} = player, item, opts) do
+    if Keyword.get(opts, :without_item_box) do
+      player
+    else
+      item_box =
+        Loot.new_item_box(:bag, [item])
+        |> Loot.ItemBox.stand_on(object)
 
-    stand_on(player, item_box)
+      stand_on(player, item_box)
+    end
   end
 
-  defp do_drop_item(%__MODULE__{stand_on: %Loot.ItemBox{} = item_box} = player, item) do
-    updated_item_box = Loot.ItemBox.add_item(item_box, item)
-    stand_on(player, updated_item_box)
+  defp do_drop_item(%__MODULE__{stand_on: %Loot.ItemBox{} = item_box} = player, item, opts) do
+    if Keyword.get(opts, :without_item_box) do
+      player
+    else
+      updated_item_box = Loot.ItemBox.add_item(item_box, item)
+      stand_on(player, updated_item_box)
+    end
   end
 
-  defp do_drop_item(%__MODULE__{stand_on: stand_on} = player, item) do
-    stand_on_tile = Tiles.tile_by_blood_version(stand_on) || Tiles.tile_by_atom_value(stand_on)
-    stand_on = stand_on_tile.atom_value
+  defp do_drop_item(%__MODULE__{stand_on: stand_on} = player, item, opts) do
+    if Keyword.get(opts, :without_item_box) do
+      player
+    else
+      stand_on_tile = Tiles.tile_by_blood_version(stand_on) || Tiles.tile_by_atom_value(stand_on)
+      stand_on = stand_on_tile.atom_value
 
-    item_box =
-      Loot.new_item_box(:bag, [item])
-      |> Loot.ItemBox.stand_on(stand_on)
+      item_box =
+        Loot.new_item_box(:bag, [item])
+        |> Loot.ItemBox.stand_on(stand_on)
 
-    stand_on(player, item_box)
+      stand_on(player, item_box)
+    end
   end
 
   defp do_tick(player, moves_count) do

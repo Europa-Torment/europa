@@ -347,7 +347,7 @@ defmodule Europa.Server.PlayerTest do
     end
   end
 
-  describe "drop_item/3" do
+  describe "drop_item/4" do
     setup do
       weapon = build(:weapon)
       ammo = build(:ammo, count: 20)
@@ -361,6 +361,13 @@ defmodule Europa.Server.PlayerTest do
 
       assert {:ok, %Player{inventory: [^ammo], stand_on: %Loot.ItemBox{type: :bag, stand_on: @ice, items: [^weapon]}},
               ^weapon} = Player.drop_item(player, weapon.uuid)
+    end
+
+    test "drops given item (without item box)", %{player: player, ammo: ammo, weapon: weapon} do
+      player = Player.stand_on(player, @ice)
+
+      assert {:ok, %Player{inventory: [^ammo], stand_on: @ice}, ^weapon} =
+               Player.drop_item(player, weapon.uuid, 1, without_item_box: true)
     end
 
     test "drops stackable item (all)", %{player: player, ammo: ammo, weapon: weapon} do

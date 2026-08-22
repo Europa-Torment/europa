@@ -188,8 +188,10 @@ defmodule EuropaWeb.GameCompotents do
 
     ~H"""
     <div id="squad_indicator" class="bg-base-200 p-3 shadow-md text-sm">
-      <.link phx-click="open_squad_menu">{gettext("Squad")} ({@members_count})</.link>
-      <span class="text-xs" style={"color: #{squad_satisfaction_color(@satisfaction)}"}>{@satisfaction}%</span>
+      <.link phx-click="open_squad_menu">
+        {gettext("Squad")} ({@members_count})
+        <span class="text-xs" style={"color: #{squad_satisfaction_color(@satisfaction)}"}>{@satisfaction}%</span>
+      </.link>
     </div>
     """
   end
@@ -283,42 +285,42 @@ defmodule EuropaWeb.GameCompotents do
         <!-- все li-элементы без изменений -->
         <li class={"#{health_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"health-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:health)}>
-            <.icon_image name="heart" /> {@player_stats.health}/{@player_stats.max_health}
+            <.link><.icon_image name="heart" /> {@player_stats.health}/{@player_stats.max_health}</.link>
           </div>
         </li>
         <li class={"#{inventory_stats_class(@player_stats)}"} {open_inventory_attrs()}>
           <div id={"inventory-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:inventory)}>
-            <.icon_image name="backpack" /> {@player_stats.inventory_weight}/{@player_stats.max_weight}
+            <.link><.icon_image name="backpack" /> {@player_stats.inventory_weight}/{@player_stats.max_weight}</.link>
           </div>
         </li>
         <li class={"#{warm_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"warm-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:warm)}>
-            <.icon_image name="warm" /> {@player_stats.warm}/{@player_stats.max_warm}
+            <.link><.icon_image name="warm" /> {@player_stats.warm}/{@player_stats.max_warm}</.link>
           </div>
         </li>
         <li>
           <div id={"accuracy-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:accuracy)}>
-            <.icon_image name="accuracy" /> {@player_stats.accuracy}
+            <.link><.icon_image name="accuracy" /> {@player_stats.accuracy}</.link>
           </div>
         </li>
         <li class={"#{thirst_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"thirst-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:thirst)}>
-            <.icon_image name="thirst" /> {@player_stats.thirst}
+            <.link><.icon_image name="thirst" /> {@player_stats.thirst}</.link>
           </div>
         </li>
         <li class={"#{hunger_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"hunger-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:hunger)}>
-            <.icon_image name="hunger" /> {@player_stats.hunger}
+            <.link><.icon_image name="hunger" /> {@player_stats.hunger}</.link>
           </div>
         </li>
         <li class={"#{radiation_stats_class(@player_stats)}"} {open_inventory_attrs("supply")}>
           <div id={"radiation-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:radiation)}>
-            <.icon_image name="radiation" /> {@player_stats.radiation}
+            <.link><.icon_image name="radiation" /> {@player_stats.radiation}</.link>
           </div>
         </li>
         <li>
           <div id={"efficiency-stat-#{@display_type}"} phx-hook="Tooltip" data-tooltip={stat_tooltip(:efficiency)}>
-            <.icon_image name="efficiency" /> {@player_stats.efficiency}
+            <.link><.icon_image name="efficiency" /> {@player_stats.efficiency}</.link>
           </div>
         </li>
       </ul>
@@ -328,7 +330,7 @@ defmodule EuropaWeb.GameCompotents do
 
   def compass_link(assigns) do
     ~H"""
-    <div class="bg-base-200 p-5 shadow-md text-sm">
+    <div class="bg-base-200 p-3 shadow-md text-sm">
       <.link phx-click="open_compass"><.icon_image name="compass" /> {gettext("Compass")}</.link>
     </div>
     """
@@ -338,7 +340,7 @@ defmodule EuropaWeb.GameCompotents do
     assigns = Map.put(assigns, :version, @game_version)
 
     ~H"""
-    <div class="bg-base-200 p-5 shadow-md text-sm">
+    <div class="bg-base-200 p-3 shadow-md text-sm">
       <.link phx-click="show_control_hints"><.icon_image name="book" /> {gettext("Control hints")}</.link>
     </div>
     <div class="p-1 text-center text-xs">
@@ -357,43 +359,49 @@ defmodule EuropaWeb.GameCompotents do
           <%= if @helmet do %>
             <.item_image item={@helmet} player={@player} />
           <% else %>
-            <img
-              id="no-helmet"
-              {open_inventory_attrs("helmet")}
-              phx-hook="Tooltip"
-              data-tooltip={gettext("No helmet")}
-              src={~p"/images/equipment/helmets/no_helmet.png"}
-              alt="4"
-              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
-            />
+            <.link>
+              <img
+                id="no-helmet"
+                {open_inventory_attrs("helmet")}
+                phx-hook="Tooltip"
+                data-tooltip={gettext("No helmet")}
+                src={~p"/images/equipment/helmets/no_helmet.png"}
+                alt="4"
+                class="bg-neutral max-w-full h-auto object-contain block mx-auto"
+              />
+            </.link>
           <% end %>
 
           <%= if @suit do %>
             <.item_image item={@suit} player={@player} />
           <% else %>
-            <img
-              id="no-suit"
-              {open_inventory_attrs("suit")}
-              phx-hook="Tooltip"
-              data-tooltip={gettext("No suit")}
-              src={~p"/images/equipment/suits/no_suit.png"}
-              alt="4"
-              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
-            />
+            <.link>
+              <img
+                id="no-suit"
+                {open_inventory_attrs("suit")}
+                phx-hook="Tooltip"
+                data-tooltip={gettext("No suit")}
+                src={~p"/images/equipment/suits/no_suit.png"}
+                alt="4"
+                class="bg-neutral max-w-full h-auto object-contain block mx-auto"
+              />
+            </.link>
           <% end %>
 
           <%= if @boots do %>
             <.item_image item={@boots} player={@player} />
           <% else %>
-            <img
-              id="no-boots"
-              {open_inventory_attrs("boots")}
-              phx-hook="Tooltip"
-              data-tooltip={gettext("No boots")}
-              src={~p"/images/equipment/boots/no_boots.png"}
-              alt="4"
-              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
-            />
+            <.link>
+              <img
+                id="no-boots"
+                {open_inventory_attrs("boots")}
+                phx-hook="Tooltip"
+                data-tooltip={gettext("No boots")}
+                src={~p"/images/equipment/boots/no_boots.png"}
+                alt="4"
+                class="bg-neutral max-w-full h-auto object-contain block mx-auto"
+              />
+            </.link>
           <% end %>
         </div>
 
@@ -401,28 +409,32 @@ defmodule EuropaWeb.GameCompotents do
           <%= if @weapon do %>
             <.item_image item={@weapon} player={@player} />
           <% else %>
-            <img
-              id="no-weapon"
-              {open_inventory_attrs("weapon")}
-              phx-hook="Tooltip"
-              data-tooltip={gettext("No weapon")}
-              src={~p"/images/equipment/weapons/no_weapon.png"}
-              alt="4"
-              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
-            />
+            <.link>
+              <img
+                id="no-weapon"
+                {open_inventory_attrs("weapon")}
+                phx-hook="Tooltip"
+                data-tooltip={gettext("No weapon")}
+                src={~p"/images/equipment/weapons/no_weapon.png"}
+                alt="4"
+                class="bg-neutral max-w-full h-auto object-contain block mx-auto"
+              />
+            </.link>
           <% end %>
           <%= if @melee_weapon do %>
             <.item_image item={@melee_weapon} player={@player} />
           <% else %>
-            <img
-              id="no-melee-weapon"
-              {open_inventory_attrs("melee_weapon")}
-              phx-hook="Tooltip"
-              data-tooltip={gettext("No melee weapon")}
-              src={~p"/images/equipment/melee_weapons/fist.png"}
-              alt="4"
-              class="bg-neutral max-w-full h-auto object-contain block mx-auto"
-            />
+            <.link>
+              <img
+                id="no-melee-weapon"
+                {open_inventory_attrs("melee_weapon")}
+                phx-hook="Tooltip"
+                data-tooltip={gettext("No melee weapon")}
+                src={~p"/images/equipment/melee_weapons/fist.png"}
+                alt="4"
+                class="bg-neutral max-w-full h-auto object-contain block mx-auto"
+              />
+            </.link>
           <% end %>
         </div>
       </div>
@@ -432,15 +444,17 @@ defmodule EuropaWeb.GameCompotents do
 
   def item_image(assigns) do
     ~H"""
-    <img
-      id={"#{Loot.Item.item_type(@item)}-#{@item.uuid}"}
-      {open_inventory_attrs("#{Loot.Item.item_type(@item)}")}
-      phx-hook="Tooltip"
-      data-tooltip={item_tooltip(@item, @player)}
-      src={"#{item_image_path(@item)}"}
-      alt="4"
-      class="bg-neutral max-w-full h-auto object-contain block mx-auto"
-    />
+    <.link>
+      <img
+        id={"#{Loot.Item.item_type(@item)}-#{@item.uuid}"}
+        {open_inventory_attrs("#{Loot.Item.item_type(@item)}")}
+        phx-hook="Tooltip"
+        data-tooltip={item_tooltip(@item, @player)}
+        src={"#{item_image_path(@item)}"}
+        alt="4"
+        class="bg-neutral max-w-full h-auto object-contain block mx-auto"
+      />
+    </.link>
     """
   end
 
@@ -449,11 +463,13 @@ defmodule EuropaWeb.GameCompotents do
     <%= if @weapon do %>
       <div
         style="display: inline-flex; align-items: center; gap: 0;"
-        class="bg-base-200 p-5 shadow-md text-sm"
+        class="bg-base-200 p-3 shadow-md text-xs"
         {open_inventory_attrs("ammo")}
       >
         <p class="tooltip" data-tip={"#{gettext("Loaded")}/#{gettext("Magazine size")} (#{gettext("In inventory")})"}>
-          <span class="text-lg"><.icon_image name="ammo" /></span> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size} ({@ammo_count})
+          <.link>
+            <span class="text-lg"><.icon_image name="ammo" /></span> {@weapon.caliber}: {@weapon.rounds_loaded}/{@weapon.magazine_size} ({@ammo_count})
+          </.link>
         </p>
       </div>
     <% end %>
@@ -613,12 +629,22 @@ defmodule EuropaWeb.GameCompotents do
                 <a>{gettext("Disassemble")}<.moves_count moves_count={@craft_moves_count} /></a>
               </li>
             <% end %>
-            <li phx-click="drop_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
-              <a>{gettext("Drop")}</a>
-            </li>
+            <%= if Loot.Item.stackable?(@item) do %>
+              <li phx-click="open_item_to_squad_menu" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Give to squad")}</a>
+              </li>
+            <% else %>
+              <li phx-click="give_item_to_squad" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Give to squad")}</a>
+              </li>
+            <% end %>
             <%= if Loot.Item.stackable?(@item) do %>
               <li phx-click="open_item_drop_menu" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
-                <a>{gettext("Drop partly")}</a>
+                <a>{gettext("Drop")}</a>
+              </li>
+            <% else %>
+              <li phx-click="drop_item" phx-value-uuid={"#{@item.uuid}"} {dropdown_attrs()}>
+                <a>{gettext("Drop")}</a>
               </li>
             <% end %>
           </ul>
@@ -886,30 +912,54 @@ defmodule EuropaWeb.GameCompotents do
       <div class="modal overflow-visible" role="dialog">
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
           <h3 class="text-lg font-bold pb-3">{gettext("Drop")} {Loot.Item.composed_name(@item_to_drop)}</h3>
-          <div>
-            <input
-              id="item_drop_count"
-              type="number"
-              class="input validator"
-              name="item_drop_count"
-              value={@item_drop_count}
-              phx-hook="InputChange"
-              data-event="change_item_drop_count"
-              required
-              placeholder={gettext("How many?")}
-              min="1"
-              max={@item_to_drop.count}
-              title={gettext("Must be between") <> " 1-#{@item_to_drop.count}"}
-            />
-            <p class="validator-hint">
-              {gettext("Must be between")} 1-{@item_to_drop.count}
-            </p>
-            <button class="btn btn-secondary" phx-click="drop_item" phx-value-uuid={"#{@item_to_drop.uuid}"}>
-              {gettext("Drop")}
-            </button>
-          </div>
+
+          <.item_count_input
+            id="item_drop_count"
+            item={@item_to_drop}
+            event="change_item_drop_count"
+            value={@item_drop_count}
+          />
+
+          <button class="btn btn-secondary" phx-click="drop_item" phx-value-uuid={"#{@item_to_drop.uuid}"}>
+            {gettext("Drop")}
+          </button>
+
           <div class="modal-action">
             <label phx-click="close_item_drop_menu" for="item_drop_menu" class="btn">{gettext("Close")}</label>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    """
+  end
+
+  def item_to_squad_menu(assigns) do
+    ~H"""
+    <%= if @item_to_squad do %>
+      <input
+        type="checkbox"
+        id="item_to_squad_menu"
+        class="modal-toggle"
+        checked={true}
+        phx-change="close_item_to_squad_menu"
+      />
+      <div class="modal overflow-visible" role="dialog">
+        <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
+          <h3 class="text-lg font-bold pb-3">{gettext("Give to squad")} {Loot.Item.composed_name(@item_to_squad)}</h3>
+
+          <.item_count_input
+            id="item_to_squad_count"
+            item={@item_to_squad}
+            event="change_item_to_squad_count"
+            value={@item_to_squad_count}
+          />
+
+          <button class="btn btn-secondary" phx-click="give_item_to_squad" phx-value-uuid={"#{@item_to_squad.uuid}"}>
+            {gettext("Give")}
+          </button>
+
+          <div class="modal-action">
+            <label phx-click="close_item_to_squad_menu" for="item_to_squad_menu" class="btn">{gettext("Close")}</label>
           </div>
         </div>
       </div>
@@ -931,25 +981,12 @@ defmodule EuropaWeb.GameCompotents do
         <div class="modal-box overflow-visible overflow-y-auto mt-[5vh]">
           <h3 class="text-lg font-bold pb-3">{gettext("Item disassemble:")}</h3>
           <%= if Loot.Item.stackable?(@disassemble_item) do %>
-            <div>
-              <input
-                id="disassemble_item_count"
-                type="number"
-                class="input validator"
-                name="disassemble_item_count"
-                value={@disassemble_item_count}
-                phx-hook="InputChange"
-                data-event="change_disassemble_item_count"
-                required
-                placeholder={gettext("How many?")}
-                min="1"
-                max={@disassemble_item.count}
-                title={gettext("Must be between") <> " 1-#{@disassemble_item.count}"}
-              />
-              <p class="validator-hint">
-                {gettext("Must be between")} 1-{@disassemble_item.count}
-              </p>
-            </div>
+            <.item_count_input
+              id="disassemble_item_count"
+              item={@disassemble_item}
+              event="change_disassemble_item_count"
+              value={@disassemble_item_count}
+            />
           <% end %>
           <h4 class="text-md font-bold pb-3">{gettext("After disassembling you will receive following items:")}</h4>
           <div>
@@ -981,6 +1018,44 @@ defmodule EuropaWeb.GameCompotents do
         </div>
       </div>
     <% end %>
+    """
+  end
+
+  def item_count_input(assigns) do
+    ~H"""
+    <div class="mb-5">
+      <div class="flex items-center gap-2">
+        <input
+          id={@id}
+          type="number"
+          class="input validator"
+          name="item_drop_count"
+          value={@value}
+          phx-hook="InputChange"
+          data-event={@event}
+          data-min={1}
+          data-max={@item.count}
+          required
+          placeholder={gettext("How many?")}
+          min="1"
+          max={@item.count}
+        />
+        <.set_input_max_button id={@id} />
+      </div>
+    </div>
+    """
+  end
+
+  def set_input_max_button(assigns) do
+    ~H"""
+    <a
+      href="#"
+      phx-click="set_input_max"
+      phx-value-id={@id}
+      class="btn btn-sm btn-primary"
+    >
+      {gettext("max")}
+    </a>
     """
   end
 

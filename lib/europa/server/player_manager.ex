@@ -82,7 +82,7 @@ defmodule Europa.Server.PlayerManager do
   @doc """
   Drops item from inventory.
   """
-  @callback drop_item(Player.t(), Loot.uuid(), count :: pos_integer() | nil) ::
+  @callback drop_item(Player.t(), Loot.uuid(), count :: pos_integer() | nil, opts :: Keyword.t()) ::
               {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
 
   @doc """
@@ -323,7 +323,7 @@ defmodule Europa.Server.PlayerManager do
 
   def get_item(player, item_uuid), do: manager_impl().get_item(player, item_uuid)
 
-  def drop_item(player, item_uuid, count), do: manager_impl().drop_item(player, item_uuid, count)
+  def drop_item(player, item_uuid, count, opts \\ []), do: manager_impl().drop_item(player, item_uuid, count, opts)
 
   def disassemble_item(player, item_uuid, count \\ 1), do: manager_impl().disassemble_item(player, item_uuid, count)
 

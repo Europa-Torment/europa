@@ -209,10 +209,14 @@ defmodule Europa.Server do
     GenServer.call(server, {:get_item, item_uuid})
   end
 
-  @spec drop_item(pid(), Loot.uuid(), count :: pos_integer() | nil) ::
-          {:ok, Player.t(), Loot.Item.item()} | {:error, :not_found}
+  @spec drop_item(pid(), Loot.uuid(), count :: pos_integer() | nil) :: :ok | {:error, :not_found}
   def drop_item(server, item_uuid, count \\ nil) do
     GenServer.call(server, {:drop_item, item_uuid, count})
+  end
+
+  @spec give_item_to_squad(pid(), Loot.uuid(), count :: pos_integer() | nil) :: :ok | {:error, :not_found}
+  def give_item_to_squad(server, item_uuid, count \\ nil) do
+    GenServer.call(server, {:give_item_to_squad, item_uuid, count})
   end
 
   @spec disassemble_item(pid(), Loot.uuid(), count :: pos_integer()) ::
@@ -485,8 +489,18 @@ defmodule Europa.Server do
   def handle_call({:drop_item, item_uuid, count}, _from, state) do
     case PlayerManager.drop_item(state.player, item_uuid, count) do
       {:ok, updated_player, _item} ->
-        {:reply, {:ok, updated_player}, struct!(state, player: updated_player), @inactivity_timeout_ms}
+        {:reply, :ok, struct!(state, player: updated_player), @inactivity_timeout_ms}
 
+      error ->
+        {:reply, error, state, @inactivity_timeout_ms}
+    end
+  end
+
+  def handle_call({:give_item_to_squad, item_uuid, count}, _from, state) do
+    with {:ok, updated_player, item} <- PlayerManager.drop_item(state.player, item_uuid, count, without_item_box: true),
+         {:ok, updated_planet} <- PlanetManager.add_squad_loot(state.planet, item) do
+      {:reply, :ok, struct!(state, player: updated_player, planet: updated_planet), @inactivity_timeout_ms}
+    else
       error ->
         {:reply, error, state, @inactivity_timeout_ms}
     end

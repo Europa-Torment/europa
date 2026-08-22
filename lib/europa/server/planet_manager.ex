@@ -181,6 +181,8 @@ defmodule Europa.Server.PlanetManager do
 
   @callback set_squad_loot_types(Planet.t(), list(Loot.item_type())) :: {:ok, Planet.t()}
 
+  @callback add_squad_loot(Planet.t(), Loot.Item.item()) :: {:ok, Planet.t()}
+
   @callback remove_last_squad_event(Planet.t()) :: {:ok, Planet.t(), Planet.Squad.event() | nil}
 
   ### Implementation callers ###
@@ -222,6 +224,8 @@ defmodule Europa.Server.PlanetManager do
   def fire_squad_member(planet, npc_uuid), do: manager_impl().fire_squad_member(planet, npc_uuid)
 
   def set_squad_loot_types(planet, loot_types), do: manager_impl().set_squad_loot_types(planet, loot_types)
+
+  def add_squad_loot(planet, item), do: manager_impl().add_squad_loot(planet, item)
 
   def remove_last_squad_event(planet), do: manager_impl().remove_last_squad_event(planet)
 
