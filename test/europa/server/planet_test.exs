@@ -171,6 +171,14 @@ defmodule Europa.Server.PlanetTest do
         character: build(:character, enemy_fractions: [:neutral, :wcc, :etc, :ssb], not_playable?: true)
       )
 
+  @n5 build(:npc,
+        uuid: @n2_uuid,
+        accuracy: 1000,
+        weapon: build(:weapon, damage: 1, shooting_distance: 1),
+        view_direction: :left,
+        character: build(:character, not_playable?: true)
+      )
+
   @move_costs Tiles.move_costs()
 
   @tiles [
@@ -690,6 +698,20 @@ defmodule Europa.Server.PlanetTest do
                                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
                                                  ]
                                                  |> PlanetLandConverter.from_matrix()
+
+  @land_player_right_close_to_npcs [
+                                     [@i, @i, @i, @n, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @n5, @pl, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
+                                     [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i]
+                                   ]
+                                   |> PlanetLandConverter.from_matrix()
 
   @land_player_up_close_to_water [
                                    [@i, @i, @i, @i, @i, @i, @i, @i, @i, @i],
@@ -1480,6 +1502,39 @@ defmodule Europa.Server.PlanetTest do
       assert {:ok, %Planet{}, [%Action{subject: %Npc{}, action_type: :attack}]} = Planet.tick(planet, 1)
     end
 
+    test "squad member attacks other npc (attack_mode allows)" do
+      member = build(:squad_member, npc: @n5)
+      npc_uuid = member.npc.uuid
+
+      resources = build(:squad_resources, ammo: 10, supplies: 10, other: 10)
+      squad = build(:squad, members: %{npc_uuid => member}, attack_mode: :npc, resources: resources)
+
+      planet = build(:planet, land: @land_player_right_close_to_npcs, current_coord: {4, 1}, squad: squad)
+      assert {:ok, %Planet{}, [%Action{subject: {%Npc{}, %Npc{}}, action_type: :attack}]} = Planet.tick(planet, 1)
+    end
+
+    test "squad member not attacks other npc (attack_mode not allows)" do
+      member = build(:squad_member, npc: @n5)
+      npc_uuid = member.npc.uuid
+
+      resources = build(:squad_resources, ammo: 10, supplies: 10, other: 10)
+      squad = build(:squad, members: %{npc_uuid => member}, attack_mode: :nobody, resources: resources)
+
+      planet = build(:planet, land: @land_player_right_close_to_npcs, current_coord: {4, 1}, squad: squad)
+      assert {:ok, %Planet{}, []} = Planet.tick(planet, 1)
+    end
+
+    test "squad member not attacks other npc (no ammo)" do
+      member = build(:squad_member, npc: @n5)
+      npc_uuid = member.npc.uuid
+
+      resources = build(:squad_resources, ammo: 0, supplies: 10, other: 10)
+      squad = build(:squad, members: %{npc_uuid => member}, attack_mode: :nobody, resources: resources)
+
+      planet = build(:planet, land: @land_player_right_close_to_npcs, current_coord: {4, 1}, squad: squad)
+      assert {:ok, %Planet{}, []} = Planet.tick(planet, 1)
+    end
+
     test "npc moves to enemy" do
       planet = build(:planet, land: @land_npc_near_to_enemy, current_coord: {3, 3})
       assert {:ok, %Planet{land: @land_npc_right_close_to_enemy}, _} = Planet.tick(planet, 1)
@@ -1519,7 +1574,7 @@ defmodule Europa.Server.PlanetTest do
       planet = build(:planet, land: @land_player_down_close_to_npc_with_loot, current_coord: {4, 1}, squad: squad)
 
       assert {:ok, %Planet{land: updated_land, squad: updated_squad}, _} = Planet.tick(planet, 2)
-      assert updated_squad.resources.ammo == 10
+      assert updated_squad.resources.ammo == 12
       assert Map.fetch!(updated_land.tiles, {5, 2}) == Npc.change_view_direction(@n, :right)
       assert %ItemBox{items: []} = Map.fetch!(updated_land.tiles, {6, 2})
     end
@@ -2882,6 +2937,16 @@ defmodule Europa.Server.PlanetTest do
 
       assert {:ok, %Planet{squad: %Planet.Squad{loot_types: ^loot_types}}} =
                Planet.set_squad_loot_types(planet, loot_types)
+    end
+  end
+
+  describe "set_squad_attack_mode/2" do
+    test "updates squad attack_mode" do
+      planet = build(:planet, squad: build(:squad, attack_mode: :nobody))
+      attack_mode = :any
+
+      assert {:ok, %Planet{squad: %Planet.Squad{attack_mode: ^attack_mode}}} =
+               Planet.set_squad_attack_mode(planet, attack_mode)
     end
   end
 

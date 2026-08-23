@@ -266,6 +266,12 @@ defmodule EuropaWeb.GameLive do
     {:noreply, assign(socket, squad: updated_squad)}
   end
 
+  def handle_event("set_squad_attack_mode", %{"squad_attack_mode" => mode}, socket) do
+    attack_mode = String.to_existing_atom(mode)
+    {:ok, updated_squad} = Server.set_squad_attack_mode(socket.assigns.server, attack_mode)
+    {:noreply, assign(socket, squad: updated_squad)}
+  end
+
   def handle_event("reload_weapon", %{"uuid" => item_uuid}, socket) do
     reload_weapon(socket, item_uuid)
   end

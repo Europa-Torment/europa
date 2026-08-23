@@ -1310,6 +1310,19 @@ defmodule Europa.ServerTest do
     end
   end
 
+  describe "set_squad_attack_mode/2" do
+    test "returns squad", %{server: server} do
+      attack_mode = :any
+
+      PlanetManagerMock
+      |> expect(:set_squad_attack_mode, fn %Planet{} = planet, ^attack_mode ->
+        {:ok, planet}
+      end)
+
+      assert {:ok, %Planet.Squad{}} = Server.set_squad_attack_mode(server, attack_mode)
+    end
+  end
+
   describe "get_squad/1" do
     test "returns squad", %{server: server} do
       assert %Planet.Squad{} = Server.get_squad(server)

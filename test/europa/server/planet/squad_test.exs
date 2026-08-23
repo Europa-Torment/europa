@@ -147,15 +147,17 @@ defmodule Europa.Server.Planet.SquadTest do
       boots = build(:boots)
       resource = build(:resource, count: 50)
 
+      weapon_bonus = 2
+
       assert {:ok, updated_squad} = Squad.take_items(squad, [ammo, weapon, supply, implant, boots, resource])
 
-      assert updated_squad.resources.ammo == squad.resources.ammo + ammo.count + weapon.rounds_loaded
+      assert updated_squad.resources.ammo == squad.resources.ammo + ammo.count + weapon.rounds_loaded + weapon_bonus
       assert updated_squad.resources.supplies == squad.resources.supplies + supply.count
       assert updated_squad.resources.other == squad.resources.other + resource.count + 2
     end
   end
 
-  describe "set_loot_types" do
+  describe "set_loot_types/2" do
     test "sets loot types" do
       squad = build(:squad, loot_types: [:ammo])
       loot_types = [:weapon, :boots]
@@ -165,6 +167,50 @@ defmodule Europa.Server.Planet.SquadTest do
     test "returns invalid_loot_types error" do
       squad = build(:squad, loot_types: [:ammo])
       assert {:error, :invalid_loot_types} = Squad.set_loot_types(squad, [:fake])
+    end
+  end
+
+  describe "set_attack_mode/2" do
+    test "sets attack_mode" do
+      squad = build(:squad, attack_mode: :nobody)
+      attack_mode = :any
+      assert {:ok, %Squad{attack_mode: ^attack_mode}} = Squad.set_attack_mode(squad, attack_mode)
+    end
+  end
+
+  describe "attack_modes/0" do
+    test "returns attack modes" do
+      assert Squad.attack_modes() |> Enum.all?(fn {k, v} -> is_atom(k) && is_binary(v) end)
+    end
+  end
+
+  describe "can_attack?/2" do
+    test "checks if squad can attack given target" do
+      enemy = build(:enemy)
+      npc = build(:npc)
+      member = build(:squad_member)
+      member_uuid = member.npc.uuid
+
+      squad1 = build(:squad, members: %{member_uuid => member}, attack_mode: :any)
+      squad2 = build(:squad, members: %{member_uuid => member}, attack_mode: :nobody)
+      squad3 = build(:squad, members: %{member_uuid => member}, attack_mode: :npc)
+      squad4 = build(:squad, members: %{member_uuid => member}, attack_mode: :enemy)
+
+      assert Squad.can_attack?(squad1, npc) == true
+      assert Squad.can_attack?(squad1, enemy) == true
+      assert Squad.can_attack?(squad1, member.npc) == false
+
+      assert Squad.can_attack?(squad2, npc) == false
+      assert Squad.can_attack?(squad2, enemy) == false
+      assert Squad.can_attack?(squad2, member.npc) == false
+
+      assert Squad.can_attack?(squad3, npc) == true
+      assert Squad.can_attack?(squad3, enemy) == false
+      assert Squad.can_attack?(squad3, member.npc) == false
+
+      assert Squad.can_attack?(squad4, npc) == false
+      assert Squad.can_attack?(squad4, enemy) == true
+      assert Squad.can_attack?(squad4, member.npc) == false
     end
   end
 

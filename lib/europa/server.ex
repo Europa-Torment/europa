@@ -263,6 +263,11 @@ defmodule Europa.Server do
     GenServer.call(server, {:set_squad_loot_types, loot_types})
   end
 
+  @spec set_squad_attack_mode(pid(), Planet.Squad.attack_mode()) :: {:ok, Planet.Squad.t()}
+  def set_squad_attack_mode(server, attack_mode) when is_atom(attack_mode) do
+    GenServer.call(server, {:set_squad_attack_mode, attack_mode})
+  end
+
   @spec get_squad(pid()) :: Planet.Squad.t()
   def get_squad(server) do
     GenServer.call(server, :get_squad)
@@ -806,6 +811,11 @@ defmodule Europa.Server do
       error ->
         {:reply, error, state, @inactivity_timeout_ms}
     end
+  end
+
+  def handle_call({:set_squad_attack_mode, attack_mode}, _caller_pid, state) do
+    {:ok, updated_planet} = PlanetManager.set_squad_attack_mode(state.planet, attack_mode)
+    {:reply, {:ok, updated_planet.squad}, struct!(state, planet: updated_planet), @inactivity_timeout_ms}
   end
 
   def handle_call(:get_squad, _callber_pid, state) do

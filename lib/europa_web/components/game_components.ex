@@ -72,8 +72,9 @@ defmodule EuropaWeb.GameCompotents do
         phx-click="start_game"
         class="btn btn-pixel btn-xl bg-gradient-to-r from-cyan-600 to-blue-700 border-none text-white font-display font-bold px-12 py-4 rounded-none"
       >
-        {gettext("Start game")}
+        <.icon_image name="gamepad" /> {gettext("Ready")}
       </button>
+      <span class="text-xs text-white/40 mt-3">{start_screen_tip()}</span>
     </div>
     """
   end
@@ -1365,6 +1366,7 @@ defmodule EuropaWeb.GameCompotents do
           </h3>
 
           <.squad_resources squad={@squad} loot_types={@squad.loot_types} />
+          <.squad_attack_mode squad={@squad} />
           <.squad_members members={@squad.members} />
 
           <div class="modal-action">
@@ -1416,11 +1418,7 @@ defmodule EuropaWeb.GameCompotents do
         <button
           id="squad_loot_info"
           phx-hook="Tooltip"
-          data-tooltip={
-            gettext(
-              "Squad members will automatically collect items of the selected types and replenish the squad's resources. Click on the desired type to allow or prohibit its collection."
-            )
-          }
+          data-tooltip={squad_loot_type_info()}
           class="btn btn-circle btn-xs btn-outline"
         >
           ?
@@ -1443,6 +1441,33 @@ defmodule EuropaWeb.GameCompotents do
           </label>
         <% end %>
       </div>
+    </div>
+    """
+  end
+
+  def squad_attack_mode(assigns) do
+    ~H"""
+    <div class="bg-base-200 p-4 shadow-md text-md mt-2">
+      <h4 class="text-md font-bold pb-3">
+        {gettext("Attack mode")}
+        <button
+          id="squad_attack_mode_info"
+          phx-hook="Tooltip"
+          data-tooltip={gettext("Squad members will attack those you have chosen.")}
+          class="btn btn-circle btn-xs btn-outline"
+        >
+          ?
+        </button>
+      </h4>
+      <form phx-change="set_squad_attack_mode">
+        <.input
+          type="select"
+          name="squad_attack_mode"
+          id="squad_attack_mode"
+          value={@squad.attack_mode}
+          options={squad_attack_modes()}
+        />
+      </form>
     </div>
     """
   end
@@ -2407,6 +2432,39 @@ defmodule EuropaWeb.GameCompotents do
       satisfaction >= 50 -> "#d85627"
       true -> "#de0b0b"
     end
+  end
+
+  defp squad_attack_modes do
+    Squad.attack_modes()
+    |> Enum.map(fn {value, name} ->
+      {name, value}
+    end)
+  end
+
+  defp squad_loot_type_info do
+    [
+      gettext(
+        "Squad members will automatically collect items of the selected types and replenish the squad's resources. Click on the desired type to allow or prohibit its collection."
+      ),
+      "<br /><br />",
+      gettext(
+        "Alternatively, you can collect all the loot yourself and give the squad the necessary items from your inventory."
+      )
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp start_screen_tip do
+    texts = [
+      gettext("Don't be upset when you die, it happens to everyone."),
+      gettext("Don't forget to monitor your health indicators!"),
+      gettext("Some Europeans are not as simple as they seem."),
+      gettext("At night, you may unexpectedly run into enemies at an unsafe distance."),
+      gettext("Will you survive alone or try to find companions?"),
+      gettext("Good luck.")
+    ]
+
+    Enum.random(texts)
   end
 
   # coveralls-ignore-stop

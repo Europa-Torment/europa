@@ -21,7 +21,7 @@
       <div class="flex-none">
         <ul class="menu menu-horizontal px-1 font-display font-bold text-lg tracking-wide">
           <%= if assigns[:current_user] do %>
-            <li><.link navigate={~p"/games"}><.icon_image name="gamepad" /> {gettext("Games")}</.link></li>
+            <li><.link navigate={~p"/games"}><.icon_image name="gamepad" /> {gettext("Play")}</.link></li>
             <li><.link navigate={~p"/lore"}><.icon_image name="book" /> {gettext("Lore")}</.link></li>
             <li>
               <.link navigate={~p"/games/leaderboard"}><.icon_image name="cup" /> {gettext("Leaderboard")}</.link>

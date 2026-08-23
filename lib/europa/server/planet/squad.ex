@@ -1,10 +1,12 @@
 defmodule Europa.Server.Planet.Squad do
   use TypedStruct
+  use Gettext, backend: Europa.Gettext
 
   alias Europa.Server.Planet.Squad.Member
   alias Europa.Server.Planet
   alias Europa.Server.Action
   alias Europa.Server.Npc
+  alias Europa.Server.Enemy
   alias Europa.Server.Characters.Profession
   alias Europa.Server.Loot
   alias Europa.Tools.Types
@@ -35,6 +37,15 @@ defmodule Europa.Server.Planet.Squad do
           | {:member_died, Member.t()}
           | {:member_left_squad, Member.t()}
           | :low_resources
+
+  @attack_modes [
+    {:enemy, gettext("Monsters")},
+    {:npc, gettext("Other survivors")},
+    {:any, gettext("Everyone")},
+    {:nodody, gettext("Nobody")}
+  ]
+  @allowed_attack_modes Enum.map(@attack_modes, fn {k, _v} -> k end)
+  @type attack_mode :: unquote(Types.one_of(@allowed_attack_modes))
 
   @professions Profession.professions()
 
@@ -113,6 +124,7 @@ defmodule Europa.Server.Planet.Squad do
     field :members, members()
     field :resources, Resources.t()
     field :loot_types, list(Loot.item_type())
+    field :attack_mode, attack_mode(), default: :enemy
     field :assigned_coords, list(Planet.coord())
     field :events, list(event())
     field :declined_npcs, list(DeclinedNpc.t())
@@ -203,7 +215,7 @@ defmodule Europa.Server.Planet.Squad do
     updated_resources =
       Enum.reduce(items, squad.resources, fn item, resources ->
         case item do
-          %Loot.Weapon{rounds_loaded: count} -> Resources.add(resources, ammo: count)
+          %Loot.Weapon{rounds_loaded: count} -> Resources.add(resources, ammo: count + 2)
           %Loot.Weapon.Ammo{count: count} -> Resources.add(resources, ammo: count)
           %Loot.Supply{count: count} -> Resources.add(resources, supplies: count)
           %{count: count} -> Resources.add(resources, other: count)
@@ -223,6 +235,29 @@ defmodule Europa.Server.Planet.Squad do
     else
       {:error, :invalid_loot_types}
     end
+  end
+
+  @spec set_attack_mode(t(), attack_mode()) :: {:ok, t()}
+  def set_attack_mode(%__MODULE__{} = squad, attack_mode) when attack_mode in @allowed_attack_modes do
+    {:ok, struct!(squad, attack_mode: attack_mode)}
+  end
+
+  @spec can_attack?(t(), Npc.t() | Enemy.t()) :: boolean()
+  def can_attack?(%__MODULE__{attack_mode: attack_mode}, %Enemy{}) when attack_mode in [:enemy, :any] do
+    true
+  end
+
+  def can_attack?(%__MODULE__{attack_mode: attack_mode} = squad, %Npc{} = npc) when attack_mode in [:npc, :any] do
+    not member?(squad, npc)
+  end
+
+  def can_attack?(_, _) do
+    false
+  end
+
+  @spec attack_modes() :: list({attack_mode(), String.t()})
+  def attack_modes do
+    @attack_modes
   end
 
   @spec assign_coord(t(), Planet.coord()) :: t()
