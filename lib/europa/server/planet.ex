@@ -1134,21 +1134,7 @@ defmodule Europa.Server.Planet do
 
   defp trigger_npc(%__MODULE__{} = planet, npc_coord, %Npc{target: nil} = npc, enemy_coords, other_npc_coords) do
     squad_member? = Squad.member?(planet.squad, npc)
-
-    enemy_npc_coords =
-      other_npc_coords
-      |> Enum.filter(fn coord ->
-        case get_tile(planet.land, coord) do
-          %Npc{} = other_npc ->
-            enemies? = Characters.enemies?(npc.character, other_npc.character)
-
-            (squad_member? && Squad.can_attack?(planet.squad, other_npc)) || enemies? ||
-              (squad_member? && other_npc.target == :player)
-
-          _ ->
-            false
-        end
-      end)
+    enemy_npc_coords = enemy_npc_coords(planet, npc, other_npc_coords, squad_member?)
 
     {new_target_coord, new_target} =
       closest_target(planet, npc_coord, enemy_coords ++ enemy_npc_coords, npc, without_player: true)
@@ -1185,16 +1171,39 @@ defmodule Europa.Server.Planet do
     updated_land = change_tile(planet.land, npc_coord, updated_npc)
 
     updated_squad =
-      if coord?(new_target) do
-        Squad.assign_coord(planet.squad, new_target)
-      else
-        planet.squad
+      cond do
+        squad_member? && coord?(new_target) ->
+          {:ok, updated_squad} = Squad.update_member(planet.squad, npc, npc_coord)
+          Squad.assign_coord(updated_squad, new_target)
+
+        squad_member? ->
+          {:ok, updated_squad} = Squad.update_member(planet.squad, npc, npc_coord)
+          updated_squad
+
+        true ->
+          planet.squad
       end
 
     {struct!(planet, land: updated_land, squad: updated_squad), []}
   end
 
   defp trigger_npc(%__MODULE__{} = planet, _, _, _, _), do: {planet, []}
+
+  defp enemy_npc_coords(%__MODULE__{} = planet, %Npc{} = npc, other_npc_coords, squad_member?) do
+    other_npc_coords
+    |> Enum.filter(fn coord ->
+      case get_tile(planet.land, coord) do
+        %Npc{} = other_npc ->
+          enemies? = Characters.enemies?(npc.character, other_npc.character)
+
+          (squad_member? && Squad.can_attack?(planet.squad, other_npc)) || enemies? ||
+            (squad_member? && other_npc.target == :player)
+
+        _ ->
+          false
+      end
+    end)
+  end
 
   defp get_closest_loot_coord_for_squad(%__MODULE__{squad: %Squad{loot_types: []}}, _, _) do
     nil

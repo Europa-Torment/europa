@@ -74,7 +74,7 @@ defmodule EuropaWeb.GameCompotents do
       >
         <.icon_image name="gamepad" /> {gettext("Ready")}
       </button>
-      <span class="text-xs text-white/40 mt-3">{start_screen_tip()}</span>
+      <span class="text-xs text-white/40 mt-4">{start_screen_tip()}</span>
     </div>
     """
   end
@@ -1493,9 +1493,9 @@ defmodule EuropaWeb.GameCompotents do
           {gettext("There's no one in your squad. Look for survivors and invite them to join.")}
         </span>
       <% else %>
-        <ul class="list-disc list-inside space-y-2 mt-2 text-sm">
+        <ul class="list-inside space-y-2 mt-2 text-sm">
           <%= for {uuid, member} <- @members do %>
-            <li>
+            <li class="bg-base-100 p-3">
               <span id={"squad_member_#{uuid}_name"} phx-hook="Tooltip" data-tooltip={npc_tooltip(member.npc)}>
                 {member.npc.character.name}
               </span>
@@ -1524,6 +1524,9 @@ defmodule EuropaWeb.GameCompotents do
                     <a>{gettext("Fire")}</a>
                   </li>
                 </ul>
+              </div>
+              <div class="text-xs text-white/40 mt-1">
+                {squad_member_job(member.npc)}
               </div>
             </li>
           <% end %>
@@ -2057,8 +2060,8 @@ defmodule EuropaWeb.GameCompotents do
   defp aiming_player_image_prefix(%Player{aim_mode?: true}), do: "_aiming"
   defp aiming_player_image_prefix(_), do: ""
 
-  defp aiming_npc_image_prefix(%Npc{target: nil}), do: ""
-  defp aiming_npc_image_prefix(_), do: "_aiming"
+  defp aiming_npc_image_prefix(%Npc{target: target}) when is_binary(target) or target == :player, do: "_aiming"
+  defp aiming_npc_image_prefix(_), do: ""
 
   defp ext_by_stand_on(%{stand_on: stand_on}), do: ext_by_stand_on(stand_on)
 
@@ -2454,13 +2457,26 @@ defmodule EuropaWeb.GameCompotents do
     |> Enum.join("\n")
   end
 
+  defp squad_member_job(%Npc{target: {_x, _y}}), do: gettext("Gathering supplies")
+  defp squad_member_job(%Npc{target: uuid}) when is_binary(uuid), do: gettext("Fighting")
+  defp squad_member_job(%Npc{}), do: gettext("Follows you")
+
   defp start_screen_tip do
     texts = [
       gettext("Don't be upset when you die, it happens to everyone."),
       gettext("Don't forget to monitor your health indicators!"),
       gettext("Some Europeans are not as simple as they seem."),
-      gettext("At night, you may unexpectedly run into enemies at an unsafe distance."),
+      gettext("At night, you may unexpectedly run into enemies at an unsafe distance. Better find a flashlight!"),
       gettext("Will you survive alone or try to find companions?"),
+      gettext("Moving against the storm takes more turns."),
+      gettext("In aiming mode, shooting accuracy increases, but the shot takes more turns."),
+      gettext("Cities are full of supplies, which is equally tempting for survivors and monsters."),
+      gettext("If you walk on thin ice, you're walking on thin ice. No cracks about it!"),
+      gettext("They say that if you take off your spacesuit, you will leave Europa faster."),
+      gettext("Got into trouble? Just don't press any buttons and everything will be fine!"),
+      gettext(
+        "Sometimes it's useful to skip a turn and wait for the situation to resolve itself without your participation."
+      ),
       gettext("Good luck.")
     ]
 
