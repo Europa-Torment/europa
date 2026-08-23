@@ -63,5 +63,5 @@
   <.squad_event squad_event={@squad_event} />
 <% else %>
   <.background />
-  <.start_screen />
+  <.start_screen connected?={connected?(@socket)} />
 <% end %>
