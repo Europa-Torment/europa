@@ -1154,14 +1154,17 @@ defmodule Europa.Server.Planet do
         squad_member? && planet.squad.resources.ammo == 0 ->
           get_closest_loot_coord_for_squad(planet, npc, npc_coord)
 
-        new_target && squad_member? && !npc?(new_target) && Squad.can_attack?(planet.squad, new_target) ->
+        new_target && squad_member? && npc?(new_target) ->
           new_target
 
-        new_target ->
+        new_target && squad_member? && Squad.can_attack?(planet.squad, new_target) ->
           new_target
 
         squad_member? ->
           get_closest_loot_coord_for_squad(planet, npc, npc_coord)
+
+        new_target ->
+          new_target
 
         true ->
           nil
