@@ -113,7 +113,7 @@ defmodule EuropaWeb.GameCompotents do
               phx-value-y={real_y}
               data-uid={tile_uid(tile)}
               class="p-0 m-0"
-              style={"width: #{tile_image_size(@zoom_mode)}px; height: #{tile_image_size(@zoom_mode)}px; margin-bottom: -0.5px; #{npc_color_filter(tile, @squad)}"}
+              style={"width: #{tile_image_size(@zoom_mode)}px; height: #{tile_image_size(@zoom_mode)}px; margin-bottom: -0.5px"}
             >
               <img
                 id={"tile_img_#{x}_#{y}"}
@@ -121,6 +121,7 @@ defmodule EuropaWeb.GameCompotents do
                 data-tooltip={tile_tooltip(tile, @player)}
                 src={~p"/images/tiles/#{render_tile(tile, @player)}"}
                 class="w-full h-full block object-cover z-50 p-0 m-0"
+                style={"#{npc_color_filter(tile, @squad)}"}
               />
             </div>
           <% end %>
