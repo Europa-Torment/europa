@@ -1,4 +1,4 @@
-# Europa Torment
+![logo](/priv/static/images/logo.png)
 
 Single player browser turn-based survival game that features a loot system, dynamic time of day, health management, procedural generated endless map and more.
 

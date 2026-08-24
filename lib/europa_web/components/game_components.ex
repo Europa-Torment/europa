@@ -67,6 +67,7 @@ defmodule EuropaWeb.GameCompotents do
   def start_screen(assigns) do
     ~H"""
     <div class="w-full p-5 m-5 grid place-items-center">
+      <img src={~p"/images/jupiter.gif"} class="mb-5" />
       <%= if @connected? do %>
         <button
           id="start_buttom"
